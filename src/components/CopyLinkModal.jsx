@@ -30,20 +30,13 @@ const CopyLinkModal = ({ isOpen, onClose }) => {
           alignItems: "center",
         }}
       >
-        <IconButton
-          onClick={onClose}
-          sx={{ color: "whitesmoke", marginRight: 1 }}
-        >
+        <IconButton onClick={onClose} sx={{ color: "whitesmoke", marginRight: 1 }}>
           <ArrowBackIcon />
         </IconButton>
         Link Copied
       </DialogTitle>
-      <DialogContent
-        sx={{ backgroundColor: "var(  --nav-card-modal)", color: "whitesmoke" }}
-      >
-        <Typography variant="body1">
-          The link has been copied to your clipboard.
-        </Typography>
+      <DialogContent sx={{ backgroundColor: "var(  --nav-card-modal)", color: "whitesmoke" }}>
+        <Typography variant="body1">The link has been copied to your clipboard.</Typography>
       </DialogContent>
       <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)" }}>
         <Button

@@ -1,103 +1,99 @@
 {
-	// Put this file directory above decoraition and inside .vscode
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "Start AI API",
-			"dependsOn": [
-				"Run SD Web UI",
-				"Run Local API",
-				"Run Cloudflare Tunnel"
-			],
-			"dependsOrder": "sequence",
-			"problemMatcher": []
-		},
-		{
-			"label": "Run SD Web UI",
-			"type": "process",
-			"command": "cmd",
-			"args": ["/c", "webui-user.bat"],
-			"isBackground": true,
-			"options": {
-				"cwd": "${workspaceFolder}/stable-diffusion-webui-reForge"
-			},
-			"problemMatcher": {
-				"owner": "webui",
-				"pattern": [
-					{
-						"regexp": ".*Model realisticVisionV51_v51VAE\\.safetensors \\[.*\\] loaded.*",
-						"file": 0,
-						"location": 0,
-						"message": 0
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": "^Running on local URL:.*",
-					"endsPattern": "^Model realisticVisionV51_v51VAE\\.safetensors \\[.*\\] loaded.*"
-				}
-			},
-			"presentation": {
-				"group": "startAiAPI"
-			}
-		},
-		{
-			"label": "Run Local API",
-			"type": "process",
-			"command": "${workspaceFolder}/decoraition/ai-api/venv/Scripts/python.exe",
-			"args": ["server.py"],
-			"isBackground": true,
-			"options": {
-				"cwd": "${workspaceFolder}/decoraition/ai-api"
-			},
-			"problemMatcher": {
-				"owner": "flask",
-				"pattern": [
-					{
-						"regexp": "Running on http.*",
-						"file": 0,
-						"location": 0,
-						"message": 0
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": "Serving Flask app '(.*)'",
-					"endsPattern": "Running on http.*"
-				}
-			},
-			"presentation": {
-				"group": "startAiAPI"
-			}
-		},
-		{
-			"label": "Run Cloudflare Tunnel",
-			"type": "process",
-			"command": "cmd",
-			"args": ["/c", "cloudflared tunnel run ai-api"],
-			"isBackground": true,
-			"options": {
-				"cwd": "${workspaceFolder}/decoraition/ai-api"
-			},
-			"problemMatcher": {
-				"owner": "cloudflared",
-				"pattern": [
-					{
-						"regexp": ".*Registered tunnel connection.*",
-						"file": 0,
-						"location": 0,
-						"message": 0
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*Starting tunnel.*",
-					"endsPattern": ".*Registered tunnel connection.*"
-				}
-			},
-			"presentation": {
-				"group": "startAiAPI"
-			}
-		}
-	]
+  // Put this file directory above decoraition and inside .vscode
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start AI API",
+      "dependsOn": ["Run SD Web UI", "Run Local API", "Run Cloudflare Tunnel"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run SD Web UI",
+      "type": "process",
+      "command": "cmd",
+      "args": ["/c", "webui-user.bat"],
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/stable-diffusion-webui-reForge"
+      },
+      "problemMatcher": {
+        "owner": "webui",
+        "pattern": [
+          {
+            "regexp": ".*Model realisticVisionV51_v51VAE\\.safetensors \\[.*\\] loaded.*",
+            "file": 0,
+            "location": 0,
+            "message": 0
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^Running on local URL:.*",
+          "endsPattern": "^Model realisticVisionV51_v51VAE\\.safetensors \\[.*\\] loaded.*"
+        }
+      },
+      "presentation": {
+        "group": "startAiAPI"
+      }
+    },
+    {
+      "label": "Run Local API",
+      "type": "process",
+      "command": "${workspaceFolder}/decoraition/ai-api/venv/Scripts/python.exe",
+      "args": ["server.py"],
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/decoraition/ai-api"
+      },
+      "problemMatcher": {
+        "owner": "flask",
+        "pattern": [
+          {
+            "regexp": "Running on http.*",
+            "file": 0,
+            "location": 0,
+            "message": 0
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Serving Flask app '(.*)'",
+          "endsPattern": "Running on http.*"
+        }
+      },
+      "presentation": {
+        "group": "startAiAPI"
+      }
+    },
+    {
+      "label": "Run Cloudflare Tunnel",
+      "type": "process",
+      "command": "cmd",
+      "args": ["/c", "cloudflared tunnel run ai-api"],
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/decoraition/ai-api"
+      },
+      "problemMatcher": {
+        "owner": "cloudflared",
+        "pattern": [
+          {
+            "regexp": ".*Registered tunnel connection.*",
+            "file": 0,
+            "location": 0,
+            "message": 0
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Starting tunnel.*",
+          "endsPattern": ".*Registered tunnel connection.*"
+        }
+      },
+      "presentation": {
+        "group": "startAiAPI"
+      }
+    }
+  ]
 }

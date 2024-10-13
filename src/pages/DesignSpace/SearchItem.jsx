@@ -7,7 +7,7 @@ import InputBase from "@mui/material/InputBase";
 
 import IconButton from "@mui/material/IconButton";
 
-function SearchItem() {
+function SearchItem({ ...sharedProps }) {
   const items = new Array(12).fill({
     name: "Clothing Fabric Wedding Fabric Party Fabric Lase...",
     price: "₱246.00",
@@ -33,11 +33,7 @@ function SearchItem() {
           },
         }}
       >
-        <IconButton
-          type="button"
-          sx={{ p: "10px", color: "white" }}
-          aria-label="search"
-        >
+        <IconButton type="button" sx={{ p: "10px", color: "white" }} aria-label="search">
           <SearchIcon sx={{ color: "white" }} />
         </IconButton>
         <InputBase

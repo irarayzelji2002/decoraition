@@ -1,29 +1,21 @@
-import {
-  doc,
-  collection,
-  query,
-  where,
-  onSnapshot,
-  setDoc,
-  deleteDoc,
-} from "firebase/firestore";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { toast } from "react-toastify";
-import { CheckCircle } from "@mui/icons-material";
-import Delete from "@mui/icons-material/Delete.js";
-import { db, auth } from "../../../firebase"; // Adjust the import path as needed
+import axios from "axios";
+import { auth, db } from "../../../firebase";
+import { showToast } from "../../../functions/utils";
+const API_BASE_URL = "http://localhost:5000/api";
 
-export const fetchUserData = (user, setUsername, setUser) => {
-  const userRef = doc(db, "users", user.uid);
-  onSnapshot(userRef, (doc) => {
-    const userData = doc.data();
-    setUsername(userData.username);
-    setUser({
-      uid: user.uid,
-      email: user.email,
-      profilePicture: userData.photoURL || "",
-    });
-  });
+export const fetchUserData = async (setUser, setUsername) => {
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      const response = await axios.get(`${API_BASE_URL}/user/${user.uid}`);
+      const userData = response.data;
+      setUser(userData);
+      setUsername(userData.username || "");
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    showToast("error", "Failed to fetch user data");
+  }
 };
 
 export const fetchDesigns = (userId, setDesigns) => {
@@ -60,32 +52,27 @@ export const fetchProjects = (userId, setProjects) => {
   return () => unsubscribeProjects();
 };
 
-export const handleLogout = (navigate) => {
-  signOut(auth)
-    .then(() => {
-      navigate("/");
-    })
-    .catch((error) => {
-      console.error("Sign-out error:", error);
-    });
+export const handleLogout = async (navigate) => {
+  try {
+    await axios.post(`${API_BASE_URL}/logout`);
+    navigate("/");
+  } catch (error) {
+    console.error("Error logging out:", error);
+    showToast("error", "Failed to log out");
+  }
 };
 
-export const handleSettings = (navigate) => {
-  signOut(auth)
-    .then(() => {
-      navigate("/settings");
-    })
-    .catch((error) => {
-      console.error("Settings error:", error);
-    });
+export const handleSettings = async (navigate) => {
+  try {
+    await axios.post(`${API_BASE_URL}/settings`);
+    navigate("/settings");
+  } catch (error) {
+    console.error("Error navigating to settings:", error);
+    showToast("error", "Failed to navigate to settings");
+  }
 };
 
-export const toggleDarkMode = (darkMode, setDarkMode) => {
-  setDarkMode(!darkMode);
-  document.body.classList.toggle("dark-mode", !darkMode);
-};
-
-export const handleCreateDesign = async (navigate) => {
+export const handleCreateDesign = async (userId, navigate) => {
   try {
     const currentUser = auth.currentUser;
     const randomString = Math.random().toString(36).substring(2, 6);
@@ -119,19 +106,12 @@ export const handleCreateDesign = async (navigate) => {
       setTimeout(() => navigate(`/design/${designId}`), 1500);
     }
   } catch (error) {
-    console.error("Error creating design: ", error);
-    toast.error("Error creating design! Please try again.", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    console.error("Error creating project:", error);
+    showToast("error", "Failed to create project");
   }
 };
 
-export const handleCreateProject = async (navigate) => {
+export const handleDeleteDesign = async (designId, setDesigns) => {
   try {
     const currentUser = auth.currentUser;
     const randomString = Math.random().toString(36).substring(2, 6);
@@ -165,19 +145,12 @@ export const handleCreateProject = async (navigate) => {
       setTimeout(() => navigate(`/project/${projectId}`), 1500);
     }
   } catch (error) {
-    console.error("Error creating project: ", error);
-    toast.error("Error creating project! Please try again.", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    console.error("Error deleting design:", error);
+    showToast("error", "Failed to delete design");
   }
 };
 
-export const handleDeleteDesign = async (designId) => {
+export const handleDeleteProject = async (projectId, setProjects) => {
   try {
     const currentUser = auth.currentUser;
 
@@ -197,15 +170,22 @@ export const handleDeleteDesign = async (designId) => {
       });
     }
   } catch (error) {
-    console.error("Error deleting design: ", error);
+    console.error("Error deleting project:", error);
+    showToast("error", "Failed to delete project");
   }
 };
 
-export const toggleMenu = (menuOpen, setMenuOpen) => {
-  setMenuOpen(!menuOpen);
+// Client-side functions
+export const toggleDarkMode = (isDarkMode, setIsDarkMode) => {
+  const newMode = !isDarkMode;
+  setIsDarkMode(newMode);
+  document.body.classList.toggle("dark-mode", newMode);
+};
+
+export const toggleMenu = (isMenuOpen, setIsMenuOpen) => {
+  setIsMenuOpen(!isMenuOpen);
 };
 
 export const formatDate = (timestamp) => {
-  const date = new Date(timestamp);
-  return date.toLocaleString(); // This will format the date and time based on the user's locale
+  return new Date(timestamp).toLocaleString();
 };

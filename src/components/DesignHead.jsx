@@ -40,8 +40,7 @@ function DesignHead({
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] =
-    useState(false);
+  const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
   const [isCopyLinkModalOpen, setIsCopyLinkModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
@@ -79,13 +78,7 @@ function DesignHead({
 
   useEffect(() => {
     const fetchDesignTitle = () => {
-      const designRef = doc(
-        db,
-        "users",
-        auth.currentUser.uid,
-        "designs",
-        designId
-      );
+      const designRef = doc(db, "users", auth.currentUser.uid, "designs", designId);
 
       const unsubscribe = onSnapshot(designRef, (doc) => {
         if (doc.exists()) {
@@ -302,11 +295,7 @@ function DesignHead({
               className="headTitleInput"
             />
           ) : (
-            <span
-              onClick={handleInputClick}
-              className="headTitleInput"
-              style={{ height: "20px" }}
-            >
+            <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
               {designData.name || "Untitled"}
             </span>
           )}
@@ -317,10 +306,7 @@ function DesignHead({
           <CommentIcon sx={{ color: "var(--color-white)" }} />
         </IconButton>
         <IconButton>
-          <ShareIcon
-            sx={{ color: "var(--color-white)" }}
-            onClick={handleOpenShareModal}
-          />
+          <ShareIcon sx={{ color: "var(--color-white)" }} onClick={handleOpenShareModal} />
         </IconButton>
         <IconButton onClick={handleClick}>
           <MoreVertIcon sx={{ color: "var(--color-white)" }} />
@@ -344,10 +330,7 @@ function DesignHead({
               onOpenShareModal={handleOpenShareModal}
             />
           ) : isChangeModeMenuOpen ? (
-            <ChangeModeMenu
-              onClose={handleClose}
-              onBackToMenu={handleBackToMenu}
-            />
+            <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
           ) : (
             <DefaultMenu
               onClose={handleClose}
@@ -382,31 +365,16 @@ function DesignHead({
         onClose={handleCloseShareConfirmationModal}
         collaborators={collaborators}
       />
-      <CopyLinkModal
-        isOpen={isCopyLinkModalOpen}
-        onClose={handleCloseCopyLinkModal}
-      />
+      <CopyLinkModal isOpen={isCopyLinkModalOpen} onClose={handleCloseCopyLinkModal} />
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onDelete={handleDelete}
       />
-      <DownloadModal
-        isOpen={isDownloadModalOpen}
-        onClose={handleCloseDownloadModal}
-      />
-      <RenameModal
-        isOpen={isRenameModalOpen}
-        onClose={handleCloseRenameModal}
-      />
-      <RestoreModal
-        isOpen={isRestoreModalOpen}
-        onClose={handleCloseRestoreModal}
-      />
-      <MakeCopyModal
-        isOpen={isMakeCopyModalOpen}
-        onClose={handleCloseMakeCopyModal}
-      />
+      <DownloadModal isOpen={isDownloadModalOpen} onClose={handleCloseDownloadModal} />
+      <RenameModal isOpen={isRenameModalOpen} onClose={handleCloseRenameModal} />
+      <RestoreModal isOpen={isRestoreModalOpen} onClose={handleCloseRestoreModal} />
+      <MakeCopyModal isOpen={isMakeCopyModalOpen} onClose={handleCloseMakeCopyModal} />
       <InfoModal isOpen={isInfoModalOpen} onClose={handleCloseInfoModal} />
     </div>
   );

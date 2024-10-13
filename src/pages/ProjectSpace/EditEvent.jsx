@@ -9,7 +9,7 @@ import { saveData, updateTask } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 
-function EditEvent() {
+function EditEvent({ ...sharedProps }) {
   const { projectId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -74,9 +74,7 @@ function EditEvent() {
   };
 
   const deleteReminder = (id) => {
-    const newReminders = formData.reminders.filter(
-      (reminder) => reminder.id !== id
-    );
+    const newReminders = formData.reminders.filter((reminder) => reminder.id !== id);
     setFormData((prevData) => ({
       ...prevData,
       reminders: newReminders,
@@ -183,10 +181,7 @@ function EditEvent() {
                   }
                 />
                 <div className="reminder-actions">
-                  <button
-                    className="icon-button"
-                    onClick={() => deleteReminder(reminder.id)}
-                  >
+                  <button className="icon-button" onClick={() => deleteReminder(reminder.id)}>
                     <DeleteIcon />
                   </button>
                   <button

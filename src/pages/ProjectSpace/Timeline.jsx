@@ -12,7 +12,7 @@ import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 
-function Timeline() {
+function Timeline({ ...sharedProps }) {
   const [date, setDate] = useState(new Date());
   const { projectId } = useParams();
   const [tasks, setTasks] = useState([]);
@@ -67,11 +67,7 @@ function Timeline() {
         {/* Calendar Section */}
         <div className="calendar-head">
           <div className="calendar-section">
-            <Calendar
-              onChange={setDate}
-              value={date}
-              className="custom-calendar"
-            />
+            <Calendar onChange={setDate} value={date} className="custom-calendar" />
           </div>
           <div className="add-event-button">
             <button className="design-button" onClick={handleAddEventClick}>

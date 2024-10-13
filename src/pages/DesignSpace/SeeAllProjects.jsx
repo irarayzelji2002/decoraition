@@ -20,11 +20,15 @@ import {
   limit,
   startAfter,
 } from "firebase/firestore";
+import { handleDeleteProject, handleCreateProject } from "../Homepage/backend/HomepageActions";
 
-export default function SeeAllProjects() {
-  const [user, setUser] = useState(null);
-  const [designs, setDesigns] = useState([]);
-  const [username, setUsername] = useState("");
+export default function SeeAllProjects({ ...sharedProps }) {
+  const navigate = useNavigate();
+
+  const user = sharedProps.user;
+  const projects = sharedProps.projects;
+  const setProjects = sharedProps.setProjects;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [lastVisible, setLastVisible] = useState(null);
   const [page, setPage] = useState(1);
@@ -76,13 +80,7 @@ export default function SeeAllProjects() {
     try {
       const currentUser = auth.currentUser;
       if (currentUser) {
-        const designRef = doc(
-          db,
-          "users",
-          currentUser.uid,
-          "projects",
-          designId
-        );
+        const designRef = doc(db, "users", currentUser.uid, "projects", designId);
         await deleteDoc(designRef);
         fetchDesigns(currentUser.uid, page);
       }
@@ -93,7 +91,7 @@ export default function SeeAllProjects() {
 
   const handlePageClick = (pageNumber) => {
     setPage(pageNumber);
-    fetchDesigns(user.uid, pageNumber);
+    // fetchDesigns(user.uid, pageNumber);
   };
 
   const handlePreviousPage = () => {
@@ -108,17 +106,13 @@ export default function SeeAllProjects() {
     }
   };
 
-  const filteredDesigns = designs.filter((design) =>
-    design.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredDesigns = projects.filter((projects) =>
+    projects.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <>
-      <SearchAppBar
-        onSearchChange={(value) => setSearchQuery(value)}
-        user={user}
-        username={username}
-      />
+      <SearchAppBar onSearchChange={(value) => setSearchQuery(value)} user={user} />
       <div className="bg">
         <div className="dropdown-container">
           <Dropdowns />
@@ -134,7 +128,7 @@ export default function SeeAllProjects() {
                     key={design.id}
                     name={design.name}
                     designId={design.id}
-                    onDelete={handleDeleteDesign}
+                    onDelete={handleDeleteProjectClick}
                     onOpen={() =>
                       navigate(`/design/${design.id}`, {
                         state: { designId: design.id },
@@ -155,11 +149,7 @@ export default function SeeAllProjects() {
         {/* Pagination Section */}
         <div className="pagination-controls">
           {/* Previous Page Button */}
-          <button
-            onClick={handlePreviousPage}
-            className="pagination-arrow"
-            disabled={page === 1}
-          >
+          <button onClick={handlePreviousPage} className="pagination-arrow" disabled={page === 1}>
             &lt;
           </button>
 
@@ -167,9 +157,7 @@ export default function SeeAllProjects() {
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index + 1}
-              className={`pagination-button ${
-                page === index + 1 ? "active" : ""
-              }`}
+              className={`pagination-button ${page === index + 1 ? "active" : ""}`}
               onClick={() => handlePageClick(index + 1)}
             >
               {index + 1}
@@ -177,11 +165,7 @@ export default function SeeAllProjects() {
           ))}
 
           {/* Next Page Button */}
-          <button
-            onClick={handleNextPage}
-            className="pagination-arrow"
-            disabled={isLastPage}
-          >
+          <button onClick={handleNextPage} className="pagination-arrow" disabled={isLastPage}>
             &gt;
           </button>
         </div>

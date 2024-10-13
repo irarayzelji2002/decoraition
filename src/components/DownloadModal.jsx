@@ -30,20 +30,13 @@ const DownloadModal = ({ isOpen, onClose }) => {
           alignItems: "center",
         }}
       >
-        <IconButton
-          onClick={onClose}
-          sx={{ color: "whitesmoke", marginRight: 1 }}
-        >
+        <IconButton onClick={onClose} sx={{ color: "whitesmoke", marginRight: 1 }}>
           <ArrowBackIcon />
         </IconButton>
         Download
       </DialogTitle>
-      <DialogContent
-        sx={{ backgroundColor: "var(--nav-card-modal)", color: "whitesmoke" }}
-      >
-        <Typography variant="body1">
-          Choose your download options and format.
-        </Typography>
+      <DialogContent sx={{ backgroundColor: "var(--nav-card-modal)", color: "whitesmoke" }}>
+        <Typography variant="body1">Choose your download options and format.</Typography>
       </DialogContent>
       <DialogActions sx={{ backgroundColor: "var(--nav-card-modal)" }}>
         {/* Download Button */}

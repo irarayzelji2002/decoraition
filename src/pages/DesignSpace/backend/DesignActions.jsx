@@ -15,13 +15,7 @@ export const handleContainerClick = (setClicked) => {
   setClicked((prev) => !prev); // Toggle clicked state
 };
 
-export const handleNameChange = async (
-  newName,
-  userId,
-  projectId,
-  designId,
-  setIsEditingName
-) => {
+export const handleNameChange = async (newName, userId, projectId, designId, setIsEditingName) => {
   if (newName.trim() === "") {
     alert("Design name cannot be empty");
     return;

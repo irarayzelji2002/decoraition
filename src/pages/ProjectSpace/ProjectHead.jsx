@@ -23,10 +23,7 @@ import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../../../server/firebase.js";
 import DrawerComponent from "../Homepage/DrawerComponent.jsx";
 import { useNavigate } from "react-router-dom";
-import {
-  useHandleNameChange,
-  useProjectDetails,
-} from "./backend/ProjectDetails";
+import { useHandleNameChange, useProjectDetails } from "./backend/ProjectDetails";
 import { useParams } from "react-router-dom";
 
 function ProjectHead({ designName, designId, setIsSidebarOpen }) {
@@ -34,8 +31,7 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] =
-    useState(false);
+  const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
   const [isCopyLinkModalOpen, setIsCopyLinkModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -65,12 +61,7 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
   const navigate = useNavigate();
 
   useProjectDetails(projectId, setUserId, setProjectData, setNewName);
-  const handleNameChange = useHandleNameChange(
-    newName,
-    userId,
-    projectId,
-    setIsEditingName
-  );
+  const handleNameChange = useHandleNameChange(newName, userId, projectId, setIsEditingName);
 
   const handleEditNameToggle = () => {
     setIsEditingName((prev) => !prev);
@@ -302,11 +293,7 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
               className="headTitleInput"
             />
           ) : (
-            <span
-              onClick={handleInputClick}
-              className="headTitleInput"
-              style={{ height: "20px" }}
-            >
+            <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
               {projectData?.name || "Untitled"}
             </span>
           )}
@@ -314,10 +301,7 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
       </div>
       <div className="right">
         <IconButton>
-          <ShareIcon
-            sx={{ color: "var(--color-white)" }}
-            onClick={handleOpenShareModal}
-          />
+          <ShareIcon sx={{ color: "var(--color-white)" }} onClick={handleOpenShareModal} />
         </IconButton>
         <IconButton onClick={handleClick}>
           <MoreVertIcon sx={{ color: "var(--color-white)" }} />
@@ -341,10 +325,7 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
               onOpenShareModal={handleOpenShareModal}
             />
           ) : isChangeModeMenuOpen ? (
-            <ChangeModeMenu
-              onClose={handleClose}
-              onBackToMenu={handleBackToMenu}
-            />
+            <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
           ) : (
             <DefaultMenu
               onClose={handleClose}
@@ -379,31 +360,16 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
         onClose={handleCloseShareConfirmationModal}
         collaborators={collaborators}
       />
-      <CopyLinkModal
-        isOpen={isCopyLinkModalOpen}
-        onClose={handleCloseCopyLinkModal}
-      />
+      <CopyLinkModal isOpen={isCopyLinkModalOpen} onClose={handleCloseCopyLinkModal} />
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onDelete={handleDelete}
       />
-      <DownloadModal
-        isOpen={isDownloadModalOpen}
-        onClose={handleCloseDownloadModal}
-      />
-      <RenameModal
-        isOpen={isRenameModalOpen}
-        onClose={handleCloseRenameModal}
-      />
-      <RestoreModal
-        isOpen={isRestoreModalOpen}
-        onClose={handleCloseRestoreModal}
-      />
-      <MakeCopyModal
-        isOpen={isMakeCopyModalOpen}
-        onClose={handleCloseMakeCopyModal}
-      />
+      <DownloadModal isOpen={isDownloadModalOpen} onClose={handleCloseDownloadModal} />
+      <RenameModal isOpen={isRenameModalOpen} onClose={handleCloseRenameModal} />
+      <RestoreModal isOpen={isRestoreModalOpen} onClose={handleCloseRestoreModal} />
+      <MakeCopyModal isOpen={isMakeCopyModalOpen} onClose={handleCloseMakeCopyModal} />
       <InfoModal isOpen={isInfoModalOpen} onClose={handleCloseInfoModal} />
     </div>
   );

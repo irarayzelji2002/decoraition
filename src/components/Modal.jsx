@@ -13,10 +13,7 @@ const ModalContent = styled("div")(({ theme }) => ({
 const Modal = ({ onClose, content }) => {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <ModalContent
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <ModalContent className="modal-content" onClick={(e) => e.stopPropagation()}>
         {content}
       </ModalContent>
     </div>

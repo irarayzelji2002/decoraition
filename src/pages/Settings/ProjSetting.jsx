@@ -26,12 +26,11 @@ const SettingsContent = ({
   notifyDays,
   setNotifyDays,
   isProjectTab, // New prop to control whether it's the Project tab or Timeline tab
+  ...sharedProps
 }) => (
   <>
     {/* General Access */}
-    <Typography sx={{ fontWeight: "bold", marginBottom: 2 }}>
-      General access
-    </Typography>
+    <Typography sx={{ fontWeight: "bold", marginBottom: 2 }}>General access</Typography>
     <Box sx={{ display: "flex", alignItems: "center", marginBottom: 3 }}>
       <Box
         sx={{
@@ -64,9 +63,7 @@ const SettingsContent = ({
     </Box>
 
     {/* Viewer Settings */}
-    <Typography sx={{ fontWeight: "bold", marginBottom: 2 }}>
-      Viewer settings
-    </Typography>
+    <Typography sx={{ fontWeight: "bold", marginBottom: 2 }}>Viewer settings</Typography>
     <FormControlLabel
       control={
         <Switch
@@ -114,9 +111,7 @@ const SettingsContent = ({
         {inactivityEnabled && (
           <>
             <Box sx={{ marginBottom: 2 }}>
-              <Typography>
-                Number of days before inactivity after user inactivity
-              </Typography>
+              <Typography>Number of days before inactivity after user inactivity</Typography>
               <TextField
                 type="number"
                 value={inactivityDays}
@@ -132,9 +127,7 @@ const SettingsContent = ({
             </Box>
 
             <Box sx={{ marginBottom: 2 }}>
-              <Typography>
-                Number of days before deletion after project inactivity
-              </Typography>
+              <Typography>Number of days before deletion after project inactivity</Typography>
               <TextField
                 type="number"
                 value={deletionDays}
@@ -151,8 +144,7 @@ const SettingsContent = ({
 
             <Box sx={{ marginBottom: 2 }}>
               <Typography>
-                Notify collaborators number of days prior to entering inactivity
-                mode and deletion
+                Notify collaborators number of days prior to entering inactivity mode and deletion
               </Typography>
               <TextField
                 type="number"
@@ -258,9 +250,7 @@ const ProjSetting = () => {
           />
         )}
 
-        {(activeTab === "Timeline" ||
-          activeTab === "Plan Map" ||
-          activeTab === "Budget") && (
+        {(activeTab === "Timeline" || activeTab === "Plan Map" || activeTab === "Budget") && (
           <SettingsContent
             generalAccess={generalAccess}
             setGeneralAccess={setGeneralAccess}

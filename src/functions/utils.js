@@ -1,5 +1,10 @@
+import { toast } from "react-toastify";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import InfoIcon from "@mui/icons-material/Info";
+
 // SET ERRORS
-const handleSetError = (variable, message, errors, setErrors) => {
+export const handleSetError = (variable, message, errors, setErrors) => {
   const index = errors.findIndex((field) => {
     return field.field === variable.toString();
   });
@@ -15,26 +20,22 @@ const handleSetError = (variable, message, errors, setErrors) => {
 };
 
 // CHECK IF ERROR
-const getHasError = (variable, errors) => {
-  const index = errors.findIndex(
-    (field) => field.field === variable.toString()
-  );
+export const getHasError = (variable, errors) => {
+  const index = errors.findIndex((field) => field.field === variable.toString());
   if (index !== -1) {
     return errors[index].hasError;
   }
 };
 
 // GET ERROR MESSAGE
-const getErrMessage = (variable, errors) => {
-  const index = errors.findIndex(
-    (field) => field.field === variable.toString()
-  );
+export const getErrMessage = (variable, errors) => {
+  const index = errors.findIndex((field) => field.field === variable.toString());
   if (index !== -1) {
     return errors[index].errMessage;
   }
 };
 
-const stringAvatar = (passedname) => {
+export const stringAvatar = (passedname) => {
   let name = "";
   let initials = "";
   let bgColor = "#ff6262";
@@ -45,10 +46,7 @@ const stringAvatar = (passedname) => {
   } else {
     name = passedname;
     const nameParts = name.split(" ");
-    initials =
-      nameParts.length > 1
-        ? `${nameParts[0][0]}${nameParts[1][0]}`
-        : `${nameParts[0][0]}`;
+    initials = nameParts.length > 1 ? `${nameParts[0][0]}${nameParts[1][0]}` : `${nameParts[0][0]}`;
     bgColor = stringToColor(name);
   }
 
@@ -61,7 +59,7 @@ const stringAvatar = (passedname) => {
   };
 };
 
-const stringToColor = (string) => {
+export const stringToColor = (string) => {
   let hash = 0;
   let i;
 
@@ -86,7 +84,7 @@ const stringToColor = (string) => {
 };
 
 // black and white
-const getTextColor = (backgroundColor) => {
+export const getTextColor = (backgroundColor) => {
   const hex = backgroundColor.replace("#", "");
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
@@ -103,7 +101,7 @@ const getTextColor = (backgroundColor) => {
   }
 };
 
-const getContrastingTextColor = (backgroundColor) => {
+export const getContrastingTextColor = (backgroundColor) => {
   const hex = backgroundColor.replace("#", "");
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
@@ -120,7 +118,7 @@ const getContrastingTextColor = (backgroundColor) => {
   }
 };
 
-const shadeColor = (color, percent) => {
+export const shadeColor = (color, percent) => {
   const f = parseInt(color.slice(1), 16);
   const t = percent < 0 ? 0 : 255;
   const p = percent < 0 ? percent * -1 : percent;
@@ -140,10 +138,52 @@ const shadeColor = (color, percent) => {
   );
 };
 
-export {
-  stringAvatar,
-  stringToColor,
-  handleSetError,
-  getHasError,
-  getErrMessage,
+export const showToast = (
+  type,
+  message,
+  {
+    icon,
+    style = {
+      color: "var(--color-white)",
+      backgroundColor: "var(--inputBg)",
+    },
+    progressStyle = {
+      backgroundColor: "var(--brightFont)",
+    },
+    position = toast.POSITION.TOP_RIGHT,
+    autoClose = 3000,
+    hideProgressBar = false,
+    closeOnClick = true,
+    pauseOnHover = true,
+    draggable = true,
+  } = {}
+) => {
+  const toastOptions = {
+    position,
+    autoClose,
+    hideProgressBar,
+    closeOnClick,
+    pauseOnHover,
+    draggable,
+    icon,
+    style,
+    progressStyle,
+  };
+
+  switch (type) {
+    case "success":
+      toastOptions.icon = CheckCircleIcon;
+      toast.success(message, toastOptions);
+      break;
+    case "error":
+      toastOptions.icon = ErrorIcon;
+      toast.error(message, toastOptions);
+      break;
+    case "info":
+      toastOptions.icon = InfoIcon;
+      toast.info(message, toastOptions);
+      break;
+    default:
+      toast(message, toastOptions);
+  }
 };

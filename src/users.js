@@ -3,7 +3,7 @@ import "./App.css";
 import "./css/loginModal.css";
 // import Login from "./pages/Account/login.js";
 
-export default function Users() {
+export default function Users({ ...sharedProps }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [backendData, setBackendData] = useState({});
@@ -31,10 +31,7 @@ export default function Users() {
     window.dispatchEvent(new Event("beforeinstallprompt"));
 
     return () => {
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt
-      );
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
   }, []);
 
@@ -66,9 +63,7 @@ export default function Users() {
       ) : (
         backendData.users.map((user, i) => <p key={i}>{user}</p>)
       )}
-      {showInstallPrompt && (
-        <button onClick={handleInstallClick}>Add to Home Screen</button>
-      )}
+      {showInstallPrompt && <button onClick={handleInstallClick}>Add to Home Screen</button>}
     </div>
   );
 }

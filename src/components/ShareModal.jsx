@@ -82,23 +82,19 @@ const ShareModal = ({
                   "& .MuiOutlinedInput-notchedOutline": {
                     borderColor: "transparent", // Border color
                   },
-                  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-                    {
-                      borderColor: "transparent", // Hover border color
-                    },
-                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                    {
-                      borderColor: "transparent", // Focused border color
-                    },
+                  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "transparent", // Hover border color
+                  },
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "transparent", // Focused border color
+                  },
                 }}
               >
                 <MenuItem value="Editor">Editor</MenuItem>
                 <MenuItem value="Commenter">Commenter</MenuItem>
                 <MenuItem value="Viewer">Viewer</MenuItem>
               </Select>
-              <p style={{ color: "whitesmoke", marginLeft: "auto" }}>
-                Notify People
-              </p>
+              <p style={{ color: "whitesmoke", marginLeft: "auto" }}>Notify People</p>
               <Checkbox
                 checked={notifyPeople}
                 onChange={(e) => setNotifyPeople(e.target.checked)}
@@ -133,8 +129,7 @@ const ShareModal = ({
         ) : (
           <div>
             <Typography variant="body1" sx={{ marginBottom: "16px" }}>
-              Assign roles and choose notification settings for the added
-              collaborators.
+              Assign roles and choose notification settings for the added collaborators.
             </Typography>
 
             {collaborators.map((collaborator, index) => (
@@ -161,10 +156,7 @@ const ShareModal = ({
                   onChange={() => setNotifyPeople(!notifyPeople)}
                   sx={{ color: "whitesmoke" }} // Checkbox color
                 />
-                <Typography
-                  variant="body2"
-                  sx={{ display: "inline", color: "whitesmoke" }}
-                >
+                <Typography variant="body2" sx={{ display: "inline", color: "whitesmoke" }}>
                   Notify
                 </Typography>
               </div>

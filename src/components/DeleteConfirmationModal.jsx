@@ -48,8 +48,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onDelete }) => {
         }}
       >
         <Typography variant="body1">
-          Are you sure you want to delete this item? This action cannot be
-          undone.
+          Are you sure you want to delete this item? This action cannot be undone.
         </Typography>
       </DialogContent>
       <DialogActions

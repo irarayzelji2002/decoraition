@@ -14,7 +14,7 @@ import "../../css/seeAll.css";
 import "../../css/budget.css";
 import { ToastContainer } from "react-toastify";
 
-function PlanMap() {
+function PlanMap({ ...sharedProps }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { projectId } = useParams();
 
@@ -74,10 +74,7 @@ function PlanMap() {
             </div>
           </div>
         )}
-        <div
-          className={`circle-button ${menuOpen ? "rotate" : ""}`}
-          onClick={toggleMenu}
-        >
+        <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
           {menuOpen ? <CloseIcon /> : <AddIcon />}
         </div>
       </div>

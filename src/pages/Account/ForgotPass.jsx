@@ -45,12 +45,7 @@ export default function ForgotPass1() {
             alignItems: "center",
           }}
         >
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ mt: 1 }}
-          >
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <span className="formLabels">Email Address</span>
             <TextField
               required
@@ -97,8 +92,7 @@ export default function ForgotPass1() {
               sx={{
                 mt: 3,
                 mb: 2,
-                backgroundImage:
-                  "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
+                backgroundImage: "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
                 borderRadius: "20px",
                 textTransform: "none",
                 fontWeight: "bold",

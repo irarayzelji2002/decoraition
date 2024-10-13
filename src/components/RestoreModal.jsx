@@ -30,20 +30,13 @@ const RestoreModal = ({ isOpen, onClose }) => {
           alignItems: "center",
         }}
       >
-        <IconButton
-          onClick={onClose}
-          sx={{ color: "whitesmoke", marginRight: 1 }}
-        >
+        <IconButton onClick={onClose} sx={{ color: "whitesmoke", marginRight: 1 }}>
           <ArrowBackIcon />
         </IconButton>
         Restore
       </DialogTitle>
-      <DialogContent
-        sx={{ backgroundColor: "var(  --nav-card-modal)", color: "whitesmoke" }}
-      >
-        <Typography variant="body1">
-          Are you sure you want to restore this item?
-        </Typography>
+      <DialogContent sx={{ backgroundColor: "var(  --nav-card-modal)", color: "whitesmoke" }}>
+        <Typography variant="body1">Are you sure you want to restore this item?</Typography>
       </DialogContent>
       <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)" }}>
         {/* Restore Button */}

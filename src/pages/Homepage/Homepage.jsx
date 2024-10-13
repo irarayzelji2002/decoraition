@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../../firebase";
 import { useNavigate, Link } from "react-router-dom";
+import {
+  handleCreateDesign,
+  handleCreateProject,
+  handleDeleteDesign,
+  handleDeleteProject,
+  toggleMenu,
+  formatDate,
+} from "./backend/HomepageActions";
 
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -15,50 +21,26 @@ import "../../css/homepage.css";
 import "../../css/design.css";
 import ProjectIcon from "./svg/ProjectIcon.jsx";
 import DesignSvg from "./svg/DesignSvg.jsx";
-import {
-  fetchUserData,
-  fetchDesigns,
-  fetchProjects,
-  handleCreateDesign,
-  handleCreateProject,
-  handleDeleteDesign,
-  toggleMenu,
-  formatDate,
-} from "./backend/HomepageActions.jsx";
 import Loading from "../../components/Loading.jsx";
 
-function Homepage() {
-  const [user, setUser] = useState(null);
-  const [username, setUsername] = useState("");
-  const [designs, setDesigns] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
-
-  const [menuOpen, setMenuOpen] = useState(false);
+function Homepage({ ...sharedProps }) {
   const navigate = useNavigate();
+
+  const user = sharedProps.user;
+  const designs = sharedProps.designs;
+  const setDesigns = sharedProps.setDesigns;
+  const projects = sharedProps.projects;
+  const setProjects = sharedProps.setProjects;
+
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredDesigns, setFilteredDesigns] = useState([]);
 
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const handleAuthChange = async (user) => {
-      if (user) {
-        setUser(user);
-        await fetchUserData(user, setUsername, setUser);
-        await fetchDesigns(user.uid, setDesigns);
-        await fetchProjects(user.uid, setProjects);
-      } else {
-        setUser(null);
-        setDesigns([]);
-        setProjects([]);
-      }
-      setLoading(false);
-    };
-
-    const unsubscribeAuth = onAuthStateChanged(auth, handleAuthChange);
-
-    return () => unsubscribeAuth();
-  }, []);
+  const handleCreateDesignClick = () => handleCreateDesign(user.uid, navigate);
+  const handleCreateProjectClick = () => handleCreateProject(user.uid, navigate);
+  const handleDeleteDesignClick = (designId) => handleDeleteDesign(designId, setDesigns);
+  const handleDeleteProjectClick = (projectId) => handleDeleteProject(projectId, setProjects);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -71,27 +53,15 @@ function Homepage() {
     }
   }, [searchQuery, designs]);
 
-  if (loading) {
-    return (
-      <>
-        <Loading />
-      </>
-    );
-  }
-
   return (
     <div className={`homepage ${menuOpen ? "darkened" : ""}`}>
       <ToastContainer />
       {menuOpen && (
-        <div
-          className="overlay"
-          onClick={() => toggleMenu(menuOpen, setMenuOpen)}
-        ></div>
+        <div className="overlay" onClick={() => toggleMenu(menuOpen, setMenuOpen)}></div>
       )}
 
       <SearchAppBar
         user={user}
-        username={username}
         onMenuClick={() => setDrawerOpen(true)}
         onSearchChange={setSearchQuery}
       />
@@ -151,7 +121,9 @@ function Homepage() {
                       onDelete={() => handleDeleteDesign(design.id, setDesigns)}
                       onOpen={() =>
                         navigate(`/design/${design.id}`, {
-                          state: { designId: design.id },
+                          state: {
+                            designId: design.id,
+                          },
                         })
                       }
                     />
@@ -171,11 +143,7 @@ function Homepage() {
             <div className="separator">
               <DesignSvg />
               <h2>Recent Designs</h2>{" "}
-              <Link
-                to="/seeAllDesigns"
-                className="seeAll"
-                style={{ marginLeft: "auto" }}
-              >
+              <Link to="/seeAllDesigns" className="seeAll" style={{ marginLeft: "auto" }}>
                 See All
               </Link>
             </div>
@@ -211,11 +179,7 @@ function Homepage() {
             <div className="separator">
               <ProjectIcon />
               <h2>Recent Projects</h2>{" "}
-              <Link
-                to="/seeAllProjects"
-                className="seeAll"
-                style={{ marginLeft: "auto" }}
-              >
+              <Link to="/seeAllProjects" className="seeAll" style={{ marginLeft: "auto" }}>
                 See All
               </Link>
             </div>
@@ -231,7 +195,9 @@ function Homepage() {
                     onDelete={() => handleDeleteDesign(project.id, setProjects)}
                     onOpen={() =>
                       navigate(`/project/${project.id}`, {
-                        state: { projectId: project.id },
+                        state: {
+                          projectId: project.id,
+                        },
                       })
                     }
                   />

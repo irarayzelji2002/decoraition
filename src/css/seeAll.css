@@ -71,7 +71,9 @@
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
   border: 2px solid transparent;
   background-image: var(--darkGradient), var(--gradientButton);
   background-origin: border-box;
@@ -97,7 +99,9 @@
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 
   border: 2px solid transparent;
   background-image: var(--darkGradient), var(--gradientButton);

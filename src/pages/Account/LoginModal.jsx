@@ -76,11 +76,7 @@ export default function LoginModal() {
 
     try {
       await setPersistence(auth, browserLocalPersistence); // Set persistence here
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       toast.success("You have been logged in", {
         position: "top-right",
         autoClose: 3000,

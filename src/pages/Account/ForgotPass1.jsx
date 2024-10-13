@@ -1,7 +1,7 @@
 import ForgotPass1 from "./ForgotPass";
 import "../../css/forgotPass.css";
 
-export default function ForgotPass() {
+export default function ForgotPass({ ...beforeLoginSharedProps }) {
   return (
     <div className="bg-login">
       <div className="headtext">

@@ -78,18 +78,14 @@ const Signup = () => {
     if (!lastName) formErrors.lastName = "Last name is required";
     if (!username) formErrors.username = "Username is required";
     if (!email) formErrors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      formErrors.email = "Invalid email format";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) formErrors.email = "Invalid email format";
     if (!password) formErrors.password = "Password is required";
     else if (password.length < 6)
       formErrors.password = "Password must be at least 6 characters long";
     else if (!/[!@#$%^&*]/.test(password))
-      formErrors.password =
-        "Password must contain at least 1 special character";
-    if (!confirmPassword)
-      formErrors.confirmPassword = "Please confirm your password";
-    else if (password !== confirmPassword)
-      formErrors.confirmPassword = "Passwords do not match";
+      formErrors.password = "Password must contain at least 1 special character";
+    if (!confirmPassword) formErrors.confirmPassword = "Please confirm your password";
+    else if (password !== confirmPassword) formErrors.confirmPassword = "Passwords do not match";
 
     return formErrors;
   };
@@ -104,11 +100,7 @@ const Signup = () => {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       await setDoc(doc(db, "users", user.uid), {
@@ -126,12 +118,8 @@ const Signup = () => {
       console.log(errorCode, errorMessage);
 
       setErrors({
-        email:
-          errorCode === "auth/email-already-in-use"
-            ? "Email already in use"
-            : "",
-        password:
-          errorCode === "auth/weak-password" ? "Password is too weak" : "",
+        email: errorCode === "auth/email-already-in-use" ? "Email already in use" : "",
+        password: errorCode === "auth/weak-password" ? "Password is too weak" : "",
       });
     }
   };

@@ -26,7 +26,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { db } from "../../firebase";
 
-function Settings() {
+function Settings({ ...sharedProps }) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef(null); // Reference for the file input\
@@ -171,16 +171,8 @@ function Settings() {
           },
         }}
       >
-        <Tab
-          label="Account"
-          className="tab-label"
-          style={{ textTransform: "none" }}
-        />
-        <Tab
-          label="Notification"
-          className="tab-label"
-          style={{ textTransform: "none" }}
-        />
+        <Tab label="Account" className="tab-label" style={{ textTransform: "none" }} />
+        <Tab label="Notification" className="tab-label" style={{ textTransform: "none" }} />
       </Tabs>
       <div className="settings-container">
         {/* App Bar for Tabs */}
@@ -188,10 +180,7 @@ function Settings() {
         {/* Account Tab Content */}
         {selectedTab === 0 && (
           <Box mt={4} className="tab-content" sx={{ maxWidth: "1200px" }}>
-            <div
-              className="avatar-container"
-              style={{ display: "flex", alignItems: "center" }}
-            >
+            <div className="avatar-container" style={{ display: "flex", alignItems: "center" }}>
               <Avatar
                 alt="User Avatar"
                 src={avatarPreview || ""} // Use avatarPreview as the source
@@ -316,9 +305,7 @@ function Settings() {
                 readOnly: true,
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => console.log("Edit linked account")}
-                    >
+                    <IconButton onClick={() => console.log("Edit linked account")}>
                       <EditIcon sx={{ color: "#FF894D" }} />
                     </IconButton>
                   </InputAdornment>

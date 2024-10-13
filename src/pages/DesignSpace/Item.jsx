@@ -35,13 +35,8 @@ function Item({ item, onDelete, onEdit }) {
   const handleCloseDelete = () => setOpenDelete(false);
 
   return (
-    <div
-      className="itemSpace"
-      style={{ display: "flex", flexDirection: "row" }}
-    >
-      <ToastContainer
-        progressStyle={{ backgroundColor: "var(--brightFont)" }}
-      />
+    <div className="itemSpace" style={{ display: "flex", flexDirection: "row" }}>
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <Modal
         open={open}
         onClose={handleClose}
@@ -50,26 +45,14 @@ function Item({ item, onDelete, onEdit }) {
       >
         <Box sx={style}>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
-              style={{ display: "flex", marginBottom: "12px", margin: "18px" }}
-            >
-              <span
-                id="modal-modal-title"
-                style={{ fontSize: "18px", fontWeight: "600" }}
-              >
+            <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
+              <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
                 Edit Budget
               </span>{" "}
-              <CloseIcon
-                sx={{ marginLeft: "auto" }}
-                onClick={handleClose}
-                cursor={"pointer"}
-              />
+              <CloseIcon sx={{ marginLeft: "auto" }} onClick={handleClose} cursor={"pointer"} />
             </div>
             <Divider sx={{ borderColor: "var(--color-grey)" }} />
-            <div
-              className="input-group"
-              style={{ marginTop: "12px", margin: "18px" }}
-            >
+            <div className="input-group" style={{ marginTop: "12px", margin: "18px" }}>
               <div className="price-quantity-section">
                 <select
                   style={{
@@ -121,13 +104,8 @@ function Item({ item, onDelete, onEdit }) {
       >
         <Box sx={style}>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
-              style={{ display: "flex", marginBottom: "12px", margin: "18px" }}
-            >
-              <span
-                id="modal-modal-title"
-                style={{ fontSize: "18px", fontWeight: "600" }}
-              >
+            <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
+              <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
                 Confirm Budget Removal
               </span>
               <CloseIcon
@@ -154,8 +132,7 @@ function Item({ item, onDelete, onEdit }) {
                 style={{
                   background: "transparent",
                   border: "2px solid transparent",
-                  backgroundImage:
-                    " var(--darkGradient), var(--gradientButton)",
+                  backgroundImage: " var(--darkGradient), var(--gradientButton)",
                   backgroundOrigin: "border-box",
                   backgroundClip: " padding-box, border-box",
                 }}
@@ -179,11 +156,7 @@ function Item({ item, onDelete, onEdit }) {
       >
         <span style={{ fontSize: "12px" }}> x {item.quantity}</span>
       </div>
-      <img
-        src="../../img/Room2.jpg"
-        alt={`design preview `}
-        className="thumbnail"
-      />
+      <img src="../../img/Room2.jpg" alt={`design preview `} className="thumbnail" />
       <div
         style={{
           display: "flex",

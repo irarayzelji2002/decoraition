@@ -1,7 +1,7 @@
 import LoginModal from "./LoginModal.jsx";
 import "../../css/loginModal.css";
 
-export default function Login() {
+export default function Login({ ...beforeLoginSharedProps }) {
   return (
     <div className="bg-login">
       <div className="headtext">

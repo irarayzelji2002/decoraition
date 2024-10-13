@@ -1,7 +1,7 @@
 import Signup from "../../components/Signup";
 import "../../css/registerModal.css";
 
-export default function Register() {
+export default function Register({ ...beforeLoginSharedProps }) {
   return (
     <div className="bg-login">
       <div className="headtext">

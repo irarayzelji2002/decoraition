@@ -1,23 +1,33 @@
 require("dotenv").config(); // Load environment variables from .env file
 const express = require("express");
-const path = require("path");
+const cors = require("cors");
 const multer = require("multer");
-const { initializeApp } = require("firebase/app");
-const {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-} = require("firebase/auth");
-const { getFirestore, doc, setDoc } = require("firebase/firestore");
-const firebaseConfig = require("./firebaseConfig"); // Adjust the path as needed
+const path = require("path");
+const apiRoutes = require("./routes/api");
+const admin = require("firebase-admin");
+const WebSocket = require("ws");
 
+const { initializeApp } = require("firebase/app");
+const { getAuth, signInWithPopup, GoogleAuthProvider } = require("firebase/auth");
+const { getFirestore, doc, setDoc } = require("firebase/firestore");
+const firebaseConfig = require("./firebaseConfig");
+
+// Middleware
 const app = express();
-app.use(express.json()); // To parse JSON bodies
+app.use(cors());
+app.use(express.json());
+
+// API routes
+app.use("/api", apiRoutes);
 
 // Initialize Firebase app
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
+// const firebaseApp = initializeApp(firebaseConfig);
+// const auth = getAuth(firebaseApp);
+// const db = getFirestore(firebaseApp);
+// Initialize Firebase Admin SDK
+admin.initializeApp(firebaseConfig);
+const auth = admin.auth();
+const db = admin.firestore();
 
 // Middleware to handle CORS
 app.use((req, res, next) => {
@@ -35,6 +45,53 @@ app.get("/service-worker.js", (req, res) => {
   res.sendFile(path.join(__dirname, "build", "service-worker.js"));
 });
 
+// WebSocket server for real-time updates
+const wss = new WebSocket.Server({ server: app.listen(5000) });
+
+wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    const { collections, userId } = JSON.parse(message);
+    if (userId) {
+      // Verify the user's authentication status
+      admin
+        .auth()
+        .getUser(userId)
+        .then((userRecord) => {
+          console.log("User is authenticated:", userRecord.uid);
+          setupCollectionListeners(ws, collections);
+        })
+        .catch((error) => {
+          console.error("Error verifying user:", error);
+          ws.send(JSON.stringify({ error: "Authentication failed" }));
+        });
+    } else {
+      console.log("No user ID provided");
+      ws.send(JSON.stringify({ error: "No user ID provided" }));
+    }
+  });
+});
+
+function setupCollectionListeners(ws, collections) {
+  collections.forEach((collectionName) => {
+    const unsubscribe = db.collection(collectionName).onSnapshot(
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        ws.send(JSON.stringify({ collection: collectionName, data }));
+      },
+      (error) => {
+        console.error(`Snapshot listener error for ${collectionName}:`, error);
+      }
+    );
+
+    ws.on("close", () => {
+      unsubscribe();
+    });
+  });
+}
+
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -42,8 +99,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const originalName = file.originalname.replace(/ /g, "-");
-    const uniqueFilename =
-      Date.now() + "-" + generateRandomString(8) + "-" + originalName;
+    const uniqueFilename = Date.now() + "-" + generateRandomString(8) + "-" + originalName;
     cb(null, uniqueFilename);
   },
 });
@@ -57,8 +113,7 @@ app.post("/upload", upload.single("file"), (req, res) => {
 
 // Function to generate a random string
 function generateRandomString(length) {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
   const charactersLength = characters.length;
   for (let i = 0; i < length; i++) {
@@ -88,7 +143,9 @@ app.post("/api/google-login", async (req, res) => {
     res.status(200).json({ message: "You have been logged in" });
   } catch (error) {
     console.error("Google login error", error);
-    res.status(500).json({ message: "Google login failed. Please try again." });
+    res.status(500).json({
+      message: "Google login failed. Please try again.",
+    });
   }
 });
 

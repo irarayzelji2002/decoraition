@@ -8,7 +8,7 @@ import { collection, addDoc, getDocs } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 
-const AddItem = () => {
+const AddItem = ({ ...sharedProps }) => {
   const [itemQuantity, setItemQuantity] = useState(1);
   const [image, setImage] = useState(null);
   const { designId, projectId } = useParams();
@@ -104,9 +104,7 @@ const AddItem = () => {
   return (
     <>
       <TopBar state={"Add Item"} />
-      <ToastContainer
-        progressStyle={{ backgroundColor: "var(--brightFont)" }}
-      />
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <div className="add-item-container">
         <div className="left-column">
           <div className="search-section">
@@ -166,15 +164,9 @@ const AddItem = () => {
             </div>
 
             <div className="quantity-section">
-              <button
-                onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
-              >
-                &lt;
-              </button>
+              <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}>&lt;</button>
               <span>{itemQuantity}</span>
-              <button onClick={() => setItemQuantity(itemQuantity + 1)}>
-                &gt;
-              </button>
+              <button onClick={() => setItemQuantity(itemQuantity + 1)}>&gt;</button>
             </div>
 
             {/* Add Item Button */}

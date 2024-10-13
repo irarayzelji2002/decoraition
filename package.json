@@ -1,88 +1,88 @@
 {
-	"name": "decoraition",
-	"version": "0.1.0",
-	"proxy": "http://localhost:5000",
-	"allowedHosts": [
-		"localhost",
-		".localhost",
-		"127.0.0.1"
-	],
-	"private": true,
-	"dependencies": {
-		"@emotion/react": "^11.13.3",
-		"@emotion/styled": "^11.13.0",
-		"@mui/base": "^5.0.0-beta.40",
-		"@mui/icons-material": "^5.16.7",
-		"@mui/joy": "^5.0.0-beta.48",
-		"@mui/material": "^5.16.7",
-		"@testing-library/jest-dom": "^5.17.0",
-		"@testing-library/react": "^13.4.0",
-		"@testing-library/user-event": "^13.5.0",
-		"axios": "^1.7.7",
-		"concurrently": "^8.2.2",
-		"cors": "^2.8.5",
-		"cross-env": "^7.0.3",
-		"customize-cra": "^1.0.0",
-		"dotenv": "^16.4.5",
-		"env-cmd": "^10.1.0",
-		"firebase": "^10.13.1",
-		"firebase-admin": "^12.4.0",
-		"mui-color-input": "^4.0.0",
-		"react": "^18.3.1",
-		"react-app-rewired": "^2.2.1",
-		"react-calendar": "^5.0.0",
-		"react-dom": "^18.3.1",
-		"react-icons": "^5.3.0",
-		"react-pwa": "^0.0.1",
-		"react-router-dom": "^6.26.1",
-		"react-scripts": "5.0.1",
-		"react-toastify": "^10.0.5",
-		"web-vitals": "^2.1.4",
-		"workbox-background-sync": "^6.6.0",
-		"workbox-broadcast-update": "^6.6.0",
-		"workbox-cacheable-response": "^6.6.0",
-		"workbox-core": "^6.6.0",
-		"workbox-expiration": "^6.6.0",
-		"workbox-google-analytics": "^6.6.1",
-		"workbox-navigation-preload": "^6.6.0",
-		"workbox-precaching": "^6.6.0",
-		"workbox-range-requests": "^6.6.0",
-		"workbox-routing": "^6.6.0",
-		"workbox-strategies": "^6.6.0",
-		"workbox-streams": "^6.6.0"
-	},
-	"scripts": {
-		"start": "concurrently \"npm run server\" \"npm run react\"",
-		"react": "env-cmd -f ./.env react-app-rewired start",
-		"server": "cd server && npm run dev",
-		"build": "npm run react:build && npm run move:build",
-		"react:build": "cross-env RENDER=$env:RENDER node -e \"if (process.env.RENDER === \\'true\\') { require(\\'child_process\\').execSync(\\'react-app-rewired build\\', { stdio: \\'inherit\\' }); } else { require(\\'child_process\\').execSync(\\'env-cmd -f ./.env react-app-rewired build\\', { stdio: \\'inherit\\' }); }\"",
-		"move:build": "move build .\\server\\build",
-		"test": "concurrently \"npm run server:test\" \"npm run react:test\"",
-		"react:test": "env-cmd -f ./.env react-app-rewired test",
-		"server:test": "cd server && npm test",
-		"eject": "react-scripts eject"
-	},
-	"eslintConfig": {
-		"extends": [
-			"react-app",
-			"react-app/jest"
-		]
-	},
-	"browserslist": {
-		"production": [
-			">0.2%",
-			"not dead",
-			"not op_mini all"
-		],
-		"development": [
-			"last 1 chrome version",
-			"last 1 firefox version",
-			"last 1 safari version"
-		]
-	},
-	"devDependencies": {
-		"@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-		"nodemon": "^3.1.4"
-	}
+  "name": "decoraition",
+  "version": "0.1.0",
+  "proxy": "http://localhost:5000",
+  "allowedHosts": [
+    "localhost",
+    ".localhost",
+    "127.0.0.1"
+  ],
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/base": "^5.0.0-beta.40",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/joy": "^5.0.0-beta.48",
+    "@mui/material": "^5.16.7",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.7",
+    "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "customize-cra": "^1.0.0",
+    "dotenv": "^16.4.5",
+    "env-cmd": "^10.1.0",
+    "firebase": "^10.13.1",
+    "firebase-admin": "^12.4.0",
+    "mui-color-input": "^4.0.0",
+    "react": "^18.3.1",
+    "react-app-rewired": "^2.2.1",
+    "react-calendar": "^5.0.0",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
+    "react-pwa": "^0.0.1",
+    "react-router-dom": "^6.26.1",
+    "react-scripts": "5.0.1",
+    "react-toastify": "^10.0.5",
+    "web-vitals": "^2.1.4",
+    "workbox-background-sync": "^6.6.0",
+    "workbox-broadcast-update": "^6.6.0",
+    "workbox-cacheable-response": "^6.6.0",
+    "workbox-core": "^6.6.0",
+    "workbox-expiration": "^6.6.0",
+    "workbox-google-analytics": "^6.6.1",
+    "workbox-navigation-preload": "^6.6.0",
+    "workbox-precaching": "^6.6.0",
+    "workbox-range-requests": "^6.6.0",
+    "workbox-routing": "^6.6.0",
+    "workbox-strategies": "^6.6.0",
+    "workbox-streams": "^6.6.0"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run react\"",
+    "react": "env-cmd -f ./.env react-app-rewired start",
+    "server": "cd server && npm run dev",
+    "build": "npm run react:build && npm run move:build",
+    "react:build": "cross-env RENDER=$env:RENDER node -e \"if (process.env.RENDER === \\'true\\') { require(\\'child_process\\').execSync(\\'react-app-rewired build\\', { stdio: \\'inherit\\' }); } else { require(\\'child_process\\').execSync(\\'env-cmd -f ./.env react-app-rewired build\\', { stdio: \\'inherit\\' }); }\"",
+    "move:build": "move build .\\server\\build",
+    "test": "concurrently \"npm run server:test\" \"npm run react:test\"",
+    "react:test": "env-cmd -f ./.env react-app-rewired test",
+    "server:test": "cd server && npm test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "nodemon": "^3.1.4"
+  }
 }

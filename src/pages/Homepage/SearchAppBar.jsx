@@ -85,10 +85,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
           </IconButton>
 
           <Drawer anchor="left" open={isDrawerOpen} onClose={handleDrawerClose}>
-            <DrawerComponent
-              isDrawerOpen={isDrawerOpen}
-              onClose={handleDrawerClose}
-            />
+            <DrawerComponent isDrawerOpen={isDrawerOpen} onClose={handleDrawerClose} />
           </Drawer>
 
           <Paper

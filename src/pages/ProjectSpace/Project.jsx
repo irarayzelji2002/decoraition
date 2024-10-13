@@ -20,44 +20,36 @@ import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import {
-  fetchDesigns,
-  handleCreateDesign,
-  handleDeleteDesign,
-} from "./backend/ProjectDetails";
+import { fetchDesigns, handleCreateDesign, handleDeleteDesign } from "./backend/ProjectDetails";
+import { handleDeleteProject } from "../Homepage/backend/HomepageActions";
 
-function Project() {
+function Project({ ...sharedProps }) {
+  const navigate = useNavigate();
+  const { projectId } = useParams();
+
+  const user = sharedProps.user;
+  const userId = user.uid;
+  const projects = sharedProps.projects;
+  const project = projects.find((p) => p.id === projectId);
+  const setProjects = sharedProps.setProjects;
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
-  const { projectId } = useParams();
   const [newName, setNewName] = useState("");
-  const [userId, setUserId] = useState(null);
   const [projectData, setProjectData] = useState(null);
-  const [designs, setDesigns] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+
+  const handleDeleteProjectClick = () => {
+    handleDeleteProject(projectId, () => {
+      setProjects(projects.filter((p) => p.id !== projectId));
+
+      navigate("/homepage");
+    });
+  };
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
-
-  useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (user) {
-    }
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-        fetchDesigns(currentUser.uid, projectId, setDesigns);
-      } else {
-        setUser(null);
-        setDesigns([]);
-      }
-    });
-
-    return () => unsubscribeAuth();
-  }, [user]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -117,9 +109,7 @@ function Project() {
   }
   return (
     <div className="app-container">
-      <ToastContainer
-        progressStyle={{ backgroundColor: "var(--brightFont)" }}
-      />
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <ProjectHead />
       <div
         style={{
@@ -182,10 +172,7 @@ function Project() {
           padding: "20px",
         }}
       >
-        <span
-          className="SubtitleBudget"
-          style={{ marginLeft: "20px", fontSize: "30px" }}
-        >
+        <span className="SubtitleBudget" style={{ marginLeft: "20px", fontSize: "30px" }}>
           Project Name
           <br />
           <span
@@ -234,10 +221,7 @@ function Project() {
                 <FolderIcon className="icon" />
               </div>
             </div>
-            <div
-              className="small-button-container"
-              onClick={() => handleCreateDesign(projectId)}
-            >
+            <div className="small-button-container" onClick={() => handleCreateDesign(projectId)}>
               <span className="small-button-text">Create a Design</span>
               <div className="small-circle-button">
                 <ImageIcon className="icon" />
@@ -245,10 +229,7 @@ function Project() {
             </div>
           </div>
         )}
-        <div
-          className={`circle-button ${menuOpen ? "rotate" : ""}`}
-          onClick={toggleMenu}
-        >
+        <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
           {menuOpen ? <CloseIcon /> : <AddIcon />}
         </div>
       </div>

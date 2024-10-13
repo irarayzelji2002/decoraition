@@ -22,15 +22,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  doc,
-  deleteDoc,
-  setDoc,
-} from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, deleteDoc, setDoc } from "firebase/firestore";
 
 const DrawerComponent = ({ isDrawerOpen, onClose }) => {
   // State to handle dark mode
@@ -193,19 +185,13 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
           <ListItemText primary="Home" />
         </ListItem>
 
-        <ListItem
-          onClick={() => navigate("/seeAllDesigns")}
-          sx={{ cursor: "pointer" }}
-        >
+        <ListItem onClick={() => navigate("/seeAllDesigns")} sx={{ cursor: "pointer" }}>
           <ListItemIcon>
             <PhotoLibraryIcon sx={{ color: darkMode ? "white" : "black" }} />
           </ListItemIcon>
           <ListItemText primary="Design" />
         </ListItem>
-        <ListItem
-          onClick={() => navigate("/seeAllProjects")}
-          sx={{ cursor: "pointer" }}
-        >
+        <ListItem onClick={() => navigate("/seeAllProjects")} sx={{ cursor: "pointer" }}>
           <ListItemIcon>
             <FolderIcon sx={{ color: darkMode ? "white" : "black" }} />
           </ListItemIcon>

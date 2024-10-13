@@ -5,7 +5,7 @@ import { Input as BaseInput } from "@mui/base/Input";
 import { Box, styled } from "@mui/system";
 import Button from "@mui/material/Button";
 
-function OTP({ separator, length, value, onChange }) {
+function OTP({ separator, length, value, onChange, ...beforeLoginSharedProps }) {
   const inputRefs = React.useRef(new Array(length).fill(null));
 
   const focusInput = (targetIndex) => {
@@ -42,8 +42,7 @@ function OTP({ separator, length, value, onChange }) {
       case "Delete":
         event.preventDefault();
         onChange((prevOtp) => {
-          const otp =
-            prevOtp.slice(0, currentIndex) + prevOtp.slice(currentIndex + 1);
+          const otp = prevOtp.slice(0, currentIndex) + prevOtp.slice(currentIndex + 1);
           return otp;
         });
 
@@ -56,8 +55,7 @@ function OTP({ separator, length, value, onChange }) {
         }
 
         onChange((prevOtp) => {
-          const otp =
-            prevOtp.slice(0, currentIndex) + prevOtp.slice(currentIndex + 1);
+          const otp = prevOtp.slice(0, currentIndex) + prevOtp.slice(currentIndex + 1);
           return otp;
         });
         break;
@@ -72,10 +70,7 @@ function OTP({ separator, length, value, onChange }) {
     let indexToEnter = 0;
 
     while (indexToEnter <= currentIndex) {
-      if (
-        inputRefs.current[indexToEnter].value &&
-        indexToEnter < currentIndex
-      ) {
+      if (inputRefs.current[indexToEnter].value && indexToEnter < currentIndex) {
         indexToEnter += 1;
       } else {
         break;
@@ -109,10 +104,7 @@ function OTP({ separator, length, value, onChange }) {
       let indexToEnter = 0;
 
       while (indexToEnter <= currentIndex) {
-        if (
-          inputRefs.current[indexToEnter].value &&
-          indexToEnter < currentIndex
-        ) {
+        if (inputRefs.current[indexToEnter].value && indexToEnter < currentIndex) {
           indexToEnter += 1;
         } else {
           break;
@@ -177,12 +169,7 @@ export function OTPInput() {
         gap: 2,
       }}
     >
-      <OTP
-        separator={<span>-</span>}
-        value={otp}
-        onChange={setOtp}
-        length={5}
-      />
+      <OTP separator={<span>-</span>} value={otp} onChange={setOtp} length={5} />
       <span>Entered value: {otp}</span>
     </Box>
   );
@@ -233,9 +220,7 @@ const InputElement = styled("input")(
 
   &:focus {
     border-color: ${blue[400]};
-    box-shadow: 0 0 0 3px ${
-      theme.palette.mode === "dark" ? blue[600] : blue[200]
-    };
+    box-shadow: 0 0 0 3px ${theme.palette.mode === "dark" ? blue[600] : blue[200]};
   }
 
   // firefox
@@ -265,12 +250,7 @@ export default function OneTP() {
               gap: 2,
             }}
           >
-            <OTP
-              separator={<span>-</span>}
-              value={otp}
-              onChange={setOtp}
-              length={5}
-            />
+            <OTP separator={<span>-</span>} value={otp} onChange={setOtp} length={5} />
             <span>{otp}</span>
           </Box>
           <h5>Didn’t receive the OTP code? Resend code in</h5>
@@ -282,8 +262,7 @@ export default function OneTP() {
             sx={{
               mt: 3,
               mb: 2,
-              backgroundImage:
-                "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
+              backgroundImage: "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
               borderRadius: "20px",
               textTransform: "none",
               fontWeight: "bold",

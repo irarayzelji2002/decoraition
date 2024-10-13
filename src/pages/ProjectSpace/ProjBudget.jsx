@@ -6,13 +6,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import ExportIcon from "./svg/ExportIcon";
 import { ToastContainer } from "react-toastify";
 import { getAuth } from "firebase/auth";
-import {
-  collection,
-  getDocs,
-  doc,
-  onSnapshot,
-  getDoc,
-} from "firebase/firestore";
+import { collection, getDocs, doc, onSnapshot, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { fetchDesigns } from "./backend/ProjectDetails";
 import { onAuthStateChanged } from "firebase/auth";
@@ -32,12 +26,7 @@ function ProjBudget() {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
-        fetchDesigns(
-          currentUser.uid,
-          projectId,
-          setDesigns,
-          setDesignBudgetItems
-        );
+        fetchDesigns(currentUser.uid, projectId, setDesigns, setDesignBudgetItems);
       } else {
         setUser(null);
         setDesigns([]);
@@ -105,8 +94,7 @@ function ProjBudget() {
             marginBottom: "20px",
           }}
         >
-          Total Project Budget: ₱{" "}
-          <strong>{totalProjectBudget.toFixed(2)}</strong>
+          Total Project Budget: ₱ <strong>{totalProjectBudget.toFixed(2)}</strong>
         </span>
         <div>
           {designs.length > 0 ? (
@@ -120,15 +108,10 @@ function ProjBudget() {
                 <div className="sectionBudget" key={design.id}>
                   <div>
                     <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span
-                        className="SubtitleBudget"
-                        style={{ fontSize: "30px" }}
-                      >
+                      <span className="SubtitleBudget" style={{ fontSize: "30px" }}>
                         {design.name}
                       </span>
-                      <span className="SubtitlePrice">
-                        Total Cost: Php {totalCost.toFixed(2)}
-                      </span>
+                      <span className="SubtitlePrice">Total Cost: Php {totalCost.toFixed(2)}</span>
                     </div>
 
                     <div className="image-frame-project">
@@ -154,9 +137,7 @@ function ProjBudget() {
                             flexDirection: "column",
                           }}
                         >
-                          <span className="SubtitleBudget">
-                            {item.itemName}
-                          </span>
+                          <span className="SubtitleBudget">{item.itemName}</span>
                           <span
                             className="SubtitlePrice"
                             style={{ backgroundColor: "transparent" }}

@@ -93,10 +93,7 @@ function DesignIcon({ name, designId, onOpen, onDelete }) {
               Copy Link
             </div>
             <div className="dropdown-item" onClick={openRenameModal}>
-              <DriveFileRenameOutlineRoundedIcon
-                style={{ fontSize: 20 }}
-                className="icon"
-              />
+              <DriveFileRenameOutlineRoundedIcon style={{ fontSize: 20 }} className="icon" />
               Rename
             </div>
             <div className="dropdown-item">

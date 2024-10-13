@@ -50,6 +50,8 @@
 }
 /* Hover effect on calendar tiles */
 .custom-calendar .react-calendar__tile:hover {
+  background-color: var(--color-white); /* Change this to your preferred hover color */
+  color: white; /* Text color on hover */
   background-color: var(--iconBg);
   color: white;
 }
@@ -63,6 +65,7 @@
 /* Default focus date (clicked but not active) */
 
 .custom-calendar .react-calendar__tile--now {
+  background-color: var(--nav-card-modal); /* Change this to the color for today */
   background-color: var(--nav-card-modal);
   color: white;
 }
@@ -129,6 +132,9 @@
 }
 
 .svg-icon {
+  color: var(--gradientButton); /* Use your custom CSS variable for the icon color */
+  font-size: 24px; /* Optional: Adjust the icon size */
+  transition: color 0.3s ease; /* Optional: Add a smooth transition for hover effects */
   color: var(--gradientButton);
   font-size: 24px;
   transition: color 0.3s ease;

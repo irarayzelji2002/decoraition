@@ -8,11 +8,7 @@ function Details() {
       <TopBar state="Details" />
       <div className="details-container">
         <div className="content">
-          <img
-            className="room-image"
-            src="../../img/logoWhitebg.png"
-            alt="Room 1803"
-          />
+          <img className="room-image" src="../../img/logoWhitebg.png" alt="Room 1803" />
           <div className="room-info">
             <h1>Room 1803</h1>
             <p>Type</p>

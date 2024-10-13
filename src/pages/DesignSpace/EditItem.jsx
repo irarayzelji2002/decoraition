@@ -7,7 +7,7 @@ import TopBar from "../../components/TopBar";
 import { getAuth } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 
-const EditItem = () => {
+const EditItem = ({ ...sharedProps }) => {
   const { itemId, designId, projectId } = useParams(); // Get IDs from URL
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
@@ -133,9 +133,7 @@ const EditItem = () => {
   return (
     <>
       <TopBar state={"Edit Item"} />
-      <ToastContainer
-        progressStyle={{ backgroundColor: "var(--brightFont)" }}
-      />
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <div className="add-item-container">
         <div className="left-column">
           <div className="upload-section">
@@ -195,15 +193,9 @@ const EditItem = () => {
               Item quantity
             </label>
             <div className="quantity-section">
-              <button
-                onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
-              >
-                &lt;
-              </button>
+              <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}>&lt;</button>
               <span>{itemQuantity}</span>
-              <button onClick={() => setItemQuantity(itemQuantity + 1)}>
-                &gt;
-              </button>
+              <button onClick={() => setItemQuantity(itemQuantity + 1)}>&gt;</button>
             </div>
 
             {/* Save Button */}

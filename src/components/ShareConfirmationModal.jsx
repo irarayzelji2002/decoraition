@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Typography,
-  Button,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, Typography, Button } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const ShareConfirmationModal = ({ isOpen, onClose, collaborators }) => {

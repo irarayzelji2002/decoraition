@@ -31,10 +31,7 @@ const CircleButtonContainer = ({ onCreateProject, onCreateDesign }) => {
           </div>
         </div>
       )}
-      <div
-        className={`circle-button ${menuOpen ? "rotate" : ""}`}
-        onClick={toggleMenu}
-      >
+      <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
         {menuOpen ? <CloseIcon /> : <AddIcon />}
       </div>
     </div>

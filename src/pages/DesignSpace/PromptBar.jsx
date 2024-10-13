@@ -201,10 +201,7 @@ function PromptBar() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h2
-              id="modal-title"
-              style={{ color: "var(--color-white)", margin: 0 }}
-            >
+            <h2 id="modal-title" style={{ color: "var(--color-white)", margin: 0 }}>
               {modalTitle}
             </h2>
             <Button

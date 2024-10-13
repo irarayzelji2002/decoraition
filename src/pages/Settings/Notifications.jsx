@@ -1,13 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import {
-  Button,
-  FormControlLabel,
-  FormGroup,
-  Slider,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Button, FormControlLabel, FormGroup, Slider, Switch, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const theme = createTheme({
@@ -94,9 +87,7 @@ export default function Notifications() {
             control={
               <Switch
                 checked={allowPushNotifications}
-                onChange={(event) =>
-                  setAllowPushNotifications(event.target.checked)
-                }
+                onChange={(event) => setAllowPushNotifications(event.target.checked)}
                 aria-label="Allow push notifications"
               />
             }
@@ -106,9 +97,7 @@ export default function Notifications() {
             control={
               <Switch
                 checked={deleteNotifications}
-                onChange={(event) =>
-                  setDeleteNotifications(event.target.checked)
-                }
+                onChange={(event) => setDeleteNotifications(event.target.checked)}
                 aria-label="Enable deletion of notifications"
               />
             }
@@ -156,10 +145,7 @@ export default function Notifications() {
               <Switch
                 checked={commentNotifications.mentioned}
                 onChange={(event) =>
-                  handleCommentNotificationChange(
-                    "mentioned",
-                    event.target.checked
-                  )
+                  handleCommentNotificationChange("mentioned", event.target.checked)
                 }
                 aria-label="Mentioned in a comment or reply"
               />
@@ -171,10 +157,7 @@ export default function Notifications() {
               <Switch
                 checked={commentNotifications.newCommentOwner}
                 onChange={(event) =>
-                  handleCommentNotificationChange(
-                    "newCommentOwner",
-                    event.target.checked
-                  )
+                  handleCommentNotificationChange("newCommentOwner", event.target.checked)
                 }
                 aria-label="A new comment or reply if I'm the owner"
               />
@@ -186,10 +169,7 @@ export default function Notifications() {
               <Switch
                 checked={commentNotifications.newCommentEditor}
                 onChange={(event) =>
-                  handleCommentNotificationChange(
-                    "newCommentEditor",
-                    event.target.checked
-                  )
+                  handleCommentNotificationChange("newCommentEditor", event.target.checked)
                 }
                 aria-label="A new comment or reply if I'm an editor or commenter"
               />
@@ -201,10 +181,7 @@ export default function Notifications() {
               <Switch
                 checked={commentNotifications.resolvedOwner}
                 onChange={(event) =>
-                  handleCommentNotificationChange(
-                    "resolvedOwner",
-                    event.target.checked
-                  )
+                  handleCommentNotificationChange("resolvedOwner", event.target.checked)
                 }
                 aria-label="Comment is resolved or reopened if I'm the owner"
               />
@@ -216,10 +193,7 @@ export default function Notifications() {
               <Switch
                 checked={commentNotifications.resolvedEditor}
                 onChange={(event) =>
-                  handleCommentNotificationChange(
-                    "resolvedEditor",
-                    event.target.checked
-                  )
+                  handleCommentNotificationChange("resolvedEditor", event.target.checked)
                 }
                 aria-label="Comment is resolved or reopened if I'm an editor or commenter"
               />
@@ -240,9 +214,7 @@ export default function Notifications() {
             control={
               <Switch
                 checked={timelineNotifications}
-                onChange={(event) =>
-                  setTimelineNotifications(event.target.checked)
-                }
+                onChange={(event) => setTimelineNotifications(event.target.checked)}
                 aria-label="Calendar event reminders"
               />
             }
@@ -263,10 +235,7 @@ export default function Notifications() {
               <Switch
                 checked={designNotifications.renamed}
                 onChange={(event) =>
-                  handleDesignNotificationChange(
-                    "renamed",
-                    event.target.checked
-                  )
+                  handleDesignNotificationChange("renamed", event.target.checked)
                 }
                 aria-label="Design is renamed by a manager"
               />
@@ -278,10 +247,7 @@ export default function Notifications() {
               <Switch
                 checked={designNotifications.inactive}
                 onChange={(event) =>
-                  handleDesignNotificationChange(
-                    "inactive",
-                    event.target.checked
-                  )
+                  handleDesignNotificationChange("inactive", event.target.checked)
                 }
                 aria-label="Design will be or is in inactive mode"
               />
@@ -293,10 +259,7 @@ export default function Notifications() {
               <Switch
                 checked={designNotifications.deleted}
                 onChange={(event) =>
-                  handleDesignNotificationChange(
-                    "deleted",
-                    event.target.checked
-                  )
+                  handleDesignNotificationChange("deleted", event.target.checked)
                 }
                 aria-label="Design will be or is deleted"
               />
@@ -308,10 +271,7 @@ export default function Notifications() {
               <Switch
                 checked={designNotifications.roleChanged}
                 onChange={(event) =>
-                  handleDesignNotificationChange(
-                    "roleChanged",
-                    event.target.checked
-                  )
+                  handleDesignNotificationChange("roleChanged", event.target.checked)
                 }
                 aria-label="Your role in the design is changed by an owner or editor"
               />
@@ -333,10 +293,7 @@ export default function Notifications() {
               <Switch
                 checked={projectNotifications.renamed}
                 onChange={(event) =>
-                  handleProjectNotificationChange(
-                    "renamed",
-                    event.target.checked
-                  )
+                  handleProjectNotificationChange("renamed", event.target.checked)
                 }
                 aria-label="Project is renamed by a manager"
               />
@@ -348,10 +305,7 @@ export default function Notifications() {
               <Switch
                 checked={projectNotifications.inactive}
                 onChange={(event) =>
-                  handleProjectNotificationChange(
-                    "inactive",
-                    event.target.checked
-                  )
+                  handleProjectNotificationChange("inactive", event.target.checked)
                 }
                 aria-label="Project will be or is in inactive mode"
               />
@@ -363,10 +317,7 @@ export default function Notifications() {
               <Switch
                 checked={projectNotifications.deleted}
                 onChange={(event) =>
-                  handleProjectNotificationChange(
-                    "deleted",
-                    event.target.checked
-                  )
+                  handleProjectNotificationChange("deleted", event.target.checked)
                 }
                 aria-label="Project will be or is deleted"
               />
@@ -378,10 +329,7 @@ export default function Notifications() {
               <Switch
                 checked={projectNotifications.roleChanged}
                 onChange={(event) =>
-                  handleProjectNotificationChange(
-                    "roleChanged",
-                    event.target.checked
-                  )
+                  handleProjectNotificationChange("roleChanged", event.target.checked)
                 }
                 aria-label="Your role in the project is changed by an manager"
               />

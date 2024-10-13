@@ -1,6 +1,16 @@
-// src/App.js
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { AuthProvider, useAuth } from "./AuthContext";
+import useFirestoreSnapshots from "./hooks/useFirestoreSnapshots";
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth";
+import { fetchUserData } from "./pages/Homepage/backend/HomepageActions";
+import { showToast } from "./functions/utils.js";
+
 import "./App.css";
 import Login from "./pages/Account/Login.jsx";
 import Register from "./pages/Account/Register.jsx";
@@ -26,89 +36,185 @@ import EditEvent from "./pages/ProjectSpace/EditEvent.jsx";
 import ProjSetting from "./pages/Settings/ProjSetting.jsx";
 import Version from "./pages/DesignSpace/Version.jsx";
 import SeeAllProjects from "./pages/DesignSpace/SeeAllProjects.jsx";
-import { AuthProvider } from "./AuthContext"; // Adjust the path as necessary
 // import ProtectedRoute from "./ProtectedRoute"; // Adjust the path as necessary
 // import { Rotate90DegreesCcw } from "@mui/icons-material";
-import { useEffect } from "react";
-import {
-  getAuth,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence,
-} from "firebase/auth";
 
 function App() {
+  const { user, setUser, loading, setLoading } = useAuth();
+
+  // State for each collection
+  const [users, setUsers] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [designs, setDesigns] = useState([]);
+  const [designVersions, setDesignVersions] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [projectBudgets, setProjectBudgets] = useState([]);
+  const [budgets, setBudgets] = useState([]);
+  const [items, setItems] = useState([]);
+  const [planMaps, setPlanMaps] = useState([]);
+  const [pins, setPins] = useState([]);
+  const [timelines, setTimelines] = useState([]);
+  const [events, setEvents] = useState([]);
+
   useEffect(() => {
     const auth = getAuth();
-    // Set persistence to local so the user stays logged in across sessions.
     setPersistence(auth, browserLocalPersistence)
       .then(() => {
-        // Check if the user is logged in or not
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            // User is signed in, you can set the user state here
-            console.log("User is logged in:", user);
-          } else {
-            // No user is signed in, redirect to login page or handle accordingly
-            console.log("No user logged in");
-          }
+        console.log("Persistence set to browserLocalPersistence");
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+          setUser(currentUser);
+          setLoading(false);
         });
+        return () => unsubscribe();
       })
       .catch((error) => {
-        console.error("Error with setting persistence:", error);
+        console.error("Error setting persistence:", error);
+        setLoading(false);
       });
-  }, []);
+  }, [setUser, setLoading]);
+
+  // Use useFirestoreSnapshots hook to set up real-time listeners
+  const isConnected = useFirestoreSnapshots(
+    [
+      "users",
+      "projects",
+      "designs",
+      "designVersions",
+      "comments",
+      "notifications",
+      "projectBudgets",
+      "budgets",
+      "items",
+      "planMaps",
+      "pins",
+      "timelines",
+      "events",
+    ],
+    {
+      users: setUsers,
+      projects: setProjects,
+      designs: setDesigns,
+      designVersions: setDesignVersions,
+      comments: setComments,
+      notifications: setNotifications,
+      projectBudgets: setProjectBudgets,
+      budgets: setBudgets,
+      items: setItems,
+      planMaps: setPlanMaps,
+      pins: setPins,
+      timelines: setTimelines,
+      events: setEvents,
+    },
+
+    user ? user.uid : null
+  );
+
+  const sharedProps = {
+    user,
+    users,
+    setUsers,
+    projects,
+    setProjects,
+    designs,
+    setDesigns,
+    designVersions,
+    setDesignVersions,
+    comments,
+    setComments,
+    notifications,
+    setNotifications,
+    projectBudgets,
+    setProjectBudgets,
+    budgets,
+    setBudgets,
+    items,
+    setItems,
+    planMaps,
+    setPlanMaps,
+    pins,
+    setPins,
+    timelines,
+    setTimelines,
+    events,
+    setEvents,
+  };
+
+  const beforeLoginSharedProps = {
+    user,
+    users,
+    setUsers,
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    showToast("error", "Please log in");
+    return <div>Please log in</div>;
+  }
+
+  if (!isConnected) {
+    return <div>Connecting to Firestore...</div>;
+  }
+
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} /> {/*Checked */}
-          <Route path="/register" element={<Register />} /> {/*Checked */}
-          <Route path="/" element={<Login />} /> {/*Checked */}
-          <Route path="/forgot" element={<ForgotPass />} /> {/*Checked */}
-          <Route path="/change" element={<ChangePassw />} /> {/*Checked */}
-          <Route path="/otp" element={<OneTP />} />
-          <Route path="/homepage" element={<Homepage />} /> {/*Checked */}
-          <Route path="/details" element={<Details />} />
-          <Route path="/settings" element={<Settings />} />
-          {/*Checked */}
-          {/* DESIGN SPACE */}
-          <Route path="/design/:designId" element={<Design />} />
-          <Route path="/searchItem" element={<SearchItem />} />
-          <Route path="/addItem/:designId" element={<AddItem />} />
-          <Route path="/editItem/:designId/:itemId" element={<EditItem />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/budget/:designId" element={<Budget />} />
-          <Route path="/seeAllProjects" element={<SeeAllProjects />} />
-          <Route path="/seeAllDesigns" element={<SeeAllDesigns />} />
-          <Route path="/version" element={<Version />} />
-          {/* PROJECT SPACE */}
-          <Route path="/project/:projectId" element={<Project />} />
-          <Route
-            path="/design/:designId/:projectId/project"
-            element={<Design />}
-          />
-          <Route
-            path="/budget/:designId/:projectId/project"
-            element={<Budget />}
-          />
-          <Route
-            path="/addItem/:designId/:projectId/project"
-            element={<AddItem />}
-          />
-          <Route
-            path="/editItem/:designId/:itemId/:projectId/project"
-            element={<EditItem />}
-          />
-          <Route path="/planMap/:projectId" element={<PlanMap />} />
-          <Route path="/timeline/:projectId" element={<Timeline />} />
-          <Route path="/projBudget/:projectId" element={<ProjBudget />} />
-          <Route path="/addPin/" element={<AddPin />} />
-          <Route path="/editEvent/:projectId" element={<EditEvent />} />
-          <Route path="/projSetting/" element={<ProjSetting />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <div className="App">
+          <Routes>
+            <Route path="/login" element={<Login {...beforeLoginSharedProps} />} /> {/*Checked */}
+            <Route path="/register" element={<Register {...beforeLoginSharedProps} />} />{" "}
+            {/*Checked */}
+            <Route path="/" element={<Login {...beforeLoginSharedProps} />} /> {/*Checked */}
+            <Route path="/forgot" element={<ForgotPass {...beforeLoginSharedProps} />} />{" "}
+            {/*Checked */}
+            <Route path="/change" element={<ChangePassw {...beforeLoginSharedProps} />} />{" "}
+            {/*Checked */}
+            <Route path="/otp" element={<OneTP {...beforeLoginSharedProps} />} />
+            <Route path="/homepage" element={<Homepage {...sharedProps} />} /> {/*Checked */}
+            <Route path="/details" element={<Details />} />
+            <Route path="/settings" element={<Settings {...sharedProps} />} />
+            {/*Checked */}
+            {/* DESIGN SPACE */}
+            <Route path="/design/:designId" element={<Design {...sharedProps} />} />
+            <Route path="/searchItem" element={<SearchItem {...sharedProps} />} />
+            <Route path="/addItem/:designId" element={<AddItem {...sharedProps} />} />
+            <Route path="/editItem/:designId/:itemId" element={<EditItem {...sharedProps} />} />
+            <Route path="/users" element={<Users {...sharedProps} />} />
+            <Route path="/budget/:designId" element={<Budget {...sharedProps} />} />
+            <Route path="/seeAllProjects" element={<SeeAllProjects {...sharedProps} />} />
+            <Route path="/seeAllDesigns" element={<SeeAllDesigns {...sharedProps} />} />
+            <Route path="/version" element={<Version {...sharedProps} />} />
+            {/* PROJECT SPACE */}
+            <Route path="/project/:projectId" element={<Project {...sharedProps} />} />
+            <Route
+              path="/design/:designId/:projectId/project"
+              element={<Design {...sharedProps} />}
+            />
+            <Route
+              path="/budget/:designId/:projectId/project"
+              element={<Budget {...sharedProps} />}
+            />
+            <Route
+              path="/addItem/:designId/:projectId/project"
+              element={<AddItem {...sharedProps} />}
+            />
+            <Route
+              path="/editItem/:designId/:itemId/:projectId/project"
+              element={<EditItem {...sharedProps} />}
+            />
+            <Route path="/planMap/:projectId" element={<PlanMap {...sharedProps} />} />
+            <Route path="/timeline/:projectId" element={<Timeline {...sharedProps} />} />
+            <Route path="/projBudget/:projectId" element={<ProjBudget {...sharedProps} />} />
+            <Route path="/addPin/" element={<AddPin {...sharedProps} />} />
+            <Route path="/editEvent/:projectId" element={<EditEvent {...sharedProps} />} />
+            <Route path="/projSetting/" element={<ProjSetting {...sharedProps} />} />
+          </Routes>
+        </div>
+      </AuthProvider>
+    </Router>
   );
 }
 

@@ -17,10 +17,15 @@ import {
   limit,
   startAfter,
 } from "firebase/firestore";
+import { handleDeleteDesign, handleCreateDesign } from "../Homepage/backend/HomepageActions";
 
-export default function SeeAllDesigns() {
-  const [user, setUser] = useState(null);
-  const [designs, setDesigns] = useState([]);
+export default function SeeAllDesigns({ ...sharedProps }) {
+  const navigate = useNavigate();
+
+  const user = sharedProps.user;
+  const designs = sharedProps.designs;
+  const setDesigns = sharedProps.setDesigns;
+
   const [username, setUsername] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [lastVisible, setLastVisible] = useState(null);
@@ -69,28 +74,11 @@ export default function SeeAllDesigns() {
     return () => unsubscribeDesigns();
   };
 
-  const handleDeleteDesign = async (designId) => {
-    try {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        const designRef = doc(
-          db,
-          "users",
-          currentUser.uid,
-          "designs",
-          designId
-        );
-        await deleteDoc(designRef);
-        fetchDesigns(currentUser.uid, page); // Refresh designs after deletion
-      }
-    } catch (error) {
-      console.error("Error deleting design: ", error);
-    }
-  };
+  const handleDeleteDesignClick = (designId) => handleDeleteDesign(designId, setDesigns);
 
   const handlePageClick = (pageNumber) => {
     setPage(pageNumber);
-    fetchDesigns(user.uid, pageNumber);
+    // fetchDesigns(user.uid, pageNumber);
   };
 
   const handlePreviousPage = () => {
@@ -131,7 +119,7 @@ export default function SeeAllDesigns() {
                     key={design.id}
                     name={design.name}
                     designId={design.id}
-                    onDelete={handleDeleteDesign}
+                    onDelete={handleDeleteDesignClick}
                     onOpen={() =>
                       navigate(`/design/${design.id}`, {
                         state: { designId: design.id },
@@ -152,11 +140,7 @@ export default function SeeAllDesigns() {
         {/* Pagination Section */}
         <div className="pagination-controls">
           {/* Previous Page Button */}
-          <button
-            onClick={handlePreviousPage}
-            className="pagination-arrow"
-            disabled={page === 1}
-          >
+          <button onClick={handlePreviousPage} className="pagination-arrow" disabled={page === 1}>
             &lt;
           </button>
 
@@ -164,9 +148,7 @@ export default function SeeAllDesigns() {
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index + 1}
-              className={`pagination-button ${
-                page === index + 1 ? "active" : ""
-              }`}
+              className={`pagination-button ${page === index + 1 ? "active" : ""}`}
               onClick={() => handlePageClick(index + 1)}
             >
               {index + 1}
@@ -174,11 +156,7 @@ export default function SeeAllDesigns() {
           ))}
 
           {/* Next Page Button */}
-          <button
-            onClick={handleNextPage}
-            className="pagination-arrow"
-            disabled={isLastPage}
-          >
+          <button onClick={handleNextPage} className="pagination-arrow" disabled={isLastPage}>
             &gt;
           </button>
         </div>

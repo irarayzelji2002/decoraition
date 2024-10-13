@@ -5,7 +5,7 @@ import * as React from "react";
 import "../../css/addItem.css";
 import "../../css/budget.css";
 import TopBar from "../../components/TopBar";
-function AddPin({ EditMode }) {
+function AddPin({ EditMode, ...sharedProps }) {
   const [value, setValue] = React.useState("#ffffff");
 
   const handleChange = (newValue) => {

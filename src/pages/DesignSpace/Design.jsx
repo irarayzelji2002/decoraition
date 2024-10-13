@@ -26,7 +26,7 @@ import {
   handleSidebarEffect,
 } from "./backend/DesignActions"; // Import the functions from the backend file
 
-function Design() {
+function Design({ ...sharedProps }) {
   const { designId, projectId } = useParams(); // Get designId from the URL
   const [designData, setDesignData] = useState(null);
   const [newName, setNewName] = useState("");
@@ -54,15 +54,7 @@ function Design() {
         let designRef;
         if (isProjectPath) {
           // Use a different reference when "/project" is in the URL
-          designRef = doc(
-            db,
-            "users",
-            user.uid,
-            "projects",
-            projectId,
-            "designs",
-            designId
-          );
+          designRef = doc(db, "users", user.uid, "projects", projectId, "designs", designId);
         } else {
           // Use the original design reference
           designRef = doc(db, "designs", designId);
@@ -122,9 +114,7 @@ function Design() {
 
   return (
     <div className="whole">
-      <ToastContainer
-        progressStyle={{ backgroundColor: "var(--brightFont)" }}
-      />
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <DesignHead
         designData={designData}
         newName={newName}
@@ -132,13 +122,7 @@ function Design() {
         isEditingName={isEditingName}
         toggleComments={() => toggleComments(setShowComments)}
         handleNameChange={() =>
-          handleNameChange(
-            newName,
-            userId,
-            projectId,
-            designId,
-            setIsEditingName
-          )
+          handleNameChange(newName, userId, projectId, designId, setIsEditingName)
         }
         setIsEditingName={setIsEditingName}
       />
@@ -147,10 +131,7 @@ function Design() {
         <div className="create-design">
           <div className="workspace">
             {showPromptBar && <PromptBar />}
-            <div
-              className="fixed-arrow-button"
-              onClick={() => togglePromptBar(setShowPromptBar)}
-            >
+            <div className="fixed-arrow-button" onClick={() => togglePromptBar(setShowPromptBar)}>
               <div className="arrow-button">
                 {showPromptBar ? (
                   <ArrowBackIosIcon sx={{ color: "var(--color-white) " }} />
@@ -162,10 +143,7 @@ function Design() {
 
             <div className="working-area">
               <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
-                <button
-                  onClick={() => setIsSidebarOpen(false)}
-                  className="close-sidebar"
-                >
+                <button onClick={() => setIsSidebarOpen(false)} className="close-sidebar">
                   Close
                 </button>
                 <div className="sidebar-content">
@@ -174,10 +152,7 @@ function Design() {
               </div>
 
               {isSidebarOpen && (
-                <div
-                  className="overlay"
-                  onClick={() => setIsSidebarOpen(false)}
-                ></div>
+                <div className="overlay" onClick={() => setIsSidebarOpen(false)}></div>
               )}
 
               <div className="frame-buttons">
@@ -188,9 +163,7 @@ function Design() {
                   <FourFrames />
                 </button>
               </div>
-              <div
-                className={numImageFrames === 4 ? "image-grid" : "image-drop"}
-              >
+              <div className={numImageFrames === 4 ? "image-grid" : "image-drop"}>
                 {Array.from({ length: numImageFrames }).map((_, index) => (
                   <div className="image-frame" key={index}>
                     <img
@@ -206,22 +179,14 @@ function Design() {
               <div className="comment-section">
                 <div className="split-button">
                   <button
-                    onClick={() =>
-                      handleCommentTabClick("left", setActiveCommentTab)
-                    }
-                    className={`button-side ${
-                      activeCommentTab === "left" ? "active" : ""
-                    }`}
+                    onClick={() => handleCommentTabClick("left", setActiveCommentTab)}
+                    className={`button-side ${activeCommentTab === "left" ? "active" : ""}`}
                   >
                     All Comments
                   </button>
                   <button
-                    onClick={() =>
-                      handleCommentTabClick("right", setActiveCommentTab)
-                    }
-                    className={`button-side ${
-                      activeCommentTab === "right" ? "active" : ""
-                    }`}
+                    onClick={() => handleCommentTabClick("right", setActiveCommentTab)}
+                    className={`button-side ${activeCommentTab === "right" ? "active" : ""}`}
                   >
                     For You
                   </button>
@@ -229,22 +194,14 @@ function Design() {
 
                 <div className="split-button">
                   <button
-                    onClick={() =>
-                      handleStatusTabClick("left", setActiveStatusTab)
-                    }
-                    className={`button-side ${
-                      activeStatusTab === "left" ? "active" : ""
-                    }`}
+                    onClick={() => handleStatusTabClick("left", setActiveStatusTab)}
+                    className={`button-side ${activeStatusTab === "left" ? "active" : ""}`}
                   >
                     Open
                   </button>
                   <button
-                    onClick={() =>
-                      handleStatusTabClick("right", setActiveStatusTab)
-                    }
-                    className={`button-side ${
-                      activeStatusTab === "right" ? "active" : ""
-                    }`}
+                    onClick={() => handleStatusTabClick("right", setActiveStatusTab)}
+                    className={`button-side ${activeStatusTab === "right" ? "active" : ""}`}
                   >
                     Resolved
                   </button>
@@ -266,9 +223,7 @@ function Design() {
                       <FaEllipsisV className="options-dots" />
                     </div>
                   </div>
-                  <div className="comment-text">
-                    Lorem ipsum dolor sit amet...
-                  </div>
+                  <div className="comment-text">Lorem ipsum dolor sit amet...</div>
 
                   {clicked && (
                     <div className="reply-input">

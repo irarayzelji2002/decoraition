@@ -10,19 +10,13 @@ import { onSnapshot } from "firebase/firestore";
 import "../../css/budget.css";
 import { db } from "../../firebase"; // Assuming you have firebase setup
 import { ToastContainer, toast } from "react-toastify";
-import {
-  collection,
-  updateDoc,
-  doc,
-  deleteDoc,
-  getDoc,
-} from "firebase/firestore";
+import { collection, updateDoc, doc, deleteDoc, getDoc } from "firebase/firestore";
 import Loading from "../../components/Loading";
 import { getAuth, prodErrorMap } from "firebase/auth";
 import BottomBar from "./BottomBar";
 import { query, where } from "firebase/firestore";
 
-function Budget() {
+function Budget({ ...sharedProps }) {
   const { designId, projectId } = useParams();
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
@@ -184,10 +178,7 @@ function Budget() {
   };
 
   const totalCost = items
-    .reduce(
-      (sum, item) => sum + parseFloat(item.cost || 0) * (item.quantity || 1),
-      0
-    )
+    .reduce((sum, item) => sum + parseFloat(item.cost || 0) * (item.quantity || 1), 0)
     .toFixed(2);
 
   const formattedTotalCost = new Intl.NumberFormat("en-US", {
@@ -205,9 +196,7 @@ function Budget() {
   }
   return (
     <div className={`budget-page ${menuOpen ? "" : ""}`}>
-      <ToastContainer
-        progressStyle={{ backgroundColor: "var(--brightFont)" }}
-      />
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <DesignHead
         designData={designData}
         newName={newName}
@@ -228,11 +217,7 @@ function Budget() {
             Total Budget: ₱ <strong>{formattedTotalCost}</strong>
           </span>
           <div className="image-frame">
-            <img
-              src={"../../img/logoWhitebg.png"}
-              alt="design preview"
-              className="image-preview"
-            />
+            <img src={"../../img/logoWhitebg.png"} alt="design preview" className="image-preview" />
           </div>
         </div>
         <div className="budgetSpace" style={{ marginBottom: "10%" }}>
@@ -254,9 +239,7 @@ function Budget() {
                 onDelete={() => handleDelete(item.id)}
                 onEdit={() =>
                   projectId
-                    ? navigate(
-                        `/editItem/${designId}/${item.id}/${projectId}/project`
-                      )
+                    ? navigate(`/editItem/${designId}/${item.id}/${projectId}/project`)
                     : navigate(`/editItem/${designId}/${item.id}`)
                 }
               />
@@ -288,10 +271,7 @@ function Budget() {
             </div>
           </div>
         )}
-        <div
-          className={`circle-button ${menuOpen ? "rotate" : ""}`}
-          onClick={toggleMenu}
-        >
+        <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
           {menuOpen ? <CloseIcon /> : <AddIcon />}
         </div>
       </div>
@@ -312,11 +292,7 @@ function Budget() {
               />
             </div>
 
-            <button
-              className="add-item-btn"
-              style={{ height: "40px" }}
-              onClick={handleAddBudget}
-            >
+            <button className="add-item-btn" style={{ height: "40px" }} onClick={handleAddBudget}>
               Add Budget
             </button>
           </div>

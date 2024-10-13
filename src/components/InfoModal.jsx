@@ -48,9 +48,7 @@ const InfoModal = ({ isOpen, onClose }) => {
           color: "var(--color-white)", // Text color in the content
         }}
       >
-        <Typography variant="body1">
-          Here is some information about the item.
-        </Typography>
+        <Typography variant="body1">Here is some information about the item.</Typography>
       </DialogContent>
       <DialogActions
         sx={{ backgroundColor: "var(  --nav-card-modal)" }} // Actions background color

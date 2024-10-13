@@ -8,13 +8,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import FormHelperText from "@mui/material/FormHelperText";
 
-export default function Password({
-  value,
-  onChange,
-  error,
-  helperText,
-  label,
-}) {
+export default function Password({ value, onChange, error, helperText, label }) {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -74,9 +68,7 @@ export default function Password({
           },
         }}
       />
-      {helperText && (
-        <FormHelperText sx={{ color: "#ffffff" }}>{helperText}</FormHelperText>
-      )}
+      {helperText && <FormHelperText sx={{ color: "#ffffff" }}>{helperText}</FormHelperText>}
     </FormControl>
   );
 }

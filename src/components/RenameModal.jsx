@@ -31,10 +31,7 @@ const RenameModal = ({ isOpen, onClose }) => {
         }}
       >
         {/* Make the ArrowBackIcon clickable by wrapping it in an IconButton */}
-        <IconButton
-          onClick={onClose}
-          sx={{ color: "var(--color-white)", marginRight: 1 }}
-        >
+        <IconButton onClick={onClose} sx={{ color: "var(--color-white)", marginRight: 1 }}>
           <ArrowBackIcon />
         </IconButton>
         Rename

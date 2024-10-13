@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@mui/material";
 
-function Version() {
+function Version({ ...sharedProps }) {
   const [selectedImage, setSelectedImage] = useState(null); // Start with no image selected
 
   const images = [
@@ -39,12 +39,7 @@ function Version() {
               border: "2px solid var(--color-primary)",
             }}
           >
-            <img
-              src={image.src}
-              alt={image.version}
-              width={100}
-              style={{ borderRadius: "50%" }}
-            />
+            <img src={image.src} alt={image.version} width={100} style={{ borderRadius: "50%" }} />
           </div>
           <p>{image.version}</p>
         </div>
@@ -58,8 +53,7 @@ function Version() {
           sx={{
             mt: 3,
             mb: 2,
-            backgroundImage:
-              "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
+            backgroundImage: "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
             borderRadius: "20px",
             textTransform: "none",
             fontWeight: "bold",

@@ -1,7 +1,7 @@
 import ChangePass from "../../components/ChangePass";
 import "../../css/forgotPass.css";
 
-export default function ChangePassw() {
+export default function ChangePassw({ ...beforeLoginSharedProps }) {
   return (
     <div className="bg-login">
       <div className="headtext">

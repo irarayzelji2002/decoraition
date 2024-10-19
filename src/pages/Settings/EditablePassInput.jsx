@@ -21,6 +21,12 @@ const EditablePassInput = ({
   const [showPassword, setShowPassword] = useState(false);
   const [inputValues, setInputValues] = useState(values);
 
+  const icon = isEditing ? (
+    <SaveIcon sx={{ color: "#FF894D" }} />
+  ) : (
+    <EditIcon sx={{ color: "#FF894D" }} />
+  );
+
   const handleEdit = () => {
     if (isEditable) setIsEditing(true);
   };
@@ -68,7 +74,7 @@ const EditablePassInput = ({
           {labels.slice(0, labels.length - 1).map((label, index) => (
             <TextField
               key={index}
-              label={label}
+              label=""
               type={showPassword ? "text" : "password"}
               value={inputValues[index]}
               onChange={(e) => handleChange(index, e.target.value)}
@@ -79,19 +85,19 @@ const EditablePassInput = ({
               sx={{
                 marginTop: "10px",
                 marginBottom: "10px",
-                backgroundColor: "var(--inputBg)",
-                input: { color: "var(--color-white)" },
+                backgroundColor: "transparent",
+                input: { color: "var(--color-white)", fontWeight: "bold" },
                 "& .MuiOutlinedInput-root": {
                   "& fieldset": {
-                    borderColor: "var(--borderInput)",
-                    borderWidth: "2px",
+                    borderColor: "var(--inputBg)",
+                    borderWidth: `${isEditing ? "2px" : "0px"}`,
                   },
                   "&:hover fieldset": {
-                    borderColor: "var(--borderInput)",
-                    borderWidth: "2px",
+                    borderColor: "var(--inputBg)",
+                    borderWidth: `${isEditing ? "2px" : "0px"}`,
                   },
                   "&.Mui-focused fieldset": {
-                    borderColor: "var(--brightFont)",
+                    borderColor: "var(--inputBg)",
                     borderWidth: "2px",
                   },
                 },
@@ -104,11 +110,15 @@ const EditablePassInput = ({
                   <InputAdornment position="end">
                     {isEditing && (
                       <IconButton onClick={() => handleReset(index)}>
-                        <CloseRoundedIcon />
+                        <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
                       </IconButton>
                     )}
                     <IconButton onClick={handleClickShowPassword} edge="end" disabled={!isEditing}>
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                      {showPassword ? (
+                        <VisibilityOff sx={{ color: "#FF894D" }} />
+                      ) : (
+                        <Visibility sx={{ color: "#FF894D" }} />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -118,7 +128,7 @@ const EditablePassInput = ({
         </>
       ) : (
         <TextField
-          label={labels[labels.length - 1]} // last label
+          // label={labels[labels.length - 1]} // last label
           type="password"
           value="********"
           disabled
@@ -127,19 +137,19 @@ const EditablePassInput = ({
           sx={{
             marginTop: "10px",
             marginBottom: "10px",
-            backgroundColor: "var(--inputBg)",
-            input: { color: "var(--color-white)" },
+            backgroundColor: "transparent",
+            input: { color: "var(--color-white)", fontWeight: "bold" },
             "& .MuiOutlinedInput-root": {
               "& fieldset": {
-                borderColor: "var(--borderInput)",
-                borderWidth: "2px",
+                borderColor: "var(--inputBg)",
+                borderWidth: `${isEditing ? "2px" : "0px"}`,
               },
               "&:hover fieldset": {
-                borderColor: "var(--borderInput)",
-                borderWidth: "2px",
+                borderColor: "var(--inputBg)",
+                borderWidth: `${isEditing ? "2px" : "0px"}`,
               },
               "&.Mui-focused fieldset": {
-                borderColor: "var(--brightFont)",
+                borderColor: "var(--inputBg)",
                 borderWidth: "2px",
               },
             },
@@ -154,12 +164,10 @@ const EditablePassInput = ({
         <>
           {isEditing && (
             <IconButton onClick={handleClose}>
-              <CloseRoundedIcon />
+              <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
             </IconButton>
           )}
-          <IconButton onClick={isEditing ? handleSave : handleEdit}>
-            {isEditing ? <SaveIcon /> : <EditIcon />}
-          </IconButton>
+          <IconButton onClick={isEditing ? handleSave : handleEdit}>{icon}</IconButton>
         </>
       )}
       {getHasError("all", errors) && <span className="">{getErrMessage("all", errors)}</span>}

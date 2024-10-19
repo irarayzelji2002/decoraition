@@ -18,6 +18,12 @@ const EditableInputThree = ({
   const [isEditing, setIsEditing] = useState(false);
   const [inputValues, setInputValues] = useState(values);
 
+  const icon = isEditing ? (
+    <SaveIcon sx={{ color: "#FF894D" }} />
+  ) : (
+    <EditIcon sx={{ color: "#FF894D" }} />
+  );
+
   const handleEdit = () => {
     setIsEditing(true);
   };
@@ -55,7 +61,7 @@ const EditableInputThree = ({
       {labels.map((label, index) => (
         <TextField
           key={index}
-          label={label}
+          label=""
           value={inputValues[index]}
           onChange={(e) => handleChange(index, e.target.value)}
           disabled={!isEditing}
@@ -65,20 +71,20 @@ const EditableInputThree = ({
           sx={{
             marginTop: "10px",
             marginBottom: "10px",
-            backgroundColor: "var(--inputBg)",
-            input: { color: "var(--color-white)" },
+            backgroundColor: "transparent",
+            input: { color: "var(--color-white)", fontWeight: "bold" },
             "& .MuiOutlinedInput-root": {
               "& fieldset": {
-                borderColor: "var(--borderInput)", // Border color when not focused
-                borderWidth: "2px", // Adjust the border thickness here
+                borderColor: "var(--inputBg)",
+                borderWidth: `${isEditing ? "2px" : "0px"}`,
               },
               "&:hover fieldset": {
-                borderColor: "var(--borderInput)", // Border color on hover
-                borderWidth: "2px", // Maintain the thickness on hover
+                borderColor: "var(--inputBg)",
+                borderWidth: `${isEditing ? "2px" : "0px"}`,
               },
               "&.Mui-focused fieldset": {
-                borderColor: "var(--brightFont)", // Border color when focused
-                borderWidth: "2px", // Maintain the thickness on focus
+                borderColor: "var(--inputBg)",
+                borderWidth: "2px",
               },
             },
             "& .MuiFormHelperText-root": {
@@ -90,7 +96,7 @@ const EditableInputThree = ({
               <InputAdornment position="end">
                 {isEditing && (
                   <IconButton onClick={() => handleReset(index)}>
-                    <CloseRoundedIcon />
+                    <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
                   </IconButton>
                 )}
               </InputAdornment>
@@ -101,12 +107,10 @@ const EditableInputThree = ({
 
       {isEditing && (
         <IconButton onClick={handleClose}>
-          <CloseRoundedIcon />
+          <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
         </IconButton>
       )}
-      <IconButton onClick={isEditing ? handleSave : handleEdit}>
-        {isEditing ? <SaveIcon /> : <EditIcon />}
-      </IconButton>
+      <IconButton onClick={isEditing ? handleSave : handleEdit}>{icon}</IconButton>
 
       {getHasError("all", errors) && <span className="">{getErrMessage("all", errors)}</span>}
     </div>

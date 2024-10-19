@@ -8,19 +8,19 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 const LongToggleInput = ({ label, value, onToggle, isConnectedAccount }) => {
   const icon = isConnectedAccount ? (
     value === null ? (
-      <LinkIcon />
+      <LinkIcon sx={{ color: "#FF894D" }} />
     ) : (
-      <UnlinkIcon />
+      <UnlinkIcon sx={{ color: "#FF894D" }} />
     )
   ) : value === 0 ? (
-    <DarkModeIcon />
+    <DarkModeIcon sx={{ color: "#FF894D" }} />
   ) : (
-    <LightModeIcon />
+    <LightModeIcon sx={{ color: "#FF894D" }} />
   );
 
   return (
     <TextField
-      label={label}
+      label=""
       value={(() => {
         if (isConnectedAccount) {
           if (value === null) return "None";
@@ -37,16 +37,16 @@ const LongToggleInput = ({ label, value, onToggle, isConnectedAccount }) => {
       sx={{
         marginTop: "10px",
         marginBottom: "10px",
-        backgroundColor: "var(--inputBg)",
-        input: { color: "var(--color-white)" },
+        backgroundColor: "transparent",
+        input: { color: "var(--color-white)", fontWeight: "bold" },
         "& .MuiOutlinedInput-root": {
           "& fieldset": {
             borderColor: "transparent",
-            borderWidth: "2px",
+            borderWidth: "0px",
           },
           "&:hover fieldset": {
             borderColor: "transparent",
-            borderWidth: "2px",
+            borderWidth: "0px",
           },
           "&.Mui-focused fieldset": {
             borderColor: "transparent",

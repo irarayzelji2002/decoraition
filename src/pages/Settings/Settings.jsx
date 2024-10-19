@@ -33,9 +33,21 @@ import {
   TextField,
   Box,
   InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
 } from "@mui/material";
-import { Edit as EditIcon, Save as SaveIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Delete as DeleteIcon,
+  CloseRounded as CloseRoundedIcon,
+} from "@mui/icons-material";
+import Link from "@mui/material/Link";
 
+import { GoogleIcon, FacebookIconWhite } from "../../components/CustomIcons";
 import Notifications from "./Notifications";
 import TopBar from "../../components/TopBar";
 import "../../css/settings.css";
@@ -206,6 +218,12 @@ function Settings() {
     return success;
   };
 
+  const handleChangeProfileModalClose = () => {
+    setIsChangeProfileModalOpen(false);
+    setProfilePicPreview(userDoc.profilePic ?? null);
+    setSelectedFile(null);
+  };
+
   const checkExistingUsername = async (userId, username) => {
     try {
       const response = await axios.get(`/api/user/check-existing-username/${userId}/${username}`);
@@ -338,8 +356,10 @@ function Settings() {
         const fieldName = capitalizeFieldName(field);
         if (field === "theme") {
           setTheme(value);
+          showToast("success", ` ${fieldName} changed to ${value === 0 ? "dark" : "white"} mode`);
+        } else {
+          showToast("success", `${fieldName} updated successfully`);
         }
-        showToast("success", `${fieldName} updated successfully`);
         return true;
         // setUser({ ...user, [field]: value });
       } else {
@@ -767,26 +787,34 @@ function Settings() {
         className="tabs"
         TabIndicatorProps={{
           style: {
-            fontWeight: "bold",            
-            backgroundImage: "var(--gradientCircle)",
+            fontWeight: "bold",
+            backgroundImage: "var(--gradientFont)",
             // Tab indicator color
           },
         }}
         sx={{
           "& .MuiTab-root": {
-            color: "var(color-white)", // Color for unselected tabs
+            color: "var(--color-white)", // Color for unselected tabs
           },
           "& .MuiTab-root.Mui-selected": {
             color: "transparent", // Hide the actual text color
-            backgroundImage: "var(--gradientCircle)", // Apply background image
+            backgroundImage: "var(--gradientFont)", // Apply background image
             backgroundClip: "text",
             WebkitBackgroundClip: "text",
             fontWeight: "bold", // Optional: make text bold to stand out
           },
         }}
       >
-        <Tab label="Account" className="tab-label" style={{ textTransform: "none", fontWeight: "bold" }} />
-        <Tab label="Notification" className="tab-label" style={{ textTransform: "none", fontWeight: "bold" }} />
+        <Tab
+          label="Account"
+          className="tab-label"
+          style={{ textTransform: "none", fontWeight: "bold" }}
+        />
+        <Tab
+          label="Notification"
+          className="tab-label"
+          style={{ textTransform: "none", fontWeight: "bold" }}
+        />
       </Tabs>
       <div className="settings-container">
         {/* App Bar for Tabs */}
@@ -825,7 +853,6 @@ function Settings() {
                   className="change-photo-btn"
                   onClick={handleChangePhotoClick}
                   sx={{
-                    background: "linear-gradient(to right, #F54D70, #FF894D)",
                     marginBottom: "10px",
                     borderRadius: "20px",
                     textTransform: "none",
@@ -836,22 +863,32 @@ function Settings() {
                     },
                   }}
                 >
-                  Change photo
+                  {profilePic ? "Change photo" : "Upload photo"}
                 </Button>
 
                 {/* Remove Photo Button */}
                 {profilePic && (
                   <Button
-                    variant="outlined"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    className="remove-photo-btn"
                     onClick={() => setIsRemoveProfileModalOpen(true)}
                     sx={{
-                      borderColor: "#FF894D",
-                      color: "#FF894D",
-                      marginLeft: "10px",
+                      background: "transparent",
+                      border: "2px solid transparent",
+                      borderRadius: "20px",
+                      backgroundImage: "var(--lightGradient), var(--gradientButton)",
+                      backgroundOrigin: "border-box",
+                      backgroundClip: "padding-box, border-box",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      width: "150px",
                     }}
+                    onMouseOver={(e) =>
+                      (e.target.style.backgroundImage =
+                        "var(--lightGradient), var(--gradientButtonHover)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.target.style.backgroundImage =
+                        "var(--lightGradient), var(--gradientButton)")
+                    }
                   >
                     Remove photo
                   </Button>
@@ -860,49 +897,64 @@ function Settings() {
             </div>
 
             {/* Additional Fields */}
-            <EditableInputThree
-              labels={["First Name", "Last Name", "Username"]}
-              values={[firstName, lastName, username]}
-              origValues={[userDoc.firstName, userDoc.lastName, userDoc.username]}
-              onChange={handleThreeInputsChange}
-              onSave={handleSaveThreeInputs}
-              errors={userDetailsErr}
-              initErrors={initUserDetailsErr}
-              setErrors={setUserDetailsErr}
-            />
-            <EditableInput
-              label="Email"
-              value={email}
-              onChange={(value) => setEmail(value)}
-              onSave={(value) => handleSave("email", value)}
-              onReset={handleReset}
-              errors={emailErr}
-              initErrors={initEmailErr}
-              setErrors={setEmailErr}
-              isEditable={connectedAccount == null ? true : false}
-            />
-            <EditablePassInput
-              labels={["Old Password", "New Password", "Confirm New Password", "Password"]}
-              values={[oldPassword, newPassword, confirmNewPassword]}
-              onChange={handlePasswordChange}
-              onSave={handlePasswordSave}
-              errors={passErr}
-              initErrors={initPassErr}
-              setErrors={setPassErr}
-              isEditable={connectedAccount == null ? true : false}
-            />
-            <LongToggleInput
-              label="Connected Account"
-              value={connectedAccount}
-              onToggle={openlinkAccountModal}
-              isConnectedAccount={true}
-            />
-            <LongToggleInput
-              label="Theme"
-              value={theme}
-              onToggle={handleThemeToggle}
-              isConnectedAccount={false}
-            />
+            <div className="inputFieldThree">
+              <label className="inputLabel">First Name</label>
+              <EditableInputThree
+                labels={["First Name", "Last Name", "Username"]}
+                values={[firstName, lastName, username]}
+                origValues={[userDoc.firstName, userDoc.lastName, userDoc.username]}
+                onChange={handleThreeInputsChange}
+                onSave={handleSaveThreeInputs}
+                errors={userDetailsErr}
+                initErrors={initUserDetailsErr}
+                setErrors={setUserDetailsErr}
+              />
+            </div>
+            <div className="inputField">
+              <label className="inputLabel">Email</label>
+              <EditableInput
+                label="Email"
+                value={email}
+                onChange={(value) => setEmail(value)}
+                onSave={(value) => handleSave("email", value)}
+                onReset={handleReset}
+                errors={emailErr}
+                initErrors={initEmailErr}
+                setErrors={setEmailErr}
+                isEditable={connectedAccount == null ? true : false}
+              />
+            </div>
+            <div className="inputFieldThree">
+              <label className="inputLabel">Password</label>
+              <EditablePassInput
+                labels={["Old Password", "New Password", "Confirm New Password", "Password"]}
+                values={[oldPassword, newPassword, confirmNewPassword]}
+                onChange={handlePasswordChange}
+                onSave={handlePasswordSave}
+                errors={passErr}
+                initErrors={initPassErr}
+                setErrors={setPassErr}
+                isEditable={connectedAccount == null ? true : false}
+              />
+            </div>
+            <div className="inputField">
+              <label className="inputLabel">Connected Account</label>
+              <LongToggleInput
+                label="Connected Account"
+                value={connectedAccount}
+                onToggle={openlinkAccountModal}
+                isConnectedAccount={true}
+              />
+            </div>
+            <div className="inputField">
+              <label className="inputLabel">Theme</label>
+              <LongToggleInput
+                label="Theme"
+                value={theme}
+                onToggle={handleThemeToggle}
+                isConnectedAccount={false}
+              />
+            </div>
           </Box>
         )}
 
@@ -914,111 +966,398 @@ function Settings() {
         )}
       </div>{" "}
       {isLinkAccountModalOpen && (
-        <div style={{ position: "absolute", top: 0, left: 0 }}>
-          <button onClick={() => handleLinkAccount("google")}>Google</button>
-          <button onClick={() => handleLinkAccount("facebook")}>Facebook</button>
-          <br />
-          <button onClick={() => setIsLinkAccountModalOpen(false)}>Cancel</button>
-        </div>
+        <Dialog
+          open={isLinkAccountModalOpen}
+          onClose={() => setIsLinkAccountModalOpen(false)}
+          sx={{
+            "& .MuiDialog-paper": {
+              backgroundColor: "var(  --nav-card-modal)",
+              borderRadius: "20px",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <IconButton
+              onClick={() => setIsLinkAccountModalOpen(false)}
+              sx={{
+                color: "var(--color-white)",
+                position: "absolute",
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+            Link account
+          </DialogTitle>
+          <DialogContent
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+            }}
+          >
+            <Button
+              variant="contained"
+              className="change-photo-btn"
+              startIcon={<GoogleIcon />}
+              onClick={() => handleLinkAccount("google")}
+              sx={{
+                marginBottom: "10px",
+                borderRadius: "20px",
+                textTransform: "none",
+                fontWeight: "bold",
+                width: "250px",
+                display: "flex",
+                "&:hover": {
+                  background: "var(--color-white-hover)",
+                },
+                color: "var(--color-black)",
+                background: "var(--color-white)",
+              }}
+            >
+              Connect with Google
+            </Button>
+            <Button
+              variant="contained"
+              className="change-photo-btn"
+              startIcon={<FacebookIconWhite />}
+              onClick={() => handleLinkAccount("facebook")}
+              sx={{
+                marginBottom: "10px",
+                borderRadius: "20px",
+                textTransform: "none",
+                fontWeight: "bold",
+                width: "250px",
+                display: "flex",
+                "&:hover": {
+                  background: "var(--color-blue-hover)",
+                },
+                color: "var(--color-white)",
+                background: "var(--color-blue)",
+              }}
+            >
+              Connect with Facebook
+            </Button>
+            <Link
+              onClick={() => setIsLinkAccountModalOpen(false)}
+              variant="body2"
+              sx={{
+                color: "var(--brightFont)",
+                fontWeight: "bold",
+                textDecoration: "underline",
+                "&:hover": {
+                  color: "var(--brightFontHover)",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              Cancel
+            </Link>
+          </DialogContent>
+        </Dialog>
       )}
       {isUnlinkAccountModalOpen && (
-        <div style={{ position: "absolute", top: 0, left: 0 }}>
-          <div>Enter new password</div>
-          <label htmlFor="unlinkPassword">Password:</label>
-          <br />
-          <input
-            type="password"
-            id="unlinkPassword"
-            value={unlinkPassword}
-            onChange={(e) => setUnlinkPassword(e.target.value)}
-          />
-          <span style={{ color: "#ff0000" }}>{getErrMessage("password", unlinkErr)}</span>
-          <br />
-          <label htmlFor="unlinkConfirmPassword">Confirm Password:</label>
-          <br />
-          <input
-            type="password"
-            id="unlinkConfirmPassword"
-            value={unlinkConfirmPassword}
-            onChange={(e) => setUnlinkConfirmPassword(e.target.value)}
-          />
-          <span style={{ color: "#ff0000" }}>{getErrMessage("confirmPassword", unlinkErr)}</span>
-          <br />
-          <button
-            onClick={() => handleUnlink(true, connectedAccount === 0 ? "Google" : "Facebook")}
+        <Dialog
+          open={isUnlinkAccountModalOpen}
+          onClose={() => setIsUnlinkAccountModalOpen(false)}
+          sx={{
+            "& .MuiDialog-paper": {
+              backgroundColor: "var(  --nav-card-modal)",
+              borderRadius: "20px",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+              display: "flex",
+              alignItems: "center",
+            }}
           >
-            Unlink {connectedAccount === 0 ? "Google" : "Facebook"} Account
-          </button>
-          <br />
-          <button onClick={() => setIsUnlinkAccountModalOpen(false)}>Cancel</button>
-        </div>
+            <IconButton
+              onClick={() => setIsUnlinkAccountModalOpen(false)}
+              sx={{
+                color: "var(--color-white)",
+                position: "absolute",
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+            Unlink Connected Account
+          </DialogTitle>
+          <DialogContent
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+            }}
+          >
+            <Typography variant="body1">Enter your new password to unlink your account.</Typography>
+            <div>Enter new password</div>
+            <label htmlFor="unlinkPassword">Password:</label>
+            <br />
+            <input
+              type="password"
+              id="unlinkPassword"
+              value={unlinkPassword}
+              onChange={(e) => setUnlinkPassword(e.target.value)}
+            />
+            <span style={{ color: "#ff0000" }}>{getErrMessage("password", unlinkErr)}</span>
+            <br />
+            <label htmlFor="unlinkConfirmPassword">Confirm Password:</label>
+            <br />
+            <input
+              type="password"
+              id="unlinkConfirmPassword"
+              value={unlinkConfirmPassword}
+              onChange={(e) => setUnlinkConfirmPassword(e.target.value)}
+            />
+            <span style={{ color: "#ff0000" }}>{getErrMessage("confirmPassword", unlinkErr)}</span>
+            <br />
+          </DialogContent>
+          <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
+            <Button
+              variant="contained"
+              className="change-photo-btn"
+              onClick={() => handleUnlink(true, connectedAccount === 0 ? "Google" : "Facebook")}
+              sx={{
+                marginBottom: "10px",
+                borderRadius: "20px",
+                textTransform: "none",
+                fontWeight: "bold",
+                width: "150px",
+                display: "flex",
+                "&:hover": {
+                  background: "var(--gradientButtonHover)",
+                },
+              }}
+            >
+              Unlink {connectedAccount === 0 ? "Google" : "Facebook"} Account
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              className="save-photo-btn"
+              onClick={() => setIsUnlinkAccountModalOpen(false)}
+              sx={{
+                background: "transparent",
+                border: "2px solid transparent",
+                borderRadius: "20px",
+                backgroundImage: "var(--lightGradient), var(--gradientButton)",
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+                fontWeight: "bold",
+                textTransform: "none",
+                width: "150px",
+              }}
+            >
+              Cancel
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
       {isChangeProfileModalOpen && (
-        <div style={{ position: "absolute", top: 0, left: 0 }}>
-          <Avatar
-            {...(userDoc.username && stringAvatar(userDoc.username))}
-            alt="User Avatar"
-            src={profilePicPreview || ""}
+        <Dialog
+          open={isChangeProfileModalOpen}
+          onClose={handleChangeProfileModalClose}
+          sx={{
+            "& .MuiDialog-paper": {
+              backgroundColor: "var(  --nav-card-modal)",
+              borderRadius: "20px",
+            },
+          }}
+        >
+          <DialogTitle
             sx={{
-              width: 150,
-              height: 150,
-              fontSize: "4rem",
-              marginLeft: "20px",
-              background: "var(--gradientButton)",
-              color: "white",
-              border: "5px solid var(--brightFont)", // Avatar border
-            }}
-          />
-          {/* Hidden File Input */}
-          <input
-            type="file"
-            accept="image/png, image/jpeg, image/gif, image/webp"
-            ref={fileInputRef}
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-          <Button
-            variant="contained"
-            className="change-photo-btn"
-            onClick={handleUploadPhotoClick}
-            sx={{
-              background: "linear-gradient(to right, #F54D70, #FF894D)",
-              marginBottom: "10px",
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            {profilePic ? "Change photo" : "Upload photo"}
-          </Button>
-          <br />
+            <IconButton
+              onClick={handleChangeProfileModalClose}
+              sx={{
+                color: "var(--color-white)",
+                position: "absolute",
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+            Change Profile
+          </DialogTitle>
+          <DialogContent
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+            }}
+          >
+            <Avatar
+              {...(userDoc.username && stringAvatar(userDoc.username))}
+              alt="User Avatar"
+              src={profilePicPreview || ""}
+              sx={{
+                width: 150,
+                height: 150,
+                fontSize: "4rem",
+                marginLeft: "20px",
+                background: "var(--gradientButton)",
+                color: "white",
+                border: "5px solid var(--brightFont)", // Avatar border
+              }}
+            />
+            {/* Hidden File Input */}
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/gif, image/webp"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+          </DialogContent>
+          <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
+            <Button
+              variant="contained"
+              className="change-photo-btn"
+              onClick={handleUploadPhotoClick}
+              sx={{
+                marginBottom: "10px",
+                borderRadius: "20px",
+                textTransform: "none",
+                fontWeight: "bold",
+                width: "150px",
+                display: "flex",
+                "&:hover": {
+                  background: "var(--gradientButtonHover)",
+                },
+              }}
+            >
+              {profilePic ? "Change photo" : "Upload photo"}
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              className="save-photo-btn"
+              onClick={handleSavePhoto}
+              sx={{
+                marginBottom: "10px",
+                background: "transparent",
+                border: "2px solid transparent",
+                borderRadius: "20px",
+                backgroundImage: "var(--lightGradient), var(--gradientButton)",
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+                fontWeight: "bold",
+                textTransform: "none",
+                width: "150px",
+              }}
+            >
+              Save photo
+            </Button>
+            <Link
+              onClick={handleChangeProfileModalClose}
+              variant="body2"
+              sx={{
+                color: "var(--brightFont)",
+                fontWeight: "bold",
+                textDecoration: "underline",
+                "&:hover": {
+                  color: "var(--brightFontHover)",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              Cancel
+            </Link>
+          </DialogActions>
+        </Dialog>
+      )}
+      {isRemoveProfileModalOpen && (
+        <Dialog
+          open={isRemoveProfileModalOpen}
+          onClose={() => setIsRemoveProfileModalOpen(false)}
+          sx={{
+            "& .MuiDialog-paper": {
+              backgroundColor: "var(  --nav-card-modal)",
+              borderRadius: "20px",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <IconButton
+              onClick={() => setIsRemoveProfileModalOpen(false)}
+              sx={{
+                color: "var(--color-white)",
+                position: "absolute",
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+            Remove profile picture
+          </DialogTitle>
+          <Typography variant="body1" sx={{ color: "var(--color-white)" }}>
+            Are you sure you want to remove your profile picture?
+          </Typography>
           <Button
             variant="contained"
             color="primary"
-            startIcon={<SaveIcon />}
             className="save-photo-btn"
-            onClick={handleSavePhoto}
+            onClick={() => setIsRemoveProfileModalOpen(false)}
             sx={{
-              background: "linear-gradient(to right, #4CAF50, #81C784)",
-              marginBottom: "10px",
+              background: "transparent",
+              border: "2px solid transparent",
+              borderRadius: "20px",
+              backgroundImage: "var(--lightGradient), var(--gradientButton)",
+              backgroundOrigin: "border-box",
+              backgroundClip: "padding-box, border-box",
+              fontWeight: "bold",
+              textTransform: "none",
+              width: "150px",
             }}
           >
-            Save photo
+            No
           </Button>
-          <br />
-          <button
-            onClick={() => {
-              setIsChangeProfileModalOpen(false);
-              setProfilePicPreview(userDoc.profilePic ?? null);
-              setSelectedFile(null);
+          <Button
+            variant="contained"
+            className="change-photo-btn"
+            onClick={handleRemovePhoto}
+            sx={{
+              marginBottom: "10px",
+              borderRadius: "20px",
+              textTransform: "none",
+              fontWeight: "bold",
+              width: "150px",
+              display: "flex",
+              "&:hover": {
+                background: "var(--gradientButtonHover)",
+              },
             }}
           >
-            Cancel
-          </button>
-        </div>
-      )}
-      {isRemoveProfileModalOpen && (
-        <div style={{ position: "absolute", top: 0, left: 0 }}>
-          <button onClick={handleRemovePhoto}>Yes</button>
-          <button onClick={() => setIsRemoveProfileModalOpen(false)}>No</button>
-        </div>
+            Yes
+          </Button>
+        </Dialog>
       )}
     </>
   );

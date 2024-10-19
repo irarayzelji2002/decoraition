@@ -20,6 +20,13 @@
   height: 3em;
   min-width: 100%;
 }
+.inputFieldThree {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  height: 20em;
+  min-width: 100%;
+}
 .inputFieldImportant {
   display: flex;
   align-items: center;

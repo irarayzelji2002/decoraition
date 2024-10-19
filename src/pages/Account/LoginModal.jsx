@@ -335,10 +335,11 @@ export default function LoginModal() {
                   href="/forgot"
                   variant="body2"
                   sx={{
+                    fontWeight: "bold",
                     color: "var(--brightFont)",
                     textDecoration: "underline",
                     "&:hover": {
-                      color: "var(--color-white)",
+                      color: "var(--brightFontHover)",
                       textDecoration: "underline",
                     },
                   }}

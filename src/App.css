@@ -74,6 +74,9 @@ select:-webkit-autofill {
   --bright-grey: #6c6c6c;
   --color-quaternary: #ef4f56;
   --color-white: #fafafa;
+  --color-white-hover: #e6e6e6;
+  --color-blue: #0866ff;
+  --color-blue-hover: #0050d1;
   --color-black: #080808;
   --logo: #8f5e5e;
   --nav-card-modal: #27262c;
@@ -83,6 +86,7 @@ select:-webkit-autofill {
   --inputBg: #3e3c47;
   --iconBg: #302f37;
   --brightFont: #ff8344;
+  --brightFontHover: #ff9058;
   --borderInput: #515151;
   --gradientCircle: linear-gradient(20deg, #ec2073, #ff894d);
   --gradientCircleHover: linear-gradient(20deg, #ff894d, #ec2073);
@@ -111,7 +115,8 @@ select:-webkit-autofill {
   --color-tertiary: #f0f0f0;
   --color-grey: #666666;
   --bright-grey: #afaeae;
-  --color-quaternary: #ff4500;
+  --color-quaternary: #ff571a;
+  --color-quaternary-hover: #ff5b20;
   --color-white: #0a0a0a;
   --color-black: #f8f8f8;
   --logo: #0a0a0a;

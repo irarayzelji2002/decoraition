@@ -165,6 +165,7 @@ export const toggleDarkMode = async (user, userId, isDarkMode, setIsDarkMode) =>
     if (response.status === 200) {
       setIsDarkMode(newMode);
       document.body.classList.toggle("dark-mode", newMode);
+      showToast("success", `Theme changed to ${newMode === true ? "dark" : "white"} mode`);
     } else {
       console.error("Failed to update theme");
     }

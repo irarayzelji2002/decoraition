@@ -19,6 +19,12 @@ export default function EditableInput({
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value);
 
+  const icon = isEditing ? (
+    <SaveIcon sx={{ color: "#FF894D" }} />
+  ) : (
+    <EditIcon sx={{ color: "#FF894D" }} />
+  );
+
   useEffect(() => {
     setInputValue(value);
   }, [value]);
@@ -49,7 +55,7 @@ export default function EditableInput({
 
   return (
     <TextField
-      label={label}
+      label=""
       type="text"
       value={inputValue}
       onChange={handleChange}
@@ -60,20 +66,20 @@ export default function EditableInput({
       sx={{
         marginTop: "10px",
         marginBottom: "10px",
-        backgroundColor: "var(--inputBg)",
+        backgroundColor: "transparent",
         input: { color: "var(--color-white)", fontWeight: "bold" },
         "& .MuiOutlinedInput-root": {
           "& fieldset": {
-            borderColor: "var(--borderInput)", // Border color when not focused
-            borderWidth: "2px", // Adjust the border thickness here
+            borderColor: "var(--inputBg)",
+            borderWidth: `${isEditing ? "2px" : "0px"}`,
           },
           "&:hover fieldset": {
-            borderColor: "var(--borderInput)", // Border color on hover
-            borderWidth: "2px", // Maintain the thickness on hover
+            borderColor: "var(--inputBg)",
+            borderWidth: `${isEditing ? "2px" : "0px"}`,
           },
           "&.Mui-focused fieldset": {
-            borderColor: "var(--brightFont)", // Border color when focused
-            borderWidth: "2px", // Maintain the thickness on focus
+            borderColor: "var(--inputBg)",
+            borderWidth: "2px",
           },
         },
         "& .MuiFormHelperText-root": {
@@ -87,12 +93,10 @@ export default function EditableInput({
               <>
                 {isEditing && (
                   <IconButton onClick={() => handleReset(toCamelCase(label))}>
-                    <CloseRoundedIcon />
+                    <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
                   </IconButton>
                 )}
-                <IconButton onClick={isEditing ? handleSave : handleEdit}>
-                  {isEditing ? <SaveIcon /> : <EditIcon />}
-                </IconButton>
+                <IconButton onClick={isEditing ? handleSave : handleEdit}>{icon}</IconButton>
               </>
             )}
           </InputAdornment>

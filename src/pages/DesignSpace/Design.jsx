@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useSharedProps } from "../../contexts/SharedPropsContext";
-import { showToast } from "../../functions/utils";
 import { useParams } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase"; // Assuming you have firebase setup
@@ -9,18 +7,17 @@ import { getAuth } from "firebase/auth";
 import PromptBar from "./PromptBar";
 import BottomBar from "./BottomBar";
 import Loading from "../../components/Loading";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import { ToastContainer, toast } from "react-toastify";
 import Version from "./Version";
 import "../../css/design.css";
-import { FaCheckCircle, FaEllipsisV, FaAt } from "react-icons/fa"; // Icons used: Check, Dots, At symbol
 import TwoFrames from "./svg/TwoFrames";
 import FourFrames from "./svg/FourFrames";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import CommentContainer from "./CommentContainer";
 import { onSnapshot } from "firebase/firestore";
+import { Tabs, Tab } from "@mui/material";
 import {
-  handleCommentTabClick,
-  handleStatusTabClick,
-  handleContainerClick,
   handleNameChange,
   toggleComments,
   togglePromptBar,
@@ -37,30 +34,39 @@ function Design() {
   const [numImageFrames, setNumImageFrames] = useState(2);
   const [isEditingName, setIsEditingName] = useState(false);
   const [userId, setUserId] = useState(null);
-
+  const [status, setStatus] = useState("Open");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar
-  const [activeCommentTab, setActiveCommentTab] = useState("left"); // For "All Comments / For You"
-  const [activeStatusTab, setActiveStatusTab] = useState("left"); // For "Open / Resolved"
-  const [clicked, setClicked] = useState(false); // Handle click state
+  const [activeTab, setActiveTab] = useState(0);
 
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const handleStatusChange = (event) => {
+    setStatus(event.target.value);
+  };
+
+  useEffect(() => {
+    const handleError = (event) => {
+      if (event.message === "ResizeObserver loop completed with undelivered notifications.") {
+        event.stopImmediatePropagation();
+      }
+    };
+
+    window.addEventListener("error", handleError);
+
+    return () => {
+      window.removeEventListener("error", handleError);
+    };
+  }, []);
   useEffect(() => {
     const auth = getAuth();
 
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setUserId(user.uid);
-
-        const isProjectPath = window.location.pathname.includes("/project");
-
-        let designRef;
-        if (isProjectPath) {
-          // Use a different reference when "/project" is in the URL
-          designRef = doc(db, "users", user.uid, "projects", projectId, "designs", designId);
-        } else {
-          // Use the original design reference
-          designRef = doc(db, "designs", designId);
-        }
-
+        // Use the original design reference
+        const designRef = doc(db, "designs", designId);
         const fetchDesignDetails = async () => {
           try {
             const designSnapshot = await getDoc(designRef);
@@ -115,6 +121,7 @@ function Design() {
 
   return (
     <div className="whole">
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <DesignHead
         designData={designData}
         newName={newName}
@@ -125,6 +132,7 @@ function Design() {
           handleNameChange(newName, userId, projectId, designId, setIsEditingName)
         }
         setIsEditingName={setIsEditingName}
+        setIsSidebarOpen={setIsSidebarOpen}
       />
 
       <>
@@ -132,13 +140,13 @@ function Design() {
           <div className="workspace">
             {showPromptBar && <PromptBar />}
             <div className="fixed-arrow-button" onClick={() => togglePromptBar(setShowPromptBar)}>
-              <div className="arrow-button">
+              {/* <div className="arrow-button">
                 {showPromptBar ? (
                   <ArrowBackIosIcon sx={{ color: "var(--color-white) " }} />
                 ) : (
                   <ArrowForwardIosIcon sx={{ color: "var(--color-white)" }} />
                 )}
-              </div>
+              </div> */}
             </div>
 
             <div className="working-area">
@@ -163,7 +171,7 @@ function Design() {
                   <FourFrames />
                 </button>
               </div>
-              <div className={numImageFrames === 4 ? "image-grid" : "image-drop"}>
+              <div className={numImageFrames === 4 ? "image-grid-design" : "image-drop"}>
                 {Array.from({ length: numImageFrames }).map((_, index) => (
                   <div className="image-frame" key={index}>
                     <img
@@ -177,62 +185,87 @@ function Design() {
             </div>
             {showComments && (
               <div className="comment-section">
-                <div className="split-button">
-                  <button
-                    onClick={() => handleCommentTabClick("left", setActiveCommentTab)}
-                    className={`button-side ${activeCommentTab === "left" ? "active" : ""}`}
-                  >
-                    All Comments
-                  </button>
-                  <button
-                    onClick={() => handleCommentTabClick("right", setActiveCommentTab)}
-                    className={`button-side ${activeCommentTab === "right" ? "active" : ""}`}
-                  >
-                    For You
-                  </button>
-                </div>
-
-                <div className="split-button">
-                  <button
-                    onClick={() => handleStatusTabClick("left", setActiveStatusTab)}
-                    className={`button-side ${activeStatusTab === "left" ? "active" : ""}`}
-                  >
-                    Open
-                  </button>
-                  <button
-                    onClick={() => handleStatusTabClick("right", setActiveStatusTab)}
-                    className={`button-side ${activeStatusTab === "right" ? "active" : ""}`}
-                  >
-                    Resolved
-                  </button>
-                </div>
-                <div
-                  className={`comment-container ${clicked ? "clicked" : ""}`}
-                  onClick={() => handleContainerClick(setClicked)}
+                <Tabs
+                  value={activeTab}
+                  onChange={handleTabChange}
+                  TabIndicatorProps={{
+                    style: {
+                      backgroundImage: "var(--gradientFont)", // Customize the indicator color
+                    },
+                  }}
                 >
-                  <div className="profile-section">
-                    <div className="profile-info">
-                      <div className="profile-pic"></div>
-                      <div className="user-details">
-                        <span className="username">Juan Dela Cruz</span>
-                        <span className="date">June 17, 2024</span>
-                      </div>
-                    </div>
-                    <div className="profile-status">
-                      <FaCheckCircle className="check-mark" />
-                      <FaEllipsisV className="options-dots" />
-                    </div>
-                  </div>
-                  <div className="comment-text">Lorem ipsum dolor sit amet...</div>
+                  <Tab
+                    sx={{
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      color: activeTab === 0 ? "var(--brightFont)" : "var(--color-white)",
 
-                  {clicked && (
-                    <div className="reply-input">
-                      <FaAt className="at-symbol" />
-                      <input type="text" placeholder="Add a Reply" />
-                    </div>
-                  )}
-                </div>
-                <button className="add-comment-button">Add a comment</button>
+                      "&.Mui-selected": {
+                        color: "transparent", // Hide the actual text color
+                        backgroundImage: "var(--gradientFont)", // Apply background image
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        fontWeight: "bold", // Optional: make text bold to stand out
+                      },
+                    }}
+                    label="All Comments"
+                  />
+                  <Tab
+                    sx={{
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      color: activeTab === 1 ? "var(--brightFont)" : "var(--color-white)",
+                      "&:focus": {
+                        outline: "none",
+                        backgroundColor: "transparent",
+                      },
+                      "&:active": {
+                        outline: "none",
+                        backgroundColor: "transparent",
+                      },
+
+                      "&.Mui-selected": {
+                        color: "transparent", // Hide the actual text color
+                        backgroundImage: "var(--gradientFont)", // Apply background image
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        fontWeight: "bold",
+                      },
+                    }}
+                    label="For You"
+                  />
+                </Tabs>
+
+                <Select
+                  value={status}
+                  onChange={handleStatusChange}
+                  displayEmpty
+                  sx={{
+                    marginTop: 2,
+                    marginBottom: 2,
+                    color: "var(--color-grey)",
+                    borderRadius: 2,
+                    border: "1px solid var(--color-grey)",
+                    width: "150px",
+                    height: "30px",
+                  }}
+                >
+                  <MenuItem value="Open">Open</MenuItem>
+                  <MenuItem value="Resolved">Resolved</MenuItem>
+                </Select>
+
+                {activeTab === 0 && (
+                  <>
+                    <CommentContainer />
+                    <button className="add-comment-button">Add a comment</button>
+                  </>
+                )}
+                {activeTab === 1 && (
+                  <>
+                    <CommentContainer />
+                    <button className="add-comment-button">Add a comment</button>
+                  </>
+                )}
               </div>
             )}
           </div>

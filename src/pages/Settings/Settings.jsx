@@ -767,8 +767,8 @@ function Settings() {
         className="tabs"
         TabIndicatorProps={{
           style: {
+            fontWeight: "bold",            
             backgroundImage: "var(--gradientCircle)",
-
             // Tab indicator color
           },
         }}
@@ -785,15 +785,15 @@ function Settings() {
           },
         }}
       >
-        <Tab label="Account" className="tab-label" style={{ textTransform: "none" }} />
-        <Tab label="Notification" className="tab-label" style={{ textTransform: "none" }} />
+        <Tab label="Account" className="tab-label" style={{ textTransform: "none", fontWeight: "bold" }} />
+        <Tab label="Notification" className="tab-label" style={{ textTransform: "none", fontWeight: "bold" }} />
       </Tabs>
       <div className="settings-container">
         {/* App Bar for Tabs */}
 
         {/* Account Tab Content */}
         {selectedTab === 0 && (
-          <Box mt={4} className="tab-content" sx={{ maxWidth: "1200px" }}>
+          <Box mt={4} className="tab-content" sx={{ minWidth: "100%" }}>
             <div className="avatar-container" style={{ display: "flex", alignItems: "center" }}>
               <Avatar
                 {...(userDoc.username && stringAvatar(userDoc.username))}
@@ -827,6 +827,13 @@ function Settings() {
                   sx={{
                     background: "linear-gradient(to right, #F54D70, #FF894D)",
                     marginBottom: "10px",
+                    borderRadius: "20px",
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    width: "150px",
+                    "&:hover": {
+                      background: "var(--gradientButtonHover)",
+                    },
                   }}
                 >
                   Change photo

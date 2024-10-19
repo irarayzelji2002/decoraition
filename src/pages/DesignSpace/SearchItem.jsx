@@ -1,5 +1,4 @@
 import React from "react";
-import { useSharedProps } from "../../contexts/SharedPropsContext";
 import TopBar from "../../components/TopBar";
 import "../../css/searchItem.css";
 import SearchIcon from "@mui/icons-material/Search"; // Importing the SearchIcon
@@ -26,9 +25,9 @@ function SearchItem() {
           alignItems: "center",
           width: "69%",
           marginTop: "40px",
-          backgroundColor: "var(--color-tertiary)",
+          backgroundColor: "var(--bgMain)",
           border: "2px solid var(--borderInput)",
-          borderRadius: "8px",
+          borderRadius: "20px",
           "&:focus-within": {
             borderColor: "var(--brightFont)",
           },

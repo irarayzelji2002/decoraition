@@ -5,7 +5,7 @@ export default function Register() {
   return (
     <div className="bg-login">
       <div className="headtext">
-        <h1>Register Now!</h1>
+        <h1 className="h1-register">Register Now!</h1>
       </div>
       <div className="modal-bg">
         <Signup />

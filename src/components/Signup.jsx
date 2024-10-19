@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
-import { showToast } from "../functions/utils";
 
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -42,7 +40,7 @@ const commonInputStyles = {
     },
   },
   "& .MuiFormHelperText-root": {
-    color: "white",
+    color: "var(--color-white)",
   },
 };
 
@@ -75,71 +73,55 @@ const Signup = () => {
 
   const handleValidation = () => {
     let formErrors = {};
-    const trimmedFirstName = firstName.trim();
-    const trimmedLastName = lastName.trim();
-    const trimmedUsername = username.trim();
-    const trimmedEmail = email.trim();
-    setFirstName(trimmedFirstName);
-    setLastName(trimmedLastName);
-    setUsername(trimmedUsername);
-    setEmail(trimmedEmail);
 
-    if (!trimmedFirstName) formErrors.firstName = "First name is required";
-    if (!trimmedLastName) formErrors.lastName = "Last name is required";
-    if (!trimmedUsername) formErrors.username = "Username is required";
-    // Using trimmedEmail consistently for validation
-    if (!trimmedEmail) formErrors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail))
-      formErrors.email = "Invalid email format";
+    if (!firstName) formErrors.firstName = "First name is required";
+    if (!lastName) formErrors.lastName = "Last name is required";
+    if (!username) formErrors.username = "Username is required";
+    if (!email) formErrors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) formErrors.email = "Invalid email format";
     if (!password) formErrors.password = "Password is required";
-    else {
-      if (password.length < 6) formErrors.password = "Password must be at least 6 characters long";
-      if (!/[!@#$%^&*]/.test(password))
-        formErrors.password = "Password must contain at least 1 special character";
-    }
-    if (!confirmPassword) formErrors.confirmPassword = "Confirm password is required";
-    else if (confirmPassword !== password) formErrors.confirmPassword = "Passwords do not match";
+    else if (password.length < 6)
+      formErrors.password = "Password must be at least 6 characters long";
+    else if (!/[!@#$%^&*]/.test(password))
+      formErrors.password = "Password must contain at least 1 special character";
+    if (!confirmPassword) formErrors.confirmPassword = "Please confirm your password";
+    else if (password !== confirmPassword) formErrors.confirmPassword = "Passwords do not match";
 
-    // Returning early if there are form errors
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      return { formErrors, finalData: null };
-    }
-
-    const finalData = {
-      firstName: trimmedFirstName,
-      lastName: trimmedLastName,
-      username: trimmedUsername,
-      email: trimmedEmail,
-      password: password,
-    };
-
-    return { formErrors, finalData };
+    return formErrors;
   };
 
-  const handleRegister = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    const { formErrors, finalData } = handleValidation();
-    if (!finalData) return;
+    const formErrors = handleValidation();
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
 
     try {
-      const response = await axios.post("/api/register", finalData);
-      if (response.status === 200) {
-        showToast("success", "Registration successful!");
-        navigate("/login");
-      } else {
-        showToast("error", "Registration failed. Please try again.");
-      }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        firstName,
+        lastName,
+        username,
+        email,
+      });
+
+      console.log(user);
+      await auth.signOut();
+      navigate("/login");
     } catch (error) {
-      console.error("Registration error:", error);
-      const errMessage = error.response?.data?.message || "Registration failed. Please try again.";
-      if (errMessage === "Email already in use") {
-        setErrors({ ...formErrors, email: "Email already in use" });
-      } else if (errMessage === "Username already in use") {
-        setErrors({ ...formErrors, username: "Username already in use" });
-      } else {
-        showToast("error", errMessage);
-      }
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+
+      setErrors({
+        email: errorCode === "auth/email-already-in-use" ? "Email already in use" : "",
+        password: errorCode === "auth/weak-password" ? "Password is too weak" : "",
+      });
     }
   };
 
@@ -155,7 +137,7 @@ const Signup = () => {
             alignItems: "center",
           }}
         >
-          <Box component="form" onSubmit={handleRegister} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={onSubmit} noValidate sx={{ mt: 1 }}>
             <span className="formLabels">
               First Name
               <span style={{ color: "var(--color-quaternary)" }}> *</span>
@@ -304,7 +286,7 @@ const Signup = () => {
         </Box>
         <Grid container justifyContent="center" alignItems="center">
           <Grid item>
-            <Typography variant="body2" sx={{ color: "white", marginRight: 1 }}>
+            <Typography variant="body2" sx={{ color: "var(--color-white)", marginRight: 1 }}>
               Already have an account?
             </Typography>
           </Grid>

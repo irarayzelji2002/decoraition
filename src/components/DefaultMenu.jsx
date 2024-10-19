@@ -14,7 +14,8 @@ import FileCopyIcon from "@mui/icons-material/FileCopy";
 import { Link, useNavigate } from "react-router-dom";
 
 const DefaultMenu = ({
-  onClose,
+  project,
+  onComment,
   onCopyLink,
   onOpenDownloadModal,
   onOpenShareModal,
@@ -25,86 +26,91 @@ const DefaultMenu = ({
   onDelete,
   setIsSidebarOpen,
   onChangeMode,
+  onSetting,
 }) => {
-  const navigate = useNavigate();
-
-  const handleRedirect = () => {
-    onClose();
-    navigate("/version");
-  };
   return (
     <>
-      <MenuItem onClick={onClose}>
-        <ListItemIcon>
-          <CommentIcon sx={{ color: "whitesmoke" }} />
-        </ListItemIcon>
-        <ListItemText primary="Comment" />
-      </MenuItem>
+      {!project && (
+        <MenuItem onClick={onComment}>
+          <ListItemIcon>
+            <CommentIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="Comment" sx={{ color: "var(--color-white)" }} />
+        </MenuItem>
+      )}
       <MenuItem onClick={onOpenShareModal}>
         <ListItemIcon>
-          <ShareIcon sx={{ color: "whitesmoke" }} />
+          <ShareIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
-        <ListItemText primary="Share" />
+        <ListItemText primary="Share" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
       <MenuItem onClick={onCopyLink}>
         <ListItemIcon>
-          <ContentCopy sx={{ color: "whitesmoke" }} />
+          <ContentCopy sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
-        <ListItemText primary="Copy Link" />
+        <ListItemText primary="Copy Link" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
-      <MenuItem onClick={setIsSidebarOpen}>
+      {!project && (
+        <MenuItem onClick={setIsSidebarOpen}>
+          <ListItemIcon>
+            <HistoryIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="History" sx={{ color: "var(--color-white)" }} />
+        </MenuItem>
+      )}
+      <MenuItem onClick={onSetting}>
         <ListItemIcon>
-          <HistoryIcon sx={{ color: "whitesmoke" }} />
+          <SettingsIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
-        <ListItemText primary="History" />
+        <ListItemText primary="Settings" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
-      <MenuItem onClick={onClose}>
-        <ListItemIcon>
-          <SettingsIcon sx={{ color: "whitesmoke" }} />
-        </ListItemIcon>
-        <ListItemText primary="Settings" />
-      </MenuItem>
-      <MenuItem onClick={onChangeMode}>
-        <ListItemIcon>
-          <EditIcon sx={{ color: "whitesmoke" }} />
-        </ListItemIcon>
-        <ListItemText primary="Change Mode" />
-      </MenuItem>
+      {!project && (
+        <MenuItem onClick={onChangeMode}>
+          <ListItemIcon>
+            <EditIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="Change Mode" sx={{ color: "var(--color-white)" }} />
+        </MenuItem>
+      )}
       <MenuItem onClick={onOpenDownloadModal}>
         <ListItemIcon>
-          <DownloadIcon sx={{ color: "whitesmoke" }} />
+          <DownloadIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
-        <ListItemText primary="Download" />
+        <ListItemText primary="Download" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
-      <MenuItem onClick={onOpenMakeCopyModal}>
-        <ListItemIcon>
-          <FileCopyIcon sx={{ color: "whitesmoke" }} />
-        </ListItemIcon>
-        <ListItemText primary="Make a Copy" />
-      </MenuItem>
-      <MenuItem onClick={onOpenRestoreModal}>
-        <ListItemIcon>
-          <RestoreIcon sx={{ color: "whitesmoke" }} />
-        </ListItemIcon>
-        <ListItemText primary="Restore" />
-      </MenuItem>
+      {!project && (
+        <MenuItem onClick={onOpenMakeCopyModal}>
+          <ListItemIcon>
+            <FileCopyIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="Make a Copy" sx={{ color: "var(--color-white)" }} />
+        </MenuItem>
+      )}
+      {!project && (
+        <MenuItem onClick={onOpenRestoreModal}>
+          <ListItemIcon>
+            <RestoreIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="Restore" sx={{ color: "var(--color-white)" }} />
+        </MenuItem>
+      )}
       <MenuItem onClick={onOpenRenameModal}>
         <ListItemIcon>
-          <EditIcon sx={{ color: "whitesmoke" }} />
+          <EditIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
-        <ListItemText primary="Rename" />
+        <ListItemText primary="Rename" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
       <MenuItem onClick={onDelete}>
         <ListItemIcon>
-          <DeleteIcon sx={{ color: "whitesmoke" }} />
+          <DeleteIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
-        <ListItemText primary="Delete" />
+        <ListItemText primary="Delete" sx={{ color: "var(--color-white)" }} />
       </MenuItem>{" "}
       <MenuItem onClick={onOpenInfoModal}>
         <ListItemIcon>
-          <InfoIcon sx={{ color: "whitesmoke" }} />
+          <InfoIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
-        <ListItemText primary="Info" />
+        <ListItemText primary="Details" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
     </>
   );

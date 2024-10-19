@@ -1,0 +1,159 @@
+.settingsContainer {
+  margin: 150px auto;
+  padding-bottom: 100px;
+  margin-top: 20px;
+  max-width: 1200px;
+}
+
+.generalAccessTitle {
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+.accessBox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 3rem;
+  flex-wrap: nowrap; /* Prevent wrapping to keep items on the same line */
+}
+
+.accessIcon {
+  background-image: var(--gradientButton);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+}
+
+.accessSelect {
+  background-color: var(--bgcolor);
+  color: var(--color-white);
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+@media (max-width: 600px) {
+  .accessIcon {
+    width: 30px;
+    height: 30px;
+    margin-right: 0.5rem;
+  }
+
+  .accessSelect {
+    min-width: 150px;
+  }
+}
+
+.viewerSettingsTitle {
+  font-weight: bold !important;
+  margin-bottom: 2rem;
+}
+
+.viewerSettingsLabel {
+  margin-bottom: 3rem;
+  justify-content: space-between;
+  display: flex;
+  align-items: center;
+}
+
+.inactivityTitle {
+  font-weight: bold !important;
+  margin-bottom: 2rem;
+}
+
+.inactivityLabel {
+  margin-bottom: 3rem;
+  justify-content: space-between;
+  display: flex;
+  align-items: center;
+}
+
+.inactivitySettings {
+  margin-bottom: 2rem;
+}
+
+.inactivityTextField {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.saveButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 4rem;
+}
+
+.saveButton.MuiButton-root {
+  text-transform: none;
+  color: var(--color-white);
+  background: var(--gradientButton);
+  padding: 10px 60px;
+  border: none;
+  width: auto;
+  border-radius: 30px;
+  font-size: 0.9em;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.saveButton:hover.saveButton.MuiButton-root {
+  background-image: var(--gradientButtonHover);
+}
+
+@media (max-width: 768px) {
+  .settingsContainer {
+    margin: 100px 20px;
+    padding-bottom: 50px;
+  }
+
+  .accessBox {
+    flex-direction: column;
+  }
+
+  .accessIcon {
+    margin-bottom: 1rem;
+  }
+
+  .accessSelect {
+    width: 100%;
+    max-width: none;
+  }
+
+  .viewerSettingsLabel,
+  .inactivityLabel {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inactivityTextField {
+    margin-top: 0;
+  }
+
+  .saveButton.MuiButton-root {
+    padding: 10px 30px;
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  .settingsContainer {
+    margin: 50px 10px;
+  }
+
+  .generalAccessTitle,
+  .viewerSettingsTitle,
+  .inactivityTitle {
+    font-size: 1.2em;
+  }
+
+  .saveButton.MuiButton-root {
+    padding: 8px 20px;
+    font-size: 0.7em;
+  }
+}

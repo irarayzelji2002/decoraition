@@ -3,8 +3,8 @@
 .edit-event {
   background-color: var(--bgcolor);
   color: var(--color-white);
-  padding: 20px;
   font-weight: bold;
+  padding: 20px;
   font-family: "Inter", sans-serif !important;
 }
 
@@ -45,8 +45,8 @@ textarea {
 
 .reminders-header {
   display: flex;
-  justify-content: space-between; /* Space between label and button */
-  align-items: center; /* Vertically center items */
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 10px;
 }
 
@@ -82,7 +82,7 @@ textarea {
 
 .gradient-button:hover,
 .edit-event-button:hover {
-  background-image: var(--gradientButton);
+  background-image: var(--gradientButtonHover);
 }
 
 /* Button for icons (Add, Delete, Edit) */

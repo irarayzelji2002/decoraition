@@ -1,138 +1,124 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>First Generation</title>
-  </head>
-  <body>
-    <h1>Hi! This is a test page for DecorAItion's AI model API from Ira's PC.</h1>
-    <!-- <button><a href="next-generation.html">Next</a></button> -->
-    <button onclick="document.location='next-generation.html'">Next Generation</button>
-    <form id="generate_image_form" enctype="multipart/form-data">
-      <!-- Prompt -->
-      <label for="prompt">Prompt:</label><br />
-      <input type="text" id="prompt" name="prompt" required /><br /><br />
-      <!-- Number of Images -->
-      <label for="number_of_images">Number of Images:</label><br />
-      <input
-        type="number"
-        id="number_of_images"
-        name="number_of_images"
-        min="1"
-        max="4"
-        value="1"
-        required
-      /><br /><br />
-      <!-- Color Palette -->
-      <label for="color_palette">Color Palette (comma-separated hex codes):</label><br />
-      <input type="text" id="color_palette" name="color_palette" /><br /><br />
-      <!-- Base Image -->
-      <label for="base_image">Base Image:</label>
-      <input
-        type="file"
-        id="base_image"
-        name="base_image"
-        accept="image/png, image/jpg, image/jpeg"
-      /><br /><br />
-      <!-- Style Reference -->
-      <label for="style_reference">Style Reference:</label>
-      <input
-        type="file"
-        id="style_reference"
-        name="style_reference"
-        accept="image/png, image/jpg, image/jpeg"
-      /><br /><br />
-      <!-- Submit button -->
-      <button type="button" onclick="submitForm()">Generate</button>
-    </form>
-    <!-- Div to display the generated images -->
-    <div id="imageContainer">
-      <!-- <img src="/static/images/1ffb684f-6bdd-47b5-b325-af132071979c.png"/> -->
-      <!-- <img src="https://irarayzelji.pagekite.me/static/images/1ffb684f-6bdd-47b5-b325-af132071979c.png"/> -->
-    </div>
-    <script>
-      async function submitForm() {
-        // Get form elements
-        const prompt = document.getElementById("prompt").value.trim();
-        const number_of_images = document.getElementById("number_of_images").value.trim();
-        const color_palette = document.getElementById("color_palette").value.trim();
-        const base_image = document.getElementById("base_image").files[0];
-        const style_reference = document.getElementById("style_reference").files[0];
 
-        // Validation
-        if (!prompt) {
-          alert("Prompt is required.");
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>First Generation</title>
+</head>
+
+<body>
+  <h1>Hi! This is a test page for DecorAItion's AI model API from Ira's PC.</h1>
+  <!-- <button><a href="next-generation.html">Next</a></button> -->
+  <button onclick="document.location='next-generation.html'">Next Generation</button>
+  <form id="generate_image_form" enctype="multipart/form-data">
+    <!-- Prompt -->
+    <label for="prompt">Prompt:</label><br />
+    <input type="text" id="prompt" name="prompt" required /><br /><br />
+    <!-- Number of Images -->
+    <label for="number_of_images">Number of Images:</label><br />
+    <input type="number" id="number_of_images" name="number_of_images" min="1" max="4" value="1" required /><br /><br />
+    <!-- Color Palette -->
+    <label for="color_palette">Color Palette (comma-separated hex codes):</label><br />
+    <input type="text" id="color_palette" name="color_palette" /><br /><br />
+    <!-- Base Image -->
+    <label for="base_image">Base Image:</label>
+    <input type="file" id="base_image" name="base_image" accept="image/png, image/jpg, image/jpeg" /><br /><br />
+    <!-- Style Reference -->
+    <label for="style_reference">Style Reference:</label>
+    <input type="file" id="style_reference" name="style_reference"
+      accept="image/png, image/jpg, image/jpeg" /><br /><br />
+    <!-- Submit button -->
+    <button type="button" onclick="submitForm()">Generate</button>
+  </form>
+  <!-- Div to display the generated images -->
+  <div id="imageContainer">
+    <!-- <img src="/static/images/1ffb684f-6bdd-47b5-b325-af132071979c.png"/> -->
+    <!-- <img src="https://irarayzelji.pagekite.me/static/images/1ffb684f-6bdd-47b5-b325-af132071979c.png"/> -->
+  </div>
+  <script>
+    async function submitForm() {
+      // Get form elements
+      const prompt = document.getElementById("prompt").value.trim();
+      const number_of_images = document.getElementById("number_of_images").value.trim();
+      const color_palette = document.getElementById("color_palette").value.trim();
+      const base_image = document.getElementById("base_image").files[0];
+      const style_reference = document.getElementById("style_reference").files[0];
+
+      // Validation
+      if (!prompt) {
+        alert("Prompt is required.");
+        return;
+      }
+      if (!number_of_images || number_of_images < 1 || number_of_images > 4) {
+        alert("Please enter a valid number of images (1-4).");
+        return;
+      }
+      if (base_image) {
+        const validExtensions = ["jpg", "jpeg", "png"];
+        const fileExtension = base_image.name.split(".").pop().toLowerCase();
+
+        if (!validExtensions.includes(fileExtension)) {
+          alert("Invalid file type. Please upload a JPG or PNG image.");
           return;
-        }
-        if (!number_of_images || number_of_images < 1 || number_of_images > 4) {
-          alert("Please enter a valid number of images (1-4).");
-          return;
-        }
-        if (base_image) {
-          const validExtensions = ["jpg", "jpeg", "png"];
-          const fileExtension = base_image.name.split(".").pop().toLowerCase();
-
-          if (!validExtensions.includes(fileExtension)) {
-            alert("Invalid file type. Please upload a JPG or PNG image.");
-            return;
-          }
-        }
-        if (style_reference) {
-          const validExtensions = ["jpg", "jpeg", "png"];
-          const fileExtension = style_reference.name.split(".").pop().toLowerCase();
-
-          if (!validExtensions.includes(fileExtension)) {
-            alert("Invalid file type. Please upload a JPG or PNG image.");
-            return;
-          }
-        }
-
-        // Create FormData object
-        const formData = new FormData();
-        formData.append("prompt", prompt);
-        formData.append("number_of_images", number_of_images);
-        if (color_palette) {
-          const colorsArray = color_palette.split(",").map((color) => color.trim());
-          formData.append("color_palette", JSON.stringify(colorsArray));
-        }
-        if (base_image) {
-          formData.append("base_image", base_image);
-        }
-        if (style_reference) {
-          formData.append("style_reference", style_reference);
-        }
-        console.log("Form Data:");
-        console.log(formData);
-
-        // Fetching API
-        try {
-          const response = await fetch("https://irarayzelji.pagekite.me/generate-image", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to generate image");
-          }
-
-          // Display generated images
-          const data = await response.json();
-          const imageContainer = document.getElementById("imageContainer");
-          imageContainer.innerHTML = "";
-          data.image_paths.forEach((path) => {
-            const img = document.createElement("img");
-            // img.src = `https://irarayzelji.pagekite.me/${path}`;
-            img.src = path;
-            img.alt = "Generated Image";
-            img.style.maxWidth = "100%";
-            img.style.height = "auto";
-            imageContainer.appendChild(img);
-          });
-        } catch (error) {
-          console.error("Error:", error);
         }
       }
-    </script>
-  </body>
+      if (style_reference) {
+        const validExtensions = ["jpg", "jpeg", "png"];
+        const fileExtension = style_reference.name.split(".").pop().toLowerCase();
+
+        if (!validExtensions.includes(fileExtension)) {
+          alert("Invalid file type. Please upload a JPG or PNG image.");
+          return;
+        }
+      }
+
+      // Create FormData object
+      const formData = new FormData();
+      formData.append("prompt", prompt);
+      formData.append("number_of_images", number_of_images);
+      if (color_palette) {
+        const colorsArray = color_palette.split(",").map((color) => color.trim());
+        formData.append("color_palette", JSON.stringify(colorsArray));
+      }
+      if (base_image) {
+        formData.append("base_image", base_image);
+      }
+      if (style_reference) {
+        formData.append("style_reference", style_reference);
+      }
+      console.log("Form Data:");
+      console.log(formData);
+
+      // Fetching API
+      try {
+        const response = await fetch("https://irarayzelji.pagekite.me/generate-image", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate image");
+        }
+
+        // Display generated images
+        const data = await response.json();
+        const imageContainer = document.getElementById("imageContainer");
+        imageContainer.innerHTML = "";
+        data.image_paths.forEach((path) => {
+          const img = document.createElement("img");
+          // img.src = `https://irarayzelji.pagekite.me/${path}`;
+          img.src = path;
+          img.alt = "Generated Image";
+          img.style.maxWidth = "100%";
+          img.style.height = "auto";
+          imageContainer.appendChild(img);
+        });
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+  </script>
+</body>
+
 </html>

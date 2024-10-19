@@ -7,6 +7,7 @@ import { collection, addDoc } from "firebase/firestore";
 
 import { query, where, setDoc, deleteDoc, getDocs } from "firebase/firestore";
 import { CheckCircle, Delete } from "@mui/icons-material";
+import { showToast } from "../../../functions/utils";
 
 // Adjust the import path as necessary
 
@@ -52,8 +53,6 @@ export const handleCreateDesign = async (projectId, navigate) => {
     const designId = new Date().getTime().toString() + randomString;
 
     if (currentUser) {
-      const projectRef = doc(db, "users", currentUser.uid, "projects", projectId);
-
       // Design reference within the specific project
       const designRef = doc(db, "designs", designId);
 
@@ -65,22 +64,7 @@ export const handleCreateDesign = async (projectId, navigate) => {
       });
 
       // Show toast notification when the project is created
-      toast.success("Design created successfully!", {
-        icon: <CheckCircle />,
-        position: "top-right",
-        autoClose: 3000, // 3 seconds auto close
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        style: {
-          color: "var(--color-white)",
-          backgroundColor: "var(--inputBg)",
-        },
-        progressStyle: {
-          backgroundColor: "var(--brightFont)",
-        },
-      });
+      showToast("success", "Design created successfully!");
 
       // Navigate to the newly created design
       // setTimeout(
@@ -90,14 +74,7 @@ export const handleCreateDesign = async (projectId, navigate) => {
     }
   } catch (error) {
     console.error("Error creating design: ", error);
-    toast.error("Error creating design! Please try again.", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    showToast("error", "Error creating design! Please try again.");
   }
 };
 
@@ -106,20 +83,10 @@ export const handleDeleteDesign = async (projectId, designId) => {
     const currentUser = auth.currentUser;
 
     if (currentUser) {
-      const projectRef = doc(db, "projects", projectId, "designs", designId);
+      const projectRef = doc(db, "designs", designId);
 
       await deleteDoc(projectRef);
-
-      toast.success("Design deleted", {
-        icon: <Delete />,
-        style: {
-          color: "var(--color-white)",
-          backgroundColor: "var(--inputBg)",
-        },
-        progressStyle: {
-          backgroundColor: "var(--brightFont)",
-        },
-      });
+      showToast("success", "Design deleted");
     }
   } catch (error) {
     console.error("Error deleting design: ", error);
@@ -137,21 +104,7 @@ export const useHandleNameChange = (newName, userId, projectId, setIsEditingName
       const projectRef = doc(db, "projects", projectId);
       await updateDoc(projectRef, { name: newName });
       setIsEditingName(false);
-      toast.success("Design name updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        style: {
-          color: "var(--color-white)",
-          backgroundColor: "var(--inputBg)",
-        },
-        progressStyle: {
-          backgroundColor: "var(--brightFont)",
-        },
-      });
+      showToast("success", "Design name updated successfully!");
     } catch (error) {
       console.error("Error updating design name:", error);
       alert("Failed to update design name");
@@ -171,7 +124,6 @@ export const useProjectDetails = (projectId, setUserId, setProjectData, setNewNa
 
         const fetchProjectDetails = async () => {
           try {
-            // const projectRef = doc(db, "users", user.uid, "projects", projectId);
             const projectRef = doc(db, "projects", projectId);
             const projectSnapshot = await getDoc(projectRef);
             if (projectSnapshot.exists()) {
@@ -215,15 +167,6 @@ const saveData = async (projectId, formData) => {
   }
   const userId = currentUser.uid;
   try {
-    await addDoc(collection(db, "users", userId, "projects", projectId, "timeline"), {
-      projectId,
-      taskName: formData.taskName,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      description: formData.description,
-      repeat: formData.repeat,
-      reminders: formData.reminders,
-    });
     await addDoc(collection(db, "events"), {
       userId: userId,
       projectId,
@@ -234,39 +177,16 @@ const saveData = async (projectId, formData) => {
       repeat: formData.repeat,
       reminders: formData.reminders,
     });
-    toast.success("Document successfully written!", {
-      position: "top-right",
-      autoClose: 1500,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      style: {
-        color: "var(--color-white)",
-        backgroundColor: "var(--inputBg)",
-      },
-      progressStyle: {
-        backgroundColor: "var(--brightFont)",
-      },
-      onClose: () => window.history.back(),
-    });
+    showToast("success", "Document successfully written!");
   } catch (e) {
     console.error("Error adding document: ", e);
-    toast.error("Error adding document! Please try again.", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    showToast("error", "Error adding document! Please try again.");
   }
 };
 
 export { saveData };
 
 export const fetchTasks = (userId, projectId, setTasks) => {
-  // const tasksRef = collection(db, "users", userId, "projects", projectId, "timeline");
   const tasksRef = collection(db, "events");
   const q = query(tasksRef, where("projectId", "==", projectId));
 
@@ -283,66 +203,22 @@ export const fetchTasks = (userId, projectId, setTasks) => {
 
 export const deleteTask = async (taskId) => {
   try {
-    // const taskRef = doc(db, "users", userId, "projects", projectId, "timeline", taskId);
     const taskRef = doc(db, "events", taskId);
     await deleteDoc(taskRef);
-    toast.success("Task successfully deleted!", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      style: {
-        color: "var(--color-white)",
-        backgroundColor: "var(--inputBg)",
-      },
-      progressStyle: {
-        backgroundColor: "var(--brightFont)",
-      },
-    });
+    showToast("success", "Task successfully deleted!");
   } catch (e) {
     console.error("Error deleting document: ", e);
-    toast.error("Error deleting task! Please try again.", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    showToast("error", "Error deleting task! Please try again.");
   }
 };
 
 export const updateTask = async (userId, projectId, taskId, updatedData) => {
   try {
-    // const taskRef = doc(db, "users", userId, "projects", projectId, "timeline", taskId);
     const taskRef = doc(db, "events", taskId);
     await updateDoc(taskRef, updatedData);
-    toast.success("Task updated successfully!", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      style: {
-        color: "var(--color-white)",
-        backgroundColor: "var(--inputBg)",
-      },
-      progressStyle: {
-        backgroundColor: "var(--brightFont)",
-      },
-    });
+    showToast("success", "Task updated successfully!");
   } catch (error) {
     console.error("Error updating task:", error);
-    toast.error("Error updating task! Please try again.", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    showToast("error", "Error updating task! Please try again.");
   }
 };

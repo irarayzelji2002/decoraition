@@ -31,7 +31,7 @@ import AddPin from "./pages/ProjectSpace/AddPin.jsx";
 import EditEvent from "./pages/ProjectSpace/EditEvent.jsx";
 import ProjSetting from "./pages/Settings/ProjSetting.jsx";
 import Version from "./pages/DesignSpace/Version.jsx";
-// import { Rotate90DegreesCcw } from "@mui/icons-material";
+import DesignSettings from "./pages/DesignSpace/DesignSettings.jsx";
 
 function ProtectedRoute({ children }) {
   const { user, userDoc, userDocFetched } = useAuth();
@@ -134,7 +134,7 @@ function App() {
                 }
               />
               <Route
-                path="/details"
+                path="/details/:designId"
                 element={
                   <ProtectedRoute>
                     <Details />
@@ -156,6 +156,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Design />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/setting/:designId"
+                element={
+                  <ProtectedRoute>
+                    <DesignSettings />
                   </ProtectedRoute>
                 }
               />
@@ -201,7 +209,7 @@ function App() {
                 }
               />
               <Route
-                path="/projSetting"
+                path="/projSetting/:projectId"
                 element={
                   <ProtectedRoute>
                     <ProjSetting />

@@ -4,7 +4,7 @@ import "../../css/details.css";
 
 function Details() {
   return (
-    <div>
+    <div style={{ overflowX: "hidden" }}>
       <TopBar state="Details" />
       <div className="details-container">
         <div className="content">

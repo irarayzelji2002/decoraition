@@ -214,6 +214,7 @@ export default function Notifications() {
             min={1}
             max={30}
             sx={{
+              marginTop: "24px",
               color: "var(--slider)", // Slider color
               "& .MuiSlider-thumb": {
                 background: "var(--gradientCircle)", // Gradient thumb
@@ -303,7 +304,6 @@ export default function Notifications() {
             }
           />
         </FormGroup>
-
         <Typography
           variant="h6"
           gutterBottom
@@ -323,7 +323,6 @@ export default function Notifications() {
             }
           />
         </FormGroup>
-
         <Typography
           variant="h6"
           gutterBottom
@@ -381,7 +380,6 @@ export default function Notifications() {
             }
           />
         </FormGroup>
-
         <Typography
           variant="h6"
           gutterBottom

@@ -241,7 +241,7 @@ export default function LoginModal() {
                 },
               },
               "& .MuiFormHelperText-root": {
-                color: "white",
+                color: "var(--color-white)",
               },
             }}
           />
@@ -296,7 +296,7 @@ export default function LoginModal() {
                 },
               },
               "& .MuiFormHelperText-root": {
-                color: "white",
+                color: "var(--color-white)",
               },
             }}
           />
@@ -326,7 +326,7 @@ export default function LoginModal() {
                   />
                 }
                 label="Remember me"
-                sx={{ color: "white" }}
+                sx={{ color: "var(--color-white)" }}
               />
             </Grid>
             <Grid item xs>
@@ -441,7 +441,7 @@ export default function LoginModal() {
       <Typography
         variant="body2"
         sx={{
-          color: "white",
+          color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

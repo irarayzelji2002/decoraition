@@ -171,8 +171,7 @@ export function OTPInput() {
         gap: 2,
       }}
     >
-      <OTP separator={<span>-</span>} value={otp} onChange={setOtp} length={5} />
-      <span>Entered value: {otp}</span>
+      <OTP separator={<span>-</span>} value={otp} onChange={setOtp} length={6} />
     </Box>
   );
 }
@@ -290,7 +289,7 @@ export default function OneTP() {
   return (
     <div className="bg">
       <div className="headtext">
-        <h1>One-Time-Password</h1>
+        <h1 className="h1-otp">One-Time-Password</h1>
       </div>
       <div className="modal-bg">
         <h2 style={{ marginLeft: "10px" }}>Verify your account</h2>
@@ -336,6 +335,9 @@ export default function OneTP() {
               borderRadius: "20px",
               textTransform: "none",
               fontWeight: "bold",
+              "&:hover": {
+                backgroundImage: "var(--gradientButtonHover)",
+              },
             }}
             onClick={handleVerify}
           >

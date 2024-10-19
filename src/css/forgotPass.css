@@ -4,11 +4,14 @@ body {
 .App {
   height: fit-content;
 }
-h1 {
-  font-size: 50px;
+
+.h1-forgotpw {
+  font-size: 3.125em;
   background: var(--gradientFont);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: -1px;
 }
 h2,
 h5 {

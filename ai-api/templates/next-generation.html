@@ -1,384 +1,343 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Next Generation</title>
-    <style>
-      .user_mask_canvas,
-      .new_mask_preview_cont {
-        position: relative;
-        width: 512px;
-        height: 512px;
-      }
 
-      .new_mask_preview {
-        overflow: hidden;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Next Generation</title>
+  <style>
+    .user_mask_canvas,
+    .new_mask_preview_cont {
+      position: relative;
+      width: 512px;
+      height: 512px;
+    }
 
-      .new_mask_preview_img {
-        width: 512px;
-        height: 512px;
-        filter: drop-shadow(0px 1000px 0px rgba(117, 67, 255, 0.5));
-        transform: translateY(-1000px);
-      }
+    .new_mask_preview {
+      overflow: hidden;
+    }
 
-      .add_canvas,
-      .remove_canvas,
-      .sam_canvas,
-      .init_image_preview {
-        position: absolute !important;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
+    .new_mask_preview_img {
+      width: 512px;
+      height: 512px;
+      filter: drop-shadow(0px 1000px 0px rgba(117, 67, 255, 0.5));
+      transform: translateY(-1000px);
+    }
 
-      .init_image_preview_mask,
-      .new_mask_preview {
-        position: absolute !important;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
+    .add_canvas,
+    .remove_canvas,
+    .sam_canvas,
+    .init_image_preview {
+      position: absolute !important;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
-      .sam_canvas {
-        overflow: hidden;
-      }
+    .init_image_preview_mask,
+    .new_mask_preview {
+      position: absolute !important;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
-      .sam_canvas img {
-        width: 512px;
-        height: 512px;
-        filter: drop-shadow(0px 1000px 0px rgba(117, 67, 255, 0.5));
-        transform: translateY(-1000px);
-      }
+    .sam_canvas {
+      overflow: hidden;
+    }
 
-      /* Add z-index for layering */
-      .add_canvas {
-        z-index: 2;
-        /* Initially on top in Add mode */
-      }
+    .sam_canvas img {
+      width: 512px;
+      height: 512px;
+      filter: drop-shadow(0px 1000px 0px rgba(117, 67, 255, 0.5));
+      transform: translateY(-1000px);
+    }
 
-      .remove_canvas {
-        z-index: 1;
-        /* Initially below Add canvas */
-      }
+    /* Add z-index for layering */
+    .add_canvas {
+      z-index: 2;
+      /* Initially on top in Add mode */
+    }
 
-      /* Class to disable interaction */
-      .inactive-canvas {
-        pointer-events: none;
-        opacity: 0.6;
-        /* To visually indicate it's inactive */
-      }
+    .remove_canvas {
+      z-index: 1;
+      /* Initially below Add canvas */
+    }
 
-      /* Display control classes */
-      .display_none {
-        display: none;
-      }
+    /* Class to disable interaction */
+    .inactive-canvas {
+      pointer-events: none;
+      opacity: 0.6;
+      /* To visually indicate it's inactive */
+    }
 
-      .display_block {
-        display: block;
-      }
+    /* Display control classes */
+    .display_none {
+      display: none;
+    }
 
-      /* Error message styling */
-      .err_msg {
-        color: rgb(220, 53, 69);
-      }
-    </style>
-  </head>
+    .display_block {
+      display: block;
+    }
 
-  <body>
-    <h1>Next Image Generation Test</h1>
+    /* Error message styling */
+    .err_msg {
+      color: rgb(220, 53, 69);
+    }
+  </style>
+</head>
 
-    <form id="generate_image_form" method="POST" enctype="multipart/form-data">
-      <!-- Prompt -->
-      <label for="prompt">Prompt:</label>
-      <span id="prompt_err" class="err_msg"></span><br />
-      <input type="text" id="prompt" name="prompt" required /><br /><br />
-      <!-- Number of Images -->
-      <label for="number_of_images">Number of Images:</label>
-      <span id="number_of_images_err" class="err_msg"></span><br />
-      <input
-        type="range"
-        id="number_of_images"
-        name="number_of_images"
-        min="1"
-        max="4"
-        value="1"
-        required
-      /><br /><br />
-      <!-- Color Palette -->
-      <label for="color_palette">Color Palette (comma-separated hex codes):</label><br />
-      <input type="text" id="color_palette" name="color_palette" /><br /><br />
-      <!-- Init Image -->
-      <label for="init_image">Init Image:</label>
-      <span id="init_image_err" class="err_msg"></span>
-      <input
-        type="file"
-        id="init_image"
-        name="init_image"
-        accept="image/png, image/jpg, image/jpeg"
-      /><br /><br />
-      <!-- Style Reference -->
-      <label for="style_reference">Style Reference:</label>
-      <span id="style_reference_err" class="err_msg"></span>
-      <input
-        type="file"
-        id="style_reference"
-        name="style_reference"
-        accept="image/png, image/jpg, image/jpeg"
-      />
-      <button type="button" onclick="removeUploadedFile('style_reference')">
-        Remove Style Reference
-      </button>
-      <br /><br />
-      <!-- Mask Prompt -->
-      <label for="mask_prompt">Mask Prompt:</label>
-      <span id="mask_prompt_err" class="err_msg"></span><br />
-      <input type="text" id="mask_prompt" name="mask_prompt" required /><br />
-      <!-- Generate Mask button -->
-      <span id="mask_general_err" class="err_msg"></span><br />
-      <span id="mask_status_message"></span><br />
-      <button type="button" onclick="generateMask()">Generate Mask</button><br /><br />
-      <!-- SAM Mask -->
-      <label for="sam_mask">SAM mask:</label>
-      <span id="sam_mask_err" class="err_msg"></span>
-      <div id="sam_mask_preview"></div>
+<body>
+  <h1>Next Image Generation Test</h1>
 
-      <!-- Brush size, color, and opacity controls -->
-      <br />
-      <label for="canvas_mode"
-        >Canvas Mode: <span id="canvas_mode_desc">Add To SAM Mask</span></label
-      >
-      <input type="checkbox" id="canvas_mode" checked /><br /><br />
-      <div>
-        <div>Refine Mask Option: <span id="refine_option_err" class="err_msg"></span></div>
-        <div>
-          <input type="radio" id="refine_option_0" name="refine_option" value="0" checked />
-          <label for="mask_0">Add first then remove</label>
-        </div>
-        <div>
-          <input type="radio" id="refine_option_1" name="refine_option" value="1" />
-          <label for="mask_1">Remove first then add</label>
-        </div>
-      </div>
-      <div id="add_to_sam">
-        <h3>Add To SAM Mask Options</h3>
-        <label for="selected_color">Selected Color:</label>
-        <input type="color" id="selected_color" value="#00ff40" />
-
-        <label for="selected_opacity">Selected Opacity:</label>
-        <input type="range" id="selected_opacity" min="0" max="1" step="0.1" value="0.5" />
-
-        <label for="brush_size">Brush Size:</label>
-        <input type="range" id="brush_size" min="5" max="50" value="30" />
-
-        <label for="selected_brush_mode"
-          >Brush Mode: <span id="selected_brush_mode_desc">Draw</span></label
-        >
-        <input type="checkbox" id="selected_brush_mode" checked />
-
-        <label for="mask_visibility">Mask Visibility:</label>
-        <input type="checkbox" id="mask_visibility" checked />
-
-        <button type="button" id="clear_canvas">Clear</button>
-      </div>
-      <div id="remove_from_sam" class="display_none">
-        <h3>Remove From SAM Mask Options</h3>
-        <label for="selected_color">Selected Color:</label>
-        <input type="color" id="selected_color" value="#ff0000" />
-
-        <label for="selected_opacity">Selected Opacity:</label>
-        <input type="range" id="selected_opacity" min="0" max="1" step="0.1" value="0.5" />
-
-        <label for="brush_size">Brush Size:</label>
-        <input type="range" id="brush_size" min="5" max="50" value="30" />
-
-        <label for="selected_brush_mode"
-          >Brush Mode: <span id="selected_brush_mode_desc">Draw</span></label
-        >
-        <input type="checkbox" id="selected_brush_mode" checked />
-
-        <label for="mask_visibility">Mask Visibility:</label>
-        <input type="checkbox" id="mask_visibility" checked />
-
-        <button type="button" id="clear_canvas">Clear</button>
-      </div>
-      <div id="is_sam">
-        <h3>SAM Mask Options</h3>
-        <label for="selected_color">Selected Color:</label>
-        <input type="color" id="selected_color" value="#7543ff" />
-
-        <label for="selected_opacity">Selected Opacity:</label>
-        <input type="range" id="selected_opacity" min="0" max="1" step="0.1" value="0.5" />
-      </div>
-      <!-- Canvas for drawing -->
-      <div id="user_mask_canvas" class="user_mask_canvas">
-        <img src="" id="init_image_preview" class="init_image_preview" />
-        <div id="sam_canvas" class="sam_canvas"></div>
-        <canvas id="remove_canvas" class="remove_canvas"></canvas>
-        <canvas id="add_canvas" class="add_canvas"></canvas>
-      </div>
-      <!-- Base64 Encoded Output -->
-      <div id="get_sam_mask_path">
-        <label for="sam_mask_path">Get SAM Mask Path:</label>
-        <span id="sam_mask_path_err" class="err_msg"></span><br />
-        <textarea
-          id="sam_mask_path"
-          name="sam_mask_path"
-          rows="3"
-          cols="50"
-          placeholder="SAM Mask Path"
-        ></textarea
-        ><br /><br />
-      </div>
-      <div id="get_user_mask_add">
-        <label for="user_mask_add">User Mask (Add):</label>
-        <span id="user_mask_add_err" class="err_msg"></span><br />
-        <textarea
-          id="user_mask_add_base64_output"
-          name="user_mask_add"
-          rows="3"
-          cols="50"
-          placeholder="Base 64 of User Mask (Add)"
-        ></textarea
-        ><br />
-        <button type="button" id="get_user_mask_add">Get User Mask (Add)</button><br /><br />
-      </div>
-      <div id="get_user_mask_remove">
-        <label for="user_mask_remove">User Mask (Remove):</label>
-        <span id="user_mask_remove_err" class="err_msg"></span><br />
-        <textarea
-          id="user_mask_remove_base64_output"
-          name="user_mask_remove"
-          rows="3"
-          cols="50"
-          placeholder="Base 64 of User Mask (Remove)"
-        ></textarea
-        ><br />
-        <button type="button" id="get_user_mask_remove">Get User Mask (Remove)</button><br /><br />
-      </div>
-      <div>
-        <label for="to_preview">Preview:</label>
-        <input type="checkbox" id="to_preview" checked />
-      </div>
-      <div id="new_mask_preview_cont" class="new_mask_preview_cont">
-        <img src="" id="init_image_preview_mask" class="init_image_preview_mask" />
-        <div id="new_mask_preview" class="new_mask_preview">
-          <img src="" id="new_mask_preview_img" class="new_mask_preview_img" />
-        </div>
-      </div>
-      <span id="combine_mask_general_err" class="err_msg"></span><br />
-      <button type="button" id="preview_mask" onclick="previewMask()">Preview Mask</button><br />
-      <span id="apply_mask_general_err" class="err_msg"></span><br />
-      <button type="button" id="apply_mask" onclick="applyMask()">Apply Mask</button><br /><br />
-
-      <!-- Generate button -->
-      <span id="general_err" class="err_msg"></span><br />
-      <button type="button" onclick="generateNextImage()">Generate</button>
-    </form>
-
-    <button type="button" onclick="document.location='/test/first-generation'">
-      First Generation
+  <form id="generate_image_form" method="POST" enctype="multipart/form-data">
+    <!-- Prompt -->
+    <label for="prompt">Prompt:</label>
+    <span id="prompt_err" class="err_msg"></span><br />
+    <input type="text" id="prompt" name="prompt" required /><br /><br />
+    <!-- Number of Images -->
+    <label for="number_of_images">Number of Images:</label>
+    <span id="number_of_images_err" class="err_msg"></span><br />
+    <input type="range" id="number_of_images" name="number_of_images" min="1" max="4" value="1" required /><br /><br />
+    <!-- Color Palette -->
+    <label for="color_palette">Color Palette (comma-separated hex codes):</label><br />
+    <input type="text" id="color_palette" name="color_palette" /><br /><br />
+    <!-- Init Image -->
+    <label for="init_image">Init Image:</label>
+    <span id="init_image_err" class="err_msg"></span>
+    <input type="file" id="init_image" name="init_image" accept="image/png, image/jpg, image/jpeg" /><br /><br />
+    <!-- Style Reference -->
+    <label for="style_reference">Style Reference:</label>
+    <span id="style_reference_err" class="err_msg"></span>
+    <input type="file" id="style_reference" name="style_reference" accept="image/png, image/jpg, image/jpeg" />
+    <button type="button" onclick="removeUploadedFile('style_reference')">
+      Remove Style Reference
     </button>
+    <br /><br />
+    <!-- Mask Prompt -->
+    <label for="mask_prompt">Mask Prompt:</label>
+    <span id="mask_prompt_err" class="err_msg"></span><br />
+    <input type="text" id="mask_prompt" name="mask_prompt" required /><br />
+    <!-- Generate Mask button -->
+    <span id="mask_general_err" class="err_msg"></span><br />
+    <span id="mask_status_message"></span><br />
+    <button type="button" onclick="generateMask()">Generate Mask</button><br /><br />
+    <!-- SAM Mask -->
+    <label for="sam_mask">SAM mask:</label>
+    <span id="sam_mask_err" class="err_msg"></span>
+    <div id="sam_mask_preview"></div>
 
+    <!-- Brush size, color, and opacity controls -->
+    <br />
+    <label for="canvas_mode">Canvas Mode: <span id="canvas_mode_desc">Add To SAM Mask</span></label>
+    <input type="checkbox" id="canvas_mode" checked /><br /><br />
     <div>
-      <span id="status_message"></span><br />
-      <div class="progress">
-        <progress id="progress_bar" value="0" max="100"></progress><br />
-        <span id="progress_message"></span><br />
-        <span id="time_remaining_message"></span><br />
+      <div>Refine Mask Option: <span id="refine_option_err" class="err_msg"></span></div>
+      <div>
+        <input type="radio" id="refine_option_0" name="refine_option" value="0" checked />
+        <label for="mask_0">Add first then remove</label>
       </div>
-      <div id="image_container"></div>
+      <div>
+        <input type="radio" id="refine_option_1" name="refine_option" value="1" />
+        <label for="mask_1">Remove first then add</label>
+      </div>
     </div>
+    <div id="add_to_sam">
+      <h3>Add To SAM Mask Options</h3>
+      <label for="selected_color">Selected Color:</label>
+      <input type="color" id="selected_color" value="#00ff40" />
 
-    <script>
-      window.number_of_images = 1;
-      window.sam_image_paths = {};
-      window.selected_sam_mask = {};
-      window.combined_mask = {};
+      <label for="selected_opacity">Selected Opacity:</label>
+      <input type="range" id="selected_opacity" min="0" max="1" step="0.1" value="0.5" />
 
-      document.addEventListener("DOMContentLoaded", function () {
-        // Preview Mask
-        const previewCheckedInput = document.getElementById("to_preview");
-        const newMaskPreview = document.getElementById("new_mask_preview_cont");
-        previewCheckedInput.addEventListener("change", function () {
-          newMaskPreview.style.display = previewCheckedInput.checked ? "block" : "none";
-        });
+      <label for="brush_size">Brush Size:</label>
+      <input type="range" id="brush_size" min="5" max="50" value="30" />
 
-        // Progress
-        const progress_bar = document.getElementById("progress_bar");
-        progress_bar.style.display = progress_bar.value != 0 ? "block" : "none";
+      <label for="selected_brush_mode">Brush Mode: <span id="selected_brush_mode_desc">Draw</span></label>
+      <input type="checkbox" id="selected_brush_mode" checked />
+
+      <label for="mask_visibility">Mask Visibility:</label>
+      <input type="checkbox" id="mask_visibility" checked />
+
+      <button type="button" id="clear_canvas">Clear</button>
+    </div>
+    <div id="remove_from_sam" class="display_none">
+      <h3>Remove From SAM Mask Options</h3>
+      <label for="selected_color">Selected Color:</label>
+      <input type="color" id="selected_color" value="#ff0000" />
+
+      <label for="selected_opacity">Selected Opacity:</label>
+      <input type="range" id="selected_opacity" min="0" max="1" step="0.1" value="0.5" />
+
+      <label for="brush_size">Brush Size:</label>
+      <input type="range" id="brush_size" min="5" max="50" value="30" />
+
+      <label for="selected_brush_mode">Brush Mode: <span id="selected_brush_mode_desc">Draw</span></label>
+      <input type="checkbox" id="selected_brush_mode" checked />
+
+      <label for="mask_visibility">Mask Visibility:</label>
+      <input type="checkbox" id="mask_visibility" checked />
+
+      <button type="button" id="clear_canvas">Clear</button>
+    </div>
+    <div id="is_sam">
+      <h3>SAM Mask Options</h3>
+      <label for="selected_color">Selected Color:</label>
+      <input type="color" id="selected_color" value="#7543ff" />
+
+      <label for="selected_opacity">Selected Opacity:</label>
+      <input type="range" id="selected_opacity" min="0" max="1" step="0.1" value="0.5" />
+    </div>
+    <!-- Canvas for drawing -->
+    <div id="user_mask_canvas" class="user_mask_canvas">
+      <img src="" id="init_image_preview" class="init_image_preview" />
+      <div id="sam_canvas" class="sam_canvas"></div>
+      <canvas id="remove_canvas" class="remove_canvas"></canvas>
+      <canvas id="add_canvas" class="add_canvas"></canvas>
+    </div>
+    <!-- Base64 Encoded Output -->
+    <div id="get_sam_mask_path">
+      <label for="sam_mask_path">Get SAM Mask Path:</label>
+      <span id="sam_mask_path_err" class="err_msg"></span><br />
+      <textarea id="sam_mask_path" name="sam_mask_path" rows="3" cols="50"
+        placeholder="SAM Mask Path"></textarea><br /><br />
+    </div>
+    <div id="get_user_mask_add">
+      <label for="user_mask_add">User Mask (Add):</label>
+      <span id="user_mask_add_err" class="err_msg"></span><br />
+      <textarea id="user_mask_add_base64_output" name="user_mask_add" rows="3" cols="50"
+        placeholder="Base 64 of User Mask (Add)"></textarea><br />
+      <button type="button" id="get_user_mask_add">Get User Mask (Add)</button><br /><br />
+    </div>
+    <div id="get_user_mask_remove">
+      <label for="user_mask_remove">User Mask (Remove):</label>
+      <span id="user_mask_remove_err" class="err_msg"></span><br />
+      <textarea id="user_mask_remove_base64_output" name="user_mask_remove" rows="3" cols="50"
+        placeholder="Base 64 of User Mask (Remove)"></textarea><br />
+      <button type="button" id="get_user_mask_remove">Get User Mask (Remove)</button><br /><br />
+    </div>
+    <div>
+      <label for="to_preview">Preview:</label>
+      <input type="checkbox" id="to_preview" checked />
+    </div>
+    <div id="new_mask_preview_cont" class="new_mask_preview_cont">
+      <img src="" id="init_image_preview_mask" class="init_image_preview_mask" />
+      <div id="new_mask_preview" class="new_mask_preview">
+        <img src="" id="new_mask_preview_img" class="new_mask_preview_img" />
+      </div>
+    </div>
+    <span id="combine_mask_general_err" class="err_msg"></span><br />
+    <button type="button" id="preview_mask" onclick="previewMask()">Preview Mask</button><br />
+    <span id="apply_mask_general_err" class="err_msg"></span><br />
+    <button type="button" id="apply_mask" onclick="applyMask()">Apply Mask</button><br /><br />
+
+    <!-- Generate button -->
+    <span id="general_err" class="err_msg"></span><br />
+    <button type="button" onclick="generateNextImage()">Generate</button>
+  </form>
+
+  <button type="button" onclick="document.location='/test/first-generation'">
+    First Generation
+  </button>
+
+  <div>
+    <span id="status_message"></span><br />
+    <div class="progress">
+      <progress id="progress_bar" value="0" max="100"></progress><br />
+      <span id="progress_message"></span><br />
+      <span id="time_remaining_message"></span><br />
+    </div>
+    <div id="image_container"></div>
+  </div>
+
+  <script>
+    window.number_of_images = 1;
+    window.sam_image_paths = {};
+    window.selected_sam_mask = {};
+    window.combined_mask = {};
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // Preview Mask
+      const previewCheckedInput = document.getElementById("to_preview");
+      const newMaskPreview = document.getElementById("new_mask_preview_cont");
+      previewCheckedInput.addEventListener("change", function () {
+        newMaskPreview.style.display = previewCheckedInput.checked ? "block" : "none";
       });
 
-      // Function to remove uploaded file
-      function removeUploadedFile(inputId) {
-        const fileInput = document.getElementById(inputId);
-        if (fileInput) {
-          fileInput.value = "";
-          console.log(`${inputId} has been cleared.`);
-        } else {
-          console.error(`Input element with id "${inputId}" not found.`);
-        }
+      // Progress
+      const progress_bar = document.getElementById("progress_bar");
+      progress_bar.style.display = progress_bar.value != 0 ? "block" : "none";
+    });
+
+    // Function to remove uploaded file
+    function removeUploadedFile(inputId) {
+      const fileInput = document.getElementById(inputId);
+      if (fileInput) {
+        fileInput.value = "";
+        console.log(`${inputId} has been cleared.`);
+      } else {
+        console.error(`Input element with id "${inputId}" not found.`);
+      }
+    }
+
+    // Function when Generate Mask is clicked
+    async function generateMask() {
+      let err_count = 0;
+      const err_msgs = document.querySelectorAll(".err_msg");
+      for (let i = 0; i < err_msgs.length; i++) {
+        err_msgs[i].innerHTML = "";
+      }
+      // Get form elements
+      const mask_prompt = document.getElementById("mask_prompt").value.trim();
+      const init_image = document.getElementById("init_image").files[0];
+
+      // Validation
+      if (!mask_prompt) {
+        document.getElementById("mask_prompt_err").innerHTML =
+          "Mask prompt is required to generate a mask.";
+        err_count++;
+      }
+      if (!init_image) {
+        document.getElementById("init_image_err").innerHTML = "Init image is required.";
+        err_count++;
+      }
+      if (err_count > 0) {
+        return;
       }
 
-      // Function when Generate Mask is clicked
-      async function generateMask() {
-        let err_count = 0;
-        const err_msgs = document.querySelectorAll(".err_msg");
-        for (let i = 0; i < err_msgs.length; i++) {
-          err_msgs[i].innerHTML = "";
-        }
-        // Get form elements
-        const mask_prompt = document.getElementById("mask_prompt").value.trim();
-        const init_image = document.getElementById("init_image").files[0];
+      // Create FormData object
+      const formData = new FormData();
+      formData.append("mask_prompt", mask_prompt);
+      formData.append("init_image", init_image);
 
-        // Validation
-        if (!mask_prompt) {
-          document.getElementById("mask_prompt_err").innerHTML =
-            "Mask prompt is required to generate a mask.";
-          err_count++;
-        }
-        if (!init_image) {
-          document.getElementById("init_image_err").innerHTML = "Init image is required.";
-          err_count++;
-        }
-        if (err_count > 0) {
-          return;
-        }
+      // Fetch API
+      try {
+        document.getElementById("mask_status_message").innerHTML = "Generating mask.";
+        const response = await fetch("/generate-sam-mask", {
+          method: "POST",
+          body: formData,
+        });
 
-        // Create FormData object
-        const formData = new FormData();
-        formData.append("mask_prompt", mask_prompt);
-        formData.append("init_image", init_image);
-
-        // Fetch API
-        try {
-          document.getElementById("mask_status_message").innerHTML = "Generating mask.";
-          const response = await fetch("/generate-sam-mask", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            document.getElementById("mask_status_message").innerHTML = "";
-            document.getElementById("mask_general_err").innerHTML =
-              "Failed to generate mask. Make sure to type an object present in the image in the mask prompt.";
-            throw new Error("Failed to generate SAM mask");
-          }
-
-          const data = await response.json();
-          const sam_mask_preview = document.getElementById("sam_mask_preview");
-          sam_mask_preview.innerHTML = "";
-          const { blended_images, masks, masked_images } = data.image_paths;
-          window.sam_image_paths = data.image_paths;
+        if (!response.ok) {
           document.getElementById("mask_status_message").innerHTML = "";
+          document.getElementById("mask_general_err").innerHTML =
+            "Failed to generate mask. Make sure to type an object present in the image in the mask prompt.";
+          throw new Error("Failed to generate SAM mask");
+        }
 
-          // Dynamically create a radio group for the 3 mask options
-          blended_images.forEach((blended_image, index) => {
-            const maskOption = document.createElement("div");
-            maskOption.innerHTML = `
+        const data = await response.json();
+        const sam_mask_preview = document.getElementById("sam_mask_preview");
+        sam_mask_preview.innerHTML = "";
+        const { blended_images, masks, masked_images } = data.image_paths;
+        window.sam_image_paths = data.image_paths;
+        document.getElementById("mask_status_message").innerHTML = "";
+
+        // Dynamically create a radio group for the 3 mask options
+        blended_images.forEach((blended_image, index) => {
+          const maskOption = document.createElement("div");
+          maskOption.innerHTML = `
 						<input type="radio" id="mask_${index}" name="selected_mask" value="${index}" ${index === 0 ? "checked" : ""} />
 						<label for="mask_${index}">
 							<img src="${blended_images[index]}" alt="Blended Image" width="100" />
@@ -386,477 +345,478 @@
 							<img src="${masked_images[index]}" alt="Masked Image" width="100" />
 						</label>
 					`;
-            sam_mask_preview.appendChild(maskOption);
+          sam_mask_preview.appendChild(maskOption);
 
-            // Add an event listener for this radio button
-            const radio = maskOption.querySelector('input[name="selected_mask"]');
-            console.log("inside foreach");
-            radio.addEventListener("change", function () {
-              const selectedMaskRadioChecked = document.querySelector(
-                'input[name="selected_mask"]:checked'
-              );
-              const selectedIndex = selectedMaskRadioChecked.value;
-              const { blended_images, masks, masked_images } = window.sam_image_paths;
-              window.selected_sam_mask = {
-                blended_image: blended_images[selectedIndex],
-                mask: masks[selectedIndex],
-                masked_image: masked_images[selectedIndex],
-              };
-              console.log("1window.sam_image_paths:", window.sam_image_paths);
-              console.log("1window.selected_sam_mask:", window.selected_sam_mask);
-              window.useSelectedMask();
-            });
-
-            if (index == 0) {
-              window.selected_sam_mask = {
-                blended_image: blended_images[0],
-                mask: masks[0],
-                masked_image: masked_images[0],
-              };
-              window.useSelectedMask();
-            }
-          });
-        } catch (error) {
-          console.error("Error:", error);
-        }
-      }
-
-      // Function when Preview Mask is clicked/called
-      async function previewMask() {
-        await window.getUserMasks();
-
-        let err_count = 0;
-        // Validate data
-        const refineOptionRadioChecked = document.querySelector(
-          'input[name="refine_option"]:checked'
-        );
-        if (!refineOptionRadioChecked) {
-          document.getElementById("refine_option_err").innerHTML =
-            "Please select a refine mask option.";
-          err_count++;
-        }
-        const selectedMaskRadioChecked = document.querySelector(
-          'input[name="selected_mask"]:checked'
-        );
-        if (!selectedMaskRadioChecked) {
-          document.getElementById("sam_mask_err").innerHTML = "Please select a SAM mask.";
-          err_count++;
-        }
-        const sam_mask_path = document.getElementById("sam_mask_path").value;
-        const user_mask_add = document.getElementById("user_mask_add_base64_output").value;
-        const user_mask_remove = document.getElementById("user_mask_remove_base64_output").value;
-        if (!user_mask_add) {
-          document.getElementById("user_mask_add_err").innerHTML = "Please provide the add mask.";
-          err_count++;
-        }
-        if (!user_mask_remove) {
-          document.getElementById("user_mask_remove_err").innerHTML =
-            "Please provide the remove mask.";
-          err_count++;
-        }
-        if (err_count > 0) {
-          return;
-        }
-
-        const refineOptionIndex = refineOptionRadioChecked.value;
-        const selectedMaskIndex = selectedMaskRadioChecked.value;
-        const { blended_images, masks, masked_images } = window.sam_image_paths;
-        window.selected_sam_mask = {
-          blended_image: blended_images[selectedMaskIndex],
-          mask: masks[selectedMaskIndex],
-          masked_image: masked_images[selectedMaskIndex],
-        };
-
-        // Create FormData object
-        const formData = new FormData();
-        formData.append("refine_option", refineOptionIndex);
-        // formData.append("sam_mask", JSON.stringify(window.selected_sam_mask));
-        formData.append("sam_mask", sam_mask_path);
-        formData.append("user_mask_add", user_mask_add);
-        formData.append("user_mask_remove", user_mask_remove);
-        console.log("Form Data:");
-        console.log(formData);
-
-        // Fetch API
-        try {
-          const response = await fetch("/preview-mask", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            document.getElementById("combine_mask_general_err").innerHTML =
-              "Failed to combine masks";
-            throw new Error("Failed to combine masks");
-          }
-
-          const data = await response.json();
-          const previewCheckedInput = document.getElementById("to_preview");
-          console.log(data);
-          console.log("previewChecked; " + previewCheckedInput.checked);
-          if (previewCheckedInput.checked) {
-            const initImage = document.querySelector("#user_mask_canvas #init_image_preview");
-            const initImagePreview = document.querySelector(
-              "#new_mask_preview_cont #init_image_preview_mask"
+          // Add an event listener for this radio button
+          const radio = maskOption.querySelector('input[name="selected_mask"]');
+          console.log("inside foreach");
+          radio.addEventListener("change", function () {
+            const selectedMaskRadioChecked = document.querySelector(
+              'input[name="selected_mask"]:checked'
             );
-            initImagePreview.src = initImage.src;
-            const { mask, masked_image } = data;
-            const newMaskPreview = document.getElementById("new_mask_preview");
-            newMaskPreview.innerHTML = `
-						<img src="${masked_image}" id="new_mask_preview_img" class="new_mask_preview_img"/>
-					`;
-          }
-          return data;
-        } catch (error) {
-          console.error("Error:", error);
-          document.getElementById("combine_mask_general_err").innerHTML =
-            "An error occurred. Please try again.";
-        }
-      }
-
-      // Function when Apply Mask is clicked/called
-      async function applyMask() {
-        const data = await previewMask(); // return mask
-        if (!data) {
-          console.error("Error:", error);
-          document.getElementById("combine_mask_general_err").innerHTML =
-            "An error occurred. Please try again.";
-        }
-        const { mask, masked_image } = data;
-        window.combined_mask = data;
-        const newMaskPreview = document.querySelector("#new_mask_preview");
-        const samCanvas = document.getElementById("sam_canvas");
-        const getSAMMaskPath = document.getElementById("get_sam_mask_path");
-        newMaskPreview.innerHTML = ""; // Clear the preview area
-
-        // Add masked_image to samCanvas with styles
-        const initImagePreview = document.querySelector(
-          "#new_mask_preview_cont #init_image_preview_mask"
-        );
-        initImagePreview.src = "";
-        let samMaskImage = new Image();
-        samMaskImage.src = masked_image;
-        samMaskImage.onload = function () {
-          samCanvas.width = samMaskImage.width;
-          samCanvas.height = samMaskImage.height;
-          window.applySAMMaskStyling();
-          samCanvas.innerHTML = `
-                    <img src="${masked_image}" alt="Blended Image" width="512" height="512"/>
-                `;
-          getSAMMaskPath.querySelector("#sam_mask_path").value = mask;
-          window.clearAddRemoveCanvas();
-        };
-      }
-
-      // Function when Generate is clicked
-      async function generateNextImage() {
-        let err_count = 0;
-        const err_msgs = document.querySelectorAll(".err_msg");
-        for (let i = 0; i < err_msgs.length; i++) {
-          err_msgs[i].innerHTML = "";
-        }
-        // Get form elements
-        const prompt = document.getElementById("prompt").value.trim();
-        const number_of_images = document.getElementById("number_of_images").value.trim();
-        window.number_of_images = number_of_images;
-        const color_palette = document.getElementById("color_palette").value.trim();
-        const init_image = document.getElementById("init_image").files[0];
-        const combinedMaskImg = document.querySelector("#sam_canvas img");
-        let combined_masked_image = "";
-        let combined_mask = "";
-        const style_reference = document.getElementById("style_reference").files[0];
-        const mask_prompt = document.getElementById("mask_prompt").value.trim();
-
-        // Validation
-        // Combine mask
-        const samCanvas = document.getElementById("sam_canvas");
-        const selectedMaskRadio = document.querySelectorAll('input[name="selected_mask"]');
-        if (samCanvas.innerHTML == "" && selectedMaskRadio.length == 0) {
-          if (!init_image && !mask_prompt) {
-            document.getElementById("general_err").innerHTML =
-              "Generate a mask first with the mask prompt and init image.";
-            return;
-          } else if (!mask_prompt || !init_image) {
-            if (!mask_prompt) {
-              document.getElementById("mask_prompt_err").innerHTML =
-                "Mask prompt is required to generate a mask.";
-            }
-            if (!init_image) {
-              document.getElementById("init_image_err").innerHTML =
-                "Init image is required to generate a mask.";
-            }
-            return;
-          } else {
-            document.getElementById("general_err").innerHTML = "Generate a mask first.";
-            return;
-          }
-        } else if (samCanvas.innerHTML == "") {
-          document.getElementById("general_err").innerHTML = "Generate a mask first.";
-        }
-        if (combinedMaskImg) {
-          combined_masked_image = combinedMaskImg.src; //path
-        }
-        if (combined_masked_image == "" || !combined_masked_image) {
-          if (combined_masked_image == "" && samCanvas.innerHTML == "") {
-            document.getElementById("general_err").innerHTML = "Generate a mask first.";
-          } else {
-            document.getElementById("general_err").innerHTML =
-              "Generate a mask first with the mask prompt and init image.";
-          }
-          return;
-        } else {
-          //combined_masked_image not empty
-          await applyMask();
-          const { mask, masked_image } = window.combined_mask;
-          combined_mask = mask;
-          // const addCanvas = document.getElementById("add_canvas");
-          // const removeCanvas = document.getElementById("remove_canvas");
-
-          // const isAddCanvasEmpty = window.isCanvasEmpty(addCanvas);
-          // const isRemoveCanvasEmpty = window.isCanvasEmpty(removeCanvas);
-
-          // // both canvas not empty, haven't applied mask
-          // if (!(isAddCanvasEmpty && isRemoveCanvasEmpty)) {
-          // 	document.getElementById("general_err").innerHTML = "Please apply the mask before generating.";
-          // 	err_count++;
-          // }
-        }
-        if (!prompt) {
-          document.getElementById("prompt_err").innerHTML = "Prompt is required.";
-          err_count++;
-        }
-        if (!number_of_images || number_of_images < 1 || number_of_images > 4) {
-          document.getElementById("number_of_images_err").innerHTML =
-            "Please enter a valid number of images (1-4).";
-          err_count++;
-        }
-
-        if (err_count > 0) {
-          return;
-        }
-
-        // Create FormData object
-        const formData = new FormData();
-        formData.append("prompt", prompt);
-        formData.append("number_of_images", number_of_images);
-        if (color_palette) {
-          const colorsArray = color_palette.split(",").map((color) => color.trim());
-          formData.append("color_palette", JSON.stringify(colorsArray));
-        }
-        formData.append("init_image", init_image);
-        formData.append("combined_mask", combined_mask);
-        if (style_reference) {
-          formData.append("style_reference", style_reference);
-        }
-        console.log("Form Data:");
-        console.log(formData);
-
-        // Fetch API call to generate the next image
-        try {
-          const generateResponse = await fetch("/generate-next-image", {
-            method: "POST",
-            body: formData,
+            const selectedIndex = selectedMaskRadioChecked.value;
+            const { blended_images, masks, masked_images } = window.sam_image_paths;
+            window.selected_sam_mask = {
+              blended_image: blended_images[selectedIndex],
+              mask: masks[selectedIndex],
+              masked_image: masked_images[selectedIndex],
+            };
+            console.log("1window.sam_image_paths:", window.sam_image_paths);
+            console.log("1window.selected_sam_mask:", window.selected_sam_mask);
+            window.useSelectedMask();
           });
 
-          if (!generateResponse.ok) {
-            document.getElementById("general_err").innerHTML = "Failed to queue task";
-            throw new Error("Failed to queue task");
+          if (index == 0) {
+            window.selected_sam_mask = {
+              blended_image: blended_images[0],
+              mask: masks[0],
+              masked_image: masked_images[0],
+            };
+            window.useSelectedMask();
           }
+        });
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
 
-          const generateData = await generateResponse.json();
-          const taskId = generateData.task.task_id;
-          console.log(`Task ID: ${taskId}`);
-          let task = await checkTaskStatus(taskId);
-        } catch (error) {
-          console.error("Error:", error);
-        }
+    // Function when Preview Mask is clicked/called
+    async function previewMask() {
+      await window.getUserMasks();
+
+      let err_count = 0;
+      // Validate data
+      const refineOptionRadioChecked = document.querySelector(
+        'input[name="refine_option"]:checked'
+      );
+      if (!refineOptionRadioChecked) {
+        document.getElementById("refine_option_err").innerHTML =
+          "Please select a refine mask option.";
+        err_count++;
+      }
+      const selectedMaskRadioChecked = document.querySelector(
+        'input[name="selected_mask"]:checked'
+      );
+      if (!selectedMaskRadioChecked) {
+        document.getElementById("sam_mask_err").innerHTML = "Please select a SAM mask.";
+        err_count++;
+      }
+      const sam_mask_path = document.getElementById("sam_mask_path").value;
+      const user_mask_add = document.getElementById("user_mask_add_base64_output").value;
+      const user_mask_remove = document.getElementById("user_mask_remove_base64_output").value;
+      if (!user_mask_add) {
+        document.getElementById("user_mask_add_err").innerHTML = "Please provide the add mask.";
+        err_count++;
+      }
+      if (!user_mask_remove) {
+        document.getElementById("user_mask_remove_err").innerHTML =
+          "Please provide the remove mask.";
+        err_count++;
+      }
+      if (err_count > 0) {
+        return;
       }
 
-      function getQueuePositionMessage(position) {
-        // Adjusting position to get the correct "in line" position
-        const truePosition = position;
+      const refineOptionIndex = refineOptionRadioChecked.value;
+      const selectedMaskIndex = selectedMaskRadioChecked.value;
+      const { blended_images, masks, masked_images } = window.sam_image_paths;
+      window.selected_sam_mask = {
+        blended_image: blended_images[selectedMaskIndex],
+        mask: masks[selectedMaskIndex],
+        masked_image: masked_images[selectedMaskIndex],
+      };
 
-        const ordinalSuffix = (num) => {
-          const lastDigit = num % 10;
-          const suffix =
-            lastDigit === 1 && num !== 11
-              ? "st"
-              : lastDigit === 2 && num !== 12
-                ? "nd"
-                : lastDigit === 3 && num !== 13
-                  ? "rd"
-                  : "th";
-          return `${num}${suffix}`;
-        };
+      // Create FormData object
+      const formData = new FormData();
+      formData.append("refine_option", refineOptionIndex);
+      // formData.append("sam_mask", JSON.stringify(window.selected_sam_mask));
+      formData.append("sam_mask", sam_mask_path);
+      formData.append("user_mask_add", user_mask_add);
+      formData.append("user_mask_remove", user_mask_remove);
+      console.log("Form Data:");
+      console.log(formData);
 
-        if (truePosition === 1) {
-          return "You're next in line.";
-        } else if (truePosition <= 20) {
-          return `You're ${ordinalSuffix(truePosition)} in line.`;
-        } else {
-          return `You're in queue. There are ${truePosition - 1} tasks in front of you.`;
-        }
-      }
-
-      // Function to check task status
-      async function checkTaskStatus(taskId) {
-        let running = false;
-
-        while (!running) {
-          const response = await fetch(`/generate-image/task-status?task_id=${taskId}`);
-
-          if (!response.ok) {
-            const errorMessage = await response.json();
-            throw new Error(errorMessage.error || "Failed to get task results");
-          }
-
-          const data = await response.json();
-
-          if (data.position != 1) {
-            let message = getQueuePositionMessage(data.position);
-            document.getElementById("status_message").innerHTML = message;
-            console.log(message);
-          } else {
-            running = true;
-            document.getElementById("status_message").innerHTML = "Image generation in progress.";
-            // Track progress until task is complete
-            console.log("Tracking Image: ");
-            await trackImageGenerationProgress(taskId);
-            // Fetch and display the generated images
-            console.log("Displaying Image: ");
-            await displayGeneratedImages(taskId);
-          }
-
-          if (!running) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-          }
-        }
-      }
-
-      // Function to track progress of image generation
-      async function trackImageGenerationProgress(taskId) {
-        let progress = 0;
-        let eta_relative = 0;
-        let current_image_index = 0;
-        let current_image = null;
-        let previous_image = null;
-        let completed = false;
-        let status = "pending";
-        let curr_step = 0;
-        let prev_step = -1;
-        const number_of_images = window.number_of_images || 1;
-
-        // Create image tags in the image container
-        const imageContainer = document.getElementById("image_container");
-        imageContainer.innerHTML = "";
-        for (let i = 0; i < number_of_images; i++) {
-          const img = document.createElement("img");
-          img.id = `generated_image_${i}`;
-          img.alt = "";
-          img.style.maxWidth = "100%";
-          img.style.height = "auto";
-          imageContainer.appendChild(img);
-        }
-
-        while (!completed) {
-          // Fetch API
-          const response = await fetch(`/generate-image/image-status?task_id=${taskId}`);
-
-          if (!response.ok) {
-            const errorMessage = await response.json();
-            throw new Error(errorMessage.error || "Failed to get progress.");
-          }
-
-          const data = await response.json();
-          progress = data.progress;
-          eta_relative = data.eta_relative;
-          current_image = data.current_image;
-          status = data.status;
-          curr_step = data.state.sampling_step;
-
-          // Display progress for each image
-          if (current_image_index < number_of_images) {
-            document.getElementById("status_message").innerHTML =
-              `Image generation in progress. Generating image ${current_image_index + 1} of ${number_of_images}`;
-          }
-          const progress_bar = document.getElementById("progress_bar");
-          const progress_percent = Math.round(progress * 100);
-          progress_bar.value = progress_percent;
-          progress_bar.style.display = "block";
-          document.getElementById("progress_message").innerHTML = `Progress: ${progress_percent}%`;
-          document.getElementById("time_remaining_message").innerHTML =
-            `ETA: ${Math.round(eta_relative).toFixed(0)}s`;
-          console.log(
-            `Progress: ${progress_percent}%; ETA: ${Math.round(eta_relative).toFixed(0)}s; Sampling Step: ${data.state.sampling_step}`
-          );
-
-          // Display image if current_image changes
-          if (current_image != null && previous_image != current_image) {
-            const imgElement = document.getElementById(`generated_image_${current_image_index}`);
-            imgElement.src = `data:image/png;base64,${data.current_image}`;
-            imgElement.alt = "Preview Image";
-            imgElement.style.maxWidth = "100%";
-            imgElement.style.height = "auto";
-            previous_image = current_image;
-          }
-
-          // Check if we completed the image based on sampling steps
-          if ((prev_step === 30 || prev_step === 31) && curr_step == 0) {
-            current_image_index++;
-          }
-          prev_step = curr_step;
-
-          // Mark the task as completed if `current_image` becomes null after being non-null & status is success/failed
-          if (
-            previous_image != null &&
-            current_image == null &&
-            (status === "success" || status === "failed")
-          ) {
-            completed = true;
-            console.log("Image generation completed.");
-            progress_bar.style.display = "none";
-            document.getElementById("status_message").innerHTML = "Image generation complete!";
-            document.getElementById("progress_message").innerHTML = "";
-            document.getElementById("time_remaining_message").innerHTML = "";
-          }
-
-          if (!completed) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-          }
-        }
-      }
-
-      // Function to fetch and display the generated images
-      async function displayGeneratedImages(taskId) {
-        const response = await fetch(`/generate-image/get-results?task_id=${taskId}`, {
-          method: "GET",
+      // Fetch API
+      try {
+        const response = await fetch("/preview-mask", {
+          method: "POST",
+          body: formData,
         });
 
-        if (response.status === 202) {
-          console.log("Request accepted, still processing. Please wait...");
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          return displayGeneratedImages(taskId, retryCount + 1);
-        } else if (!response.ok) {
+        if (!response.ok) {
+          document.getElementById("combine_mask_general_err").innerHTML =
+            "Failed to combine masks";
+          throw new Error("Failed to combine masks");
+        }
+
+        const data = await response.json();
+        const previewCheckedInput = document.getElementById("to_preview");
+        console.log(data);
+        console.log("previewChecked; " + previewCheckedInput.checked);
+        if (previewCheckedInput.checked) {
+          const initImage = document.querySelector("#user_mask_canvas #init_image_preview");
+          const initImagePreview = document.querySelector(
+            "#new_mask_preview_cont #init_image_preview_mask"
+          );
+          initImagePreview.src = initImage.src;
+          const { mask, masked_image } = data;
+          const newMaskPreview = document.getElementById("new_mask_preview");
+          newMaskPreview.innerHTML = `
+						<img src="${masked_image}" id="new_mask_preview_img" class="new_mask_preview_img"/>
+					`;
+        }
+        return data;
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("combine_mask_general_err").innerHTML =
+          "An error occurred. Please try again.";
+      }
+    }
+
+    // Function when Apply Mask is clicked/called
+    async function applyMask() {
+      const data = await previewMask(); // return mask
+      if (!data) {
+        console.error("Error:", error);
+        document.getElementById("combine_mask_general_err").innerHTML =
+          "An error occurred. Please try again.";
+      }
+      const { mask, masked_image } = data;
+      window.combined_mask = data;
+      const newMaskPreview = document.querySelector("#new_mask_preview");
+      const samCanvas = document.getElementById("sam_canvas");
+      const getSAMMaskPath = document.getElementById("get_sam_mask_path");
+      newMaskPreview.innerHTML = ""; // Clear the preview area
+
+      // Add masked_image to samCanvas with styles
+      const initImagePreview = document.querySelector(
+        "#new_mask_preview_cont #init_image_preview_mask"
+      );
+      initImagePreview.src = "";
+      let samMaskImage = new Image();
+      samMaskImage.src = masked_image;
+      samMaskImage.onload = function () {
+        samCanvas.width = samMaskImage.width;
+        samCanvas.height = samMaskImage.height;
+        window.applySAMMaskStyling();
+        samCanvas.innerHTML = `
+                    <img src="${masked_image}" alt="Blended Image" width="512" height="512"/>
+                `;
+        getSAMMaskPath.querySelector("#sam_mask_path").value = mask;
+        window.clearAddRemoveCanvas();
+      };
+    }
+
+    // Function when Generate is clicked
+    async function generateNextImage() {
+      let err_count = 0;
+      const err_msgs = document.querySelectorAll(".err_msg");
+      for (let i = 0; i < err_msgs.length; i++) {
+        err_msgs[i].innerHTML = "";
+      }
+      // Get form elements
+      const prompt = document.getElementById("prompt").value.trim();
+      const number_of_images = document.getElementById("number_of_images").value.trim();
+      window.number_of_images = number_of_images;
+      const color_palette = document.getElementById("color_palette").value.trim();
+      const init_image = document.getElementById("init_image").files[0];
+      const combinedMaskImg = document.querySelector("#sam_canvas img");
+      let combined_masked_image = "";
+      let combined_mask = "";
+      const style_reference = document.getElementById("style_reference").files[0];
+      const mask_prompt = document.getElementById("mask_prompt").value.trim();
+
+      // Validation
+      // Combine mask
+      const samCanvas = document.getElementById("sam_canvas");
+      const selectedMaskRadio = document.querySelectorAll('input[name="selected_mask"]');
+      if (samCanvas.innerHTML == "" && selectedMaskRadio.length == 0) {
+        if (!init_image && !mask_prompt) {
+          document.getElementById("general_err").innerHTML =
+            "Generate a mask first with the mask prompt and init image.";
+          return;
+        } else if (!mask_prompt || !init_image) {
+          if (!mask_prompt) {
+            document.getElementById("mask_prompt_err").innerHTML =
+              "Mask prompt is required to generate a mask.";
+          }
+          if (!init_image) {
+            document.getElementById("init_image_err").innerHTML =
+              "Init image is required to generate a mask.";
+          }
+          return;
+        } else {
+          document.getElementById("general_err").innerHTML = "Generate a mask first.";
+          return;
+        }
+      } else if (samCanvas.innerHTML == "") {
+        document.getElementById("general_err").innerHTML = "Generate a mask first.";
+      }
+      if (combinedMaskImg) {
+        combined_masked_image = combinedMaskImg.src; //path
+      }
+      if (combined_masked_image == "" || !combined_masked_image) {
+        if (combined_masked_image == "" && samCanvas.innerHTML == "") {
+          document.getElementById("general_err").innerHTML = "Generate a mask first.";
+        } else {
+          document.getElementById("general_err").innerHTML =
+            "Generate a mask first with the mask prompt and init image.";
+        }
+        return;
+      } else {
+        //combined_masked_image not empty
+        await applyMask();
+        const { mask, masked_image } = window.combined_mask;
+        combined_mask = mask;
+        // const addCanvas = document.getElementById("add_canvas");
+        // const removeCanvas = document.getElementById("remove_canvas");
+
+        // const isAddCanvasEmpty = window.isCanvasEmpty(addCanvas);
+        // const isRemoveCanvasEmpty = window.isCanvasEmpty(removeCanvas);
+
+        // // both canvas not empty, haven't applied mask
+        // if (!(isAddCanvasEmpty && isRemoveCanvasEmpty)) {
+        // 	document.getElementById("general_err").innerHTML = "Please apply the mask before generating.";
+        // 	err_count++;
+        // }
+      }
+      if (!prompt) {
+        document.getElementById("prompt_err").innerHTML = "Prompt is required.";
+        err_count++;
+      }
+      if (!number_of_images || number_of_images < 1 || number_of_images > 4) {
+        document.getElementById("number_of_images_err").innerHTML =
+          "Please enter a valid number of images (1-4).";
+        err_count++;
+      }
+
+      if (err_count > 0) {
+        return;
+      }
+
+      // Create FormData object
+      const formData = new FormData();
+      formData.append("prompt", prompt);
+      formData.append("number_of_images", number_of_images);
+      if (color_palette) {
+        const colorsArray = color_palette.split(",").map((color) => color.trim());
+        formData.append("color_palette", JSON.stringify(colorsArray));
+      }
+      formData.append("init_image", init_image);
+      formData.append("combined_mask", combined_mask);
+      if (style_reference) {
+        formData.append("style_reference", style_reference);
+      }
+      console.log("Form Data:");
+      console.log(formData);
+
+      // Fetch API call to generate the next image
+      try {
+        const generateResponse = await fetch("/generate-next-image", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!generateResponse.ok) {
+          document.getElementById("general_err").innerHTML = "Failed to queue task";
+          throw new Error("Failed to queue task");
+        }
+
+        const generateData = await generateResponse.json();
+        const taskId = generateData.task.task_id;
+        console.log(`Task ID: ${taskId}`);
+        let task = await checkTaskStatus(taskId);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+
+    function getQueuePositionMessage(position) {
+      // Adjusting position to get the correct "in line" position
+      const truePosition = position;
+
+      const ordinalSuffix = (num) => {
+        const lastDigit = num % 10;
+        const suffix =
+          lastDigit === 1 && num !== 11
+            ? "st"
+            : lastDigit === 2 && num !== 12
+              ? "nd"
+              : lastDigit === 3 && num !== 13
+                ? "rd"
+                : "th";
+        return `${num}${suffix}`;
+      };
+
+      if (truePosition === 1) {
+        return "You're next in line.";
+      } else if (truePosition <= 20) {
+        return `You're ${ordinalSuffix(truePosition)} in line.`;
+      } else {
+        return `You're in queue. There are ${truePosition - 1} tasks in front of you.`;
+      }
+    }
+
+    // Function to check task status
+    async function checkTaskStatus(taskId) {
+      let running = false;
+
+      while (!running) {
+        const response = await fetch(`/generate-image/task-status?task_id=${taskId}`);
+
+        if (!response.ok) {
           const errorMessage = await response.json();
           throw new Error(errorMessage.error || "Failed to get task results");
         }
 
         const data = await response.json();
-        const imageContainer = document.getElementById("image_container");
-        imageContainer.innerHTML = "";
 
-        if (data && data.image_paths) {
-          data.image_paths.forEach((path) => {
-            const img = document.createElement("img");
-            img.src = path;
-            img.alt = "Generated Image";
-            img.style.maxWidth = "100%";
-            img.style.height = "auto";
-            imageContainer.appendChild(img);
-          });
+        if (data.position != 1) {
+          let message = getQueuePositionMessage(data.position);
+          document.getElementById("status_message").innerHTML = message;
+          console.log(message);
+        } else {
+          running = true;
+          document.getElementById("status_message").innerHTML = "Image generation in progress.";
+          // Track progress until task is complete
+          console.log("Tracking Image: ");
+          await trackImageGenerationProgress(taskId);
+          // Fetch and display the generated images
+          console.log("Displaying Image: ");
+          await displayGeneratedImages(taskId);
+        }
+
+        if (!running) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
       }
-    </script>
-    <script src="{{ url_for('static', filename='js/canvas_script.js') }}"></script>
-  </body>
+    }
+
+    // Function to track progress of image generation
+    async function trackImageGenerationProgress(taskId) {
+      let progress = 0;
+      let eta_relative = 0;
+      let current_image_index = 0;
+      let current_image = null;
+      let previous_image = null;
+      let completed = false;
+      let status = "pending";
+      let curr_step = 0;
+      let prev_step = -1;
+      const number_of_images = window.number_of_images || 1;
+
+      // Create image tags in the image container
+      const imageContainer = document.getElementById("image_container");
+      imageContainer.innerHTML = "";
+      for (let i = 0; i < number_of_images; i++) {
+        const img = document.createElement("img");
+        img.id = `generated_image_${i}`;
+        img.alt = "";
+        img.style.maxWidth = "100%";
+        img.style.height = "auto";
+        imageContainer.appendChild(img);
+      }
+
+      while (!completed) {
+        // Fetch API
+        const response = await fetch(`/generate-image/image-status?task_id=${taskId}`);
+
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          throw new Error(errorMessage.error || "Failed to get progress.");
+        }
+
+        const data = await response.json();
+        progress = data.progress;
+        eta_relative = data.eta_relative;
+        current_image = data.current_image;
+        status = data.status;
+        curr_step = data.state.sampling_step;
+
+        // Display progress for each image
+        if (current_image_index < number_of_images) {
+          document.getElementById("status_message").innerHTML =
+            `Image generation in progress. Generating image ${current_image_index + 1} of ${number_of_images}`;
+        }
+        const progress_bar = document.getElementById("progress_bar");
+        const progress_percent = Math.round(progress * 100);
+        progress_bar.value = progress_percent;
+        progress_bar.style.display = "block";
+        document.getElementById("progress_message").innerHTML = `Progress: ${progress_percent}%`;
+        document.getElementById("time_remaining_message").innerHTML =
+          `ETA: ${Math.round(eta_relative).toFixed(0)}s`;
+        console.log(
+          `Progress: ${progress_percent}%; ETA: ${Math.round(eta_relative).toFixed(0)}s; Sampling Step: ${data.state.sampling_step}`
+        );
+
+        // Display image if current_image changes
+        if (current_image != null && previous_image != current_image) {
+          const imgElement = document.getElementById(`generated_image_${current_image_index}`);
+          imgElement.src = `data:image/png;base64,${data.current_image}`;
+          imgElement.alt = "Preview Image";
+          imgElement.style.maxWidth = "100%";
+          imgElement.style.height = "auto";
+          previous_image = current_image;
+        }
+
+        // Check if we completed the image based on sampling steps
+        if ((prev_step === 30 || prev_step === 31) && curr_step == 0) {
+          current_image_index++;
+        }
+        prev_step = curr_step;
+
+        // Mark the task as completed if `current_image` becomes null after being non-null & status is success/failed
+        if (
+          previous_image != null &&
+          current_image == null &&
+          (status === "success" || status === "failed")
+        ) {
+          completed = true;
+          console.log("Image generation completed.");
+          progress_bar.style.display = "none";
+          document.getElementById("status_message").innerHTML = "Image generation complete!";
+          document.getElementById("progress_message").innerHTML = "";
+          document.getElementById("time_remaining_message").innerHTML = "";
+        }
+
+        if (!completed) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+      }
+    }
+
+    // Function to fetch and display the generated images
+    async function displayGeneratedImages(taskId) {
+      const response = await fetch(`/generate-image/get-results?task_id=${taskId}`, {
+        method: "GET",
+      });
+
+      if (response.status === 202) {
+        console.log("Request accepted, still processing. Please wait...");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return displayGeneratedImages(taskId, retryCount + 1);
+      } else if (!response.ok) {
+        const errorMessage = await response.json();
+        throw new Error(errorMessage.error || "Failed to get task results");
+      }
+
+      const data = await response.json();
+      const imageContainer = document.getElementById("image_container");
+      imageContainer.innerHTML = "";
+
+      if (data && data.image_paths) {
+        data.image_paths.forEach((path) => {
+          const img = document.createElement("img");
+          img.src = path;
+          img.alt = "Generated Image";
+          img.style.maxWidth = "100%";
+          img.style.height = "auto";
+          imageContainer.appendChild(img);
+        });
+      }
+    }
+  </script>
+  <script src="{{ url_for('static', filename='js/canvas_script.js') }}"></script>
+</body>
+
 </html>

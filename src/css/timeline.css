@@ -19,6 +19,12 @@
   margin-bottom: 20px;
 }
 
+.react-calendar__navigation button:hover {
+  background-color: var(--iconBg) !important; /* Change to your desired hover background color */
+  color: var(--color-white); /* Change to your desired hover text color */
+
+  /* Add any other hover styles you want */
+}
 /* Calendar section */
 .react-calendar__navigation__label {
   color: var(--color-white);
@@ -50,13 +56,10 @@
 }
 /* Hover effect on calendar tiles */
 .custom-calendar .react-calendar__tile:hover {
-  background-color: var(--color-white); /* Change this to your preferred hover color */
-  color: white; /* Text color on hover */
   background-color: var(--iconBg);
   color: white;
 }
 
-/* Remove blue focus outline and apply custom focus styles */
 .custom-calendar .react-calendar__tile:focus {
   outline: none;
   background-color: var(--iconBg);
@@ -65,7 +68,6 @@
 /* Default focus date (clicked but not active) */
 
 .custom-calendar .react-calendar__tile--now {
-  background-color: var(--nav-card-modal); /* Change this to the color for today */
   background-color: var(--nav-card-modal);
   color: white;
 }
@@ -128,18 +130,21 @@
 
 .icon-container svg {
   color: white;
-  font-size: 16px;
+  font-size: 1em;
 }
 
 .svg-icon {
-  color: var(--gradientButton); /* Use your custom CSS variable for the icon color */
-  font-size: 24px; /* Optional: Adjust the icon size */
-  transition: color 0.3s ease; /* Optional: Add a smooth transition for hover effects */
   color: var(--gradientButton);
-  font-size: 24px;
+  font-size: 1.5em;
   transition: color 0.3s ease;
 }
 
 .svg-icon:hover {
   color: var(--gradientButtonHover);
+}
+
+@media (max-width: 768px) {
+  .calendar-head {
+    width: 80%;
+  }
 }

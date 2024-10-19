@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { Button } from "@mui/material";
 
 function Version() {

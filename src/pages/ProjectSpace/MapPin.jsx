@@ -1,4 +1,3 @@
-import { useSharedProps } from "../../contexts/SharedPropsContext";
 import "../../css/planMap.css";
 import EditPen from "../DesignSpace/svg/EditPen";
 import ExportIcon from "./svg/ExportIcon";
@@ -20,13 +19,7 @@ function MapPin() {
           <img src="../../img/logoWhitebg.png" alt={`design preview `} className="image-pin" />
           <span className="pinName">Living Room</span>
         </div>
-        <div
-          style={{
-            display: "flex",
-            width: "50%",
-            justifyContent: "flex-end",
-          }}
-        >
+        <div style={{ display: "flex", width: "50%", justifyContent: "flex-end" }}>
           <ExportIcon />
           <EditPen />
           <Trash />

@@ -3,9 +3,8 @@ import ProjectHead from "./ProjectHead";
 import BottomBarDesign from "./BottomBarProject";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSharedProps } from "../../contexts/SharedPropsContext";
-import { showToast } from "../../functions/utils";
 import ExportIcon from "./svg/ExportIcon";
+import { ToastContainer } from "react-toastify";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, doc, onSnapshot, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
@@ -19,6 +18,23 @@ function ProjBudget() {
   const [designs, setDesigns] = useState([]);
   const [user, setUser] = useState(null);
   const [designBudgetItems, setDesignBudgetItems] = useState({});
+
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (user) {
+    }
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        fetchDesigns(currentUser.uid, projectId, setDesigns, setDesignBudgetItems);
+      } else {
+        setUser(null);
+        setDesigns([]);
+      }
+    });
+
+    return () => unsubscribeAuth();
+  }, [user]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -68,6 +84,7 @@ function ProjBudget() {
 
   return (
     <>
+      <ToastContainer />
       <ProjectHead />
       <div className="budgetHolder">
         <span
@@ -79,7 +96,7 @@ function ProjBudget() {
         >
           Total Project Budget: ₱ <strong>{totalProjectBudget.toFixed(2)}</strong>
         </span>
-        <div>
+        <div style={{ marginBottom: "10%" }}>
           {designs.length > 0 ? (
             designs.slice(0, 6).map((design) => {
               const totalCost = designBudgetItems[design.id]?.reduce(

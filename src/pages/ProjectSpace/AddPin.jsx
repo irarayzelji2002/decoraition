@@ -1,5 +1,4 @@
 import { MuiColorInput } from "mui-color-input";
-import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { Dropdown, Menu, MenuButton } from "@mui/joy";
 import MenuItem from "@mui/joy/MenuItem";
 import * as React from "react";

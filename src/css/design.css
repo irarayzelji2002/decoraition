@@ -56,6 +56,7 @@
   margin-left: auto;
   margin-right: 12px;
   display: block;
+  font-size: 1em;
 
   font-weight: bold !important;
   text-decoration-color: var(--brightFont) !important;
@@ -82,7 +83,7 @@
 .headTitleInput {
   background-color: transparent;
   border: transparent;
-  font-size: 24px;
+  font-size: 1.5em;
   font-weight: bold;
   font-family: "Inter", sans-serif !important;
   color: var(--color-white);
@@ -93,9 +94,9 @@
   width: 500px;
   background-color: var(--nav-card-modal);
   padding: 40px;
-  margin-bottom: 50px;
+  padding-bottom: 20%;
   box-shadow: 2px 0px 4px rgba(0, 0, 0, 0.2);
-  position: relative; /* Make this relative for positioning the bump */
+  position: relative;
 }
 
 /* .bump {
@@ -126,7 +127,7 @@
 }
 
 h3 {
-  font-size: 14px;
+  font-size: 0.875em;
   color: var(--color-white);
 }
 h6 {
@@ -138,7 +139,7 @@ h6 {
 
   max-width: 1200px;
   max-height: 300px !important;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 56.25%;
   position: relative;
   border: var(--nav-card-modal) 3px solid;
   border-radius: 12px;
@@ -151,13 +152,13 @@ h6 {
   object-fit: contain;
   position: absolute;
 }
-.image-grid {
+.image-grid-design {
   justify-items: center;
   align-items: center;
   display: grid;
-  grid-template-columns: repeat(2, 2fr); /* 2 columns */
-  grid-template-rows: repeat(1, 5fr); /* 2 rows with equal height */
-  /* Adjust the gap between items as needed */
+  grid-template-columns: repeat(2, 2fr);
+  grid-template-rows: repeat(1, 5fr);
+
   width: 100%;
   height: max-content;
 }
@@ -181,25 +182,14 @@ h6 {
   align-content: center;
 }
 
-@media (max-width: 600px) {
-  .workspace {
-    flex-direction: column-reverse;
-  }
-  .promptBar {
-    width: auto;
-  }
-  .fixed-arrow-button {
-    display: none;
-  }
-}
 .image-drop {
   display: flex;
   justify-items: center;
   align-items: center;
   flex-direction: column;
-  /* Adjust the gap between items as needed */
   width: 100%;
   height: 150%;
+  margin-bottom: 10%;
 }
 
 .working-area {
@@ -235,8 +225,7 @@ h6 {
 
 .comment-section {
   display: flex;
-  margin-left: 20px;
-  width: 400px;
+  width: 30%;
   background-color: var(--nav-card-modal);
   padding: 10px;
   border-radius: 8px;
@@ -286,35 +275,33 @@ textarea {
 }
 
 .frame-buttons button {
-  background-color: var(--nav-card-modal); /* Primary color */
+  background-color: var(--nav-card-modal);
   color: var(--color-white);
   border: none;
   border-radius: 5px;
   padding: 10px 20px;
-  font-size: 16px;
+  font-size: 1em;
   cursor: pointer;
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .frame-buttons button:hover {
-  background-color: var(--inputBg); /* Darker shade on hover */
+  background-color: var(--inputBg);
   transform: scale(1.05);
 }
 
 .frame-buttons button:active {
-  background-image: var(--gradientButton); /* Even darker shade on active */
+  background-image: var(--gradientButton);
   transform: scale(0.98);
 }
 
 .frame-buttons button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--brightFont); /* Focus indicator */
+  box-shadow: 0 0 0 2px var(--brightFont);
 }
 /* For darkened background */
 .homepage.darkened {
-  position: relative; /* Position relative for overlay positioning */
+  position: relative;
 }
 
 .overlay {
@@ -323,8 +310,8 @@ textarea {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Darken the whole page */
-  z-index: 1; /* Overlay should be behind the buttons */
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
 
 .circle-button-container {
@@ -333,17 +320,17 @@ textarea {
   right: 20px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Align everything to the right */
-  gap: 20px; /* Space between the buttons */
-  z-index: 2; /* Ensure buttons are above the overlay */
+  align-items: flex-end;
+  gap: 20px;
+  z-index: 2;
 }
 
 /* Main circular button (Add/Close) */
 .circle-button {
   background-image: var(--gradientCircle);
   color: var(--color-white);
-  width: 60px;
-  height: 60px;
+  width: 70px !important;
+  height: 70px !important;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -360,16 +347,16 @@ textarea {
 .small-buttons {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Spacing between buttons */
-  align-items: flex-end; /* Align buttons to the right */
+  gap: 10px;
+  align-items: flex-end;
 }
 
 /* Small circular buttons for creating project/design */
 .small-circle-button {
   background-image: var(--gradientCircle);
   color: var(--color-white);
-  width: 60px;
-  height: 60px;
+  width: 70px !important;
+  height: 70px !important;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -382,18 +369,18 @@ textarea {
 .small-button-container {
   display: flex;
   align-items: center;
-  gap: 10px; /* Spacing between text and button */
+  gap: 10px;
 }
 
 /* Icons inside small circular buttons */
 .icon {
-  font-size: 30px;
+  font-size: 1.875em;
 }
 
 /* Text to the left of the circular buttons */
 .small-button-text {
   color: var(--color-white);
-  font-size: 14px;
+  font-size: 0.875em;
   font-weight: bold;
 }
 
@@ -409,13 +396,14 @@ textarea {
   height: 50px;
   display: flex;
   align-items: center;
-  padding: 18px;
+  padding-top: 18px;
+  padding-bottom: 18px;
 }
 
 .searchHead {
   margin-left: 18px;
   font-weight: bold;
-  font-size: 24px;
+  font-size: 1.5em;
 
   color: var(--color-white);
 }
@@ -425,19 +413,19 @@ textarea {
   position: fixed;
   top: 0;
   left: -100%;
-  width: 33.33%; /* One-third of the screen */
+  width: 33.33%;
   height: 100%;
   background-color: var(--inputBg);
   transition: left 0.3s ease-in-out;
   z-index: 1000;
-  overflow-y: auto; /* Enable scrolling inside the sidebar */
+  overflow-y: auto;
 }
 
 .sidebar.open {
   left: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 680px) {
   .sidebar {
     width: 50%; /* Half of the screen for mobile */
   }
@@ -447,8 +435,8 @@ textarea {
 .sidebar-content {
   padding: 20px;
   color: var(--brightFont);
-  height: 100%; /* Ensure full height */
-  overflow-y: auto; /* Scroll content */
+  height: 100%;
+  overflow-y: auto;
 }
 
 /* Close button */
@@ -457,7 +445,7 @@ textarea {
   border: none;
   color: var(--brightFont);
   cursor: pointer;
-  font-size: 18px;
+  font-size: 1.125em;
   padding: 10px;
 }
 
@@ -468,18 +456,18 @@ textarea {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Blackout effect */
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
 }
 
 /* Hide scroll bar in WebKit browsers (Chrome, Safari, Edge) */
 .sidebar-content {
-  -ms-overflow-style: none; /* Hide scrollbar in Internet Explorer */
-  scrollbar-width: none; /* Hide scrollbar in Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .sidebar-content::-webkit-scrollbar {
-  display: none; /* Hide scrollbar */
+  display: none;
 }
 
 /* comment section */
@@ -487,7 +475,7 @@ textarea {
   display: inline-flex;
   border-radius: 25px;
   overflow: hidden;
-  border: 2px solid #f68950;
+  border: 2px solid var(--brightFont);
   margin: 10px 0;
 }
 
@@ -502,16 +490,16 @@ textarea {
 }
 
 .button-side.active {
-  background-color: #f68950;
+  background-color: var(--brightFont);
   color: white;
 }
 
 .button-side:not(.active) {
-  border-right: 2px solid #f68950;
+  border-right: 2px solid var(--brightFont);
 }
 
 .button-side:first-child {
-  border-right: 1px solid #f68950;
+  border-right: 1px solid var(--brightFont);
 }
 
 .button-side:hover {
@@ -520,16 +508,18 @@ textarea {
 
 /* sample reply */
 .comment-container {
-  background-color: #27262c;
+  background-color: var(--inputBg);
   border-radius: 15px;
+  width: 90%;
   padding: 20px;
   margin-bottom: 20px;
+  margin-top: 16px;
   transition: background-color 0.3s ease;
   cursor: pointer;
 }
 
 .comment-container.clicked {
-  background-color: #3d3c44;
+  background-color: var(--inputBg);
 }
 
 .profile-section {
@@ -543,12 +533,12 @@ textarea {
   display: flex;
   align-items: center;
 }
-
 .profile-pic {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background-color: #49484f; /* Placeholder for profile image */
+  object-fit: cover;
+  background-image: var(--gradientCircle);
   margin-right: 10px;
 }
 
@@ -558,28 +548,28 @@ textarea {
 }
 
 .username {
-  color: white;
+  color: var(--color-white);
   font-weight: bold;
   margin-bottom: 2px;
 }
 
 .date {
-  color: #c1c1c1;
-  font-size: 12px;
+  color: var(--color-white);
+  font-size: 0.075em;
 }
 
 .check-mark {
-  color: #f68950;
-  font-size: 16px;
+  color: var(--brightFont);
+  font-size: 1em;
 }
 
 .options-dots {
-  color: white;
-  font-size: 20px;
+  color: var(--color-white);
+  font-size: 1.25em;
 }
 
 .comment-text {
-  color: white;
+  color: var(--color-white);
   margin-bottom: 10px;
 }
 
@@ -590,8 +580,12 @@ textarea {
   border: 1px solid #49484f;
   border-radius: 15px;
   padding: 10px;
-  color: white;
+  color: var(--color-white);
   margin-top: 10px;
+}
+
+.reply-input:focus-within {
+  border: 1px solid var(--brightFont); /* Add your desired border color */
 }
 
 .reply-input input {
@@ -599,10 +593,88 @@ textarea {
   border: none;
   outline: none;
   background-color: transparent;
-  color: white;
+  color: var(--color-white);
   margin-left: 10px;
+}
+
+.css-6hp17o-MuiList-root-MuiMenu-list {
+  background-color: var(--nav-card-modal);
+  color: var(--color-grey);
+  padding-top: 0px !important;
 }
 
 .reply-input .at-symbol {
   color: #49484f;
+}
+
+.circle-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid var(--color-grey);
+  background-color: transparent;
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
+}
+
+.circle:hover {
+  border: 2px solid var(--brightFont);
+}
+
+.plus-circle {
+  display: flex;
+  font-size: 2.25em;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--color-grey);
+}
+
+.plus-circle:hover {
+  cursor: pointer;
+  color: var(--color-white);
+  background-image: var(--gradientCircle);
+}
+
+.css-4445e4 {
+}
+
+@media (max-width: 600px) {
+  .workspace {
+    flex-direction: column-reverse;
+  }
+  .promptBar {
+    width: auto;
+  }
+  .fixed-arrow-button {
+    display: none;
+  }
+  .promptBar {
+    padding-bottom: 20%;
+    margin-bottom: 0;
+    min-height: 0;
+  }
+
+  .comment-section {
+    position: fixed; /* Make the div fixed */
+    top: 53%; /* Center vertically */
+    right: 10px; /* Align to the right with space for the scrollbar */
+    transform: translateY(-50%); /* Adjust for vertical centering */
+    width: calc(80% - 32px); /* Adjust width to account for the right margin and scrollbar */
+    background-color: var(--nav-card-modal);
+    padding: 24px; /* Ensure padding is consistent */
+    border-radius: 8px;
+    height: 85vh; /* Set a fixed height */
+    align-items: center;
+    flex-direction: column;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for better visibility */
+    z-index: 1; /* Ensure it is above other elements */
+  }
 }

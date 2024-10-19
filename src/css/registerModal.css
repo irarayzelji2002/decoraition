@@ -4,14 +4,24 @@ html,
   height: 100vh;
   width: 100vw;
 }
-h1 {
-  font-size: 50px;
+.h1-register {
+  font-size: 3.125em;
   background: var(--gradientFont);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 800;
   letter-spacing: -1px;
 }
+
+.h1-otp {
+  font-size: 3.125em;
+  background: var(--gradientFont);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
 h2,
 h5 {
   color: azure;

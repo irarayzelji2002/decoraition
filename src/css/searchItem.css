@@ -5,6 +5,7 @@
   flex-direction: column;
   align-items: center;
   position: relative;
+  overflow-x: hidden;
 }
 
 .search-bar {
@@ -24,12 +25,12 @@
   border: none;
   background-color: var(--nav-card-modal);
   color: var(--color-white);
-  font-size: 16px;
+  font-size: 1em;
 }
 
 .search-icon {
   color: var(--color-white);
-  font-size: 24px;
+  font-size: 1.5em;
 }
 
 .grid-container {
@@ -58,7 +59,7 @@
 }
 
 .item-details {
-  font-size: 14px;
+  font-size: 0.875em;
 }
 
 .item-name {
@@ -91,7 +92,7 @@
   border: none;
   width: 20%;
   border-radius: 25px;
-  font-size: 16px;
+  font-size: 1em;
   cursor: pointer;
   font-weight: bold;
 }
@@ -109,7 +110,7 @@
 
   .search-icon {
     left: 20px;
-    font-size: 20px;
+    font-size: 1.25em;
   }
 
   .grid-container {
@@ -119,7 +120,7 @@
 
   .select-button {
     width: 80%;
-    font-size: 14px;
+    font-size: 0.875em;
   }
 }
 
@@ -130,21 +131,21 @@
   }
 
   .search-icon {
-    left: 10px; /* Adjust the position further */
-    font-size: 18px;
+    left: 10px;
+    font-size: 1.125em;
   }
 
   .search-input {
-    padding-left: 30px; /* Adjust padding to fit better on smaller screens */
+    padding-left: 30px;
   }
 
   .grid-container {
-    grid-template-columns: 1fr; /* Single column on very small screens */
+    grid-template-columns: 1fr;
     padding: 10px;
   }
 
   .select-button {
-    width: 100%; /* Full-width button on very small screens */
-    font-size: 12px;
+    width: 100%;
+    font-size: 0.75em;
   }
 }

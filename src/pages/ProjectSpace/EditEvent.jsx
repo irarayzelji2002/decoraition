@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { showToast } from "../../functions/utils";
-import { useSharedProps } from "../../contexts/SharedPropsContext";
 import "../../css/editEvent.css";
 import TopBar from "../../components/TopBar";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { saveData, updateTask } from "./backend/ProjectDetails";
+import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 
 function EditEvent() {
@@ -98,7 +97,8 @@ function EditEvent() {
   };
 
   return (
-    <div>
+    <div style={{ overflowX: "hidden" }}>
+      <ToastContainer />
       <TopBar state={"Edit Event"} />
       <div className="edit-event">
         <div className="form-container">

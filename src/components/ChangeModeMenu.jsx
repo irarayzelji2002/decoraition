@@ -7,7 +7,7 @@ const ChangeModeMenu = ({ onClose, onBackToMenu }) => {
     <>
       <MenuItem onClick={onBackToMenu}>
         <ListItemIcon>
-          <ArrowBackIcon sx={{ color: "whitesmoke" }} />
+          <ArrowBackIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Change Mode" />
       </MenuItem>

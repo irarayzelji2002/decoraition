@@ -5,11 +5,21 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const ShareConfirmationModal = ({ isOpen, onClose, collaborators }) => {
   return (
     <Dialog open={isOpen} onClose={onClose}>
-      <DialogTitle sx={{ backgroundColor: "#1F1E22", color: "whitesmoke" }}>
-        <ArrowBackIcon sx={{ color: "whitesmoke" }} />
+      <DialogTitle
+        sx={{
+          backgroundColor: "var(--nav-card-modal)",
+          color: "var(--color-white)",
+        }}
+      >
+        <ArrowBackIcon sx={{ color: "var(--color-white)" }} />
         Share Success
       </DialogTitle>
-      <DialogContent sx={{ backgroundColor: "#1F1E22", color: "whitesmoke" }}>
+      <DialogContent
+        sx={{
+          backgroundColor: "var(--nav-card-modal)",
+          color: "var(--color-white)",
+        }}
+      >
         <Typography variant="body1" sx={{ marginBottom: "16px" }}>
           The following people have been added as collaborators:
         </Typography>

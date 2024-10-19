@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { useSharedProps } from "../../contexts/SharedPropsContext";
-import { showToast } from "../../functions/utils";
 import ProjectHead from "./ProjectHead";
 import MapPin from "./MapPin";
 import BottomBarDesign from "./BottomBarProject";
@@ -14,6 +12,8 @@ import PushPinIcon from "@mui/icons-material/PushPin";
 import "../../css/project.css";
 import "../../css/seeAll.css";
 import "../../css/budget.css";
+import { ToastContainer } from "react-toastify";
+import { AddPin, AdjustPin, ChangeOrder, ChangePlan } from "../DesignSpace/svg/AddImage";
 
 function PlanMap() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,10 +24,11 @@ function PlanMap() {
   };
 
   return (
-    <div className="app-container">
+    <>
+      <ToastContainer />
       <ProjectHead />
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
-      <div style={{ display: "flex", flexDirection: "row" }}>
+      <div className="sectionBudget" style={{ background: "none" }}>
         <div className="budgetSpace">
           <div className="image-frame">
             <img
@@ -42,7 +43,6 @@ function PlanMap() {
           <MapPin />
         </div>
       </div>
-      <BottomBarDesign PlanMap={true} projId={projectId} />
 
       {/* Floating Action Button */}
       <div className="circle-button-container">
@@ -51,25 +51,25 @@ function PlanMap() {
             <div className="small-button-container">
               <span className="small-button-text">Change plan</span>
               <div className="small-circle-button">
-                <AssignmentOutlinedIcon className="icon" />
+                <ChangePlan />
               </div>
             </div>
             <div className="small-button-container">
               <span className="small-button-text">Change pins order</span>
               <div className="small-circle-button">
-                <SwapHorizIcon className="icon" />
+                <ChangeOrder />
               </div>
             </div>
             <div className="small-button-container">
               <span className="small-button-text">Adjust Pins</span>
               <div className="small-circle-button">
-                <TuneIcon className="icon" />
+                <AdjustPin />
               </div>
             </div>
             <div className="small-button-container">
               <span className="small-button-text">Add a Pin</span>
               <div className="small-circle-button">
-                <PushPinIcon className="icon" />
+                <AddPin />
               </div>
             </div>
           </div>
@@ -78,7 +78,8 @@ function PlanMap() {
           {menuOpen ? <CloseIcon /> : <AddIcon />}
         </div>
       </div>
-    </div>
+      <BottomBarDesign PlanMap={true} projId={projectId} />
+    </>
   );
 }
 

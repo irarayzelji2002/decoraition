@@ -7,8 +7,8 @@ html,
 html {
   background-color: var(--bgMain);
 }
-h1 {
-  font-size: 50px;
+.h1-welcome {
+  font-size: 3.125em;
   background: var(--gradientFont);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

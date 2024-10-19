@@ -61,7 +61,7 @@ export default function EditableInput({
         marginTop: "10px",
         marginBottom: "10px",
         backgroundColor: "var(--inputBg)",
-        input: { color: "var(--color-white)" },
+        input: { color: "var(--color-white)", fontWeight: "bold" },
         "& .MuiOutlinedInput-root": {
           "& fieldset": {
             borderColor: "var(--borderInput)", // Border color when not focused

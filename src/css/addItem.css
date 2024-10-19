@@ -1,25 +1,38 @@
 .add-item-container {
   display: flex;
-  justify-content: space-between;
   padding: 20px;
-  gap: 20px;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
 }
 
 .left-column,
 .right-column {
-  width: 48%;
+  width: 40%;
+  height: 80vh;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.search-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* Search Section */
 .search-section input {
-  width: 100%;
-  padding: 10px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 12px;
+  width: auto;
   border: 2px solid var(--borderInput);
-  border-radius: 8px;
+  border-radius: 24px;
   background-color: transparent;
-  color: white;
-  font-size: 18px;
+  color: var(--color-white);
+  font-size: 1.125em;
   margin-bottom: 20px;
 }
 .search-section input:focus-within {
@@ -38,21 +51,36 @@
 
 .image-placeholder {
   width: 100%;
-  height: 150px;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid var(--borderInput);
+
+  background-color: var(--nav-card-modal);
   border-radius: 8px;
   color: var(--color-white);
-  font-size: 18px;
+  font-size: 1.125em;
+}
+
+.image-placeholder-container {
+  width: 100%;
+  height: 350px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+
+  background-color: var(--nav-card-modal);
+  border-radius: 8px;
+  color: var(--color-white);
+  font-size: 1.125em;
   margin-bottom: 20px;
 }
 
-.upload-btn:hover {
-  background: var(--gradientButton) border-box;
-  border-radius: 20px !important;
-  color: var(--color-white);
+.upload-btn:hover,
+.upload-btn:focus {
+  background-image: var(--darkGradient), var(--gradientButtonHover);
 }
 
 .upload-btn:click {
@@ -65,9 +93,8 @@
   background-color: transparent;
   color: var(--color-white);
   font-weight: bold;
-  padding: 15px 30px;
-  margin: 10px;
-  font-size: 16px;
+  padding: 8px;
+  font-size: 1em;
   border-radius: 20px !important;
   cursor: pointer;
   width: 100%;
@@ -91,7 +118,7 @@
   display: block;
   margin-bottom: 10px;
   color: var(--color-white);
-  font-size: 16px;
+  font-size: 1em;
   font-weight: bold;
 }
 
@@ -100,10 +127,13 @@
 }
 
 .input-group {
+  width: 100%;
+  padding: 18px;
   background-color: var(--nav-card-modal);
   border: 2px solid var(--borderInput);
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .input-group:focus-within {
@@ -119,12 +149,17 @@
 .price-quantity-section input,
 .price-quantity-section select {
   width: 100%;
-  padding: 18px;
-
   border: none;
   background-color: transparent;
   color: var(--color-white);
-  font-size: 18px;
+  font-size: 1.125em;
+}
+
+.input-group input:focus,
+.price-quantity-section input:focus,
+.price-quantity-section select:focus {
+  outline: none; /* Remove focus outline */
+  box-shadow: none; /* Remove focus box-shadow */
 }
 
 /* Container for Price and Currency Selector */
@@ -161,11 +196,11 @@
   padding: 20px 20px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 1.125em;
 }
 
 .quantity-section span {
-  font-size: 20px;
+  font-size: 1.25em;
   color: var(--borderInput);
 }
 
@@ -186,7 +221,7 @@
   border: none;
   cursor: pointer;
 
-  font-size: 18px;
+  font-size: 1.125em;
 }
 
 .add-item-btn:hover {
@@ -198,6 +233,7 @@
   .left-column,
   .right-column {
     width: 100%;
+    padding: 0%;
   }
 
   .add-item-container {
@@ -206,17 +242,23 @@
   }
 
   .search-section input {
-    font-size: 16px;
+    font-size: 1em;
   }
 
   .image-placeholder {
-    height: 120px;
-    font-size: 16px;
+    font-size: 1em;
+  }
+  .left-column,
+  .right-column {
+    height: auto;
   }
 
   .upload-btn {
     padding: 8px;
-    font-size: 14px;
+    font-size: 0.875em;
+  }
+  .right-column {
+    margin-left: 0;
   }
 
   .input-group {
@@ -225,7 +267,7 @@
 
   .price-quantity-section select,
   .price-quantity-section input {
-    font-size: 16px;
+    font-size: 1em;
   }
 
   .quantity-section {
@@ -234,33 +276,36 @@
 
   .quantity-section button {
     padding: 8px 16px;
-    font-size: 16px;
+    font-size: 1em;
   }
 
   .add-item-btn {
-    font-size: 16px;
+    font-size: 1em;
   }
 
   .item-name-label,
   .price-label {
-    font-size: 14px;
+    font-size: 0.875em;
   }
 }
 
 /* Additional responsiveness for very small screens */
 @media (max-width: 480px) {
+  .left-column,
+  .right-column {
+    padding: 0;
+  }
   .search-section input {
-    font-size: 14px;
+    font-size: 0.875em;
   }
 
   .image-placeholder {
-    height: 100px;
-    font-size: 14px;
+    font-size: 0.875em;
   }
 
   .upload-btn {
     padding: 6px;
-    font-size: 12px;
+    font-size: 0.75em;
   }
 
   .input-group {
@@ -269,7 +314,7 @@
 
   .price-quantity-section select,
   .price-quantity-section input {
-    font-size: 14px;
+    font-size: 0.875em;
   }
 
   .quantity-section {
@@ -278,16 +323,16 @@
 
   .quantity-section button {
     padding: 6px 12px;
-    font-size: 14px;
+    font-size: 0.875em;
   }
 
   .add-item-btn {
     padding: 10px;
-    font-size: 14px;
+    font-size: 0.875em;
   }
 
   .item-name-label,
   .price-label {
-    font-size: 12px;
+    font-size: 0.75em;
   }
 }

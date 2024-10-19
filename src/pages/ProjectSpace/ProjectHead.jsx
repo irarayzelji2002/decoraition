@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { IconButton, Menu } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import CommentIcon from "@mui/icons-material/Comment";
+import { toast } from "react-toastify";
 import ShareIcon from "@mui/icons-material/Share";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { signOut } from "firebase/auth";
@@ -21,13 +20,14 @@ import ShareConfirmationModal from "../../components/ShareConfirmationModal.jsx"
 import "../../css/design.css";
 import { useEffect } from "react";
 import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import { db, auth } from "../../firebase.js";
 import DrawerComponent from "../Homepage/DrawerComponent.jsx";
 import { useNavigate } from "react-router-dom";
 import { useHandleNameChange, useProjectDetails } from "./backend/ProjectDetails";
 import { useParams } from "react-router-dom";
-import { toggleDarkMode, handleLogout } from "../Homepage/backend/HomepageActions.jsx";
+import { showToast } from "../../functions/utils.js";
 
-function ProjectHead({ designName, designId, setIsSidebarOpen }) {
+function ProjectHead({ designName }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
@@ -35,11 +35,9 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
   const [isCopyLinkModalOpen, setIsCopyLinkModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
-  const [isMakeCopyModalOpen, setIsMakeCopyModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [newCollaborator, setNewCollaborator] = useState("");
@@ -68,33 +66,14 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
     setIsEditingName((prev) => !prev);
   };
 
-  // useEffect(() => {
-  //   if (user) {
-  //     const userRef = doc(db, "users", user.uid);
-  //     onSnapshot(userRef, (doc) => {
-  //       setUsername(doc.data().username);
-  //     });
-  //   }
-  // }, [user]);
-
-  // useEffect(() => {
-  //   const fetchDesignTitle = () => {
-  //     const designRef = doc(db, "designs", designId);
-
-  //     const unsubscribe = onSnapshot(designRef, (doc) => {
-  //       if (doc.exists()) {
-  //         const projectData = doc.data();
-  //         setTempName("Untitled");
-  //       }
-  //     });
-
-  //     return () => unsubscribe();
-  //   };
-
-  //   if (designId) {
-  //     fetchDesignTitle();
-  //   }
-  // }, [designId]);
+  useEffect(() => {
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      onSnapshot(userRef, (doc) => {
+        setUsername(doc.data().username);
+      });
+    }
+  }, [user]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -151,17 +130,6 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
     setIsShareConfirmationModalOpen(false);
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText("https://example.com/your-project-link").then(
-      () => {
-        setIsCopyLinkModalOpen(true);
-      },
-      (err) => {
-        console.error("Failed to copy: ", err);
-      }
-    );
-  };
-
   const handleCloseCopyLinkModal = () => {
     setIsCopyLinkModalOpen(false);
   };
@@ -195,20 +163,8 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
     setIsRenameModalOpen(false);
   };
 
-  const handleOpenRestoreModal = () => {
-    setIsRestoreModalOpen(true);
-  };
-
   const handleCloseRestoreModal = () => {
     setIsRestoreModalOpen(false);
-  };
-
-  const handleOpenMakeCopyModal = () => {
-    setIsMakeCopyModalOpen(true);
-  };
-
-  const handleCloseMakeCopyModal = () => {
-    setIsMakeCopyModalOpen(false);
   };
 
   const handleOpenInfoModal = () => {
@@ -230,14 +186,48 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
     }
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    document.body.classList.toggle("dark-mode", !darkMode);
+  };
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error("Sign-out error:", error);
+      });
+  };
+  const handleSettings = () => {
+    navigate(`/projSetting/${projectId}`);
+  };
+
+  const handleCopyLink = () => {
+    const currentLink = window.location.href; // Get the current URL
+    navigator.clipboard
+      .writeText(currentLink)
+      .then(() => {
+        toast.success("Link copied to clipboard!", {
+          className: "custom-toast-success", // Apply custom success class
+        }); // Show toast notification
+      })
+      .catch((err) => {
+        toast.error("Failed to copy link.", {
+          className: "custom-toast-success", // Apply custom success class
+        }); // Show error toast notification
+        console.error("Failed to copy: ", err);
+      });
+  };
+
   return (
     <div className={`designHead stickyMenu ${menuOpen ? "darkened" : ""}`}>
       <DrawerComponent
         isDrawerOpen={isDrawerOpen}
         onClose={() => setDrawerOpen(false)}
-        toggleDarkMode={() => toggleDarkMode(user.uid, darkMode, setDarkMode)}
-        handleLogout={() => handleLogout(navigate)}
-        handleSettings={() => navigate("/settings")}
+        toggleDarkMode={toggleDarkMode}
+        handleLogout={handleLogout}
+        handleSettings={handleSettings}
         darkMode={darkMode}
         username={username}
         userEmail={user ? user.email : ""}
@@ -306,13 +296,12 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
             <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
           ) : (
             <DefaultMenu
+              project={true}
               onClose={handleClose}
               onCopyLink={handleCopyLink}
               onOpenDownloadModal={handleOpenDownloadModal}
-              setIsSidebarOpen={setIsSidebarOpen}
               onOpenRenameModal={handleOpenRenameModal}
-              onOpenRestoreModal={handleOpenRestoreModal}
-              onOpenMakeCopyModal={handleOpenMakeCopyModal}
+              onSetting={handleSettings}
               onOpenInfoModal={handleOpenInfoModal}
               onOpenShareModal={handleShareClick}
               onDelete={handleOpenDeleteModal}
@@ -347,7 +336,6 @@ function ProjectHead({ designName, designId, setIsSidebarOpen }) {
       <DownloadModal isOpen={isDownloadModalOpen} onClose={handleCloseDownloadModal} />
       <RenameModal isOpen={isRenameModalOpen} onClose={handleCloseRenameModal} />
       <RestoreModal isOpen={isRestoreModalOpen} onClose={handleCloseRestoreModal} />
-      <MakeCopyModal isOpen={isMakeCopyModalOpen} onClose={handleCloseMakeCopyModal} />
       <InfoModal isOpen={isInfoModalOpen} onClose={handleCloseInfoModal} />
     </div>
   );

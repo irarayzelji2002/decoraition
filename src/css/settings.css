@@ -7,6 +7,29 @@
   color: var(--color-white);
   height: 100vh;
 }
+.inputLabel {
+  margin-right: 10px;
+
+  width: 100px;
+  color: var(--color-grey);
+}
+.inputField {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  height: 3em;
+  min-width: 100%;
+}
+.inputFieldImportant {
+  display: flex;
+  align-items: center;
+
+  border: var(--color-grey) 1px solid;
+  padding: 6px;
+  padding-left: 24px;
+  height: 3em;
+  min-width: auto;
+}
 
 /* AppBar styling */
 .app-bar {
@@ -31,7 +54,9 @@
 .avatar-container {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  border-bottom: var(--color-grey) 1px solid;
+  padding-bottom: 20px;
+  margin-bottom: 40px;
 }
 
 /* Profile buttons */
@@ -41,7 +66,7 @@
 }
 
 .change-photo-btn {
-  background: linear-gradient(20deg, #faa653, #f04f59);
+  background: var(--gradientButton);
 }
 
 .remove-photo-btn {
@@ -52,7 +77,7 @@
 /* Form fields styling */
 .MuiTextField-root {
   margin-bottom: 16px;
-  background-color: #2c2c34;
+  background-color: tra;
   border-radius: 4px;
 }
 

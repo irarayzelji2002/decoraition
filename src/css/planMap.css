@@ -12,14 +12,13 @@
 }
 
 .pinName {
-  font-size: 20px;
+  font-size: 1.25em;
   font-weight: bold;
   margin-left: 12px;
 }
 
 .pinColor {
-  background-color: #f68244;
-
+  background-color: var(--brightFont);
   height: 40px;
   margin-top: 24px;
   height: 52px;

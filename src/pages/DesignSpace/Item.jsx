@@ -2,7 +2,6 @@ import "../../css/budget.css";
 import "../../css/design.css";
 import * as React from "react";
 import { useState } from "react";
-import { showToast } from "../../functions/utils";
 import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
 import Modal from "@mui/material/Modal";
@@ -10,6 +9,7 @@ import { Divider } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import EditPen from "./svg/EditPen";
 import Trash from "./svg/Trash";
+import { ToastContainer, toast } from "react-toastify";
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
@@ -36,6 +36,7 @@ function Item({ item, onDelete, onEdit }) {
 
   return (
     <div className="itemSpace" style={{ display: "flex", flexDirection: "row" }}>
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <Modal
         open={open}
         onClose={handleClose}
@@ -131,10 +132,17 @@ function Item({ item, onDelete, onEdit }) {
                 style={{
                   background: "transparent",
                   border: "2px solid transparent",
-                  backgroundImage: " var(--darkGradient), var(--gradientButton)",
+                  backgroundImage: " var(--lightGradient), var(--gradientButton)",
                   backgroundOrigin: "border-box",
                   backgroundClip: " padding-box, border-box",
                 }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundImage =
+                    " var(--lightGradient), var(--gradientButtonHover)")
+                }
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundImage = " var(--lightGradient), var(--gradientButton)")
+                }
                 onClick={handleCloseDelete}
               >
                 Cancel

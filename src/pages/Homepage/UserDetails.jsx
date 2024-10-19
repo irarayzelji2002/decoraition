@@ -15,3 +15,36 @@ export const fetchUserData = (user, setUsername, setUser) => {
     });
   });
 };
+
+export const useUserData = (
+  user,
+  setUser,
+  setUsername,
+  fetchDesigns,
+  setDesigns,
+  fetchProjects,
+  setProjects
+) => {
+  useEffect(() => {
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      onSnapshot(userRef, (doc) => {
+        setUsername(doc.data().username);
+      });
+    }
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        fetchUserData(user, setUsername, setUser);
+        fetchDesigns(user.uid);
+        fetchProjects(user.uid);
+      } else {
+        setUser(null);
+        setDesigns([]);
+        setProjects([]);
+      }
+    });
+
+    return () => unsubscribeAuth();
+  }, [user]);
+};

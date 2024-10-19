@@ -39,12 +39,20 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
     setIsFocused(false);
   };
 
+  const getInitial = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "";
+  };
+
   const handleMenuClick = () => {
     setIsDrawerOpen(true);
   };
 
   const handleDrawerClose = () => {
     setIsDrawerOpen(false);
+  };
+
+  const handleSettingsClick = () => {
+    navigate("/settings");
   };
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -63,7 +71,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
             edge="start"
             color="var(--color-white)"
             aria-label="open drawer"
-            sx={{ mr: 2, backgroundColor: "transparent" }}
+            sx={{ mr: 0.2, backgroundColor: "transparent" }}
             onClick={handleMenuClick} // Open drawer on click
           >
             <MenuIcon sx={{ color: "var(--color-white)" }} />
@@ -76,10 +84,9 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
           <Paper
             component="form"
             sx={{
-              p: "2px 4px",
               display: "flex",
               alignItems: "center",
-              width: isFocused ? "60%" : "50%",
+              width: "75%",
               borderRadius: "24px",
               backgroundColor: "var(--inputBg)",
               transition: "width 0.3s ease-in-out",
@@ -94,7 +101,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
             </IconButton>
             <InputBase
               placeholder="Search..."
-              onChange={handleSearch}
+              onChange={(e) => onSearchChange(e.target.value)}
               value={searchQuery}
               onFocus={handleFocus}
               onBlur={handleBlur}
@@ -103,7 +110,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
             />
           </Paper>
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ marginRight: 2 }}>
+          <Box sx={{ marginRight: 2 }} onClick={handleSettingsClick}>
             <SettingsIcon sx={{ color: "var(--color-white)" }} />
           </Box>
           <Box sx={{ marginRight: 2 }}>
@@ -116,14 +123,14 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
               }}
               badgeContent={2}
             >
-              <NotificationsIcon />
+              <NotificationsIcon sx={{ color: "var(--color-white)" }} />
             </Badge>
           </Box>
           <Box
             sx={{
               color: "var(--color-white)",
               marginRight: 1,
-
+              fontSize: "1em",
               overflow: "hidden",
               whiteSpace: "nowrap",
               textOverflow: "ellipsis",

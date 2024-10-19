@@ -48,10 +48,13 @@ const InfoModal = ({ isOpen, onClose }) => {
           color: "var(--color-white)", // Text color in the content
         }}
       >
+        <div className="image-frame">
+          <img src={"../../img/logoWhitebg.png"} alt="design preview" className="image-preview" />
+        </div>
         <Typography variant="body1">Here is some information about the item.</Typography>
       </DialogContent>
       <DialogActions
-        sx={{ backgroundColor: "var(  --nav-card-modal)" }} // Actions background color
+        sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }} // Actions background color
       >
         <Button
           fullWidth

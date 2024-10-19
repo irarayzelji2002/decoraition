@@ -36,19 +36,24 @@ const ShareModal = ({
         "& .MuiDialog-paper": {
           backgroundColor: "#2E2E32", // Custom background color for the dialog
           borderRadius: "20px", // Custom border radius for the dialog
+          width: "90%", // Custom width for the dialog
         },
       }}
     >
       <DialogTitle
         sx={{
-          backgroundColor: "#1F1E22", // Title background color
-          color: "whitesmoke", // Title text color
+          backgroundColor: "var(--nav-card-modal)", // Title background color
+          color: "var(--color-white)", // Title text color
           display: "flex",
           alignItems: "center",
         }}
       >
         <ArrowBackIcon
-          sx={{ color: "whitesmoke", cursor: "pointer", marginRight: "16px" }}
+          sx={{
+            color: "var(--color-white)",
+            cursor: "pointer",
+            marginRight: "16px",
+          }}
           onClick={onClose}
         />
         {isSecondPage ? "Set Roles and Notifications" : "Add Collaborators"}
@@ -56,16 +61,18 @@ const ShareModal = ({
 
       <DialogContent
         sx={{
-          backgroundColor: "#1F1E22", // Content background color
-          color: "whitesmoke", // Text color in the content
-          width: "50vh",
+          backgroundColor: "var(--nav-card-modal)", // Content background color
+          color: "var(--color-white)", // Text color in the content
+          width: "auto",
+          padding: "0px",
+
           "& .MuiDialog-paper": {
             width: "100%",
           },
         }}
       >
         {!isSecondPage ? (
-          <div w>
+          <div style={{ width: "auto", padding: "12px" }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <EmailInput />
             </div>
@@ -78,7 +85,7 @@ const ShareModal = ({
                 sx={{
                   width: "50%",
                   backgroundColor: "transparent", // Select background color
-                  "& .MuiSelect-select": { color: "whitesmoke" }, // Select text color
+                  "& .MuiSelect-select": { color: "var(--color-white)" }, // Select text color
                   "& .MuiOutlinedInput-notchedOutline": {
                     borderColor: "transparent", // Border color
                   },
@@ -94,7 +101,7 @@ const ShareModal = ({
                 <MenuItem value="Commenter">Commenter</MenuItem>
                 <MenuItem value="Viewer">Viewer</MenuItem>
               </Select>
-              <p style={{ color: "whitesmoke", marginLeft: "auto" }}>Notify People</p>
+              <p style={{ color: "var(--color-white)", marginLeft: "auto" }}>Notify People</p>
               <Checkbox
                 checked={notifyPeople}
                 onChange={(e) => setNotifyPeople(e.target.checked)}
@@ -125,16 +132,34 @@ const ShareModal = ({
                 },
               }}
             />
+            <Button
+              variant="contained"
+              onClick={onNext}
+              sx={{
+                width: "95%", // Button width
+                background: "var(--gradientButton)", // Gradient background
+                borderRadius: "20px", // Button border radius
+                color: "var(--color-white)", // Button text color
+                margin: "10px",
+                fontWeight: "bold",
+                textTransform: "none",
+                "&:hover": {
+                  background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                },
+              }}
+            >
+              Next
+            </Button>
           </div>
         ) : (
           <div>
-            <Typography variant="body1" sx={{ marginBottom: "16px" }}>
+            <Typography variant="body1" sx={{ marginBottom: "16px", padding: "12px" }}>
               Assign roles and choose notification settings for the added collaborators.
             </Typography>
 
             {collaborators.map((collaborator, index) => (
               <div key={index} style={{ marginBottom: "16px" }}>
-                <Typography variant="body2" color="whitesmoke">
+                <Typography variant="body2" color="var(--color-white)">
                   {collaborator}
                 </Typography>
                 <Select
@@ -143,7 +168,7 @@ const ShareModal = ({
                   sx={{
                     marginRight: "16px",
                     backgroundColor: "#3E3E42",
-                    color: "whitesmoke",
+                    color: "var(--color-white)",
                   }}
                 >
                   <MenuItem value="Editor">Editor</MenuItem>
@@ -154,9 +179,9 @@ const ShareModal = ({
                 <Checkbox
                   checked={notifyPeople}
                   onChange={() => setNotifyPeople(!notifyPeople)}
-                  sx={{ color: "whitesmoke" }} // Checkbox color
+                  sx={{ color: "var(--color-white)" }} // Checkbox color
                 />
-                <Typography variant="body2" sx={{ display: "inline", color: "whitesmoke" }}>
+                <Typography variant="body2" sx={{ display: "inline", color: "var(--color-white)" }}>
                   Notify
                 </Typography>
               </div>
@@ -167,9 +192,11 @@ const ShareModal = ({
               variant="contained"
               onClick={onShareProject}
               sx={{
+                width: "92%", // Button width
                 background: "var(--gradientButton)", // Gradient background
                 borderRadius: "20px", // Button border radius
-                color: "whitesmoke", // Button text color
+                color: "var(--color-white)", // Button text color
+                margin: "16px",
                 fontWeight: "bold",
                 textTransform: "none",
                 "&:hover": {
@@ -182,26 +209,6 @@ const ShareModal = ({
           </div>
         )}
       </DialogContent>
-
-      <DialogActions sx={{ backgroundColor: "#1F1E22" }}>
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={onNext}
-          sx={{
-            background: "var(--gradientButton)", // Gradient background
-            borderRadius: "20px", // Button border radius
-            color: "whitesmoke", // Button text color
-            fontWeight: "bold",
-            textTransform: "none",
-            "&:hover": {
-              background: "var(--gradientButtonHover)", // Reverse gradient on hover
-            },
-          }}
-        >
-          Next
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

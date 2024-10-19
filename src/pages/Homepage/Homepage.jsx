@@ -28,6 +28,7 @@ import "../../css/design.css";
 import ProjectIcon from "./svg/ProjectIcon.jsx";
 import DesignSvg from "./svg/DesignSvg.jsx";
 import Loading from "../../components/Loading.jsx";
+import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage.jsx";
 
 function Homepage() {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ function Homepage() {
         searchQuery={searchQuery}
       />
 
-      <div className={`content ${isDrawerOpen ? "dimmed" : ""}`}>
+      <div className="recent-section">
         <div className="headerPlace">
           <div className="header">
             <img
@@ -116,31 +117,33 @@ function Homepage() {
                 marginLeft: "20px",
               }}
             >
-              <div className="layout" style={{ marginBottom: "100px" }}>
-                {filteredDesigns.length > 0 ? (
-                  filteredDesigns.slice(0, 3).map((design) => (
-                    <DesignIcon
-                      key={design.id}
-                      name={design.designName}
-                      designId={design.id}
-                      lastAccessed={design.lastAccessed}
-                      onDelete={() =>
-                        handleDeleteDesign(userDoc.id, design.id, navigate, setDesigns)
-                      }
-                      onOpen={() =>
-                        navigate(`/design/${design.id}`, {
-                          state: {
-                            designId: design.id,
-                          },
-                        })
-                      }
-                    />
-                  ))
-                ) : (
-                  <div className="no-content">
-                    <p>No designs found.</p>
-                  </div>
-                )}
+              <div className="recent-designs">
+                <div className="layout">
+                  {filteredDesigns.length > 0 ? (
+                    filteredDesigns.slice(0, 3).map((design) => (
+                      <DesignIcon
+                        key={design.id}
+                        name={design.designName}
+                        designId={design.id}
+                        lastAccessed={design.lastAccessed}
+                        onDelete={() =>
+                          handleDeleteDesign(userDoc.id, design.id, navigate, setDesigns)
+                        }
+                        onOpen={() =>
+                          navigate(`/design/${design.id}`, {
+                            state: {
+                              designId: design.id,
+                            },
+                          })
+                        }
+                      />
+                    ))
+                  ) : (
+                    <div className="no-content">
+                      <p>No designs found.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -237,7 +240,7 @@ function Homepage() {
                   className="small-circle-button"
                   onClick={() => handleCreateProject(userDoc.id, navigate, setProjects)}
                 >
-                  <FolderIcon className="icon" />
+                  <AddProject />
                 </div>
               </div>
               <div className="small-button-container">
@@ -246,7 +249,7 @@ function Homepage() {
                   className="small-circle-button"
                   onClick={() => handleCreateDesign(userDoc.id, navigate, setDesigns)}
                 >
-                  <ImageIcon className="icon" />
+                  <AddDesign />
                 </div>
               </div>
             </div>

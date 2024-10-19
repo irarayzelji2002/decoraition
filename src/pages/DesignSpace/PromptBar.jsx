@@ -2,16 +2,18 @@ import React, { useState } from "react";
 import "../../css/design.css";
 import Slider from "@mui/joy/Slider";
 import Button from "@mui/joy/Button";
-import { MuiColorInput } from "mui-color-input";
+
 import { Modal, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Textarea from "@mui/joy/Textarea";
 import AddImage from "./svg/AddImage";
-import { Add } from "@mui/icons-material";
 import AddColor from "./svg/AddColor";
+
+import CreatePallete from "./CreatePallete";
 
 function PromptBar() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [colorOpen, setColorOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [value, setValue] = React.useState("#ffffff");
 
@@ -24,8 +26,14 @@ function PromptBar() {
     setModalOpen(true);
   };
 
+  const handleOpenColor = (title) => {
+    setModalTitle(title);
+    setColorOpen(true);
+  };
+
   const handleCloseModal = () => {
     setModalOpen(false);
+    setColorOpen(false);
   };
 
   return (
@@ -56,8 +64,10 @@ function PromptBar() {
       </h3>
       <Slider
         defaultValue={1}
+        valueLabelDisplay="on"
         max={4}
         sx={{
+          marginTop: "10px",
           color: "var(--slider)", // Slider color
           "& .MuiSlider-thumb": {
             background: "var(--gradientCircle)", // Gradient thumb
@@ -153,7 +163,7 @@ function PromptBar() {
               backgroundImage: "var(--gradientCircleHover)",
             },
           }}
-          onClick={() => handleOpenModal("Add a Color Palette")}
+          onClick={() => handleOpenColor("Add a color palette")}
         >
           <AddColor />
         </Button>
@@ -263,32 +273,16 @@ function PromptBar() {
               style={{ display: "none" }}
               onChange={(e) => console.log(e.target.files[0])}
             />
-
-            <MuiColorInput
-              sx={{
-                width: "100%",
-                margin: "10px",
-                "& .MuiInputBase-root": {
-                  color: "var(--color-white)", // Set input text color to white
-                },
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    border: "2px solid var(--borderInput)",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "var(--borderInput)", // Set border color on hover
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "var(--brightFont)", // Set border color on focus
-                  },
-                },
-              }}
-              format="hex"
-              value={value}
-              onChange={handleChange}
-            />
           </div>
         </Box>
+      </Modal>
+      <Modal
+        open={colorOpen}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+      >
+        <CreatePallete handleCloseModal={handleCloseModal} modalTitle={modalTitle} />
       </Modal>
     </div>
   );

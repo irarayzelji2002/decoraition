@@ -38,13 +38,14 @@
 
 .modal-content {
   width: 100%;
-  background-color: #25232a;
+  background-color: var(--nav-card-modal);
   padding: 20px;
 }
+
 .title {
   color: var(--color-white);
   font-weight: bold;
-  font-size: 36px;
+  font-size: 2.25em;
 
   margin-top: 10px;
   left: 0;
@@ -68,12 +69,10 @@
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 1em;
   font-weight: bold;
   cursor: pointer;
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
   border: 2px solid transparent;
   background-image: var(--darkGradient), var(--gradientButton);
   background-origin: border-box;
@@ -96,12 +95,10 @@
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 1em;
   font-weight: bold;
   cursor: pointer;
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 
   border: 2px solid transparent;
   background-image: var(--darkGradient), var(--gradientButton);

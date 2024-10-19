@@ -25,9 +25,9 @@ function Trash() {
           y2="150.769"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#F9A754" />
-          <stop offset="0.5" stopColor="#F26B27" />
-          <stop offset="1" stopColor="#EF4E59" />
+          <stop stop-color="#F9A754" />
+          <stop offset="0.5" stop-color="#F26B27" />
+          <stop offset="1" stop-color="#EF4E59" />
         </linearGradient>
       </defs>
     </svg>

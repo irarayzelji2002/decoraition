@@ -1,5 +1,3 @@
-import { useSharedProps } from "../../contexts/SharedPropsContext";
-import { showToast } from "../../functions/utils";
 import "../../css/addItem.css";
 import TopBar from "../../components/TopBar";
 import React, { useState, useEffect } from "react";
@@ -8,17 +6,33 @@ import "../../css/budget.css";
 import { db } from "../../firebase"; // Assuming you have firebase setup
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { ToastContainer, toast } from "react-toastify";
+import { InputAdornment } from "@mui/material";
+import TextField from "@mui/material/TextField";
+import SearchIcon from "@mui/icons-material/Search";
+import NoImage from "./svg/NoImage";
+import { showToast } from "../../functions/utils";
 
 const AddItem = () => {
   const [itemQuantity, setItemQuantity] = useState(1);
-  const [image, setImage] = useState(null);
-  const { designId, projectId } = useParams();
-  const [userId, setUserId] = useState(null);
+  const { designId } = useParams();
   const [budgetItem, setBudgetItem] = useState("");
-  const [cost, setCost] = useState(0);
+  const [cost, setCost] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  const handleImageUpload = (e) => {
-    setImage(URL.createObjectURL(e.target.files[0]));
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    document.getElementById("upload-image").click();
   };
 
   const handleInputChange = (e) => {
@@ -29,8 +43,6 @@ const AddItem = () => {
     setCost(e.target.value);
   };
 
-  const isProjectPath = window.location.pathname.includes("/project");
-
   const handleInputSubmit = async () => {
     if (budgetItem.trim() === "") {
       alert("Pin cannot be empty");
@@ -40,20 +52,7 @@ const AddItem = () => {
     try {
       let pinRef;
 
-      if (isProjectPath) {
-        pinRef = collection(
-          db,
-          "users",
-          userId,
-          "projects",
-          projectId,
-          "designs",
-          designId,
-          "budgets"
-        );
-      } else {
-        pinRef = collection(db, "budgets");
-      }
+      pinRef = collection(db, "budgets");
 
       await addDoc(pinRef, {
         itemName: budgetItem,
@@ -76,21 +75,63 @@ const AddItem = () => {
   };
 
   return (
-    <>
+    <div style={{ overflow: "hidden" }}>
       <TopBar state={"Add Item"} />
+      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <div className="add-item-container">
         <div className="left-column">
-          <div className="search-section">
-            <input type="text" placeholder="Search for an item" />
-          </div>
+          <TextField
+            placeholder="Search for an item"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start" sx={{ color: "var(--color-white)" }}>
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              width: "100%",
+              marginBottom: "20px",
+
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  border: "var(--borderInput) 2px solid",
+                  borderRadius: "20px",
+                },
+                "&:hover fieldset": {
+                  border: "var(--borderInput) 2px solid",
+                },
+                "&.Mui-focused fieldset": {
+                  border: "var(--brightFont) 2px solid",
+                },
+                "& input": {
+                  color: "var(--color-white)", // Change the text color
+                },
+              },
+            }}
+            fullWidth
+          />
 
           <div className="upload-section">
-            {image ? (
-              <img src={image} alt="Item" className="uploaded-image" />
+            {selectedImage ? (
+              <img
+                src={selectedImage}
+                alt="Selected"
+                style={{
+                  objectFit: "cover",
+                  width: "100%",
+                  height: "350px",
+                  marginBottom: "40px",
+                  borderRadius: "20px",
+                }}
+              />
             ) : (
-              <div className="image-placeholder">Add an image to the item</div>
+              <div className="image-placeholder-container">
+                <NoImage />
+                <div className="image-placeholder">Add an image to the item</div>
+              </div>
             )}
-            <label htmlFor="upload-image" className="upload-btn">
+            <button onClick={triggerFileInput} className="upload-btn">
               Upload image of item
               <input
                 type="file"
@@ -98,7 +139,7 @@ const AddItem = () => {
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
               />
-            </label>
+            </button>
           </div>
         </div>
         <div className="right-column">
@@ -114,6 +155,8 @@ const AddItem = () => {
                 type="text"
                 placeholder="Enter item name"
                 onChange={handleInputChange}
+                style={{ outline: "none" }}
+                className="focus-border"
               />
             </div>
 
@@ -132,13 +175,17 @@ const AddItem = () => {
                   type="number"
                   placeholder="Enter item price"
                   onChange={handleCost}
+                  style={{ outline: "none" }}
                 />
               </div>
             </div>
+            <label htmlFor="item-price" className="price-label">
+              Item Quantity
+            </label>
 
             <div className="quantity-section">
               <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}>&lt;</button>
-              <span>{itemQuantity}</span>
+              <span style={{ color: "var(--color-white)" }}>{itemQuantity}</span>
               <button onClick={() => setItemQuantity(itemQuantity + 1)}>&gt;</button>
             </div>
 
@@ -149,7 +196,7 @@ const AddItem = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

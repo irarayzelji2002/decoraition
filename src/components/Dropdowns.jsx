@@ -4,6 +4,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { Menu, styled } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 export default function SelectSmall() {
   const [owner, setOwner] = React.useState("");
@@ -13,19 +14,31 @@ export default function SelectSmall() {
   const [order, setOrder] = React.useState("");
 
   // Custom styles for Menu
+
   const StyledMenu = styled(Menu)(({ theme }) => ({
     "& .MuiPaper-root": {
       backgroundColor: "#2c2c2e",
-      color: "#f1f1f1",
+      color: "var(--color-white)",
       borderRadius: "12px",
       padding: 0,
       margin: 0,
-
       border: "none",
       overflow: "hidden",
     },
     "& .MuiList-root": {
       padding: 0,
+    },
+    "& .MuiMenuItem-root": {
+      "&.Mui-selected": {
+        backgroundColor: "transparent", // Custom background color for selected item
+        "&:hover": {
+          backgroundColor: "transparent", // Custom hover color for selected item
+        },
+      },
+      "&:focus": {
+        outline: "none",
+        boxShadow: "none", // Remove blue outline effect
+      },
     },
   }));
 
@@ -33,30 +46,33 @@ export default function SelectSmall() {
     m: 1,
     minWidth: 200,
     backgroundColor: "#2c2c2e",
-    color: "#f1f1f1",
+    color: "var(--color-white)",
     borderRadius: "8px",
     "& .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#4a4a4d",
+      borderColor: "var( --borderInput)",
     },
     "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#f1f1f1",
+      borderColor: "var(--bright-grey) !important",
+    },
+    "& .MuiSvgIcon-root": {
+      color: "var(--color-white)", // Set the arrow color to white
     },
   };
 
   const menuItemStyles = {
-    color: "#f1f1f1",
-    backgroundColor: "#3a3a3c",
+    color: "var(--color-white)",
+    backgroundColor: "var(--dropdown)",
     transition: "all 0.3s ease",
     "&:hover": {
-      backgroundColor: "#5a5a5c",
+      backgroundColor: "var(--dropdownHover)",
     },
     "&.Mui-selected": {
-      backgroundColor: "#4a4a4d",
+      backgroundColor: "var(--dropdownSelected)",
       color: "#d1d1d1",
       fontWeight: "bold",
     },
     "&.Mui-selected:hover": {
-      backgroundColor: "#5a5a5c",
+      backgroundColor: "var(--dropdownHover)",
     },
   };
 
@@ -65,31 +81,63 @@ export default function SelectSmall() {
       style={{
         display: "flex",
         flexWrap: "wrap",
-        gap: "16px",
+
         justifyContent: "center",
         margin: "16px",
       }}
     >
       {/* Owner Select */}
+
       <FormControl sx={formControlStyles}>
-        <InputLabel id="owner-select-label" sx={{ color: "#f1f1f1" }}>
+        <InputLabel
+          id="owner-select-label"
+          sx={{
+            color: "var(--color-white)",
+            "&.Mui-focused": {
+              color: "var(--color-white)", // Ensure label color remains white when focused
+            },
+            "&.MuiInputLabel-shrink": {
+              color: "var(--color-white)", // Ensure label color remains white when shrunk
+            },
+            "&.Mui-focused.MuiInputLabel-shrink": {
+              color: "var(--color-white)", // Ensure label color remains white when focused and shrunk
+            },
+          }}
+        >
           Owner
         </InputLabel>
         <Select
           labelId="owner-select-label"
           id="owner-select"
-          value={owner}
           label="Owner"
+          value={owner}
           onChange={(e) => setOwner(e.target.value)}
           MenuComponent={StyledMenu}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                "& .MuiMenu-list": {
+                  padding: 0, // Remove padding from the ul element
+                },
+              },
+            },
+          }}
+          IconComponent={ArrowDropDownIcon}
           sx={{
-            color: "#f1f1f1",
-            backgroundColor: "#2c2c2e",
+            color: "var(--color-white)",
+            backgroundColor: "var(--bgMain)",
             borderBottom: "1px solid #4a4a4d",
             borderRadius: "8px",
             transition: "background-color 0.3s ease",
-            "&:hover": {
-              backgroundColor: "#3a3a3c",
+            "&.Mui-focused": {
+              borderBottom: "1px solid var(--focusBorderColor)", // Change border color when focused
+              outline: "none",
+              boxShadow: "none", // Remove blue outline effect
+              color: "var(--color-grey)", // Ensure text color remains white
+            },
+
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--color-white)",
             },
           }}
         >
@@ -110,7 +158,21 @@ export default function SelectSmall() {
 
       {/* Date Modified Select */}
       <FormControl sx={formControlStyles}>
-        <InputLabel id="date-modified-select-label" sx={{ color: "#f1f1f1" }}>
+        <InputLabel
+          id="date-modified-select-label"
+          sx={{
+            color: "var(--color-white)",
+            "&.Mui-focused": {
+              color: "var(--color-white)", // Ensure label color remains white when focused
+            },
+            "&.MuiInputLabel-shrink": {
+              color: "var(--color-white)", // Ensure label color remains white when shrunk
+            },
+            "&.Mui-focused.MuiInputLabel-shrink": {
+              color: "var(--color-white)", // Ensure label color remains white when focused and shrunk
+            },
+          }}
+        >
           Date Modified
         </InputLabel>
         <Select
@@ -120,14 +182,31 @@ export default function SelectSmall() {
           label="Date Modified"
           onChange={(e) => setDateModified(e.target.value)}
           MenuComponent={StyledMenu}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                "& .MuiMenu-list": {
+                  padding: 0, // Remove padding from the ul element
+                },
+              },
+            },
+          }}
+          IconComponent={ArrowDropDownIcon}
           sx={{
-            color: "#f1f1f1",
-            backgroundColor: "#2c2c2e",
+            color: "var(--color-white)",
+            backgroundColor: "var(--bgMain)",
             borderBottom: "1px solid #4a4a4d",
             borderRadius: "8px",
             transition: "background-color 0.3s ease",
-            "&:hover": {
-              backgroundColor: "#3a3a3c",
+            "&.Mui-focused": {
+              borderBottom: "1px solid var(--focusBorderColor)",
+              outline: "none",
+              boxShadow: "none",
+              color: "var(--color-grey)",
+            },
+
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--color-white)",
             },
           }}
         >
@@ -148,7 +227,21 @@ export default function SelectSmall() {
 
       {/* Date Created Select */}
       <FormControl sx={formControlStyles}>
-        <InputLabel id="date-created-select-label" sx={{ color: "#f1f1f1" }}>
+        <InputLabel
+          id="date-created-select-label"
+          sx={{
+            color: "var(--color-white)",
+            "&.Mui-focused": {
+              color: "var(--color-white)",
+            },
+            "&.MuiInputLabel-shrink": {
+              color: "var(--color-white)",
+            },
+            "&.Mui-focused.MuiInputLabel-shrink": {
+              color: "var(--color-white)",
+            },
+          }}
+        >
           Date Created
         </InputLabel>
         <Select
@@ -157,15 +250,32 @@ export default function SelectSmall() {
           value={dateCreated}
           label="Date Created"
           onChange={(e) => setDateCreated(e.target.value)}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+              },
+            },
+          }}
           MenuComponent={StyledMenu}
+          IconComponent={ArrowDropDownIcon}
           sx={{
-            color: "#f1f1f1",
-            backgroundColor: "#2c2c2e",
+            color: "var(--color-white)",
+            backgroundColor: "var(--bgMain)",
             borderBottom: "1px solid #4a4a4d",
             borderRadius: "8px",
             transition: "background-color 0.3s ease",
-            "&:hover": {
-              backgroundColor: "#3a3a3c",
+            "&.Mui-focused": {
+              borderBottom: "1px solid var(--focusBorderColor)",
+              outline: "none",
+              boxShadow: "none",
+              color: "var(--color-grey)",
+            },
+
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--color-white)",
             },
           }}
         >
@@ -186,7 +296,21 @@ export default function SelectSmall() {
 
       {/* Sort By Select */}
       <FormControl sx={formControlStyles}>
-        <InputLabel id="sort-by-select-label" sx={{ color: "#f1f1f1" }}>
+        <InputLabel
+          id="sort-by-select-label"
+          sx={{
+            color: "var(--color-white)",
+            "&.Mui-focused": {
+              color: "var(--color-white)",
+            },
+            "&.MuiInputLabel-shrink": {
+              color: "var(--color-white)",
+            },
+            "&.Mui-focused.MuiInputLabel-shrink": {
+              color: "var(--color-white)",
+            },
+          }}
+        >
           Sort By
         </InputLabel>
         <Select
@@ -196,14 +320,31 @@ export default function SelectSmall() {
           label="Sort By"
           onChange={(e) => setSortBy(e.target.value)}
           MenuComponent={StyledMenu}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+              },
+            },
+          }}
+          IconComponent={ArrowDropDownIcon}
           sx={{
-            color: "#f1f1f1",
-            backgroundColor: "#2c2c2e",
+            color: "var(--color-white)",
+            backgroundColor: "var(--bgMain)",
             borderBottom: "1px solid #4a4a4d",
             borderRadius: "8px",
             transition: "background-color 0.3s ease",
-            "&:hover": {
-              backgroundColor: "#3a3a3c",
+            "&.Mui-focused": {
+              borderBottom: "1px solid var(--focusBorderColor)",
+              outline: "none",
+              boxShadow: "none",
+              color: "var(--color-grey)",
+            },
+
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--color-white)",
             },
           }}
         >
@@ -221,7 +362,21 @@ export default function SelectSmall() {
 
       {/* Order Select */}
       <FormControl sx={formControlStyles}>
-        <InputLabel id="order-select-label" sx={{ color: "#f1f1f1" }}>
+        <InputLabel
+          id="order-select-label"
+          sx={{
+            color: "var(--color-white)",
+            "&.Mui-focused": {
+              color: "var(--color-white)",
+            },
+            "&.MuiInputLabel-shrink": {
+              color: "var(--color-white)",
+            },
+            "&.Mui-focused.MuiInputLabel-shrink": {
+              color: "var(--color-white)",
+            },
+          }}
+        >
           Order
         </InputLabel>
         <Select
@@ -231,14 +386,30 @@ export default function SelectSmall() {
           label="Order"
           onChange={(e) => setOrder(e.target.value)}
           MenuComponent={StyledMenu}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+              },
+            },
+          }}
+          IconComponent={ArrowDropDownIcon}
           sx={{
-            color: "#f1f1f1",
-            backgroundColor: "#2c2c2e",
+            color: "var(--color-white)",
+            backgroundColor: "var(--bgMain)",
             borderBottom: "1px solid #4a4a4d",
             borderRadius: "8px",
             transition: "background-color 0.3s ease",
-            "&:hover": {
-              backgroundColor: "#3a3a3c",
+            "&.Mui-focused": {
+              borderBottom: "1px solid var(--focusBorderColor)",
+              outline: "none",
+              color: "var(--color-grey)",
+            },
+
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--color-white)",
             },
           }}
         >

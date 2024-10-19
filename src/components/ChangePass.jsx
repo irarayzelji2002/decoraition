@@ -136,5 +136,5 @@ export default function ChangePass({ email, token }) {
         </Box>
       </Box>
     </Container>
-  );
+  )
 }

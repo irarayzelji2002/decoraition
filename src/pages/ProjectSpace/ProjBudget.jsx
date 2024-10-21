@@ -84,7 +84,6 @@ function ProjBudget() {
 
   return (
     <>
-      <ToastContainer />
       <ProjectHead />
       <div className="budgetHolder">
         <span

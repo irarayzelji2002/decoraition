@@ -1,3 +1,4 @@
+import axios from "axios";
 import "../../css/addItem.css";
 import TopBar from "../../components/TopBar";
 import React, { useState, useEffect } from "react";
@@ -14,11 +15,15 @@ import NoImage from "./svg/NoImage";
 import { showToast } from "../../functions/utils";
 
 const AddItem = () => {
+  const { budgetId } = useParams();
   const [itemQuantity, setItemQuantity] = useState(1);
-  const { designId } = useParams();
   const [budgetItem, setBudgetItem] = useState("");
+  const [description, setDescription] = useState("");
   const [cost, setCost] = useState("");
+  const [currency, setCurrency] = useState("PHP");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isUploadedImage, setIsUploadedImage] = useState(false);
+  const [imageLink, setImageLink] = useState("");
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -29,6 +34,7 @@ const AddItem = () => {
       };
       reader.readAsDataURL(file);
     }
+    setIsUploadedImage(true);
   };
 
   const triggerFileInput = () => {
@@ -43,41 +49,43 @@ const AddItem = () => {
     setCost(e.target.value);
   };
 
-  const handleInputSubmit = async () => {
+  const handleAddItem = async () => {
     if (budgetItem.trim() === "") {
-      alert("Pin cannot be empty");
+      alert("Item name cannot be empty");
       return;
     }
 
     try {
-      let pinRef;
-
-      pinRef = collection(db, "budgets");
-
-      await addDoc(pinRef, {
+      const response = await axios.post("/api/design/item/add-item", {
+        budgetId: budgetId,
         itemName: budgetItem,
-        description: "",
-        cost: cost,
+        description: description,
+        cost: {
+          amount: parseFloat(cost),
+          currency: currency,
+        },
         quantity: itemQuantity,
-        designId,
+        image: isUploadedImage ? selectedImage : imageLink,
+        includedInTotal: true,
+        isUploadedImage: isUploadedImage, // for indication only
       });
-      setBudgetItem("");
 
-      const itemName = budgetItem;
-      showToast("success", `${itemName} has been added!`);
-      setTimeout(() => {
-        window.history.back();
-      }, 1000);
+      if (response.status === 201) {
+        const itemName = budgetItem;
+        showToast("success", `${itemName} has been added!`);
+        setTimeout(() => {
+          window.history.back();
+        }, 1000);
+      }
     } catch (error) {
-      console.error("Error adding pin:", error);
-      alert("Failed to add pin");
+      console.error("Error adding item:", error);
+      showToast("error", "Failed to add item");
     }
   };
 
   return (
     <div style={{ overflow: "hidden" }}>
       <TopBar state={"Add Item"} />
-      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <div className="add-item-container">
         <div className="left-column">
           <TextField
@@ -160,14 +168,29 @@ const AddItem = () => {
               />
             </div>
 
+            {/* Item Description */}
+            <label htmlFor="item-description" className="item-name-label">
+              Item Description
+            </label>
+            <div className="input-group">
+              <input
+                id="item-description"
+                type="text"
+                placeholder="Enter item description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
             {/* Item price */}
             <label htmlFor="item-price" className="price-label">
               Item price
             </label>
             <div className="input-group">
               <div className="price-quantity-section">
-                <select>
+                <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
                   <option value="PHP">PHP</option>
+                  <option value="USD">USD</option>
                 </select>
                 <input
                   id="item-price"
@@ -190,7 +213,7 @@ const AddItem = () => {
             </div>
 
             {/* Add Item Button */}
-            <button className="add-item-btn" onClick={handleInputSubmit}>
+            <button className="add-item-btn" onClick={handleAddItem}>
               Add item
             </button>
           </div>

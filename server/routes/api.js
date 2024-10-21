@@ -71,8 +71,22 @@ router.delete(
 
 // Design routes
 router.get("/design/:userId", authenticateUser, designController.fetchUserDesigns);
-router.post("/design/create", authenticateUser, designController.handleCreateDesign);
-router.delete("/design/delete/:designId", authenticateUser, designController.handleDeleteDesign);
+router.post("/design/create", authenticateUser, designController.createDesign);
+router.delete("/design/delete/:designId", authenticateUser, designController.deleteDesign);
+router.delete("/design/:designId/update-name", authenticateUser, designController.updateDesignName);
+router.post(
+  "/design/budget/:budgetId/update-budget",
+  authenticateUser,
+  budgetController.updateBudget
+);
+router.post(
+  "/design/item/add-item",
+  authenticateUser,
+  upload.single("file"),
+  budgetController.addItem
+);
+router.post("/design/item/:itemId/update-item", authenticateUser, budgetController.updateItem);
+router.post("/design/item/:itemId/delete-item", authenticateUser, budgetController.deleteItem);
 
 // Project routes
 router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);

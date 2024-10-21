@@ -117,7 +117,6 @@ function Project() {
   }
   return (
     <>
-      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <ProjectHead />
       <div
         style={{

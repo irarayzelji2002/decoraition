@@ -28,7 +28,7 @@ import { showToast } from "../functions/utils.js";
 function DesignHead({
   toggleComments,
   setIsSidebarOpen,
-  designData,
+  design,
   newName,
   setNewName,
   isEditingName,
@@ -254,7 +254,7 @@ function DesignHead({
             />
           ) : (
             <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
-              {designData.name || "Untitled"}
+              {design.designName || "Untitled"}
             </span>
           )}
         </div>

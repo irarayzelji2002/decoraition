@@ -32,6 +32,7 @@ import EditEvent from "./pages/ProjectSpace/EditEvent.jsx";
 import ProjSetting from "./pages/Settings/ProjSetting.jsx";
 import Version from "./pages/DesignSpace/Version.jsx";
 import DesignSettings from "./pages/DesignSpace/DesignSettings.jsx";
+import TestJoyComponents from "./pages/DesignSpace/TestJoyComponents.jsx";
 
 function ProtectedRoute({ children }) {
   const { user, userDoc, userDocFetched } = useAuth();
@@ -47,6 +48,13 @@ function AuthPublicRoute({ children }) {
   return children;
 }
 
+function StartElement() {
+  const { user, userDoc, userDocFetched } = useAuth();
+  if (!userDocFetched) return <Loading />;
+  if (user && userDoc) return <Navigate to="/homepage" replace />;
+  else return <Landing />;
+}
+
 function App() {
   return (
     <Router>
@@ -55,8 +63,9 @@ function App() {
           <SharedPropsProvider>
             <Routes>
               {/* PUBLIC ROUTES */}
-              <Route path="/" element={<Landing />} />
+              <Route path="/" element={<StartElement />} />
               <Route path="/landing" element={<Landing />} />
+              <Route path="/test-joy" element={<TestJoyComponents />} />
 
               {/* AUTH PUBLIC ROUTES */}
               <Route
@@ -184,7 +193,7 @@ function App() {
                 }
               />
               <Route
-                path="/addItem/:designId"
+                path="/addItem/:budgetId"
                 element={
                   <ProtectedRoute>
                     <AddItem />
@@ -192,7 +201,7 @@ function App() {
                 }
               />
               <Route
-                path="/editItem/:designId/:itemId"
+                path="/editItem/:budgetId/:itemId"
                 element={
                   <ProtectedRoute>
                     <EditItem />

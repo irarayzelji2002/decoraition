@@ -62,7 +62,6 @@ function Timeline() {
   return (
     <>
       <ProjectHead />
-      <ToastContainer />
       <div className="timeline-container">
         {/* Calendar Section */}
         <div className="calendar-head">

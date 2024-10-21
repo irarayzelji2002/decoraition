@@ -1,4 +1,6 @@
 const { db, auth, clientAuth, clientDb } = require("../firebase");
+const { ref, uploadBytes, getDownloadURL, deleteObject } = require("firebase/storage");
+const { doc, getDoc, arrayUnion } = require("firebase/firestore");
 
 // Create Project
 exports.handleCreateProject = async (req, res) => {
@@ -13,8 +15,8 @@ exports.handleCreateProject = async (req, res) => {
       contentManagers: [],
       contributors: [],
       viewers: [],
-      createdAt: db.FieldValue.serverTimestamp(),
-      modifiedAt: db.FieldValue.serverTimestamp(),
+      createdAt: new Date(),
+      modifiedAt: new Date(),
       projectSettings: {
         generalAccessSetting: 0, //0 for Restricted, 1 for Anyone with the link
         generalAccessRole: 0, //0 for viewer, 1 for content manager, 2 for contributor)
@@ -99,12 +101,17 @@ exports.handleCreateProject = async (req, res) => {
     });
 
     // Update user's projects array
-    await db
-      .collection("users")
-      .doc(userId)
-      .update({
-        projects: db.FieldValue.arrayUnion({ projectId, role: 2 }), // 2 for manager role
-      });
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    const userData = userDoc.data();
+    const updatedProjects = userData.designs ? [...userData.projects] : [];
+    updatedProjects.push({ projectId, role: 2 });
+    if (!userDoc.exists) {
+      throw new Error("User not found"); // 2 for manager
+    }
+    await userRef.update({
+      projects: updatedProjects,
+    });
 
     res.status(200).json({
       id: projectId,
@@ -121,6 +128,7 @@ exports.handleCreateProject = async (req, res) => {
     for (const doc of createdDocuments) {
       try {
         await db.collection(doc.collection).doc(doc.id).delete();
+        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
       } catch (deleteError) {
         console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
       }
@@ -172,12 +180,15 @@ exports.handleDeleteProject = async (req, res) => {
     await db.collection("projects").doc(projectId).delete();
 
     // Remove the project from the user's projects array
-    await db
-      .collection("users")
-      .doc(userId)
-      .update({
-        projects: db.FieldValue.arrayRemove({ projectId, role: 2 }),
-      });
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const updatedProjects = userData.projects.filter(
+        (project) => project.projectId !== projectId
+      );
+      await userRef.update({ projects: updatedProjects });
+    }
 
     res.status(200).json({ message: "Project deleted successfully" });
   } catch (error) {

@@ -49,12 +49,20 @@ export const handleLogout = async (navigate) => {
 };
 
 // Create design
-export const handleCreateDesign = async (userId, navigate, setDesigns) => {
+export const handleCreateDesign = async (user, userId, navigate, setDesigns) => {
   try {
-    const response = await axios.post("/api/design/create", {
-      userId: userId,
-      designName: "Untitled Design",
-    });
+    const response = await axios.post(
+      "/api/design/create",
+      {
+        userId: userId,
+        designName: "Untitled Design",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
 
     if (response.status === 200) {
       showToast("success", "Design created successfully");
@@ -71,12 +79,20 @@ export const handleCreateDesign = async (userId, navigate, setDesigns) => {
 };
 
 // Create project
-export const handleCreateProject = async (userId, navigate, setProjects) => {
+export const handleCreateProject = async (user, userId, navigate, setProjects) => {
   try {
-    const response = await axios.post("/api/project/create", {
-      userId: userId,
-      projectName: "Untitled Project",
-    });
+    const response = await axios.post(
+      "/api/project/create",
+      {
+        userId: userId,
+        projectName: "Untitled Project",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
 
     if (response.status === 200) {
       showToast("success", "Project created successfully");

@@ -25,7 +25,6 @@ function PlanMap() {
 
   return (
     <>
-      <ToastContainer />
       <ProjectHead />
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
       <div className="sectionBudget" style={{ background: "none" }}>

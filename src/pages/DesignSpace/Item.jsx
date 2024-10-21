@@ -1,3 +1,5 @@
+import axios from "axios";
+import { showToast } from "../../functions/utils";
 import "../../css/budget.css";
 import "../../css/design.css";
 import * as React from "react";
@@ -25,7 +27,7 @@ const style = {
   boxShadow: 24,
 };
 
-function Item({ item, onDelete, onEdit }) {
+function Item({ item, onEdit, setDesignItems, budgetId }) {
   const [itemPrice, setItemPrice] = useState("");
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -34,9 +36,34 @@ function Item({ item, onDelete, onEdit }) {
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
 
+  const toggleIncludedInTotal = (itemId) => {
+    setDesignItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === itemId
+          ? { ...item, includedInTotal: !item.includedInTotal } // Toggle the value
+          : item
+      )
+    );
+  };
+
+  const handleDeleteItem = async (itemToDelete, budgetId) => {
+    try {
+      const response = await axios.post(`/api/design/item/${itemToDelete.id}/delete-item`, {
+        budgetId: budgetId,
+      });
+
+      if (response.status === 200) {
+        console.log("Item deleted successfully");
+        showToast("error", "Item deleted successfully");
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      showToast("error", "Failed to delete item, Please try again.");
+    }
+  };
+
   return (
     <div className="itemSpace" style={{ display: "flex", flexDirection: "row" }}>
-      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <Modal
         open={open}
         onClose={handleClose}
@@ -106,7 +133,7 @@ function Item({ item, onDelete, onEdit }) {
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
               <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
-                Confirm Budget Removal
+                Confirm item removal
               </span>
               <CloseIcon
                 sx={{ marginLeft: "auto" }}
@@ -116,7 +143,7 @@ function Item({ item, onDelete, onEdit }) {
             </div>
             <Divider sx={{ borderColor: "var(--color-grey)" }} />
             <span style={{ textAlign: "center", margin: "18px" }}>
-              Are you sure you want to remove the budget item?
+              Are you sure you want to remove {item.quantity} {item.itemName}?
             </span>
             <div
               style={{
@@ -147,7 +174,7 @@ function Item({ item, onDelete, onEdit }) {
               >
                 Cancel
               </button>
-              <button className="add-item-btn" onClick={onDelete}>
+              <button className="add-item-btn" onClick={() => handleDeleteItem(item, budgetId)}>
                 Confirm
               </button>
             </div>
@@ -163,7 +190,7 @@ function Item({ item, onDelete, onEdit }) {
       >
         <span style={{ fontSize: "12px" }}> x {item.quantity}</span>
       </div>
-      <img src="../../img/Room2.jpg" alt={`design preview `} className="thumbnail" />
+      <img src={item.image} alt={`design preview `} className="thumbnail" />
       <div
         style={{
           display: "flex",
@@ -172,8 +199,8 @@ function Item({ item, onDelete, onEdit }) {
           width: "auto  ",
         }}
       >
-        <span className="itemName">{item.itemName}</span>
-        <span className="itemPrice">Php {item.cost}</span>
+        <span className="itemName">{item.quantity + " " + item.itemName}</span>
+        <span className="itemPrice">{item.cost.currency + " " + item.cost.amount}</span>
       </div>
       <div
         style={{
@@ -185,6 +212,13 @@ function Item({ item, onDelete, onEdit }) {
           alignItems: "center",
         }}
       >
+        <div>
+          <input
+            type="checkbox"
+            checked={item.includedInTotal ?? true}
+            onChange={() => toggleIncludedInTotal(item.id)}
+          />
+        </div>
         <div onClick={onEdit}>
           <EditPen />
         </div>

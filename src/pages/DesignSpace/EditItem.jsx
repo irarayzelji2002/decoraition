@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firebase Firestore methods
 import { db } from "../../firebase"; // Your Firebase config file
 import "../../css/addItem.css";
@@ -8,89 +9,86 @@ import { getAuth } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 import NoImage from "./svg/NoImage";
 import { showToast } from "../../functions/utils";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 const EditItem = () => {
-  const { itemId, designId, projectId } = useParams(); // Get IDs from URL
   const navigate = useNavigate();
-  const [userId, setUserId] = useState(null);
+  const { userItems } = useSharedProps;
+  const { budgetId, itemId } = useParams();
+  const [item, setItem] = useState(null);
+
   const [itemName, setItemName] = useState("");
+  const [description, setDescription] = useState("");
   const [itemPrice, setItemPrice] = useState("");
+  const [currency, setCurrency] = useState("PHP");
   const [itemQuantity, setItemQuantity] = useState(1);
-  const [image, setImage] = useState(null); // For image preview and re-upload
+  const [image, setImage] = useState(null);
+  const [isUploadedImage, setIsUploadedImage] = useState(false);
+  const [imageLink, setImageLink] = useState("");
 
-  // Fetch the item details when the component mounts
+  // Initialize
+  useEffect(() => {
+    const fetchedItem = userItems.find((item) => item.id === itemId);
+    setItem(item);
+
+    if (!fetchedItem) {
+      return <div>Item not found.</div>;
+    }
+  }, []);
 
   useEffect(() => {
-    const auth = getAuth();
-
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        setUserId(user.uid);
-      }
-    });
-
-    return () => unsubscribe(); // Cleanup listener on component unmount
-  }, [designId]);
-
-  useEffect(() => {
-    const fetchItemDetails = async () => {
-      try {
-        const itemRef = doc(db, "budgets", itemId);
-
-        const itemSnap = await getDoc(itemRef);
-
-        if (itemSnap.exists()) {
-          const itemData = itemSnap.data();
-          setItemName(itemData.itemName);
-          setItemPrice(itemData.cost);
-          setItemQuantity(itemData.quantity);
-          if (itemData.imageUrl) {
-            setImage(itemData.imageUrl); // If the image URL exists, set it
-          }
-        } else {
-          console.log("No such document!");
-        }
-      } catch (error) {
-        console.error("Error fetching document:", error);
-      }
-    };
-
-    fetchItemDetails();
-  }, [itemId, designId, userId]);
+    setItemName(item.itemName);
+    setDescription(item.description);
+    setItemPrice(item.cost.amount);
+    setCurrency(item.cost.currency);
+    setItemQuantity(item.quantity);
+    setImage(item.image);
+  }, [item]);
 
   // Handle image upload for preview (no actual storage handling here)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setIsUploadedImage(true);
       setImage(URL.createObjectURL(file)); // For preview purposes only
     }
   };
   const isProjectPath = window.location.pathname.includes("/project");
-  // Handle updating the item in Firestore
-  const handleSave = async () => {
-    try {
-      const itemRef = doc(db, "budgets", itemId);
 
-      await updateDoc(itemRef, {
-        itemName,
-        cost: itemPrice,
+  const handleEditItem = async () => {
+    if (itemName.trim() === "") {
+      alert("Item name cannot be empty");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`/api/design/item/${itemId}/update-item`, {
+        budgetId: budgetId,
+        itemName: itemName,
+        description: description,
+        cost: { amount: parseFloat(itemPrice), currency: currency },
         quantity: itemQuantity,
-        // Optionally handle image updates (requires uploading image to Firebase storage)
+        image: isUploadedImage ? image : imageLink,
+        includedInTotal: true,
+        isUploadedImage: isUploadedImage, // for indication only
       });
 
-      showToast("success", `${itemName} has been updated!`);
-      setTimeout(() => {
-        navigate(-1);
-      }, 1000);
+      if (response.status === 200) {
+        console.log("Item updated successfully");
+        showToast("success", "Item updated successfully");
+        setTimeout(() => {
+          window.history.back();
+        }, 1000);
+      }
     } catch (error) {
-      console.error("Error updating document:", error);
+      console.error("Error updating item:", error);
+      showToast("error", "Failed to update item. Please try again.");
     }
   };
 
   return (
     <>
       <TopBar state={"Edit Item"} />
-      <ToastContainer progressStyle={{ backgroundColor: "var(--brightFont)" }} />
       <div className="add-item-container">
         <div className="left-column">
           <div className="upload-section">
@@ -129,14 +127,29 @@ const EditItem = () => {
               />
             </div>
 
+            {/* Item Description */}
+            <label htmlFor="item-description" className="item-name-label">
+              Item Description
+            </label>
+            <div className="input-group">
+              <input
+                id="item-description"
+                type="text"
+                placeholder="Enter item description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
             {/* Item Price */}
             <label htmlFor="item-price" className="price-label">
               Item price
             </label>
             <div className="input-group">
               <div className="price-quantity-section">
-                <select>
+                <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
                   <option value="PHP">PHP</option>
+                  <option value="USD">USD</option>
                 </select>
                 <input
                   id="item-price"
@@ -159,7 +172,7 @@ const EditItem = () => {
             </div>
 
             {/* Save Button */}
-            <button className="add-item-btn" onClick={handleSave}>
+            <button className="add-item-btn" onClick={handleEditItem}>
               Save Changes
             </button>
           </div>

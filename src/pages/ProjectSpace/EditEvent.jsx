@@ -98,7 +98,6 @@ function EditEvent() {
 
   return (
     <div style={{ overflowX: "hidden" }}>
-      <ToastContainer />
       <TopBar state={"Edit Event"} />
       <div className="edit-event">
         <div className="form-container">

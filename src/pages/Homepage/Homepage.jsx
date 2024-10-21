@@ -93,13 +93,13 @@ function Homepage() {
           <div className="action-buttons">
             <button
               className="design-button"
-              onClick={() => handleCreateDesign(userDoc.id, navigate, setDesigns)}
+              onClick={() => handleCreateDesign(user, userDoc.id, navigate, setDesigns)}
             >
               Create a design
             </button>
             <button
               className="project-button"
-              onClick={() => handleCreateProject(userDoc.id, navigate, setProjects)}
+              onClick={() => handleCreateProject(user, userDoc.id, navigate, setProjects)}
             >
               Create a project
             </button>
@@ -238,7 +238,7 @@ function Homepage() {
                 <span className="small-button-text">Create a Project</span>
                 <div
                   className="small-circle-button"
-                  onClick={() => handleCreateProject(userDoc.id, navigate, setProjects)}
+                  onClick={() => handleCreateProject(user, userDoc.id, navigate, setProjects)}
                 >
                   <AddProject />
                 </div>
@@ -247,7 +247,7 @@ function Homepage() {
                 <span className="small-button-text">Create a Design</span>
                 <div
                   className="small-circle-button"
-                  onClick={() => handleCreateDesign(userDoc.id, navigate, setDesigns)}
+                  onClick={() => handleCreateDesign(user, userDoc.id, navigate, setDesigns)}
                 >
                   <AddDesign />
                 </div>

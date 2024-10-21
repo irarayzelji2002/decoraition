@@ -27,6 +27,10 @@ exports.createDesign = async (req, res) => {
         allowCopy: true,
         documentCopyByOwner: true,
         documentCopyByEditor: true,
+        inactivityEnabled: true,
+        inactivityDays: 30,
+        deletionDays: 30,
+        notifyDays: 7,
       },
     };
 

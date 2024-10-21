@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
+import { debounce } from "lodash";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { showToast } from "../../functions/utils";
 
@@ -56,7 +57,6 @@ function Budget() {
   const [totalCost, setTotalCost] = useState(0);
   const [formattedTotalCost, setFormattedTotalCost] = useState("");
   const [exceededBudget, setExceededBudget] = useState(0);
-  const [itemToDelete, setItemToDelete] = useState(null);
 
   // Initialize
   useEffect(() => {

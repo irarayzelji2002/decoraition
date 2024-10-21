@@ -32,7 +32,6 @@ import EditEvent from "./pages/ProjectSpace/EditEvent.jsx";
 import ProjSetting from "./pages/Settings/ProjSetting.jsx";
 import Version from "./pages/DesignSpace/Version.jsx";
 import DesignSettings from "./pages/DesignSpace/DesignSettings.jsx";
-import TestJoyComponents from "./pages/DesignSpace/TestJoyComponents.jsx";
 
 function ProtectedRoute({ children }) {
   const { user, userDoc, userDocFetched } = useAuth();
@@ -65,7 +64,6 @@ function App() {
               {/* PUBLIC ROUTES */}
               <Route path="/" element={<StartElement />} />
               <Route path="/landing" element={<Landing />} />
-              <Route path="/test-joy" element={<TestJoyComponents />} />
 
               {/* AUTH PUBLIC ROUTES */}
               <Route

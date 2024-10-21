@@ -1,9 +1,9 @@
 import axios from "axios";
+import React, { useState, useEffect, useCallback } from "react";
+import debounce from "lodash/debounce";
 import { showToast } from "../../functions/utils";
 import "../../css/budget.css";
 import "../../css/design.css";
-import * as React from "react";
-import { useState } from "react";
 import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
 import Modal from "@mui/material/Modal";
@@ -35,16 +35,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
   const [openDelete, setOpenDelete] = useState(false);
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
-
-  const toggleIncludedInTotal = (itemId) => {
-    setDesignItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === itemId
-          ? { ...item, includedInTotal: !item.includedInTotal } // Toggle the value
-          : item
-      )
-    );
-  };
+  const [pendingUpdates, setPendingUpdates] = useState({});
 
   const handleDeleteItem = async (itemToDelete, budgetId) => {
     try {
@@ -61,6 +52,56 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
       showToast("error", "Failed to delete item, Please try again.");
     }
   };
+
+  // Immediate UI update
+  const toggleIncludedInTotal = useCallback(
+    (itemId) => {
+      setDesignItems((prevItems) =>
+        prevItems.map((prevItem) =>
+          prevItem.id === itemId
+            ? { ...prevItem, includedInTotal: !prevItem.includedInTotal }
+            : prevItem
+        )
+      );
+    },
+    [setDesignItems]
+  );
+
+  // Debounced database update
+  const debouncedUpdateDatabase = useCallback(
+    debounce((itemId, includedInTotal) => {
+      axios
+        .post(`/api/design/item/${itemId}/update-item-included-in-total`, {
+          includedInTotal: includedInTotal,
+        })
+        .then(() => {
+          console.log("Item updated successfully");
+        })
+        .catch((error) => {
+          console.error("Error updating item:", error);
+          toast.error("Failed to update item");
+          // Revert the UI change if the server update fails
+          setDesignItems((prevItems) =>
+            prevItems.map((prevItem) =>
+              prevItem.id === itemId ? { ...prevItem, includedInTotal: !includedInTotal } : prevItem
+            )
+          );
+        });
+    }, 2000), // 2 second delay
+    [setDesignItems]
+  );
+
+  // Combined function to handle both UI update and debounced database update
+  const handleIncludedInTotalChange = useCallback(
+    (itemId) => {
+      toggleIncludedInTotal(itemId);
+      const updatedItem = setDesignItems((prevItems) =>
+        prevItems.find((item) => item.id === itemId)
+      );
+      debouncedUpdateDatabase(itemId, updatedItem.includedInTotal);
+    },
+    [toggleIncludedInTotal, debouncedUpdateDatabase, setDesignItems]
+  );
 
   return (
     <div className="itemSpace" style={{ display: "flex", flexDirection: "row" }}>
@@ -216,7 +257,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
           <input
             type="checkbox"
             checked={item.includedInTotal ?? true}
-            onChange={() => toggleIncludedInTotal(item.id)}
+            onChange={() => handleIncludedInTotalChange(item.id)}
           />
         </div>
         <div onClick={onEdit}>

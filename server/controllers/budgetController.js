@@ -19,25 +19,12 @@ exports.updateBudget = async (req, res) => {
       currency: currency,
     });
 
-    res.status(200).json({ message: "Budget updated successfully" });
+    res
+      .status(200)
+      .json({ message: "Budget updated successfully", amount: amount, currency: currency });
   } catch (error) {
     console.error("Error updating budget:", error);
     res.status(500).json({ message: "Failed to update budget", error: error.message });
-  }
-};
-
-// Read Budget
-exports.getBudget = async (req, res) => {
-  try {
-    const { budgetId } = req.params;
-    const budgetDoc = await db.collection("budgets").doc(budgetId).get();
-    if (!budgetDoc.exists) {
-      return res.status(404).json({ error: "Budget not found" });
-    }
-    res.json({ id: budgetDoc.id, ...budgetDoc.data() });
-  } catch (error) {
-    console.error("Error fetching budget:", error);
-    res.status(500).json({ error: "Failed to fetch budget" });
   }
 };
 
@@ -86,26 +73,82 @@ exports.addItem = async (req, res) => {
     const budgetData = budgetDoc.data();
     const currentItems = budgetData.items || [];
     const updatedItems = [...currentItems, itemRef.id];
-    await budgetRef.update({
-      items: updatedItems,
-    });
+    await budgetRef.update({ items: updatedItems });
 
-    res.status(201).json({ id: itemRef.id, ...itemData });
+    res.status(200).json({ id: itemRef.id, ...itemData });
   } catch (error) {
     console.error("Error adding item:", error);
     res.status(500).json({ error: "Failed to add item" });
   }
 };
 
-// Update Budget Item
+// Update Item
 exports.updateItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    const { budgetId, ...updateData } = req.body;
-    updateData.modifiedAt = new Date();
+    const { itemName, description, cost, quantity, includedInTotal, isUploadedImage } = req.body;
+    let imageUrl = null;
+
+    if (isUploadedImage) {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const file = req.file;
+      const fileName = `items/${itemId}/${Date.now()}_${file.originalname}`;
+      const storageRef = ref(storage, fileName);
+
+      const snapshot = await uploadBytes(storageRef, file.buffer, {
+        contentType: file.mimetype,
+      });
+      imageUrl = await getDownloadURL(snapshot.ref);
+    } else {
+      imageUrl = req.body.image; // Use provided image link
+    }
+
     const itemRef = db.collection("items").doc(itemId);
-    await itemRef.update(updateData);
-    res.json({ message: "Item updated successfully" });
+    const itemData = {
+      itemName,
+      description,
+      cost,
+      quantity,
+      image: imageUrl,
+      includedInTotal,
+      modifiedAt: new Date(),
+    };
+
+    await itemRef.update(itemData);
+
+    res.status(200).json({ message: "Item updated successfully", ...itemData });
+  } catch (error) {
+    console.error("Error updating item:", error);
+    res.status(500).json({ error: "Failed to update item" });
+  }
+};
+
+// Update Item's includedInTotal
+exports.updateItemIncludedInTotal = async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { includedInTotal } = req.body;
+
+    if (typeof includedInTotal !== "boolean") {
+      return res.status(400).json({ error: "Invalid includedInTotal value" });
+    }
+
+    const itemRef = db.collection("items").doc(itemId);
+    const itemDoc = await itemRef.get();
+    if (!itemDoc.exists) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+    await itemRef.update({
+      includedInTotal: includedInTotal,
+      modifiedAt: new Date(),
+    });
+
+    res
+      .status(200)
+      .json({ message: "Item updated successfully", includedInTotal: includedInTotal });
   } catch (error) {
     console.error("Error updating item:", error);
     res.status(500).json({ error: "Failed to update item" });
@@ -133,7 +176,7 @@ exports.deleteItem = async (req, res) => {
     // Update the budget document with the new items array
     await budgetRef.update({ items: updatedItems });
 
-    res.json({ message: "Item deleted successfully and removed from budget" });
+    res.json({ message: "Item deleted successfully and removed from budget", items: updatedItems });
   } catch (error) {
     console.error("Error deleting item:", error);
     res.status(500).json({ error: "Failed to delete item" });

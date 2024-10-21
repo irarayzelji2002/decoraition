@@ -81,73 +81,13 @@ function Design() {
       window.removeEventListener("error", handleError);
     };
   }, []);
-  // useEffect(() => {
-  //   const auth = getAuth();
-
-  //   const unsubscribe = auth.onAuthStateChanged((user) => {
-  //     if (user) {
-  //       setUserId(user.uid);
-  //       // Use the original design reference
-  //       const designRef = doc(db, "designs", designId);
-  //       const fetchDesignDetails = async () => {
-  //         try {
-  //           const designSnapshot = await getDoc(designRef);
-  //           if (designSnapshot.exists()) {
-  //             const design = designSnapshot.data();
-  //             setDesignData(design);
-  //             setNewName(design.name);
-  //           } else {
-  //             console.error("Design not found");
-  //           }
-  //           await updateDoc(designRef, {
-  //             lastAccessed: new Date(),
-  //           });
-  //         } catch (error) {
-  //           console.error("Error fetching design details:", error);
-  //         }
-  //       };
-
-  //       fetchDesignDetails();
-
-  //       const unsubscribeSnapshot = onSnapshot(designRef, (doc) => {
-  //         if (doc.exists()) {
-  //           const design = doc.data();
-  //           setDesignData(design);
-  //           setNewName(design.name);
-  //         } else {
-  //           console.error("Design not found");
-  //         }
-  //       });
-
-  //       return () => unsubscribeSnapshot();
-  //     } else {
-  //       console.error("User is not authenticated");
-  //     }
-  //   });
-
-  //   return () => unsubscribe(); // Cleanup listener on component unmount
-  // }, [designId]);
 
   useEffect(() => {
     const cleanup = handleSidebarEffect(isSidebarOpen);
     return cleanup;
   }, [isSidebarOpen]);
 
-  // if (!designData) {
-  //   return (
-  //     <>
-  //       <Loading />
-  //     </>
-  //   );
-  // }
-
-  // useEffect(() => {
-  //   if (user && designId) {
-  //     fetchDesignDetails();
-  //   }
-  // }, [user, designId]);
-
-  const handleNameChange = async () => {
+  const handleNameChange = async (designId, newName) => {
     try {
       const repsonse = await axios.post(
         `/api/design/${designId}/update-name`,
@@ -174,9 +114,7 @@ function Design() {
         setNewName={setNewName}
         isEditingName={isEditingName}
         toggleComments={() => toggleComments(setShowComments)}
-        handleNameChange={() =>
-          handleNameChange(newName, userDoc.id, projectId, designId, setIsEditingName)
-        }
+        handleNameChange={() => handleNameChange(designId, newName)}
         setIsEditingName={setIsEditingName}
         setIsSidebarOpen={setIsSidebarOpen}
       />

@@ -242,7 +242,7 @@ function DesignHead({
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleBlur();
                   e.target.blur();

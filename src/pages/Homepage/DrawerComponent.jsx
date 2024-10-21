@@ -44,14 +44,22 @@ import { DesignIcn, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/Desig
 const DrawerComponent = ({ isDrawerOpen, onClose }) => {
   const navigate = useNavigate();
 
-  const { user, setUser, userDoc, handleLogout, designs, setDesigns, projects, setProjects } =
-    useSharedProps();
+  const {
+    user,
+    setUser,
+    userDoc,
+    handleLogout,
+    userDesigns,
+    userDesignVersions,
+    userProjects,
+    setProjects,
+  } = useSharedProps();
   const initDarkMode = userDoc?.theme === 0 ? true : false;
   const [darkMode, setDarkMode] = useState(initDarkMode);
   const [showOptions, setShowOptions] = useState(false);
   const [username, setUsername] = useState("");
   const [activeItem, setActiveItem] = useState(null);
-  const [activeProject, setActiveProject] = useState(null);
+  const [activeGroup, setActiveGroup] = useState(null);
   const optionsRef = useRef(null);
 
   const toggleOptions = () => {
@@ -61,9 +69,7 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
   const handleClickOutside = (event) => {
     if (optionsRef.current && !optionsRef.current.contains(event.target)) {
       setActiveItem(null);
-    }
-    if (optionsRef.current && !optionsRef.current.contains(event.target)) {
-      setActiveProject(null);
+      setActiveGroup(null);
     }
   };
 
@@ -73,6 +79,44 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const getDesignImage = (designId) => {
+    // Get the design
+    const fetchedDesign = userDesigns.find((design) => design.id === designId);
+    if (!fetchedDesign || !fetchedDesign.history || fetchedDesign.history.length === 0) {
+      return "";
+    }
+
+    // Get the latest designVersionId
+    const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
+    const fetchedLatestDesignVersion = userDesignVersions.find(
+      (designVer) => designVer.id === latestDesignVersionId
+    );
+    if (
+      !fetchedLatestDesignVersion ||
+      !fetchedLatestDesignVersion.images ||
+      fetchedLatestDesignVersion.images.length === 0
+    ) {
+      return "";
+    }
+
+    // Return the first image's link from the fetched design version
+    return fetchedLatestDesignVersion.images[0].link;
+  };
+
+  const getProjectImage = (projectId) => {
+    // Get the project
+    const fetchedProject = userProjects.find((project) => project.id === projectId);
+    if (!fetchedProject || fetchedProject.designIds.length === 0) {
+      return "";
+    }
+
+    // Get the latest designId (the last one in the designIds array)
+    const latestDesignId = fetchedProject.designIds[fetchedProject.designIds.length - 1];
+
+    // Return the design image by calling getDesignImage
+    return getDesignImage(latestDesignId);
+  };
 
   return (
     <Drawer
@@ -180,8 +224,8 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
           Recent Designs
         </Typography>
 
-        {designs.length > 0 ? (
-          designs.slice(0, 3).map((design, index) => (
+        {userDesigns.length > 0 ? (
+          userDesigns.slice(0, 3).map((design, index) => (
             <ListItem
               key={design.id}
               button
@@ -191,7 +235,9 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
                 })
               }
             >
-              <div className="miniThumbnail" />
+              <div className="miniThumbnail">
+                <img src={getDesignImage(design.id)} alt="" />
+              </div>
               <ListItemText primary={design.name} />
               <IconButton
                 edge="end"
@@ -199,11 +245,12 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent the ListItem onClick from firing
                   setActiveItem(index);
+                  setActiveGroup("design");
                 }}
               >
                 <MoreHorizIcon sx={{ color: darkMode ? "white" : "black" }} />
               </IconButton>
-              {activeItem === index && (
+              {activeItem === index && activeGroup === "design" && (
                 <div ref={optionsRef} className="dropdown-menu">
                   <div
                     className="dropdown-item"
@@ -216,13 +263,22 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
                     <span className="icon"></span> Open
                   </div>
                   <div className="dropdown-item">
-                    <span className="icon"></span> Delete
+                    <span className="icon"></span> Share
                   </div>
                   <div className="dropdown-item">
                     <span className="icon"></span> Copy Link
                   </div>
                   <div className="dropdown-item">
+                    <span className="icon"></span> Make a copy
+                  </div>
+                  <div className="dropdown-item">
                     <span className="icon"></span> Rename
+                  </div>
+                  <div className="dropdown-item">
+                    <span className="icon"></span> Delete
+                  </div>
+                  <div className="dropdown-item">
+                    <span className="icon"></span> Details
                   </div>
                 </div>
               )}
@@ -247,8 +303,8 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
           Recent Projects
         </Typography>
 
-        {projects.length > 0 ? (
-          projects.slice(0, 3).map((project, index) => (
+        {userProjects.length > 0 ? (
+          userProjects.slice(0, 3).map((project, index) => (
             <ListItem
               key={project.id}
               button
@@ -258,19 +314,22 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
                 })
               }
             >
-              <div className="miniThumbnail" />
+              <div className="miniThumbnail">
+                <img src={getProjectImage(project.id)} alt="Thumbnail" />
+              </div>
               <ListItemText primary={project.name} />
               <IconButton
                 edge="end"
                 aria-label="more"
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent the ListItem onClick from firing
-                  setActiveProject(index);
+                  setActiveItem(index);
+                  setActiveGroup("project");
                 }}
               >
                 <MoreHorizIcon sx={{ color: darkMode ? "white" : "black" }} />
               </IconButton>
-              {activeProject === index && (
+              {activeItem === index && activeGroup === "project" && (
                 <div ref={optionsRef} className="dropdown-menu">
                   <div
                     className="dropdown-item"
@@ -283,13 +342,19 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
                     <span className="icon"></span> Open
                   </div>
                   <div className="dropdown-item">
-                    <span className="icon"></span> Delete
+                    <span className="icon"></span> Share
                   </div>
                   <div className="dropdown-item">
                     <span className="icon"></span> Copy Link
                   </div>
                   <div className="dropdown-item">
                     <span className="icon"></span> Rename
+                  </div>
+                  <div className="dropdown-item">
+                    <span className="icon"></span> Delete
+                  </div>
+                  <div className="dropdown-item">
+                    <span className="icon"></span> Details
                   </div>
                 </div>
               )}

@@ -86,6 +86,11 @@ router.post(
   budgetController.addItem
 );
 router.post("/design/item/:itemId/update-item", authenticateUser, budgetController.updateItem);
+router.post(
+  "/design/item/:itemId/update-item-included-in-total",
+  authenticateUser,
+  budgetController.updateItemIncludedInTotal
+);
 router.post("/design/item/:itemId/delete-item", authenticateUser, budgetController.deleteItem);
 
 // Project routes

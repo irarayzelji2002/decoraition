@@ -108,7 +108,7 @@ function DesignIcon({ name, designId, onOpen, onDelete }) {
             </div>
             <div className="dropdown-item" onClick={openCopyModal}>
               <FileCopyIcon style={{ fontSize: 20 }} className="icon" />
-              Make a Copy
+              Make a copy
             </div>
             <div className="dropdown-item" onClick={openRenameModal}>
               <DriveFileRenameOutlineRoundedIcon style={{ fontSize: 20 }} className="icon" />

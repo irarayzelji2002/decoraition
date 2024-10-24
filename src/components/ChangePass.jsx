@@ -64,7 +64,7 @@ export default function ChangePass({ email, token }) {
     }
 
     try {
-      const response = await axios.post("/api/change-password", { email, newPassword, token });
+      const response = await axios.put("/api/change-password", { email, newPassword, token });
       if (response.data.success) {
         showToast("success", "Password changed successfully");
         navigate("/login");
@@ -136,5 +136,5 @@ export default function ChangePass({ email, token }) {
         </Box>
       </Box>
     </Container>
-  )
+  );
 }

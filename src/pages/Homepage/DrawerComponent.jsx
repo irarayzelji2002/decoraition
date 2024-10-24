@@ -46,21 +46,39 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
 
   const {
     user,
-    setUser,
     userDoc,
     handleLogout,
+    designs,
     userDesigns,
     userDesignVersions,
+    projects,
     userProjects,
-    setProjects,
   } = useSharedProps();
   const initDarkMode = userDoc?.theme === 0 ? true : false;
+  const [userDesignsLatest, setUserDesignsLatest] = useState([]);
+  const [userProjectsLatest, setUserProjectsLatest] = useState([]);
   const [darkMode, setDarkMode] = useState(initDarkMode);
   const [showOptions, setShowOptions] = useState(false);
   const [username, setUsername] = useState("");
   const [activeItem, setActiveItem] = useState(null);
   const [activeGroup, setActiveGroup] = useState(null);
   const optionsRef = useRef(null);
+
+  // Sorting designs by latest modifiedAt
+  useEffect(() => {
+    const designsByLatest = [...userDesigns].sort((a, b) => {
+      return b.modifiedAt.toMillis() - a.modifiedAt.toMillis();
+    });
+    setUserDesignsLatest(designsByLatest);
+  }, [designs, userDesigns]);
+
+  // Sorting projects by latest modifiedAt
+  useEffect(() => {
+    const projectsByLatest = [...userProjects].sort((a, b) => {
+      return b.modifiedAt.toMillis() - a.modifiedAt.toMillis();
+    });
+    setUserProjectsLatest(projectsByLatest);
+  }, [projects, userProjects]);
 
   const toggleOptions = () => {
     setShowOptions(!showOptions);
@@ -224,8 +242,8 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
           Recent Designs
         </Typography>
 
-        {userDesigns.length > 0 ? (
-          userDesigns.slice(0, 3).map((design, index) => (
+        {userDesignsLatest.length > 0 ? (
+          userDesignsLatest.slice(0, 3).map((design, index) => (
             <ListItem
               key={design.id}
               button
@@ -303,8 +321,8 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
           Recent Projects
         </Typography>
 
-        {userProjects.length > 0 ? (
-          userProjects.slice(0, 3).map((project, index) => (
+        {userProjectsLatest.length > 0 ? (
+          userProjectsLatest.slice(0, 3).map((project, index) => (
             <ListItem
               key={project.id}
               button

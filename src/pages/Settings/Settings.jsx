@@ -247,7 +247,7 @@ function Settings() {
   const handleUpdateUserDetails = async (updatedFields) => {
     try {
       console.log("updatedFields passed: ", updatedFields);
-      const response = await axios.post(
+      const response = await axios.put(
         "/api/user/user-details",
         {
           userId: userDoc.id,
@@ -338,7 +338,7 @@ function Settings() {
 
   const handleUpdateField = async (field, value) => {
     try {
-      const response = await axios.post(
+      const response = await axios.put(
         "/api/user/update-field",
         {
           userId: userDoc.id,
@@ -406,7 +406,7 @@ function Settings() {
       formData.append("userId", userDoc.id);
       formData.append("file", selectedFile);
       console.log(formData);
-      const response = await axios.post("/api/user/profile-pic", formData, {
+      const response = await axios.put("/api/user/profile-pic", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -429,7 +429,7 @@ function Settings() {
 
   const handleRemovePhoto = async () => {
     try {
-      const response = await axios.post(
+      const response = await axios.put(
         "/api/user/remove-profile-pic",
         { userId: userDoc.id },
         {
@@ -752,7 +752,7 @@ function Settings() {
   const handleUpdatePassword = async (passwordData) => {
     try {
       // Call your API endpoint to update the password
-      const response = await axios.post(
+      const response = await axios.put(
         "/api/user/update-password",
         {
           userId: userDoc.id,

@@ -815,3 +815,44 @@ exports.updateTheme = async (req, res) => {
     res.status(500).json({ message: "Error updating theme", error: error.toString() });
   }
 };
+
+exports.getUsername = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const userDocRef = db.collection("users").doc(userId);
+    const userDoc = await userDocRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const username = userDoc.data().username;
+    return res.status(200).json({ username: username });
+  } catch (error) {
+    console.error("Error fetching username:", error);
+    return res.status(500).json({ error: "Failed to fetch username" });
+  }
+};
+
+exports.getUsernames = async (req, res) => {
+  const { userIds } = req.body;
+  try {
+    const usernames = [];
+
+    for (const userId of userIds) {
+      const userDocRef = db.collection("users").doc(userId);
+      const userDoc = await userDocRef.get();
+
+      if (userDoc.exists) {
+        usernames.push(userDoc.data().username);
+      } else {
+        // usernames.push("Unknown");
+      }
+    }
+
+    return res.status(200).json({ usernames });
+  } catch (error) {
+    console.error("Error fetching usernames:", error);
+    return res.status(500).json({ error: "Failed to fetch usernames" });
+  }
+};

@@ -122,12 +122,42 @@ exports.updateDesignName = async (req, res) => {
     const { name } = req.body;
     const designRef = db.collection("designs").doc(designId);
     await designRef.update({ designName: name, modifiedAt: new Date() });
-    res
-      .status(200)
-      .json({ success: true, message: "Design name updated successfully", designName: name });
+    res.status(200).json({
+      success: true,
+      message: "Design name updated successfully",
+      designName: name,
+    });
   } catch (error) {
     console.error("Error updating design name:", error);
     res.status(500).json({ error: "Failed to update design name" });
+  }
+};
+
+// Update Design Settings
+exports.updateDesignSettings = async (req, res) => {
+  try {
+    const { designId } = req.params;
+    const { designSettings } = req.body;
+
+    const designRef = db.collection("designs").doc(designId);
+    const designDoc = await designRef.get();
+
+    if (!designDoc.exists) {
+      return res.status(404).json({ error: "Design not found" });
+    }
+
+    await designRef.update({
+      designSettings: designSettings,
+      modifiedAt: new Date(),
+    });
+
+    res.status(200).json({
+      message: "Design settings updated successfully",
+      designSettings: designSettings,
+    });
+  } catch (error) {
+    console.error("Error updating design settings:", error);
+    res.status(500).json({ error: "Failed to update design settings" });
   }
 };
 

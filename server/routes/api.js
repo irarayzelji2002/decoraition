@@ -34,47 +34,54 @@ router.post("/login-with-oauth", userController.loginUserOAuth);
 router.get("/check-existing-email/:email", userController.checkExistingEmailForReg);
 router.get("/check-existing-username/:username", userController.checkExistingUsernameForReg);
 router.post("/forgot-password", userController.forgotPassword);
-router.post("/verify-otp", userController.verifyOTP);
-router.post("/resend-otp", userController.resendOTP);
-router.post("/expire-otp", userController.expireOTP);
-router.post("/change-password", userController.changePassword);
+router.put("/verify-otp", userController.verifyOTP);
+router.put("/resend-otp", userController.resendOTP);
+router.put("/expire-otp", userController.expireOTP);
+router.put("/change-password", userController.changePassword);
 router.get("/user/:userId", authenticateUser, userController.fetchUserData);
-router.post(
+router.put(
   "/user/profile-pic",
   authenticateUser,
   upload.single("file"),
   userController.updateProfilePic
 );
-router.post("/user/remove-profile-pic", authenticateUser, userController.removeProfilePic);
-router.post("/user/update-field", authenticateUser, userController.updateUserField);
+router.put("/user/remove-profile-pic", authenticateUser, userController.removeProfilePic);
+router.put("/user/update-field", authenticateUser, userController.updateUserField);
 router.get("/user/check-existing-email/:userId/:email", userController.checkExistingEmail);
 router.get("/user/check-existing-username/:userId/:username", userController.checkExistingUsername);
-router.post("/user/user-details", authenticateUser, userController.updateUserDetails);
+router.put("/user/user-details", authenticateUser, userController.updateUserDetails);
 router.put(
   "/user/connected-account/:userId",
   authenticateUser,
   userController.updateConnectedAccount
 );
-router.post(
+router.put(
   "/user/update-notifications",
   authenticateUser,
   userController.updateNotificationSettings
 );
-router.post("/user/update-password", authenticateUser, userController.updatePassword);
-router.post("/user/layout-settings", authenticateUser, userController.updateLayoutSettings);
-router.post("/user/theme", authenticateUser, userController.updateTheme);
+router.put("/user/update-password", authenticateUser, userController.updatePassword);
+router.put("/user/layout-settings", authenticateUser, userController.updateLayoutSettings);
+router.put("/user/theme", authenticateUser, userController.updateTheme);
 router.delete(
   "/cleanup-unused-auth-users",
   authenticateUser,
   userController.cleanupUnusedAuthUsers
 );
+router.get("/user/get-username/:userId", userController.getUsername);
+router.post("/user/get-usernames", userController.getUsernames);
 
 // Design routes
 router.get("/design/:userId", authenticateUser, designController.fetchUserDesigns);
 router.post("/design/create", authenticateUser, designController.createDesign);
 router.delete("/design/delete/:designId", authenticateUser, designController.deleteDesign);
-router.delete("/design/:designId/update-name", authenticateUser, designController.updateDesignName);
-router.post(
+router.put("/design/:designId/update-name", authenticateUser, designController.updateDesignName);
+router.put(
+  "/designs/:designId/update-settings",
+  authenticateUser,
+  designController.updateDesignSettings
+);
+router.put(
   "/design/budget/:budgetId/update-budget",
   authenticateUser,
   budgetController.updateBudget
@@ -85,13 +92,13 @@ router.post(
   upload.single("file"),
   budgetController.addItem
 );
-router.post("/design/item/:itemId/update-item", authenticateUser, budgetController.updateItem);
-router.post(
+router.put("/design/item/:itemId/update-item", authenticateUser, budgetController.updateItem);
+router.put(
   "/design/item/:itemId/update-item-included-in-total",
   authenticateUser,
   budgetController.updateItemIncludedInTotal
 );
-router.post("/design/item/:itemId/delete-item", authenticateUser, budgetController.deleteItem);
+router.delete("/design/item/:itemId/delete-item", authenticateUser, budgetController.deleteItem);
 
 // Project routes
 router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);

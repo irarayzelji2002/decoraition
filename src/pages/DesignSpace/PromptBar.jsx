@@ -11,8 +11,11 @@ import AddColor from "./svg/AddColor";
 
 import CreatePallete from "./CreatePallete";
 import { CssVarsProvider } from "@mui/joy/styles";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function PromptBar() {
+  const { user, userDoc, designs, userDesigns } = useSharedProps();
+
   const [modalOpen, setModalOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");

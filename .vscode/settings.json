@@ -4,5 +4,10 @@
   "editor.formatOnPaste": true,
   "editor.rulers": [100],
   "editor.indentSize": 2,
-  "editor.guides.indentation": true
+  "editor.guides.indentation": true,
+  "[html]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

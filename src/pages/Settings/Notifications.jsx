@@ -145,7 +145,7 @@ export default function Notifications() {
         changeRoleInProject,
       };
       const idToken = await user.getIdToken();
-      const response = await axios.post(
+      const response = await axios.put(
         "/api/user/update-notifications",
         {
           userId: userDoc.id,

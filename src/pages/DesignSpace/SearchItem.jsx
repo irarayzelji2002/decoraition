@@ -8,6 +8,7 @@ import InputBase from "@mui/material/InputBase";
 import IconButton from "@mui/material/IconButton";
 
 function SearchItem() {
+  // TO DO: Search Products API
   const items = new Array(12).fill({
     name: "Clothing Fabric Wedding Fabric Party Fabric Lase...",
     price: "₱246.00",

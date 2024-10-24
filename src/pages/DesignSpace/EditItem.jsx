@@ -62,7 +62,7 @@ const EditItem = () => {
     }
 
     try {
-      const response = await axios.post(`/api/design/item/${itemId}/update-item`, {
+      const response = await axios.put(`/api/design/item/${itemId}/update-item`, {
         budgetId: budgetId,
         itemName: itemName,
         description: description,

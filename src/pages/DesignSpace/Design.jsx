@@ -89,7 +89,7 @@ function Design() {
 
   const handleNameChange = async (designId, newName) => {
     try {
-      const repsonse = await axios.post(
+      const repsonse = await axios.put(
         `/api/design/${designId}/update-name`,
         { name: newName },
         {

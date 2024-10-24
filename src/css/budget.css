@@ -63,7 +63,7 @@
 
 .circle-button-container {
   position: fixed;
-  bottom: 100px;
+  bottom: 30px;
   right: 30px;
   display: flex;
   flex-direction: column;

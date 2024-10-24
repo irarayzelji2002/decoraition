@@ -39,7 +39,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
 
   const handleDeleteItem = async (itemToDelete, budgetId) => {
     try {
-      const response = await axios.post(`/api/design/item/${itemToDelete.id}/delete-item`, {
+      const response = await axios.delete(`/api/design/item/${itemToDelete.id}/delete-item`, {
         budgetId: budgetId,
       });
 
@@ -71,7 +71,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
   const debouncedUpdateDatabase = useCallback(
     debounce((itemId, includedInTotal) => {
       axios
-        .post(`/api/design/item/${itemId}/update-item-included-in-total`, {
+        .put(`/api/design/item/${itemId}/update-item-included-in-total`, {
           includedInTotal: includedInTotal,
         })
         .then(() => {

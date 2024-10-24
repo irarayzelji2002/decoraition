@@ -117,7 +117,7 @@ function Budget() {
   // Design Name
   const handleNameChange = async (designId, newName) => {
     try {
-      const repsonse = await axios.post(
+      const repsonse = await axios.put(
         `/api/design/${designId}/update-name`,
         { name: newName },
         {
@@ -156,7 +156,7 @@ function Budget() {
 
   const handleUpdateBudget = async (budgetAmount, budgetCurrency) => {
     try {
-      const response = await axios.post(
+      const response = await axios.put(
         `/api/design/budget/${budget.id}/update-budget`,
         { amount: budgetAmount, currency: budgetCurrency },
         {
@@ -178,7 +178,7 @@ function Budget() {
   const handleRemoveBudget = async (budgetCurrency) => {
     setBudgetAmount(0);
     try {
-      const response = await axios.post(
+      const response = await axios.put(
         `/api/design/budget/${budget.id}/update-budget`,
         { amount: 0, currency: budgetCurrency },
         {

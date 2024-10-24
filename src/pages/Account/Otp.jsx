@@ -251,7 +251,7 @@ export default function OneTP() {
 
   const handleExpiredOTP = async () => {
     try {
-      await axios.post("/api/expire-otp", { email });
+      await axios.put("/api/expire-otp", { email });
     } catch (error) {
       console.error("Failed to expire OTP:", error);
     }
@@ -260,7 +260,7 @@ export default function OneTP() {
 
   const handleVerify = async () => {
     try {
-      const response = await axios.post("/api/verify-otp", { email, otp });
+      const response = await axios.put("/api/verify-otp", { email, otp });
       if (response.data.success) {
         const token = response.data.token;
         navigate("/change", { state: { email, token } });
@@ -272,7 +272,7 @@ export default function OneTP() {
 
   const handleResend = async () => {
     try {
-      await axios.post("/api/resend-otp", { email });
+      await axios.put("/api/resend-otp", { email });
       setTimeLeft(300); // Reset the time to 5 minutes
     } catch (error) {
       setError("Failed to resend OTP");

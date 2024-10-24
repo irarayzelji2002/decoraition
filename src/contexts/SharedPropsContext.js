@@ -166,6 +166,8 @@ export function SharedPropsProvider({ children }) {
     user ? user : null
   );
 
+  const appURL = process.env.REACT_APP_URL;
+
   const sharedProps = {
     ...state,
     user,
@@ -175,6 +177,7 @@ export function SharedPropsProvider({ children }) {
     handleLogout,
     loading,
     setLoading,
+    appURL,
     setUsers,
     setProjects,
     setDesigns,
@@ -202,6 +205,89 @@ export function SharedPropsProvider({ children }) {
     setUserTimelines,
     setUserEvents,
   };
+
+  // useEffect for debugging (!!! Remove before production !!!)
+  useEffect(() => {
+    console.log("User updated:", user);
+  }, [user]);
+  useEffect(() => {
+    console.log("UserDoc updated:", userDoc);
+  }, [userDoc]);
+  useEffect(() => {
+    console.log("Projects updated:", state.projects);
+  }, [state.projects]);
+  useEffect(() => {
+    console.log("Designs updated:", state.designs);
+  }, [state.designs]);
+  useEffect(() => {
+    console.log("Design Versions updated:", state.designVersions);
+  }, [state.designVersions]);
+  useEffect(() => {
+    console.log("Comments updated:", state.comments);
+  }, [state.comments]);
+  useEffect(() => {
+    console.log("Notifications updated:", state.notifications);
+  }, [state.notifications]);
+  useEffect(() => {
+    console.log("Project Budgets updated:", state.projectBudgets);
+  }, [state.projectBudgets]);
+  useEffect(() => {
+    console.log("Budgets updated:", state.budgets);
+  }, [state.budgets]);
+  useEffect(() => {
+    console.log("Items updated:", state.items);
+  }, [state.items]);
+  useEffect(() => {
+    console.log("Plan Maps updated:", state.planMaps);
+  }, [state.planMaps]);
+  useEffect(() => {
+    console.log("Pins updated:", state.pins);
+  }, [state.pins]);
+  useEffect(() => {
+    console.log("Timelines updated:", state.timelines);
+  }, [state.timelines]);
+  useEffect(() => {
+    console.log("Events updated:", state.events);
+  }, [state.events]);
+  useEffect(() => {
+    console.log("User Projects updated:", state.userProjects);
+  }, [state.userProjects]);
+  useEffect(() => {
+    console.log("User Designs updated:", state.userDesigns);
+  }, [state.userDesigns]);
+  useEffect(() => {
+    console.log("User Design Versions updated:", state.userDesignVersions);
+  }, [state.userDesignVersions]);
+  useEffect(() => {
+    console.log("User Design Comments updated:", state.userDesignsComments);
+  }, [state.userDesignsComments]);
+  useEffect(() => {
+    console.log("User Comments updated:", state.userComments);
+  }, [state.userComments]);
+  useEffect(() => {
+    console.log("User Notifications updated:", state.userNotifications);
+  }, [state.userNotifications]);
+  useEffect(() => {
+    console.log("User Project Budgets updated:", state.userProjectBudgets);
+  }, [state.userProjectBudgets]);
+  useEffect(() => {
+    console.log("User Budgets updated:", state.userBudgets);
+  }, [state.userBudgets]);
+  useEffect(() => {
+    console.log("User Items updated:", state.userItems);
+  }, [state.userItems]);
+  useEffect(() => {
+    console.log("User Plan Maps updated:", state.userPlanMaps);
+  }, [state.userPlanMaps]);
+  useEffect(() => {
+    console.log("User Pins updated:", state.userPins);
+  }, [state.userPins]);
+  useEffect(() => {
+    console.log("User Timelines updated:", state.userTimelines);
+  }, [state.userTimelines]);
+  useEffect(() => {
+    console.log("User Events updated:", state.userEvents);
+  }, [state.userEvents]);
 
   if (!isCollectionLoaded || loading) {
     return (

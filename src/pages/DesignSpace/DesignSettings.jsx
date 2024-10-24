@@ -47,7 +47,7 @@ const theme = createTheme({
 });
 
 function DesignSettings() {
-  const { designs, userDesigns } = useSharedProps();
+  const { user, designs, userDesigns } = useSharedProps();
   const { designId } = useParams(); // Get the designId parameter from the URL
   const [design, setDesign] = useState();
   const [designName, setDesignName] = useState("");
@@ -87,7 +87,43 @@ function DesignSettings() {
     setActiveTab(tab); // Change active tab
   };
 
-  const handleSaveDesignSettings = () => {};
+  const handleSaveDesignSettings = async () => {
+    try {
+      const updatedSettings = {
+        generalAccessSetting: generalAccessSetting,
+        generalAccessRole: generalAccessRole,
+        allowDownload: allowDownload,
+        allowViewHistory: allowViewHistory,
+        allowCopy: allowCopy,
+        documentCopyByOwner: documentCopyByOwner,
+        documentCopyByEditor: documentCopyByEditor,
+        inactivityEnabled: inactivityEnabled,
+        inactivityDays: inactivityDays,
+        deletionDays: deletionDays,
+        notifyDays: notifyDays,
+      };
+      console.log("updatedSettings", updatedSettings);
+
+      const response = await axios.put(
+        `/api/designs/${designId}/update-settings`,
+        {
+          designSettings: updatedSettings,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${await user.getIdToken()}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        showToast("success", "Design settings updated successfully");
+      }
+    } catch (error) {
+      console.error("Failed to update design settings:", error);
+      showToast("error", "Failed to update design settings");
+    }
+  };
 
   return (
     <div>
@@ -117,6 +153,7 @@ function DesignSettings() {
         setNotifyDays={setNotifyDays}
         activeTab={activeTab} // Pass activeTab to SettingsContent
         handleTabChange={handleTabChange} // Pass handleTabChange function
+        handleSaveDesignSettings={handleSaveDesignSettings}
       />
     </div>
   );
@@ -149,6 +186,7 @@ const SettingsContent = ({
   setNotifyDays,
   activeTab,
   handleTabChange,
+  handleSaveDesignSettings,
 }) => (
   <ThemeProvider theme={theme}>
     <div className="settingsContainer">

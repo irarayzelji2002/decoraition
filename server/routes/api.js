@@ -77,7 +77,7 @@ router.post("/design/create", authenticateUser, designController.createDesign);
 router.delete("/design/delete/:designId", authenticateUser, designController.deleteDesign);
 router.put("/design/:designId/update-name", authenticateUser, designController.updateDesignName);
 router.put(
-  "/designs/:designId/update-settings",
+  "/design/:designId/update-settings",
   authenticateUser,
   designController.updateDesignSettings
 );
@@ -107,6 +107,11 @@ router.delete(
   "/project/delete/:projectId",
   authenticateUser,
   projectController.handleDeleteProject
+);
+router.put(
+  "/project/:projectId/update-name",
+  authenticateUser,
+  projectController.updateProjectName
 );
 
 module.exports = router;

@@ -34,8 +34,10 @@ export default function SeeAllDesigns() {
   const [totalPages, setTotalPages] = useState(0);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [optionsState, setOptionsState] = useState({
+    showOptions: false,
+    selectedId: null,
+  });
 
   const loadDesignDataForView = async () => {
     if (userDesigns.length > 0) {
@@ -70,11 +72,17 @@ export default function SeeAllDesigns() {
   };
 
   useEffect(() => {
-    loadDesignDataForView();
+    const loadData = async () => {
+      await loadDesignDataForView();
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
-    loadDesignDataForView();
+    const loadData = async () => {
+      await loadDesignDataForView();
+    };
+    loadData();
   }, [designs, userDesigns, searchQuery]);
 
   useEffect(() => {
@@ -180,9 +188,8 @@ export default function SeeAllDesigns() {
                             owner={design.owner}
                             createdAt={formatDateLong(design.createdAt)}
                             modifiedAt={formatDateLong(design.modifiedAt)}
-                            showOptions={showOptions}
-                            setShowOptions={setShowOptions}
-                            setSelectedId={setSelectedId}
+                            optionsState={optionsState}
+                            setOptionsState={setOptionsState}
                           />
                         </div>
                       ))}
@@ -194,10 +201,8 @@ export default function SeeAllDesigns() {
                         data={filteredDesignsForTable}
                         isHomepage={false}
                         page={page}
-                        showOptions={showOptions}
-                        setShowOptions={setShowOptions}
-                        selectedId={selectedId}
-                        setSelectedId={setSelectedId}
+                        optionsState={optionsState}
+                        setOptionsState={setOptionsState}
                       />
                     </div>
                   )
@@ -245,7 +250,7 @@ export default function SeeAllDesigns() {
         )}
       </div>
 
-      <div className="circle-button-container">
+      <div className="circle-button-container" style={{ bottom: "30px" }}>
         {menuOpen && (
           <div className="small-buttons">
             <div className="small-button-container" onClick={toggleModal}>

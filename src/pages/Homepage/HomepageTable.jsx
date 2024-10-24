@@ -18,6 +18,7 @@ import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { visuallyHidden } from "@mui/utils";
 import { getUsername } from "./backend/HomepageActions";
+import "../../css/homepage.css";
 
 function EnhancedTableHead(props) {
   const {
@@ -47,12 +48,32 @@ function EnhancedTableHead(props) {
                 align={headCell.align}
                 padding={headCell.disablePadding ? "none" : "normal"}
                 sortDirection={orderBy === headCell.id ? sortOrders[headCell.id] : false}
-                sx={{ paddingTop: "5px", paddingBottom: "5px" }}
+                sx={{
+                  paddingTop: "5px",
+                  paddingBottom: "5px",
+                  backgroundColor: "var(--bgMain)",
+                  color: "var(--color-white)",
+                  borderBottom: "1px solid var(--table-stroke)",
+                }}
               >
                 <TableSortLabel
                   active={orderBy === headCell.id}
                   direction={sortOrders[headCell.id]}
                   onClick={createSortHandler(headCell.id)}
+                  sx={{
+                    backgroundColor: "var(--bgMain)",
+                    color: "var(--color-white)",
+                    "&:hover": {
+                      color: "var(--color-white)",
+                      backgroundColor: "var(--bgMain)",
+                    },
+                    "&.Mui-active": {
+                      color: "var(--color-white)",
+                    },
+                    "&.Mui-active .MuiTableSortLabel-icon": {
+                      color: "var(--color-white) !important",
+                    },
+                  }}
                 >
                   {headCell.label}
                   {orderBy === headCell.id ? (
@@ -64,7 +85,20 @@ function EnhancedTableHead(props) {
               </TableCell>
             )
         )}
-        <TableCell sx={{ paddingTop: "5px", paddingBottom: "5px", width: "34px" }}>
+        <TableCell
+          sx={{
+            paddingTop: "5px",
+            paddingBottom: "5px",
+            width: "34px",
+            backgroundColor: "var(--bgMain)",
+            color: "var(--color-white)",
+            borderBottom: "1px solid var(--table-stroke)",
+            "&:hover": {
+              backgroundColor: "var(--bgMain)",
+              color: "var(--color-white)",
+            },
+          }}
+        >
           <IconButton aria-label="expand row" size="small" sx={{ visibility: "hidden" }}>
             <MoreVertIcon />
           </IconButton>
@@ -213,7 +247,12 @@ function EnhancedTable({
                     tabIndex={-1}
                     key={row.id}
                     selected={isItemSelected}
-                    sx={{ cursor: "pointer" }}
+                    sx={{
+                      cursor: "pointer",
+                      "&MuiTableRow-hover": {
+                        backgroundColor: "var(--table-rows-hover) !important",
+                      },
+                    }}
                   >
                     {headCells.map((column) => {
                       const value = row[column.id];
@@ -222,7 +261,17 @@ function EnhancedTable({
                           <TableCell
                             key={column.id}
                             align={column.align}
-                            sx={{ paddingTop: "5px", paddingBottom: "5px" }}
+                            sx={{
+                              paddingTop: "5px",
+                              paddingBottom: "5px",
+                              borderBottom: "1px solid var(--table-stroke)",
+                              color: "var(--color-white)",
+                              backgroundColor: "var(--table-rows)",
+                              //   "&:hover": {
+                              //     color: "var(--color-white)",
+                              //     backgroundColor: "var(--table-rows-hover)",
+                              //   },
+                            }}
                             onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
                           >
                             {column.format && !column.hidden ? column.format(value) : value}
@@ -230,11 +279,25 @@ function EnhancedTable({
                         )
                       );
                     })}
-                    <TableCell sx={{ paddingTop: "5px", paddingBottom: "5px", width: "34px" }}>
+                    <TableCell
+                      sx={{
+                        paddingTop: "5px",
+                        paddingBottom: "5px",
+                        width: "34px",
+                        borderBottom: "1px solid var(--table-stroke)",
+                        color: "var(--color-white)",
+                        backgroundColor: "var(--table-rows)",
+                        "&:hover": {
+                          color: "var(--color-white)",
+                          backgroundColor: "var(--table-rows-hover)",
+                        },
+                      }}
+                    >
                       <IconButton
                         aria-label="expand row"
                         size="small"
                         onClick={(event) => handleOptionsClick(row.id, event)}
+                        sx={{ color: "var(--color-white)" }}
                       >
                         <MoreVertIcon />
                       </IconButton>
@@ -316,10 +379,11 @@ export default function HomepageTable({
       id: isDesign ? "owner" : "managers",
       numeric: false,
       disablePadding: false,
-      label: isDesign ? "Owner" : "managers",
+      label: isDesign ? "Owner" : "Managers",
       minWidth: 170,
       align: "left",
       hidden: false,
+      format: (value) => (Array.isArray(value) ? value.join(", ") : value),
     },
     {
       id: "formattedCreatedAt",

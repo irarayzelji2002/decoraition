@@ -8,6 +8,7 @@ import { collection, addDoc } from "firebase/firestore";
 import { query, where, setDoc, deleteDoc, getDocs } from "firebase/firestore";
 import { CheckCircle, Delete } from "@mui/icons-material";
 import { showToast } from "../../../functions/utils";
+import axios from "axios";
 
 // Adjust the import path as necessary
 
@@ -112,6 +113,25 @@ export const useHandleNameChange = (newName, userId, projectId, setIsEditingName
   };
 
   return handleNameChange;
+};
+
+export const handleNameChange = async (projectId, newName, user, setIsEditingName) => {
+  try {
+    const response = await axios.put(
+      `/api/project/${projectId}/update-name`,
+      { name: newName },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      setIsEditingName(false);
+      showToast("success", "Project name updated successfully");
+    }
+  } catch (error) {
+    console.error("Error updating project name:", error);
+    showToast("error", "Failed to update project name");
+  }
 };
 
 export const useProjectDetails = (projectId, setUserId, setProjectData, setNewName) => {

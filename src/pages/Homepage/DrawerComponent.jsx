@@ -125,12 +125,12 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
   const getProjectImage = (projectId) => {
     // Get the project
     const fetchedProject = userProjects.find((project) => project.id === projectId);
-    if (!fetchedProject || fetchedProject.designIds.length === 0) {
+    if (!fetchedProject || fetchedProject.designs.length === 0) {
       return "";
     }
 
     // Get the latest designId (the last one in the designIds array)
-    const latestDesignId = fetchedProject.designIds[fetchedProject.designIds.length - 1];
+    const latestDesignId = fetchedProject.designs[fetchedProject.designs.length - 1];
 
     // Return the design image by calling getDesignImage
     return getDesignImage(latestDesignId);
@@ -256,7 +256,7 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
               <div className="miniThumbnail">
                 <img src={getDesignImage(design.id)} alt="" />
               </div>
-              <ListItemText primary={design.name} />
+              <ListItemText primary={design.designName} />
               <IconButton
                 edge="end"
                 aria-label="more"
@@ -333,9 +333,9 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
               }
             >
               <div className="miniThumbnail">
-                <img src={getProjectImage(project.id)} alt="Thumbnail" />
+                <img src={getProjectImage(project.id)} alt="" />
               </div>
-              <ListItemText primary={project.name} />
+              <ListItemText primary={project.projectName} />
               <IconButton
                 edge="end"
                 aria-label="more"

@@ -22,7 +22,12 @@ import FourFrames from "./svg/FourFrames";
 import CommentContainer from "./CommentContainer";
 import { onSnapshot } from "firebase/firestore";
 import { Tabs, Tab } from "@mui/material";
-import { toggleComments, togglePromptBar, handleSidebarEffect } from "./backend/DesignActions"; // Import the functions from the backend file
+import {
+  toggleComments,
+  togglePromptBar,
+  handleSidebarEffect,
+  handleNameChange,
+} from "./backend/DesignActions"; // Import the functions from the backend file
 
 function Design() {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
@@ -30,7 +35,7 @@ function Design() {
   const [design, setDesign] = useState();
 
   // const [designData, setDesignData] = useState(null);
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState(design?.designName ?? "Untitled Design");
   const [showComments, setShowComments] = useState(false);
 
   const [showPromptBar, setShowPromptBar] = useState(true);
@@ -41,24 +46,35 @@ function Design() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar
   const [activeTab, setActiveTab] = useState(0);
 
-  useEffect(() => {
-    const fetchedDesign = userDesigns.find((design) => design.id === designId);
-    setDesign(fetchedDesign);
+  const [loading, setLoading] = useState(true);
 
-    if (!fetchedDesign) {
-      return <div>Design not found. Please reload or navigate to this design again.</div>;
+  useEffect(() => {
+    if (designId && userDesigns.length > 0) {
+      setLoading(true);
+      const fetchedDesign = userDesigns.find((design) => design.id === designId);
+
+      if (!fetchedDesign) {
+        console.error("Design not found.");
+      } else {
+        setDesign(fetchedDesign);
+        setNewName(fetchedDesign?.designName ?? "Untitled Design");
+      }
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const fetchedDesign = userDesigns.find((design) => design.id === designId);
+    if (designId && userDesigns.length > 0) {
+      const fetchedDesign = userDesigns.find((design) => design.id === designId);
 
-    if (!fetchedDesign) {
-      return <div>Design not found</div>;
-    } else if (!deepEqual(design, fetchedDesign)) {
-      setDesign(fetchedDesign);
+      if (!fetchedDesign) {
+        console.error("Design not found.");
+      } else if (!deepEqual(design, fetchedDesign)) {
+        setDesign(fetchedDesign);
+        setNewName(fetchedDesign?.designName ?? "Untitled Design");
+      }
     }
-  }, [designs, userDesigns]);
+  }, [designId, userDesigns]);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -87,24 +103,13 @@ function Design() {
     return cleanup;
   }, [isSidebarOpen]);
 
-  const handleNameChange = async (designId, newName) => {
-    try {
-      const repsonse = await axios.put(
-        `/api/design/${designId}/update-name`,
-        { name: newName },
-        {
-          headers: { Authorization: `Bearer ${await user.getIdToken()}` },
-        }
-      );
-      if (repsonse === 200) {
-        setIsEditingName(false);
-        showToast("success", "Design name updated successfully");
-      }
-    } catch (error) {
-      console.error("Error updating design name:", error);
-      showToast("error", "Failed to update design name");
-    }
-  };
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (!design) {
+    return <div>Design not found. Please reload or navigate to this design again.</div>;
+  }
 
   return (
     <div className="whole">
@@ -114,7 +119,7 @@ function Design() {
         setNewName={setNewName}
         isEditingName={isEditingName}
         toggleComments={() => toggleComments(setShowComments)}
-        handleNameChange={() => handleNameChange(designId, newName)}
+        handleNameChange={() => handleNameChange(designId, newName, user, setIsEditingName)}
         setIsEditingName={setIsEditingName}
         setIsSidebarOpen={setIsSidebarOpen}
       />

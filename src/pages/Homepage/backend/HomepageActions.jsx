@@ -157,7 +157,7 @@ export const handleViewChange = async (user, userId, layoutSettings, field, setV
         },
       }
     );
-    if (response === 200) {
+    if (response.status === 200) {
       setView(value);
       console.log("Layout setting updated");
     }
@@ -287,6 +287,6 @@ export const getUsernames = async (userIds) => {
     }
   } catch (error) {
     console.error("Error fetching usernames:", error);
-    return [];
   }
+  return [];
 };

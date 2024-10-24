@@ -173,6 +173,24 @@ exports.updateProject = async (req, res) => {
   }
 };
 
+// Update Name
+exports.updateProjectName = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { name } = req.body;
+    const projectRef = db.collection("projects").doc(projectId);
+    await projectRef.update({ projectName: name, modifiedAt: new Date() });
+    res.status(200).json({
+      success: true,
+      message: "Project name updated successfully",
+      projectName: name,
+    });
+  } catch (error) {
+    console.error("Error updating project name:", error);
+    res.status(500).json({ error: "Failed to update project name" });
+  }
+};
+
 // Delete
 exports.handleDeleteProject = async (req, res) => {
   try {

@@ -1,4 +1,4 @@
-const { db, storage } = require("../firebaseConfig");
+const { db, storage } = require("../firebase");
 const { ref, uploadBytes, getDownloadURL } = require("firebase/storage");
 
 // Add, Edit, Remove Budget
@@ -15,8 +15,7 @@ exports.updateBudget = async (req, res) => {
     // Update the budget
     const budgetRef = db.collection("budgets").doc(budgetId);
     await budgetRef.update({
-      amount: amount,
-      currency: currency,
+      budget: { amount: amount, currency: currency },
     });
 
     res

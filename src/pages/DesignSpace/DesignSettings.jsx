@@ -48,40 +48,87 @@ const theme = createTheme({
 
 function DesignSettings() {
   const { user, designs, userDesigns } = useSharedProps();
-  const { designId } = useParams(); // Get the designId parameter from the URL
+  const { designId } = useParams({}); // Get the designId parameter from the URL
   const [design, setDesign] = useState();
-  const [designName, setDesignName] = useState("");
-  const [generalAccessSetting, setGeneralAccessSetting] = useState(1); //0 for Restricted, 1 for Anyone with the link
-  const [generalAccessRole, setGeneralAccessRole] = useState(0); //0 for viewer, 1 for editor, 2 for owner
-  const [allowDownload, setAllowDownload] = useState(false);
-  const [allowViewHistory, setAllowViewHistory] = useState(false);
-  const [allowCopy, setAllowCopy] = useState(false);
-  const [documentCopyByOwner, setDocumentCopyByOwner] = useState(false);
-  const [documentCopyByEditor, setDocumentCopyByEditor] = useState(false);
-  const [inactivityEnabled, setInactivityEnabled] = useState(false);
-  const [inactivityDays, setInactivityDays] = useState(30);
-  const [deletionDays, setDeletionDays] = useState(30);
-  const [notifyDays, setNotifyDays] = useState(7);
-  const [activeTab, setActiveTab] = useState("Project"); // Default active tab
+  const [designName, setDesignName] = useState(design?.designName ?? "Untitled Design");
+  const [generalAccessSetting, setGeneralAccessSetting] = useState(
+    design?.designSettings?.generalAccessSetting ?? 1
+  ); //0 for Restricted, 1 for Anyone with the link
+  const [generalAccessRole, setGeneralAccessRole] = useState(
+    design?.designSettings?.generalAccessRole ?? 0
+  ); //0 for viewer, 1 for editor, 2 for owner
+  const [allowDownload, setAllowDownload] = useState(design?.designSettings?.allowDownload ?? true);
+  const [allowViewHistory, setAllowViewHistory] = useState(
+    design?.designSettings?.allowViewHistory ?? true
+  );
+  const [allowCopy, setAllowCopy] = useState(design?.designSettings?.allowCopy ?? true);
+  const [documentCopyByOwner, setDocumentCopyByOwner] = useState(
+    design?.designSettings?.documentCopyByOwner ?? true
+  );
+  const [documentCopyByEditor, setDocumentCopyByEditor] = useState(
+    design?.designSettings?.documentCopyByEditor ?? true
+  );
+  const [inactivityEnabled, setInactivityEnabled] = useState(
+    design?.designSettings?.inactivityEnabled ?? true
+  );
+  const [inactivityDays, setInactivityDays] = useState(
+    design?.designSettings?.inactivityDays ?? 30
+  );
+  const [deletionDays, setDeletionDays] = useState(design?.designSettings?.deletionDays ?? 30);
+  const [notifyDays, setNotifyDays] = useState(design?.designSettings?.notifyDays ?? 7);
+  const [activeTab, setActiveTab] = useState("Design"); // Default active tab
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchedDesign = userDesigns.find((design) => design.id === designId);
-    setDesign(fetchedDesign);
+    if (designId && userDesigns.length > 0) {
+      setLoading(true);
+      const fetchedDesign = userDesigns.find((design) => design.id === designId);
 
-    if (!fetchedDesign) {
-      return <div>Design not found. Please reload or navigate to this design again.</div>;
+      if (!fetchedDesign) {
+        console.error("Design not found.");
+      } else {
+        setDesign(fetchedDesign);
+        setDesignName(fetchedDesign?.designName ?? "Untitled Design");
+        setGeneralAccessSetting(fetchedDesign?.designSettings?.generalAccessSetting ?? 1);
+        setGeneralAccessRole(fetchedDesign?.designSettings?.generalAccessRole ?? 0);
+        setAllowDownload(fetchedDesign?.designSettings?.allowDownload ?? true);
+        setAllowViewHistory(fetchedDesign?.designSettings?.allowViewHistory ?? true);
+        setAllowCopy(fetchedDesign?.designSettings?.allowCopy ?? true);
+        setDocumentCopyByOwner(fetchedDesign?.designSettings?.documentCopyByOwner ?? true);
+        setDocumentCopyByEditor(fetchedDesign?.designSettings?.documentCopyByEditor ?? true);
+        setInactivityEnabled(fetchedDesign?.designSettings?.inactivityEnabled ?? true);
+        setInactivityDays(fetchedDesign?.designSettings?.inactivityDays ?? 30);
+        setDeletionDays(fetchedDesign?.designSettings?.deletionDays ?? 30);
+        setNotifyDays(fetchedDesign?.designSettings?.notifyDays ?? 7);
+      }
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const fetchedDesign = userDesigns.find((design) => design.id === designId);
+    if (designId && userDesigns.length > 0) {
+      const fetchedDesign = userDesigns.find((design) => design.id === designId);
 
-    if (!fetchedDesign) {
-      return <div>Design not found</div>;
-    } else if (!deepEqual(design, fetchedDesign)) {
-      setDesign(fetchedDesign);
+      if (!fetchedDesign) {
+        console.error("Design not found.");
+      } else if (!deepEqual(design, fetchedDesign)) {
+        setDesign(fetchedDesign);
+        setDesignName(fetchedDesign?.designName ?? "Untitled Design");
+        setGeneralAccessSetting(fetchedDesign?.designSettings?.generalAccessSetting ?? 1);
+        setGeneralAccessRole(fetchedDesign?.designSettings?.generalAccessRole ?? 0);
+        setAllowDownload(fetchedDesign?.designSettings?.allowDownload ?? true);
+        setAllowViewHistory(fetchedDesign?.designSettings?.allowViewHistory ?? true);
+        setAllowCopy(fetchedDesign?.designSettings?.allowCopy ?? true);
+        setDocumentCopyByOwner(fetchedDesign?.designSettings?.documentCopyByOwner ?? true);
+        setDocumentCopyByEditor(fetchedDesign?.designSettings?.documentCopyByEditor ?? true);
+        setInactivityEnabled(fetchedDesign?.designSettings?.inactivityEnabled ?? true);
+        setInactivityDays(fetchedDesign?.designSettings?.inactivityDays ?? 30);
+        setDeletionDays(fetchedDesign?.designSettings?.deletionDays ?? 30);
+        setNotifyDays(fetchedDesign?.designSettings?.notifyDays ?? 7);
+      }
     }
-  }, [designs, userDesigns]);
+  }, [designId, userDesigns]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab); // Change active tab
@@ -105,7 +152,7 @@ function DesignSettings() {
       console.log("updatedSettings", updatedSettings);
 
       const response = await axios.put(
-        `/api/designs/${designId}/update-settings`,
+        `/api/design/${designId}/update-settings`,
         {
           designSettings: updatedSettings,
         },
@@ -205,13 +252,14 @@ const SettingsContent = ({
           {generalAccessSetting === 1 ? (
             <PublicRoundedIcon sx={{ color: "var(--color-white)" }} />
           ) : (
-            generalAccessSetting === 0 &&
-            1(<PublicOffRoundedIcon sx={{ color: "var(--color-white)" }} />)
+            generalAccessSetting === 0 && (
+              <PublicOffRoundedIcon sx={{ color: "var(--color-white)" }} />
+            )
           )}
         </Box>
         <Select
           value={generalAccessSetting}
-          onChange={(e) => setGeneralAccessSetting(e.target.value)}
+          onChange={(e) => setGeneralAccessSetting(parseInt(e.target.value, 10))}
           className="accessSelect"
           sx={{
             "& .MuiOutlinedInput-notchedOutline": {
@@ -270,7 +318,7 @@ const SettingsContent = ({
         </Select>
         <Select
           value={generalAccessRole}
-          onChange={(e) => setGeneralAccessRole(e.target.value)}
+          onChange={(e) => setGeneralAccessRole(parseInt(e.target.value, 10))}
           className="accessSelect"
           sx={{
             "& .MuiOutlinedInput-notchedOutline": {
@@ -324,8 +372,7 @@ const SettingsContent = ({
             value={2}
             sx={{
               backgroundColor: "var(--bgColor)",
-              color:
-                generalAccessSetting === "Restricted" ? "var(--color-white)" : "var(--color-grey)",
+              color: generalAccessSetting === 0 ? "var(--color-white)" : "var(--color-grey)",
               "&:hover": {
                 backgroundColor: "var(--dropdownHover)",
                 color: "var(--color-white)",
@@ -493,7 +540,7 @@ const SettingsContent = ({
             <Typography>Number of days before inactivity after user inactivity</Typography>
             <Select
               value={inactivityDays}
-              onChange={(e) => setInactivityDays(e.target.value)}
+              onChange={(e) => setInactivityDays(parseInt(e.target.value, 10))}
               className="accessSelect" //old inactivityTextField
               sx={{
                 "& .MuiOutlinedInput-notchedOutline": {
@@ -588,7 +635,7 @@ const SettingsContent = ({
             <Typography>Number of days before deletion after project inactivity</Typography>
             <Select
               value={deletionDays}
-              onChange={(e) => setDeletionDays(e.target.value)}
+              onChange={(e) => setDeletionDays(parseInt(e.target.value, 10))}
               className="accessSelect" //old inactivityTextField
               sx={{
                 "& .MuiOutlinedInput-notchedOutline": {
@@ -685,7 +732,7 @@ const SettingsContent = ({
             </Typography>
             <Select
               value={notifyDays}
-              onChange={(e) => setNotifyDays(e.target.value)}
+              onChange={(e) => setNotifyDays(parseInt(e.target.value, 10))}
               className="accessSelect" //old inactivityTextField
               sx={{
                 "& .MuiOutlinedInput-notchedOutline": {

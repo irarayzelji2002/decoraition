@@ -1,4 +1,4 @@
-const { db } = require("../firebaseConfig");
+const { db, auth } = require("../firebase");
 
 // Create
 exports.createProjectBudget = async (req, res) => {

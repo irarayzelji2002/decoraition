@@ -7,8 +7,10 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { showToast } from "../../functions/utils";
 
 import Item from "./Item";
+import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import DesignHead from "../../components/DesignHead";
 import Box from "@mui/material/Box";
@@ -26,7 +28,8 @@ import Loading from "../../components/Loading";
 import { getAuth, prodErrorMap } from "firebase/auth";
 import BottomBar from "./BottomBar";
 import { query, where } from "firebase/firestore";
-import { AddBudget, AddItem } from "./svg/AddImage";
+import { AddBudget, AddItem, BlankImage } from "./svg/AddImage";
+import { getDesignImage, handleNameChange } from "./backend/DesignActions";
 
 const style = {
   position: "absolute",
@@ -40,7 +43,8 @@ const style = {
 };
 
 function Budget() {
-  const { user, designs, userDesigns, budgets, userBudgets, items, userItems } = useSharedProps();
+  const { user, designs, userDesigns, userDesignVersions, budgets, userBudgets, items, userItems } =
+    useSharedProps();
   const { designId, projectId } = useParams();
   const navigate = useNavigate();
   const [design, setDesign] = useState({});
@@ -48,32 +52,87 @@ function Budget() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isRemoveBudgetModalOpen, setIsRemoveBudgetModalOpen] = useState(false);
-  const [budgetCurrency, setBudgetCurrency] = useState(0);
-  const [budgetAmount, setBudgetAmount] = useState(0);
+  const [budgetCurrency, setBudgetCurrency] = useState(budget?.budget?.currency ?? 0);
+  const [budgetAmount, setBudgetAmount] = useState(budget?.budget?.amount ?? 0);
+  const [budgetCurrencyForInput, setBudgetCurrencyForInput] = useState(
+    budget?.budget?.currency ?? 0
+  );
+  const [budgetAmountForInput, setBudgetAmountForInput] = useState(budget?.budget?.amount ?? "");
   const [designItems, setDesignItems] = useState([]);
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState(design?.designName ?? "Untitled Design");
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [totalCost, setTotalCost] = useState(0);
-  const [formattedTotalCost, setFormattedTotalCost] = useState("");
+  const [formattedTotalCost, setFormattedTotalCost] = useState("0.00");
   const [exceededBudget, setExceededBudget] = useState(0);
+
+  const [loading, setLoading] = useState(true);
+
+  // Icons
+  const GradientAddIcon = () => (
+    <>
+      <svg width={0} height={0}>
+        <linearGradient id="linearColors" gradientTransform="rotate(180)">
+          <stop offset={0} stopColor="#F9A754" />
+          <stop offset={0.5} stopColor="#F26B27" />
+          <stop offset={1} stopColor="#EF4E59" />
+        </linearGradient>
+      </svg>
+      <AddIcon sx={{ fill: "url(#linearColors)" }} />
+    </>
+  );
+  const GradientEditIcon = () => (
+    <>
+      <svg width={0} height={0}>
+        <linearGradient id="linearColors" gradientTransform="rotate(180)">
+          <stop offset={0} stopColor="#F9A754" />
+          <stop offset={0.5} stopColor="#F26B27" />
+          <stop offset={1} stopColor="#EF4E59" />
+        </linearGradient>
+      </svg>
+      <EditIcon sx={{ fill: "url(#linearColors)" }} />
+    </>
+  );
+  const GradientDeleteIcon = () => (
+    <>
+      <svg width={0} height={0}>
+        <linearGradient id="linearColors" gradientTransform="rotate(180)">
+          <stop offset={0} stopColor="#F9A754" />
+          <stop offset={0.5} stopColor="#F26B27" />
+          <stop offset={1} stopColor="#EF4E59" />
+        </linearGradient>
+      </svg>
+      <DeleteIcon sx={{ fill: "url(#linearColors)" }} />
+    </>
+  );
 
   // Initialize
   useEffect(() => {
+    setLoading(true);
     const fetchedDesign = userDesigns.find((design) => design.id === designId);
-    setDesign(fetchedDesign);
+    setDesign(fetchedDesign || {});
+    setNewName(fetchedDesign?.designName ?? "Untitled Design");
 
     if (!fetchedDesign) {
-      return <div>Design not found. Please reload or navigate to this design again.</div>;
+      console.error("Design not found.");
+      navigate("/homepage");
+      setLoading(false);
+      return;
     }
 
     const fetchedBudget = userBudgets.find((budget) => budget.designId === designId);
-    setBudget(fetchedBudget);
+    setBudget(fetchedBudget || {});
 
-    const fetchedItems = userItems.filter((item) => fetchedBudget.items.includes(item.id));
+    const fetchedItems =
+      fetchedBudget && fetchedBudget.items
+        ? userItems.filter((item) => fetchedBudget.items.includes(item.id))
+        : [];
     setDesignItems(fetchedItems);
 
-    computeTotalCostAndExceededBudget(fetchedItems, fetchedBudget?.budget?.amount);
+    if (fetchedBudget && fetchedItems.length > 0) {
+      computeTotalCostAndExceededBudget(fetchedItems, fetchedBudget.budget?.amount);
+    }
+    setLoading(false);
   }, []);
 
   // Updates on Real-time changes on shared props
@@ -81,9 +140,11 @@ function Budget() {
     const fetchedDesign = userDesigns.find((design) => design.id === designId);
 
     if (!fetchedDesign) {
-      return <div>Design not found</div>;
+      console.error("Design not found");
+      navigate("/homepage");
     } else if (!deepEqual(design, fetchedDesign)) {
       setDesign(fetchedDesign);
+      setNewName(fetchedDesign?.designName ?? "Untitled Design");
     }
   }, [designs, userDesigns]);
 
@@ -91,48 +152,47 @@ function Budget() {
     const fetchedBudget = userBudgets.find((budget) => budget.designId === designId);
 
     if (fetchedBudget && !deepEqual(budget, fetchedBudget)) {
+      setBudgetCurrencyForInput(fetchedBudget.budget?.currency ?? "PHP");
+      setBudgetAmountForInput(fetchedBudget.budget?.amount ?? 0);
       setBudget(fetchedBudget);
+      setBudgetCurrency(fetchedBudget.budget?.currency ?? "PHP");
+      setBudgetAmount(fetchedBudget.budget?.amount ?? 0);
     }
   }, [budgets, userBudgets]);
 
   useEffect(() => {
-    const fetchedItems = userItems.filter((item) => budget.items.includes(item.id));
+    const fetchedItems =
+      userBudgets && userBudgets.items && userItems
+        ? userItems.filter((item) => budget.items.includes(item.id))
+        : [];
 
     if (budget && !deepEqual(designItems, fetchedItems)) {
       setDesignItems(fetchedItems);
     }
 
-    computeTotalCostAndExceededBudget(fetchedItems, budget?.budget?.amount);
+    if (budget && fetchedItems.length > 0) {
+      computeTotalCostAndExceededBudget(fetchedItems, budget.budget?.amount);
+    }
   }, [items, userItems]);
 
   useEffect(() => {
-    setBudgetAmount(budget?.budget?.amount);
-    setBudgetCurrency(budget?.budget?.currency);
+    setBudgetAmount(budget?.budget?.amount ?? 0);
+    setBudgetCurrency(budget?.budget?.currency ?? "PHP");
   }, [budget]);
 
   useEffect(() => {
-    computeTotalCostAndExceededBudget(designItems, budgetAmount);
+    if (budgetAmount && designItems.length > 0) {
+      computeTotalCostAndExceededBudget(designItems, budgetAmount);
+    }
   }, [designItems]);
 
-  // Design Name
-  const handleNameChange = async (designId, newName) => {
-    try {
-      const repsonse = await axios.put(
-        `/api/design/${designId}/update-name`,
-        { name: newName },
-        {
-          headers: { Authorization: `Bearer ${await user.getIdToken()}` },
-        }
-      );
-      if (repsonse === 200) {
-        setIsEditingName(false);
-        showToast("success", "Design name updated successfully");
-      }
-    } catch (error) {
-      console.error("Error updating design name:", error);
-      showToast("error", "Failed to update design name");
-    }
-  };
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (!design) {
+    return <div>Design not found. Please reload or navigate to this design again.</div>;
+  }
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -140,7 +200,13 @@ function Budget() {
 
   // Budget Functions
   const toggleBudgetModal = (opening, editing) => {
+    setMenuOpen(false);
     if (opening && editing) setIsEditingBudget(true);
+    else setIsEditingBudget(false);
+    if (!opening) {
+      setBudgetAmountForInput(budgetAmount);
+      setBudgetCurrencyForInput(budgetCurrency);
+    }
     setIsBudgetModalOpen(!isBudgetModalOpen);
   };
 
@@ -155,15 +221,21 @@ function Budget() {
   };
 
   const handleUpdateBudget = async (budgetAmount, budgetCurrency) => {
+    const budgetAmountNum = parseFloat(budgetAmount);
+    if (isNaN(budgetAmountNum)) {
+      console.error("Invalid input, unable to process as a number.");
+      return;
+    }
+
     try {
       const response = await axios.put(
         `/api/design/budget/${budget.id}/update-budget`,
-        { amount: budgetAmount, currency: budgetCurrency },
+        { amount: budgetAmountNum, currency: budgetCurrency },
         {
           headers: { Authorization: `Bearer ${await user.getIdToken()}` },
         }
       );
-      if (response === 200) {
+      if (response.status === 200) {
         showToast("success", "Budget added successfully");
         setIsBudgetModalOpen(false);
       } else {
@@ -185,9 +257,9 @@ function Budget() {
           headers: { Authorization: `Bearer ${await user.getIdToken()}` },
         }
       );
-      if (response === 200) {
+      if (response.status === 200) {
         showToast("success", "Budget added successfully");
-        setIsBudgetModalOpen(false);
+        setIsRemoveBudgetModalOpen(false);
       } else {
         throw new Error("Error adding budget");
       }
@@ -199,6 +271,13 @@ function Budget() {
 
   // Item Functions
   const computeTotalCostAndExceededBudget = (designItems, budgetAmount) => {
+    if (!designItems || designItems.length === 0) {
+      setTotalCost(0);
+      setFormattedTotalCost("0.00");
+      setExceededBudget(false);
+      return;
+    }
+
     const totalCost = designItems
       .filter((item) => item.includedInTotal !== false) // Exclude items not included in total
       .reduce((sum, item) => sum + parseFloat(item.cost.amount || 0) * (item.quantity || 1), 0)
@@ -218,6 +297,8 @@ function Budget() {
     setExceededBudget(exceededBudget);
   };
 
+  const formatNumber = (num) => (typeof num === "number" ? num.toFixed(2) : "0.00");
+
   return (
     <div className={`budget-page ${menuOpen ? "" : ""}`}>
       <DesignHead
@@ -225,7 +306,7 @@ function Budget() {
         newName={newName}
         setNewName={setNewName}
         isEditingName={isEditingName}
-        handleNameChange={() => handleNameChange(designId, newName)}
+        handleNameChange={() => handleNameChange(designId, newName, user, setIsEditingName)}
         setIsEditingName={setIsEditingName}
       />
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
@@ -237,29 +318,85 @@ function Budget() {
               backgroundColor: getBudgetColor(budgetAmount, totalCost),
             }}
           >
-            Total Cost: ₱ <strong>{formattedTotalCost}</strong> Budget:{budgetAmount}
+            {(() => {
+              if (formattedTotalCost === "0.00" && budgetAmount === 0) {
+                return <>No cost and added budget</>;
+              } else if (formattedTotalCost === "0.00") {
+                return (
+                  <>
+                    No cost, Budget:{" "}
+                    <strong>
+                      {budgetCurrency} {formatNumber(budgetAmount)}
+                    </strong>
+                  </>
+                );
+              } else if (budgetAmount === 0) {
+                return (
+                  <>
+                    Total Cost:{" "}
+                    <strong>
+                      {budgetCurrency} {formattedTotalCost}
+                    </strong>
+                    , No added budget
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    Total Cost:{" "}
+                    <strong>
+                      {budgetCurrency} {formattedTotalCost}
+                    </strong>{" "}
+                    Budget:{" "}
+                    <strong>
+                      {budgetCurrency} {formatNumber(budgetAmount)}
+                    </strong>
+                  </>
+                );
+              }
+            })()}
           </span>
-          {budgetAmount > 0 && (
+
+          {budgetAmount > 0 ? (
             <>
-              <button onClick={() => toggleBudgetModal(true, true)}>Edit Budget</button>
-              <button onClick={() => setIsRemoveBudgetModalOpen(true)}>Remove Budget</button>
+              <IconButton
+                onClick={() => toggleBudgetModal(true, true)}
+                sx={{ color: "var(--color-white)" }}
+              >
+                <GradientEditIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setIsRemoveBudgetModalOpen(true);
+                  setMenuOpen(false);
+                }}
+                sx={{ color: "var(--color-white)" }}
+              >
+                <GradientDeleteIcon />
+              </IconButton>
             </>
+          ) : (
+            <IconButton
+              onClick={() => toggleBudgetModal(true, false)}
+              sx={{ color: "var(--gradientIcon)" }}
+            >
+              <GradientAddIcon />
+            </IconButton>
           )}
           <div className="image-frame">
-            <img src={"../../img/logoWhitebg.png"} alt="design preview" className="image-preview" />
+            <div className="image-frame-icon">
+              <BlankImage />
+              <span>Add an image to the item</span>
+            </div>
+            <img
+              src={getDesignImage(design.id, userDesigns, userDesignVersions, 0)}
+              alt=""
+              className="image-preview"
+            />
           </div>
         </div>
         <div className="budgetSpace" style={{ marginBottom: "10%" }}>
-          {designItems.length === 0 ? (
-            <div>
-              <p>No items yet</p>
-              <img
-                src={"../../img/project-placeholder.png"}
-                style={{ width: "100px" }}
-                alt="project placeholder"
-              />
-            </div>
-          ) : (
+          {designItems.length > 0 ? (
             designItems.map((item, index) => (
               <Item
                 key={index}
@@ -269,12 +406,35 @@ function Budget() {
                 budgetId={budget.id}
               />
             ))
+          ) : (
+            <div>
+              <img
+                src={"../../img/project-placeholder.png"}
+                style={{ width: "100px" }}
+                alt="project placeholder"
+              />
+              <p className="grey-text">No items yet</p>
+            </div>
           )}
         </div>
       </div>
       <div className="circle-button-container">
         {menuOpen && (
           <div className="small-buttons">
+            {budgetAmount > 0 && (
+              <div
+                className="small-button-container"
+                onClick={() => {
+                  setIsRemoveBudgetModalOpen(true);
+                  setMenuOpen(false);
+                }}
+              >
+                <span className="small-button-text">Delete Budget</span>
+                <div className="small-circle-button">
+                  <DeleteIcon />
+                </div>
+              </div>
+            )}
             <div
               className="small-button-container"
               onClick={() => toggleBudgetModal(true, budgetAmount > 0)}
@@ -283,7 +443,7 @@ function Budget() {
                 {budgetAmount > 0 ? "Edit the budget" : "Add a Budget"}
               </span>
               <div className="small-circle-button">
-                {budgetAmount > 0 ? <AddBudget /> : <EditIcon />}
+                {budgetAmount > 0 ? <EditIcon /> : <AddBudget />}
               </div>
             </div>
             <div
@@ -352,7 +512,7 @@ function Budget() {
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
                 <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
-                  {setIsEditingBudget ? "Edit the budget" : "Add a Budget"}
+                  {isEditingBudget ? "Edit the budget" : "Add a Budget"}
                 </span>{" "}
                 <CloseIcon
                   sx={{ marginLeft: "auto" }}
@@ -372,8 +532,8 @@ function Budget() {
                       appearance: "none",
                       outline: "none",
                     }}
-                    value={budgetCurrency}
-                    onChange={(e) => setBudgetCurrency(e.target.value)}
+                    value={budgetCurrencyForInput}
+                    onChange={(e) => setBudgetCurrencyForInput(e.target.value)}
                   >
                     <option value="PHP">PHP</option>
                     <option value="USD">USD</option>
@@ -387,10 +547,20 @@ function Budget() {
                   />
                   <input
                     id="item-price"
-                    type="number"
+                    type="text"
                     placeholder="Enter item price"
-                    value={budgetAmount}
-                    onChange={(e) => setBudgetAmount(e.target.value)}
+                    value={budgetAmountForInput}
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      // Allow digits and a single decimal point, up to two decimal places
+                      if (/^\d*\.?\d{0,2}$/.test(value)) {
+                        // Remove leading zeros unless it’s a decimal number
+                        if (/^\d+$/.test(value)) {
+                          value = value.replace(/^0+/, "");
+                        }
+                        setBudgetAmountForInput(value);
+                      }
+                    }}
                     style={{
                       border: "none",
                       background: "transparent",
@@ -405,9 +575,9 @@ function Budget() {
               <button
                 className="add-item-btn"
                 style={{ margin: "18px" }}
-                onClick={() => handleUpdateBudget(budgetAmount, budgetCurrency)}
+                onClick={() => handleUpdateBudget(budgetAmountForInput, budgetCurrencyForInput)}
               >
-                {setIsEditingBudget ? "Edit budget" : "Add Budget"}
+                {isEditingBudget ? "Edit budget" : "Add Budget"}
               </button>
               <div onClick={() => toggleBudgetModal(false, isEditingBudget)}>Cancel</div>
             </div>

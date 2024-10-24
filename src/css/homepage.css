@@ -202,6 +202,9 @@ h2 {
   justify-items: center;
   align-items: start;
 }
+tr:hover td {
+  background-color: var(--table-rows-hover) !important;
+}
 
 /* Medium screen sizes */
 
@@ -248,7 +251,7 @@ h2 {
 }
 
 .options {
-  opacity: 0.8;
+  opacity: 1;
   position: absolute;
   top: 20px;
   right: 10px;
@@ -258,7 +261,7 @@ h2 {
 }
 
 .options-table {
-  opacity: 0.8;
+  opacity: 1;
   position: relative;
   cursor: pointer;
   width: fit-content;
@@ -274,9 +277,10 @@ h2 {
   background-color: var(--nav-card-modal);
   border-radius: 10px;
   padding: 10px 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: -4px 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   width: 200px;
+  border: 1px solid var(--table-stroke);
 }
 
 .dropdown-item {

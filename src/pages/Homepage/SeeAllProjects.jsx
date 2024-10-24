@@ -34,8 +34,10 @@ export default function SeeAllProjects() {
   const [totalPages, setTotalPages] = useState(0);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [optionsState, setOptionsState] = useState({
+    showOptions: false,
+    selectedId: null,
+  });
 
   const loadProjectDataForView = async () => {
     if (userProjects.length > 0) {
@@ -51,12 +53,12 @@ export default function SeeAllProjects() {
       const tableData = await Promise.all(
         filteredProjects.map(async (project) => {
           const managersId = project.managers || [];
-          const managers = getUsernames(managersId).then((usernames) => usernames.join(", "));
+          const managers = await getUsernames(managersId);
 
           return {
             ...project,
             managersId,
-            managers,
+            managers: managers.join(", "),
             formattedCreatedAt: formatDate(project.createdAt),
             createdAtTimestamp: project.createdAt.toMillis(),
             formattedModifiedAt: formatDate(project.modifiedAt),
@@ -72,11 +74,17 @@ export default function SeeAllProjects() {
   };
 
   useEffect(() => {
-    loadProjectDataForView();
+    const loadData = async () => {
+      await loadProjectDataForView();
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
-    loadProjectDataForView();
+    const loadData = async () => {
+      await loadProjectDataForView();
+    };
+    loadData();
   }, [projects, userProjects, searchQuery]);
 
   useEffect(() => {
@@ -182,9 +190,8 @@ export default function SeeAllProjects() {
                             )}
                             createdAt={formatDateLong(project.createdAt)}
                             modifiedAt={formatDateLong(project.modifiedAt)}
-                            showOptions={showOptions}
-                            setShowOptions={setShowOptions}
-                            setSelectedId={setSelectedId}
+                            optionsState={optionsState}
+                            setOptionsState={setOptionsState}
                           />
                         </div>
                       ))}
@@ -196,10 +203,8 @@ export default function SeeAllProjects() {
                         data={filteredProjectsForTable}
                         isHomepage={false}
                         page={page}
-                        showOptions={showOptions}
-                        setShowOptions={setShowOptions}
-                        selectedId={selectedId}
-                        setSelectedId={setSelectedId}
+                        optionsState={optionsState}
+                        setOptionsState={setOptionsState}
                       />
                     </div>
                   )
@@ -247,7 +252,7 @@ export default function SeeAllProjects() {
         )}
       </div>
 
-      <div className="circle-button-container">
+      <div className="circle-button-container" style={{ bottom: "30px" }}>
         {menuOpen && (
           <div className="small-buttons">
             <div className="small-button-container" onClick={toggleModal}>

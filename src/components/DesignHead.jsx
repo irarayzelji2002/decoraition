@@ -179,9 +179,14 @@ function DesignHead({
 
   const handleBlur = () => {
     // Save the name when the user clicks away from the input field
-    if (isEditingName) {
-      handleNameChange();
+    if (!isEditingName) {
+      return;
     }
+    if (design.designName === newName.trim()) {
+      handleEditNameToggle();
+      return;
+    }
+    handleNameChange();
   };
   const handleCopyLink = () => {
     const currentLink = window.location.href; // Get the current URL
@@ -248,7 +253,7 @@ function DesignHead({
                   e.target.blur();
                 }
               }}
-              // onBlur={handleBlur} // Save when the input loses focus
+              onBlur={handleBlur}
               autoFocus // Automatically focus on the input when in edit mode
               className="headTitleInput"
             />

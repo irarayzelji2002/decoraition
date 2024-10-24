@@ -136,14 +136,41 @@ h6 {
 
 .image-frame {
   width: 80%;
-
   max-width: 1200px;
   max-height: 300px !important;
   padding-bottom: 56.25%;
   position: relative;
   border: var(--nav-card-modal) 3px solid;
-  border-radius: 12px;
+  border-radius: 15px;
   margin: 2%;
+  background-color: var(--lighterDarkBg);
+}
+
+.image-frame-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  text-align: center;
+}
+
+.image-frame-icon span {
+  color: var(--iconDark);
+  font-weight: 500;
+  font-size: 1.1em;
+  margin-top: 20px;
+}
+
+.grey-text {
+  color: var(--iconDark);
+  font-weight: 500;
+  font-size: 1.1em;
+  margin-top: 20px;
 }
 
 .image-preview {
@@ -316,7 +343,7 @@ textarea {
 
 .circle-button-container {
   position: fixed;
-  bottom: 30px;
+  bottom: 110px;
   right: 30px;
   display: flex;
   flex-direction: column;

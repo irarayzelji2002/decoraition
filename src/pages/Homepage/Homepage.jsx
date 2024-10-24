@@ -438,7 +438,7 @@ function Homepage() {
           </Button>
         )}
 
-        <div className="circle-button-container">
+        <div className="circle-button-container" style={{ bottom: "30px" }}>
           {menuOpen && (
             <div className="small-buttons">
               <div className="small-button-container">

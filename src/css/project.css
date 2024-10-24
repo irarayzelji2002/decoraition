@@ -121,6 +121,7 @@ body {
   border: var(--nav-card-modal) 3px solid;
   border-radius: 24px;
   margin: 2%;
+  background-color: var(--lighterDarkBg);
 }
 .image-preview {
   height: 100%;

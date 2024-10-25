@@ -16,6 +16,7 @@ exports.updateBudget = async (req, res) => {
     const budgetRef = db.collection("budgets").doc(budgetId);
     await budgetRef.update({
       budget: { amount: amount, currency: currency },
+      modifiedAt: new Date(),
     });
 
     res
@@ -30,12 +31,11 @@ exports.updateBudget = async (req, res) => {
 // Add Item
 exports.addItem = async (req, res) => {
   try {
-    const { budgetId, itemName, description, quantity, includedInTotal, isUploadedImage } =
-      req.body;
+    const { budgetId, itemName, description, quantity, isUploadedImage } = req.body;
     const cost = JSON.parse(req.body.cost);
     let imageUrl = null;
 
-    if (isUploadedImage) {
+    if (isUploadedImage === true) {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
@@ -52,17 +52,19 @@ exports.addItem = async (req, res) => {
       imageUrl = req.body.image; // Use provided image link
     }
 
-    // Create a new item document
+    // Create a new blank item document
     const itemRef = db.collection("items").doc();
-    const itemData = {
-      itemName,
-      description,
-      cost,
-      quantity,
-      image: imageUrl,
-      includedInTotal,
+    const blankItemData = {
+      itemName: "",
+      description: "",
+      cost: { amount: 0, currency: "PHP" },
+      quantity: 0,
+      image: "",
+      includedInTotal: true,
+      createdAt: new Date(),
+      modifiedAt: new Date(),
     };
-    await itemRef.set(itemData);
+    await itemRef.set(blankItemData);
 
     // Update the budget's items array
     const budgetRef = db.collection("budgets").doc(budgetId);
@@ -73,7 +75,20 @@ exports.addItem = async (req, res) => {
     const budgetData = budgetDoc.data();
     const currentItems = budgetData.items || [];
     const updatedItems = [...currentItems, itemRef.id];
-    await budgetRef.update({ items: updatedItems });
+    await budgetRef.update({ items: updatedItems, modifiedAt: new Date() });
+
+    // Populate the item document
+    const itemData = {
+      itemName,
+      description,
+      cost,
+      quantity,
+      image: imageUrl,
+      includedInTotal: true,
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+    };
+    await itemRef.update(itemData);
 
     res.status(200).json({ id: itemRef.id, ...itemData });
   } catch (error) {
@@ -107,7 +122,12 @@ exports.updateItem = async (req, res) => {
       imageUrl = req.body.image; // Use provided image link
     }
 
+    // First get the item to find its budget
     const itemRef = db.collection("items").doc(itemId);
+    const itemDoc = await itemRef.get();
+    if (!itemDoc.exists) {
+      throw new Error("Item not found");
+    }
     const itemData = {
       itemName,
       description,
@@ -118,6 +138,17 @@ exports.updateItem = async (req, res) => {
       modifiedAt: new Date(),
     };
 
+    // Find the budget containing this item to trigger an update
+    const budgetsRef = db.collection("budgets");
+    const budgetQuery = await budgetsRef.where("items", "array-contains", itemId).get();
+    if (!budgetQuery.empty) {
+      const budgetDoc = budgetQuery.docs[0];
+      await budgetDoc.ref.update({
+        modifiedAt: new Date(),
+      });
+    }
+
+    // Update the item
     await itemRef.update(itemData);
 
     res.status(200).json({ message: "Item updated successfully", ...itemData });

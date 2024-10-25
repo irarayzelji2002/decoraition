@@ -73,6 +73,7 @@ select:-webkit-autofill {
   --color-grey: #9d9ca6;
   --bright-grey: #6c6c6c;
   --color-quaternary: #ef4f56;
+  --errorText: #ef4f56;
   --color-white: #fafafa;
   --color-white-hover: #e6e6e6;
   --color-blue: #0866ff;

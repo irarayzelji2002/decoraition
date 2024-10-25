@@ -218,6 +218,10 @@ select {
 .rounded-input:focus-within {
   border-color: var(--brightFont);
 }
+.error-text {
+  color: var(--errorText);
+  font-size: 0.875em;
+}
 
 .modal-actions {
   display: flex;

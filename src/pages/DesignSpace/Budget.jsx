@@ -67,6 +67,7 @@ function Budget() {
   const [exceededBudget, setExceededBudget] = useState(0);
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Icons
   const GradientAddIcon = () => (
@@ -182,14 +183,29 @@ function Budget() {
 
   const updateItems = () => {
     if (budget && budget.items) {
-      const fetchedItems = userItems.filter((item) => budget.items.includes(item.id));
-      if (!deepEqual(designItems, fetchedItems)) {
-        setDesignItems(fetchedItems);
-        console.log("design items updated", fetchedItems);
+      // Keep existing items that are in the budget
+      const updatedItems = designItems.filter((item) => budget.items.includes(item.id));
+
+      // Add or update items from userItems
+      budget.items.forEach((itemId) => {
+        const userItem = userItems.find((item) => item.id === itemId);
+        if (userItem) {
+          const existingIndex = updatedItems.findIndex((item) => item.id === itemId);
+          if (existingIndex !== -1) {
+            updatedItems[existingIndex] = userItem;
+          } else {
+            updatedItems.push(userItem);
+          }
+        }
+      });
+
+      if (!deepEqual(designItems, updatedItems)) {
+        setDesignItems(updatedItems);
+        console.log("design items updated", updatedItems);
       }
 
-      if (fetchedItems.length > 0) {
-        computeTotalCostAndExceededBudget(fetchedItems, budget.budget?.amount);
+      if (updatedItems.length > 0) {
+        computeTotalCostAndExceededBudget(updatedItems, budget.budget?.amount);
       }
     } else {
       setDesignItems([]);
@@ -262,17 +278,38 @@ function Budget() {
     }
   };
 
+  const handleValidation = (budgetAmount) => {
+    let error = "";
+    if (!budgetAmount || budgetAmount === 0) {
+      error = "Budget is required";
+    } else {
+      const budgetAmountNum = parseFloat(budgetAmount);
+      if (isNaN(budgetAmountNum)) {
+        error = "Budget must be a number";
+      } else if (budgetAmountNum <= 0) {
+        error = "Budget must be greater than 0";
+      } else if (budgetAmountNum > 999999999) {
+        error = "Budget is too high";
+      }
+    }
+    console.log("budgetAmount", budgetAmount);
+    console.log("error", error);
+    return error;
+  };
+
   const handleUpdateBudget = async (budgetAmount, budgetCurrency) => {
-    const budgetAmountNum = parseFloat(budgetAmount);
-    if (isNaN(budgetAmountNum)) {
-      console.error("Invalid input, unable to process as a number.");
+    const error = handleValidation(budgetAmount);
+    if (error !== "") {
+      setError(error);
       return;
+    } else {
+      setError("");
     }
 
     try {
       const response = await axios.put(
         `/api/design/budget/${budget.id}/update-budget`,
-        { amount: budgetAmountNum, currency: budgetCurrency },
+        { amount: parseFloat(budgetAmount), currency: budgetCurrency },
         {
           headers: { Authorization: `Bearer ${await user.getIdToken()}` },
         }
@@ -576,6 +613,11 @@ function Budget() {
                   />
                 </div>
               </div>
+              {error !== "" && (
+                <div className="error-text" style={{ marginLeft: "20px" }}>
+                  {error}
+                </div>
+              )}
               <button
                 className="add-item-btn"
                 style={{ margin: "18px" }}
@@ -583,7 +625,12 @@ function Budget() {
               >
                 {isEditingBudget ? "Edit budget" : "Add Budget"}
               </button>
-              <div onClick={() => toggleBudgetModal(false, isEditingBudget)}>Cancel</div>
+              <div
+                onClick={() => toggleBudgetModal(false, isEditingBudget)}
+                style={{ cursor: "pointer" }}
+              >
+                Cancel
+              </div>
             </div>
           </Box>
         </Modal>

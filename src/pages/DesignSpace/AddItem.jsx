@@ -32,6 +32,8 @@ const AddItem = () => {
   const [isUploadedImage, setIsUploadedImage] = useState(false);
   const [imageLink, setImageLink] = useState("");
 
+  const [errors, setErrors] = useState({});
+
   // Initialize
   useEffect(() => {
     const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
@@ -55,6 +57,22 @@ const AddItem = () => {
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Image validation
+      let message = "";
+      const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+      if (!acceptedTypes.includes(file.type)) {
+        message = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
+        showToast("error", message);
+      } else {
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+          message = "Image size must be less than 5MB";
+          showToast("error", message);
+        }
+      }
+
+      if (message !== "") return;
+
       setSelectedImage(file);
       setIsUploadedImage(true);
       const reader = new FileReader();
@@ -73,10 +91,61 @@ const AddItem = () => {
     setBudgetItem(e.target.value);
   };
 
-  const handleAddItem = async () => {
-    if (budgetItem.trim() === "") {
-      showToast("error", "Item name cannot be empty");
+  const handleValidation = () => {
+    let formErrors = {};
+    // Item name validation
+    if (!budgetItem?.trim()) formErrors.itemName = "Item name is required";
+    else if (budgetItem.length > 100)
+      formErrors.itemName = "Item name must be less than 100 characters";
+
+    // Cost validation
+    if (!cost) {
+      formErrors.cost = "Item price is required";
+    } else {
+      const costValue = parseFloat(cost);
+      if (isNaN(costValue)) {
+        formErrors.cost = "Item price must be a number";
+      } else if (costValue <= 0) {
+        formErrors.cost = "Item price must be greater than 0";
+      } else if (costValue > 999999999) {
+        formErrors.cost = "Item price is too high";
+      }
+    }
+
+    // Description validation (optional)
+    if (description && description.length > 500)
+      formErrors.description = "Description must be less than 500 characters";
+
+    // Quantity validation
+    if (!itemQuantity || itemQuantity < 1) formErrors.quantity = "Quantity must be at least 1";
+    else if (itemQuantity > 999999999) formErrors.quantity = "Quantity is too high";
+
+    // Image validation
+    if (isUploadedImage && selectedImage) {
+      const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+      if (!acceptedTypes.includes(selectedImage.type)) {
+        formErrors.image = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
+        showToast("error", formErrors.image);
+      } else {
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (selectedImage.size > maxSize) {
+          formErrors.image = "Image size must be less than 5MB";
+          showToast("error", formErrors.image);
+        }
+      }
+    }
+    return formErrors;
+  };
+
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    const formErrors = handleValidation();
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
       return;
+    } else {
+      setErrors({});
     }
 
     try {
@@ -92,14 +161,14 @@ const AddItem = () => {
         })
       );
       formData.append("quantity", itemQuantity);
-      formData.append("includedInTotal", true);
       formData.append("isUploadedImage", isUploadedImage);
 
       if (isUploadedImage && selectedImage) {
         formData.append("file", selectedImage);
       } else {
-        formData.append("file", imageLink);
+        formData.append("image", imageLink);
       }
+      console.log("Form data (adding item):", formData);
 
       const response = await axios.post("/api/design/item/add-item", formData, {
         headers: {
@@ -214,6 +283,7 @@ const AddItem = () => {
                 className="focus-border"
               />
             </div>
+            <div className="error-text">{errors?.itemName}</div>
 
             {/* Item Description */}
             <label htmlFor="item-description" className="item-name-label">
@@ -228,6 +298,7 @@ const AddItem = () => {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
+            <div className="error-text">{errors?.description}</div>
 
             {/* Item price */}
             <label htmlFor="item-price" className="price-label">
@@ -259,6 +330,8 @@ const AddItem = () => {
                 />
               </div>
             </div>
+            <div className="error-text">{errors?.cost}</div>
+
             <label htmlFor="item-price" className="price-label">
               Item Quantity
             </label>
@@ -268,6 +341,7 @@ const AddItem = () => {
               <span style={{ color: "var(--color-white)" }}>{itemQuantity}</span>
               <button onClick={() => setItemQuantity(itemQuantity + 1)}>&gt;</button>
             </div>
+            <div className="error-text">{errors?.quantity}</div>
 
             {/* Add Item Button */}
             <button className="add-item-btn" onClick={handleAddItem}>

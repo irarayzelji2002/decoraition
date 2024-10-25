@@ -171,8 +171,14 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
         console.warn(`Warning: No collection mapping found for ${userDataName}`);
         return;
       }
+      let isProcessingDependentUpdate = false;
+
       const unsubscribe = onSnapshot(collection(db, collectionName), async () => {
         try {
+          // Skip if this update is from a dependent collection
+          if (isProcessingDependentUpdate && userDataName === "userItems") {
+            return;
+          }
           const { snapshot: newSnapshot, data: newData } = await fetchFunction();
           const currentData = stateSetterFunctions[userDataName]();
           if (!isEqual(newData, currentData)) {
@@ -187,6 +193,7 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
             );
 
             if (dependents.length > 0) {
+              isProcessingDependentUpdate = true;
               for (const dependent of dependents) {
                 const dependentFetchFunction = fetchFunctions[dependent];
                 if (dependentFetchFunction) {
@@ -231,6 +238,7 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
                   }
                 }
               }
+              isProcessingDependentUpdate = false;
             }
           }
         } catch (error) {

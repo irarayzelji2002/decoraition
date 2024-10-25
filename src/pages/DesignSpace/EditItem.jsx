@@ -29,6 +29,8 @@ const EditItem = () => {
   const [isUploadedImage, setIsUploadedImage] = useState(false);
   const [imageLink, setImageLink] = useState("");
 
+  const [errors, setErrors] = useState({});
+
   // Initialize
   useEffect(() => {
     if (userItems.length > 0) {
@@ -60,38 +62,26 @@ const EditItem = () => {
     }
   }, [item]);
 
-  // Updates on Real-time changes on shared props
-  useEffect(() => {
-    const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
-
-    if (!fetchedDesign) {
-      console.error("Design not found");
-    } else if (!deepEqual(design, fetchedDesign)) {
-      setDesign(fetchedDesign);
-    }
-  }, [designs, userDesigns]);
-
-  useEffect(() => {
-    const fetchedItem = userItems.find((item) => item.id === itemId);
-
-    if (!fetchedItem) {
-      console.error("Item not found");
-    } else if (!deepEqual(item, fetchedItem)) {
-      setItem(fetchedItem);
-      setItemName(fetchedItem.itemName);
-      setDescription(fetchedItem.description);
-      setItemPrice(fetchedItem.cost.amount);
-      setCurrency(fetchedItem.cost.currency);
-      setItemQuantity(fetchedItem.quantity);
-      setImagePreview(fetchedItem.image);
-      setImageLink(fetchedItem.image);
-    }
-  }, [items, userItems]);
-
   // Handle image upload for preview (no actual storage handling here)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Image validation
+      let message = "";
+      const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+      if (!acceptedTypes.includes(file.type)) {
+        message = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
+        showToast("error", message);
+      } else {
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+          message = "Image size must be less than 5MB";
+          showToast("error", message);
+        }
+      }
+
+      if (message !== "") return;
+
       setImage(file);
       setIsUploadedImage(true);
       const reader = new FileReader();
@@ -100,14 +90,64 @@ const EditItem = () => {
       };
       reader.readAsDataURL(file);
     }
-    setIsUploadedImage(true);
   };
   const isProjectPath = window.location.pathname.includes("/project");
 
-  const handleEditItem = async () => {
-    if (itemName.trim() === "") {
-      showToast("error", "Item name cannot be empty");
+  const handleValidation = () => {
+    let formErrors = {};
+    // Item name validation
+    if (!itemName?.trim()) formErrors.itemName = "Item name is required";
+    else if (itemName.length > 100)
+      formErrors.itemName = "Item name must be less than 100 characters";
+
+    // Cost validation
+    if (!itemPrice) {
+      formErrors.cost = "Item price is required";
+    } else {
+      const costValue = parseFloat(itemPrice);
+      if (isNaN(costValue)) {
+        formErrors.cost = "Item price must be a number";
+      } else if (costValue <= 0) {
+        formErrors.cost = "Item price must be greater than 0";
+      } else if (costValue > 999999999) {
+        formErrors.cost = "Item price is too high";
+      }
+    }
+
+    // Description validation (optional)
+    if (description && description.length > 500)
+      formErrors.description = "Description must be less than 500 characters";
+
+    // Quantity validation
+    if (!itemQuantity || itemQuantity < 1) formErrors.quantity = "Quantity must be at least 1";
+    else if (itemQuantity > 999999999) formErrors.quantity = "Quantity is too high";
+
+    // Image validation
+    if (isUploadedImage && image) {
+      const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+      if (!acceptedTypes.includes(image.type)) {
+        formErrors.image = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
+        showToast("error", formErrors.image);
+      } else {
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (image.size > maxSize) {
+          formErrors.image = "Image size must be less than 5MB";
+          showToast("error", formErrors.image);
+        }
+      }
+    }
+    return formErrors;
+  };
+
+  const handleEditItem = async (e) => {
+    e.preventDefault();
+    const formErrors = handleValidation();
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
       return;
+    } else {
+      setErrors({});
     }
 
     try {
@@ -127,11 +167,11 @@ const EditItem = () => {
       formData.append("isUploadedImage", isUploadedImage);
 
       if (isUploadedImage && image) {
-        formData.append("image", image);
+        formData.append("file", image);
       } else {
         formData.append("image", imageLink);
       }
-      console.log("formData", formData);
+      console.log("formData (ediitng item): ", formData);
 
       const response = await axios.put(`/api/design/item/${itemId}/update-item`, formData, {
         headers: {
@@ -205,6 +245,7 @@ const EditItem = () => {
                 onChange={(e) => setItemName(e.target.value)}
               />
             </div>
+            <div className="error-text">{errors?.itemName}</div>
 
             {/* Item Description */}
             <label htmlFor="item-description" className="item-name-label">
@@ -219,6 +260,7 @@ const EditItem = () => {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
+            <div className="error-text">{errors?.description}</div>
 
             {/* Item Price */}
             <label htmlFor="item-price" className="price-label">
@@ -249,6 +291,7 @@ const EditItem = () => {
                 />
               </div>
             </div>
+            <div className="error-text">{errors?.cost}</div>
 
             {/* Item Quantity */}
             <label htmlFor="item-quantity" className="price-label">
@@ -261,6 +304,7 @@ const EditItem = () => {
               <span>{itemQuantity}</span>
               <button onClick={() => setItemQuantity(parseInt(itemQuantity) + 1)}>&gt;</button>
             </div>
+            <div className="error-text">{errors?.quantity}</div>
 
             {/* Save Button */}
             <button className="add-item-btn" onClick={handleEditItem}>

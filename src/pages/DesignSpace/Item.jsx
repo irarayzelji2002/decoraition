@@ -289,7 +289,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
         <div>
           <input
             type="checkbox"
-            checked={item.includedInTotal ?? true}
+            checked={item.includedInTotal === true || item.includedInTotal === "true"}
             onChange={() => {
               toggleIncludedInTotal();
               handleIncludedInTotalChange(item.id);

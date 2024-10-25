@@ -33,7 +33,7 @@ const EditItem = () => {
   useEffect(() => {
     if (userItems.length > 0) {
       const fetchedItem = userItems.find((item) => item.id === itemId);
-      setItem(item);
+      setItem(fetchedItem || {});
 
       if (!fetchedItem) {
         console.error("Item not found");
@@ -77,6 +77,7 @@ const EditItem = () => {
     if (!fetchedItem) {
       console.error("Item not found");
     } else if (!deepEqual(item, fetchedItem)) {
+      setItem(fetchedItem);
       setItemName(fetchedItem.itemName);
       setDescription(fetchedItem.description);
       setItemPrice(fetchedItem.cost.amount);

@@ -181,19 +181,21 @@ function Budget() {
   }, [designs, userDesigns]);
 
   const updateItems = () => {
-    const fetchedItems =
-      userBudgets && userBudgets.items && userItems
-        ? userItems.filter((item) => budget.items.includes(item.id))
-        : [];
+    if (budget && budget.items) {
+      const fetchedItems = userItems.filter((item) => budget.items.includes(item.id));
+      if (!deepEqual(designItems, fetchedItems)) {
+        setDesignItems(fetchedItems);
+        console.log("design items updated", fetchedItems);
+      }
 
-    if (budget && !deepEqual(designItems, fetchedItems)) {
-      setDesignItems(fetchedItems);
-      console.log("design items length", fetchedItems.length);
-      console.log("design items", fetchedItems);
-    }
-
-    if (budget && fetchedItems.length > 0) {
-      computeTotalCostAndExceededBudget(fetchedItems, budget.budget?.amount);
+      if (fetchedItems.length > 0) {
+        computeTotalCostAndExceededBudget(fetchedItems, budget.budget?.amount);
+      }
+    } else {
+      setDesignItems([]);
+      setTotalCost(0);
+      setFormattedTotalCost("0.00");
+      setExceededBudget(false);
     }
   };
 
@@ -201,6 +203,7 @@ function Budget() {
     const fetchedBudget = userBudgets.find((budget) => budget.designId === designId);
 
     if (fetchedBudget && !deepEqual(budget, fetchedBudget)) {
+      setBudget(fetchedBudget);
       setBudgetCurrencyForInput(fetchedBudget.budget?.currency ?? "PHP");
       setBudgetAmountForInput(fetchedBudget.budget?.amount ?? 0);
       setBudget(fetchedBudget);
@@ -212,7 +215,7 @@ function Budget() {
 
   useEffect(() => {
     updateItems();
-  }, [items, userItems]);
+  }, [items, userItems, budget]);
 
   useEffect(() => {
     setBudgetAmount(budget?.budget?.amount ?? 0);

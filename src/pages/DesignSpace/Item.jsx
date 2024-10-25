@@ -52,24 +52,20 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
       );
 
       if (response.status === 200) {
+        handleCloseDelete();
         console.log("Item deleted successfully");
         showToast("success", "Item deleted successfully");
       }
     } catch (error) {
       console.error("Error deleting item:", error);
       if (error.response) {
-        console.error("Error data:", error.response.data);
-        console.error("Error status:", error.response.status);
-        console.error("Error headers:", error.response.headers);
         showToast(
           "error",
           error?.response?.data?.error || "Failed to update item. Please try again."
         );
       } else if (error.request) {
-        console.error("Error request:", error.request);
         showToast("error", "Network error. Please check your connection.");
       } else {
-        console.error("Error message:", error.message);
         showToast("error", "Failed to update item. Please try again.");
       }
     }
@@ -91,26 +87,32 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
 
   // Debounced database update
   const debouncedUpdateDatabase = useCallback(
-    debounce((itemId, includedInTotal) => {
-      axios
-        .put(`/api/design/item/${itemId}/update-item-included-in-total`, {
-          includedInTotal: includedInTotal,
-        })
-        .then(() => {
-          console.log("Item updated successfully");
-        })
-        .catch((error) => {
-          console.error("Error updating item:", error);
-          toast.error("Failed to update item");
-          // Revert the UI change if the server update fails
-          setDesignItems((prevItems) =>
-            prevItems.map((prevItem) =>
-              prevItem.id === itemId ? { ...prevItem, includedInTotal: !includedInTotal } : prevItem
-            )
-          );
-        });
+    debounce(async (itemId, includedInTotal) => {
+      try {
+        await axios.put(
+          `/api/design/item/${itemId}/update-item-included-in-total`,
+          {
+            includedInTotal: includedInTotal,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${await user.getIdToken()}`,
+            },
+          }
+        );
+        console.log("Item updated successfully");
+      } catch (error) {
+        console.error("Error updating item:", error);
+        toast.error("Failed to update item");
+        // Revert the UI change if the server update fails
+        setDesignItems((prevItems) =>
+          prevItems.map((prevItem) =>
+            prevItem.id === itemId ? { ...prevItem, includedInTotal: !includedInTotal } : prevItem
+          )
+        );
+      }
     }, 2000), // 2 second delay
-    [setDesignItems]
+    [setDesignItems, user]
   );
 
   // Combined function to handle both UI update and debounced database update
@@ -288,7 +290,10 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
           <input
             type="checkbox"
             checked={item.includedInTotal ?? true}
-            onChange={() => handleIncludedInTotalChange(item.id)}
+            onChange={() => {
+              toggleIncludedInTotal();
+              handleIncludedInTotalChange(item.id);
+            }}
           />
         </div>
         <div onClick={onEdit}>

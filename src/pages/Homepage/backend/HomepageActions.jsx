@@ -94,7 +94,7 @@ export const handleCreateProject = async (user, userId, navigate) => {
 // Delete design
 export const handleDeleteDesign = async (user, designId, navigate) => {
   try {
-    const response = await axios.delete(
+    const response = await axios.post(
       `/api/design/delete/${designId}`,
       {},
       {
@@ -119,7 +119,7 @@ export const handleDeleteDesign = async (user, designId, navigate) => {
 // Delete project
 export const handleDeleteProject = async (user, projectId, navigate) => {
   try {
-    const response = await axios.delete(
+    const response = await axios.post(
       `/api/project/delete/${projectId}`,
       {},
       {

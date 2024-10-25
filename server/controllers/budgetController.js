@@ -30,8 +30,9 @@ exports.updateBudget = async (req, res) => {
 // Add Item
 exports.addItem = async (req, res) => {
   try {
-    const { budgetId, itemName, description, cost, quantity, includedInTotal, isUploadedImage } =
+    const { budgetId, itemName, description, quantity, includedInTotal, isUploadedImage } =
       req.body;
+    const cost = JSON.parse(req.body.cost);
     let imageUrl = null;
 
     if (isUploadedImage) {
@@ -85,10 +86,11 @@ exports.addItem = async (req, res) => {
 exports.updateItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    const { itemName, description, cost, quantity, includedInTotal, isUploadedImage } = req.body;
+    const { itemName, description, quantity, includedInTotal, isUploadedImage } = req.body;
+    const cost = JSON.parse(req.body.cost);
     let imageUrl = null;
 
-    if (isUploadedImage) {
+    if (isUploadedImage === true || isUploadedImage === "true") {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
@@ -175,7 +177,9 @@ exports.deleteItem = async (req, res) => {
     // Update the budget document with the new items array
     await budgetRef.update({ items: updatedItems });
 
-    res.json({ message: "Item deleted successfully and removed from budget", items: updatedItems });
+    res
+      .status(200)
+      .json({ message: "Item deleted successfully and removed from budget", items: updatedItems });
   } catch (error) {
     console.error("Error deleting item:", error);
     res.status(500).json({ error: "Failed to delete item" });

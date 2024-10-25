@@ -32,7 +32,7 @@ import {
 function Design() {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
   const { designId, projectId } = useParams(); // Get designId from the URL
-  const [design, setDesign] = useState();
+  const [design, setDesign] = useState({});
 
   // const [designData, setDesignData] = useState(null);
   const [newName, setNewName] = useState(design?.designName ?? "Untitled Design");

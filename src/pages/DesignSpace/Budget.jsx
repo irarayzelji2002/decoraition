@@ -106,6 +106,38 @@ function Budget() {
     </>
   );
 
+  // Item Functions
+  const computeTotalCostAndExceededBudget = (designItems, budgetAmount) => {
+    if (!designItems || designItems.length === 0) {
+      setTotalCost(0);
+      setFormattedTotalCost("0.00");
+      setExceededBudget(false);
+      return;
+    }
+
+    const totalCost = designItems
+      .filter((item) => item.includedInTotal !== false) // Exclude items not included in total
+      .reduce((sum, item) => sum + parseFloat(item.cost.amount || 0) * (item.quantity || 1), 0)
+      .toFixed(2);
+    setTotalCost(totalCost);
+
+    // Assuming all items have the same currency
+    const formattedTotalCost =
+      designItems[0].cost.currency +
+      " " +
+      new Intl.NumberFormat("en-US", {
+        style: "decimal",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(totalCost);
+    setFormattedTotalCost(formattedTotalCost);
+
+    const exceededBudget = parseFloat(totalCost) > budgetAmount; //true/false
+    setExceededBudget(exceededBudget);
+  };
+
+  const formatNumber = (num) => (typeof num === "number" ? num.toFixed(2) : "0.00");
+
   // Initialize
   useEffect(() => {
     setLoading(true);
@@ -148,6 +180,23 @@ function Budget() {
     }
   }, [designs, userDesigns]);
 
+  const updateItems = () => {
+    const fetchedItems =
+      userBudgets && userBudgets.items && userItems
+        ? userItems.filter((item) => budget.items.includes(item.id))
+        : [];
+
+    if (budget && !deepEqual(designItems, fetchedItems)) {
+      setDesignItems(fetchedItems);
+      console.log("design items length", fetchedItems.length);
+      console.log("design items", fetchedItems);
+    }
+
+    if (budget && fetchedItems.length > 0) {
+      computeTotalCostAndExceededBudget(fetchedItems, budget.budget?.amount);
+    }
+  };
+
   useEffect(() => {
     const fetchedBudget = userBudgets.find((budget) => budget.designId === designId);
 
@@ -157,22 +206,12 @@ function Budget() {
       setBudget(fetchedBudget);
       setBudgetCurrency(fetchedBudget.budget?.currency ?? "PHP");
       setBudgetAmount(fetchedBudget.budget?.amount ?? 0);
+      updateItems();
     }
   }, [budgets, userBudgets]);
 
   useEffect(() => {
-    const fetchedItems =
-      userBudgets && userBudgets.items && userItems
-        ? userItems.filter((item) => budget.items.includes(item.id))
-        : [];
-
-    if (budget && !deepEqual(designItems, fetchedItems)) {
-      setDesignItems(fetchedItems);
-    }
-
-    if (budget && fetchedItems.length > 0) {
-      computeTotalCostAndExceededBudget(fetchedItems, budget.budget?.amount);
-    }
+    updateItems();
   }, [items, userItems]);
 
   useEffect(() => {
@@ -258,46 +297,16 @@ function Budget() {
         }
       );
       if (response.status === 200) {
-        showToast("success", "Budget added successfully");
+        showToast("success", "Budget deleted successfully");
         setIsRemoveBudgetModalOpen(false);
       } else {
-        throw new Error("Error adding budget");
+        throw new Error("Error deleting budget");
       }
     } catch (error) {
-      console.error("Error adding budget:", error);
-      showToast("error", "Failed to add budget");
+      console.error("Error deleting budget:", error);
+      showToast("error", "Failed to delete budget");
     }
   };
-
-  // Item Functions
-  const computeTotalCostAndExceededBudget = (designItems, budgetAmount) => {
-    if (!designItems || designItems.length === 0) {
-      setTotalCost(0);
-      setFormattedTotalCost("0.00");
-      setExceededBudget(false);
-      return;
-    }
-
-    const totalCost = designItems
-      .filter((item) => item.includedInTotal !== false) // Exclude items not included in total
-      .reduce((sum, item) => sum + parseFloat(item.cost.amount || 0) * (item.quantity || 1), 0)
-      .toFixed(2);
-    setTotalCost(totalCost);
-
-    const formattedTotalCost =
-      designItems[0].cost.currency + // Assuming all items have the same currency
-      new Intl.NumberFormat("en-US", {
-        style: "decimal",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(totalCost);
-    setFormattedTotalCost(formattedTotalCost);
-
-    const exceededBudget = parseFloat(totalCost) > budgetAmount; //true/false
-    setExceededBudget(exceededBudget);
-  };
-
-  const formatNumber = (num) => (typeof num === "number" ? num.toFixed(2) : "0.00");
 
   return (
     <div className={`budget-page ${menuOpen ? "" : ""}`}>
@@ -333,21 +342,13 @@ function Budget() {
               } else if (budgetAmount === 0) {
                 return (
                   <>
-                    Total Cost:{" "}
-                    <strong>
-                      {budgetCurrency} {formattedTotalCost}
-                    </strong>
-                    , No added budget
+                    Total Cost: <strong>{formattedTotalCost}</strong>, No added budget
                   </>
                 );
               } else {
                 return (
                   <>
-                    Total Cost:{" "}
-                    <strong>
-                      {budgetCurrency} {formattedTotalCost}
-                    </strong>{" "}
-                    Budget:{" "}
+                    Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
                     <strong>
                       {budgetCurrency} {formatNumber(budgetAmount)}
                     </strong>
@@ -386,7 +387,7 @@ function Budget() {
           <div className="image-frame">
             <div className="image-frame-icon">
               <BlankImage />
-              <span>Add an image to the item</span>
+              <span>No design yet</span>
             </div>
             <img
               src={getDesignImage(design.id, userDesigns, userDesignVersions, 0)}

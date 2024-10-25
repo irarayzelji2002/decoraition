@@ -340,30 +340,17 @@ function EnhancedTable({
   );
 }
 
-HomepageTable.defaultProps = {
-  isDesign: true,
-  data: [],
-  isHomepage: true,
-  page: 1,
-  handleChangePage: () => {},
-  handleChangeRowsPerPage: () => {},
-  numToShowMore: 0,
-  handleOpenMenu: () => {},
-  optionsState: {},
-  setOptionsState: () => {},
-};
-
 export default function HomepageTable({
-  isDesign,
-  data,
-  isHomepage,
-  page,
-  handleChangePage,
-  handleChangeRowsPerPage,
-  numToShowMore,
-  handleOpenMenu,
-  optionsState,
-  setOptionsState,
+  isDesign = true,
+  data = [],
+  isHomepage = true,
+  page = 1,
+  handleChangePage = () => {},
+  handleChangeRowsPerPage = () => {},
+  numToShowMore = 0,
+  handleOpenMenu = () => {},
+  optionsState = {},
+  setOptionsState = () => {},
 }) {
   const columns = [
     {

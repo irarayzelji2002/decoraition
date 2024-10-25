@@ -15,6 +15,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 const style = {
   position: "absolute",
@@ -28,6 +29,7 @@ const style = {
 };
 
 function Item({ item, onEdit, setDesignItems, budgetId }) {
+  const { user } = useSharedProps();
   const [itemPrice, setItemPrice] = useState("");
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -39,17 +41,37 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
 
   const handleDeleteItem = async (itemToDelete, budgetId) => {
     try {
-      const response = await axios.delete(`/api/design/item/${itemToDelete.id}/delete-item`, {
-        budgetId: budgetId,
-      });
+      const response = await axios.post(
+        `/api/design/item/${itemToDelete.id}/delete-item`,
+        { budgetId: budgetId },
+        {
+          headers: {
+            Authorization: `Bearer ${await user.getIdToken()}`,
+          },
+        }
+      );
 
       if (response.status === 200) {
         console.log("Item deleted successfully");
-        showToast("error", "Item deleted successfully");
+        showToast("success", "Item deleted successfully");
       }
     } catch (error) {
       console.error("Error deleting item:", error);
-      showToast("error", "Failed to delete item, Please try again.");
+      if (error.response) {
+        console.error("Error data:", error.response.data);
+        console.error("Error status:", error.response.status);
+        console.error("Error headers:", error.response.headers);
+        showToast(
+          "error",
+          error?.response?.data?.error || "Failed to update item. Please try again."
+        );
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+        showToast("error", "Network error. Please check your connection.");
+      } else {
+        console.error("Error message:", error.message);
+        showToast("error", "Failed to update item. Please try again.");
+      }
     }
   };
 
@@ -94,13 +116,22 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
   // Combined function to handle both UI update and debounced database update
   const handleIncludedInTotalChange = useCallback(
     (itemId) => {
-      toggleIncludedInTotal(itemId);
-      const updatedItem = setDesignItems((prevItems) =>
-        prevItems.find((item) => item.id === itemId)
-      );
-      debouncedUpdateDatabase(itemId, updatedItem.includedInTotal);
+      setDesignItems((prevItems) => {
+        const updatedItems = prevItems.map((prevItem) =>
+          prevItem.id === itemId
+            ? { ...prevItem, includedInTotal: !prevItem.includedInTotal }
+            : prevItem
+        );
+        const updatedItem = updatedItems.find((item) => item.id === itemId);
+        if (updatedItem) {
+          debouncedUpdateDatabase(itemId, updatedItem.includedInTotal);
+        } else {
+          console.error(`Item with id ${itemId} not found`);
+        }
+        return updatedItems;
+      });
     },
-    [toggleIncludedInTotal, debouncedUpdateDatabase, setDesignItems]
+    [debouncedUpdateDatabase]
   );
 
   return (
@@ -222,7 +253,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
           </div>
         </Box>
       </Modal>
-      <div
+      {/* <div
         style={{
           alignContent: "center",
           marginLeft: "8px",
@@ -230,8 +261,8 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
         }}
       >
         <span style={{ fontSize: "12px" }}> x {item.quantity}</span>
-      </div>
-      <img src={item.image} alt={`design preview `} className="thumbnail" />
+      </div> */}
+      <img src={item.image} alt="" className="thumbnail" />
       <div
         style={{
           display: "flex",
@@ -263,7 +294,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
         <div onClick={onEdit}>
           <EditPen />
         </div>
-        <div onClick={handleOpenDelete}>
+        <div onClick={handleOpenDelete} style={{ marginRight: "10px" }}>
           <Trash />
         </div>
       </div>

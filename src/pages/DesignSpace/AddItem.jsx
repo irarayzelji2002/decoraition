@@ -1,8 +1,9 @@
 import axios from "axios";
+import deepEqual from "deep-equal";
 import "../../css/addItem.css";
 import TopBar from "../../components/TopBar";
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "../../css/budget.css";
 import { db } from "../../firebase"; // Assuming you have firebase setup
 import { collection, addDoc, getDocs } from "firebase/firestore";
@@ -13,28 +14,55 @@ import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
 import NoImage from "./svg/NoImage";
 import { showToast } from "../../functions/utils";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 const AddItem = () => {
   const { budgetId } = useParams();
+  const navigate = useNavigate();
+  const { user, designs, userDesigns } = useSharedProps();
+  const [design, setDesign] = useState({});
+
   const [itemQuantity, setItemQuantity] = useState(1);
   const [budgetItem, setBudgetItem] = useState("");
   const [description, setDescription] = useState("");
   const [cost, setCost] = useState("");
   const [currency, setCurrency] = useState("PHP");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImagePreview, setSelectedImagePreview] = useState(null);
   const [isUploadedImage, setIsUploadedImage] = useState(false);
   const [imageLink, setImageLink] = useState("");
+
+  // Initialize
+  useEffect(() => {
+    const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
+    setDesign(fetchedDesign || {});
+    if (!fetchedDesign) {
+      console.error("Design not found.");
+    }
+  }, []);
+
+  // Updates on Real-time changes on shared props
+  useEffect(() => {
+    const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
+
+    if (!fetchedDesign) {
+      console.error("Design not found");
+    } else if (!deepEqual(design, fetchedDesign)) {
+      setDesign(fetchedDesign);
+    }
+  }, [designs, userDesigns]);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setSelectedImage(file);
+      setIsUploadedImage(true);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setSelectedImage(reader.result);
+        setSelectedImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
-    setIsUploadedImage(true);
   };
 
   const triggerFileInput = () => {
@@ -45,41 +73,59 @@ const AddItem = () => {
     setBudgetItem(e.target.value);
   };
 
-  const handleCost = (e) => {
-    setCost(e.target.value);
-  };
-
   const handleAddItem = async () => {
     if (budgetItem.trim() === "") {
-      alert("Item name cannot be empty");
+      showToast("error", "Item name cannot be empty");
       return;
     }
 
     try {
-      const response = await axios.post("/api/design/item/add-item", {
-        budgetId: budgetId,
-        itemName: budgetItem,
-        description: description,
-        cost: {
+      const formData = new FormData();
+      formData.append("budgetId", budgetId);
+      formData.append("itemName", budgetItem);
+      formData.append("description", description);
+      formData.append(
+        "cost",
+        JSON.stringify({
           amount: parseFloat(cost),
           currency: currency,
+        })
+      );
+      formData.append("quantity", itemQuantity);
+      formData.append("includedInTotal", true);
+      formData.append("isUploadedImage", isUploadedImage);
+
+      if (isUploadedImage && selectedImage) {
+        formData.append("file", selectedImage);
+      } else {
+        formData.append("file", imageLink);
+      }
+
+      const response = await axios.post("/api/design/item/add-item", formData, {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+          "Content-Type": "multipart/form-data",
         },
-        quantity: itemQuantity,
-        image: isUploadedImage ? selectedImage : imageLink,
-        includedInTotal: true,
-        isUploadedImage: isUploadedImage, // for indication only
       });
 
-      if (response.status === 201) {
+      if (response.status === 200) {
         const itemName = budgetItem;
         showToast("success", `${itemName} has been added!`);
-        setTimeout(() => {
-          window.history.back();
-        }, 1000);
+        if (design) {
+          setTimeout(() => navigate(`/budget/${design.id}`), 1000);
+        } else {
+          setTimeout(() => window.history.back(), 1000);
+        }
       }
     } catch (error) {
       console.error("Error adding item:", error);
-      showToast("error", "Failed to add item");
+      if (error.response) {
+        showToast("error", error?.response?.data?.error || "Failed to add item. Please try again.");
+      } else if (error.request) {
+        showToast("error", "Network error. Please check your connection.");
+      } else {
+        showToast("error", "Failed to add item. Please try again.");
+      }
     }
   };
 
@@ -121,9 +167,9 @@ const AddItem = () => {
           />
 
           <div className="upload-section">
-            {selectedImage ? (
+            {selectedImagePreview ? (
               <img
-                src={selectedImage}
+                src={selectedImagePreview}
                 alt="Selected"
                 style={{
                   objectFit: "cover",
@@ -143,6 +189,7 @@ const AddItem = () => {
               Upload image of item
               <input
                 type="file"
+                accept="image/png, image/jpeg, image/gif, image/webp"
                 id="upload-image"
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
@@ -195,9 +242,19 @@ const AddItem = () => {
                 <input
                   id="item-price"
                   value={cost}
-                  type="number"
+                  type="text"
                   placeholder="Enter item price"
-                  onChange={handleCost}
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    // Allow digits and a single decimal point, up to two decimal places
+                    if (/^\d*\.?\d{0,2}$/.test(value)) {
+                      // Remove leading zeros unless it’s a decimal number
+                      if (/^\d+$/.test(value)) {
+                        value = value.replace(/^0+/, "");
+                      }
+                      setCost(value);
+                    }
+                  }}
                   style={{ outline: "none" }}
                 />
               </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import deepEqual from "deep-equal";
 import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firebase Firestore methods
 import { db } from "../../firebase"; // Your Firebase config file
 import "../../css/addItem.css";
@@ -13,76 +14,152 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 const EditItem = () => {
   const navigate = useNavigate();
-  const { userItems } = useSharedProps;
+  const { user, designs, userDesigns, items, userItems } = useSharedProps();
   const { budgetId, itemId } = useParams();
-  const [item, setItem] = useState(null);
+  const [design, setDesign] = useState({});
+  const [item, setItem] = useState({});
 
-  const [itemName, setItemName] = useState("");
-  const [description, setDescription] = useState("");
-  const [itemPrice, setItemPrice] = useState("");
-  const [currency, setCurrency] = useState("PHP");
-  const [itemQuantity, setItemQuantity] = useState(1);
+  const [itemName, setItemName] = useState(item?.itemName ?? "");
+  const [description, setDescription] = useState(item?.description ?? "");
+  const [itemPrice, setItemPrice] = useState(item?.cost?.amount ?? "");
+  const [currency, setCurrency] = useState(item?.cost?.currency ?? "PHP");
+  const [itemQuantity, setItemQuantity] = useState(item?.quantity ?? 1);
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(item?.image ?? null);
   const [isUploadedImage, setIsUploadedImage] = useState(false);
   const [imageLink, setImageLink] = useState("");
 
   // Initialize
   useEffect(() => {
-    const fetchedItem = userItems.find((item) => item.id === itemId);
-    setItem(item);
+    if (userItems.length > 0) {
+      const fetchedItem = userItems.find((item) => item.id === itemId);
+      setItem(item);
 
-    if (!fetchedItem) {
-      return <div>Item not found.</div>;
+      if (!fetchedItem) {
+        console.error("Item not found");
+      }
+    }
+    if (userDesigns.length > 0) {
+      const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
+      setDesign(fetchedDesign || {});
+      if (!fetchedDesign) {
+        console.error("Design not found.");
+      }
     }
   }, []);
 
   useEffect(() => {
-    setItemName(item.itemName);
-    setDescription(item.description);
-    setItemPrice(item.cost.amount);
-    setCurrency(item.cost.currency);
-    setItemQuantity(item.quantity);
-    setImage(item.image);
+    if (item && Object.keys(item).length > 0) {
+      setItemName(item.itemName);
+      setDescription(item.description);
+      setItemPrice(item.cost.amount);
+      setCurrency(item.cost.currency);
+      setItemQuantity(item.quantity);
+      setImagePreview(item.image);
+      setImageLink(item.image);
+    }
   }, [item]);
+
+  // Updates on Real-time changes on shared props
+  useEffect(() => {
+    const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
+
+    if (!fetchedDesign) {
+      console.error("Design not found");
+    } else if (!deepEqual(design, fetchedDesign)) {
+      setDesign(fetchedDesign);
+    }
+  }, [designs, userDesigns]);
+
+  useEffect(() => {
+    const fetchedItem = userItems.find((item) => item.id === itemId);
+
+    if (!fetchedItem) {
+      console.error("Item not found");
+    } else if (!deepEqual(item, fetchedItem)) {
+      setItemName(fetchedItem.itemName);
+      setDescription(fetchedItem.description);
+      setItemPrice(fetchedItem.cost.amount);
+      setCurrency(fetchedItem.cost.currency);
+      setItemQuantity(fetchedItem.quantity);
+      setImagePreview(fetchedItem.image);
+      setImageLink(fetchedItem.image);
+    }
+  }, [items, userItems]);
 
   // Handle image upload for preview (no actual storage handling here)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImage(file);
       setIsUploadedImage(true);
-      setImage(URL.createObjectURL(file)); // For preview purposes only
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
+    setIsUploadedImage(true);
   };
   const isProjectPath = window.location.pathname.includes("/project");
 
   const handleEditItem = async () => {
     if (itemName.trim() === "") {
-      alert("Item name cannot be empty");
+      showToast("error", "Item name cannot be empty");
       return;
     }
 
     try {
-      const response = await axios.put(`/api/design/item/${itemId}/update-item`, {
-        budgetId: budgetId,
-        itemName: itemName,
-        description: description,
-        cost: { amount: parseFloat(itemPrice), currency: currency },
-        quantity: itemQuantity,
-        image: isUploadedImage ? image : imageLink,
-        includedInTotal: true,
-        isUploadedImage: isUploadedImage, // for indication only
+      const formData = new FormData();
+      formData.append("budgetId", budgetId);
+      formData.append("itemName", itemName);
+      formData.append("description", description);
+      formData.append(
+        "cost",
+        JSON.stringify({
+          amount: parseFloat(itemPrice),
+          currency: currency,
+        })
+      );
+      formData.append("quantity", itemQuantity);
+      formData.append("includedInTotal", true);
+      formData.append("isUploadedImage", isUploadedImage);
+
+      if (isUploadedImage && image) {
+        formData.append("image", image);
+      } else {
+        formData.append("image", imageLink);
+      }
+      console.log("formData", formData);
+
+      const response = await axios.put(`/api/design/item/${itemId}/update-item`, formData, {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       if (response.status === 200) {
         console.log("Item updated successfully");
         showToast("success", "Item updated successfully");
-        setTimeout(() => {
-          window.history.back();
-        }, 1000);
+        if (design) {
+          setTimeout(() => navigate(`/budget/${design.id}`), 1000);
+        } else {
+          setTimeout(() => window.history.back(), 1000);
+        }
       }
     } catch (error) {
       console.error("Error updating item:", error);
-      showToast("error", "Failed to update item. Please try again.");
+      if (error.response) {
+        showToast(
+          "error",
+          error?.response?.data?.error || "Failed to update item. Please try again."
+        );
+      } else if (error.request) {
+        showToast("error", "Network error. Please check your connection.");
+      } else {
+        showToast("error", "Failed to update item. Please try again.");
+      }
     }
   };
 
@@ -92,8 +169,8 @@ const EditItem = () => {
       <div className="add-item-container">
         <div className="left-column">
           <div className="upload-section">
-            {image ? (
-              <img src={image} alt="Item" className="uploaded-image" />
+            {imagePreview ? (
+              <img src={imagePreview} alt="Item" className="uploaded-image" />
             ) : (
               <div className="image-placeholder-container">
                 <NoImage />
@@ -104,6 +181,7 @@ const EditItem = () => {
               Reupload the image of item
               <input
                 type="file"
+                accept="image/png, image/jpeg, image/gif, image/webp"
                 id="upload-image"
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
@@ -153,10 +231,20 @@ const EditItem = () => {
                 </select>
                 <input
                   id="item-price"
-                  type="number"
+                  type="text"
                   placeholder="Enter item price"
                   value={itemPrice}
-                  onChange={(e) => setItemPrice(e.target.value)}
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    // Allow digits and a single decimal point, up to two decimal places
+                    if (/^\d*\.?\d{0,2}$/.test(value)) {
+                      // Remove leading zeros unless it’s a decimal number
+                      if (/^\d+$/.test(value)) {
+                        value = value.replace(/^0+/, "");
+                      }
+                      setItemPrice(value);
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -166,9 +254,11 @@ const EditItem = () => {
               Item quantity
             </label>
             <div className="quantity-section">
-              <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}>&lt;</button>
+              <button onClick={() => setItemQuantity(Math.max(1, parseInt(itemQuantity) - 1))}>
+                &lt;
+              </button>
               <span>{itemQuantity}</span>
-              <button onClick={() => setItemQuantity(itemQuantity + 1)}>&gt;</button>
+              <button onClick={() => setItemQuantity(parseInt(itemQuantity) + 1)}>&gt;</button>
             </div>
 
             {/* Save Button */}

@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import "../../css/design.css";
 import Slider from "@mui/joy/Slider";
 import Button from "@mui/joy/Button";
-
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Modal, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Textarea from "@mui/joy/Textarea";
@@ -19,7 +20,8 @@ function PromptBar() {
   const [modalOpen, setModalOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [value, setValue] = React.useState("#ffffff");
+  const [dateModified, setDateModified] = useState("");
+  const [value, setValue] = useState("#ffffff");
 
   const handleChange = (newValue) => {
     setValue(newValue);
@@ -173,7 +175,80 @@ function PromptBar() {
             <AddColor />
           </Button>
         </div>
-
+        <h6 style={{ margin: "8px" }}>Select your color pallete</h6>
+        <FormControl sx={{ width: "100%" }}>
+          <Select
+            id="date-modified-select"
+            className="custom-select"
+            value={dateModified}
+            label="Choose Pallete"
+            onChange={(e) => setDateModified(e.target.value)}
+            IconComponent={(props) => (
+              <ArrowDropDownIcon {...props} sx={{ color: "var(--color-white) !important" }} />
+            )}
+          >
+            <MenuItem>
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value="2023-01-01">
+              <div style={{ display: "flex", gap: "2px" }}>
+                Red-Green &nbsp;
+                <div style={{ display: "flex", marginLeft: "auto" }}>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#efefef", marginLeft: "-10px" }}
+                  ></div>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#ef4f56", marginLeft: "-10px" }}
+                  ></div>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#397438", marginLeft: "-10px" }}
+                  ></div>
+                </div>
+              </div>
+            </MenuItem>
+            <MenuItem value="2023-02-01">
+              <div style={{ display: "flex", gap: "2px" }}>
+                Pink-Yellow &nbsp;
+                <div style={{ display: "flex", marginLeft: "auto" }}>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#ff8344", marginLeft: "-10px" }}
+                  ></div>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#ec2073", marginLeft: "-10px" }}
+                  ></div>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#3e3c47", marginLeft: "-10px" }}
+                  ></div>
+                </div>
+              </div>
+            </MenuItem>
+            <MenuItem value="2023-03-01">
+              <div style={{ display: "flex", gap: "2px" }}>
+                Among Us &nbsp;
+                <div style={{ display: "flex", marginLeft: "auto" }}>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#3e3c47", marginLeft: "-10px" }}
+                  ></div>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#faa653", marginLeft: "-10px" }}
+                  ></div>
+                  <div
+                    className="circle-small"
+                    style={{ backgroundColor: "#ff4500", marginLeft: "-10px" }}
+                  ></div>
+                </div>
+              </div>
+            </MenuItem>
+          </Select>
+        </FormControl>
         <Button
           type="submit"
           fullWidth

@@ -1,17 +1,34 @@
 import React from "react";
-import { Dialog, DialogTitle, DialogContent, Typography, Button } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Dialog, DialogTitle, DialogContent, Typography, Button, IconButton } from "@mui/material";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const ShareConfirmationModal = ({ isOpen, onClose, collaborators }) => {
+  const handleClose = () => {
+    onClose();
+    //resett values
+  };
+
   return (
-    <Dialog open={isOpen} onClose={onClose}>
+    <Dialog open={isOpen} onClose={handleClose}>
       <DialogTitle
         sx={{
           backgroundColor: "var(--nav-card-modal)",
           color: "var(--color-white)",
+          borderBottom: "1px solid var(--color-grey)",
+          fontWeight: "bold",
         }}
       >
-        <ArrowBackIcon sx={{ color: "var(--color-white)" }} />
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            color: "var(--color-white)",
+            position: "absolute",
+            right: 8,
+            top: 8,
+          }}
+        >
+          <CloseRoundedIcon />
+        </IconButton>
         Share Success
       </DialogTitle>
       <DialogContent
@@ -28,7 +45,7 @@ const ShareConfirmationModal = ({ isOpen, onClose, collaborators }) => {
             <li key={index}>{collaborator}</li>
           ))}
         </ul>
-        <Button fullWidth variant="contained" color="primary" onClick={onClose}>
+        <Button fullWidth variant="contained" color="primary" onClick={handleClose}>
           Close
         </Button>
       </DialogContent>

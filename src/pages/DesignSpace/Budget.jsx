@@ -17,8 +17,6 @@ import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { Divider } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import InventoryIcon from "@mui/icons-material/Inventory";
 import { onSnapshot } from "firebase/firestore";
 import "../../css/budget.css";
 import { db } from "../../firebase"; // Assuming you have firebase setup
@@ -28,6 +26,7 @@ import Loading from "../../components/Loading";
 import { getAuth, prodErrorMap } from "firebase/auth";
 import BottomBar from "./BottomBar";
 import { query, where } from "firebase/firestore";
+import CommentTabs from "./CommentTabs";
 import { AddBudget, AddItem, BlankImage } from "./svg/AddImage";
 import { getDesignImage, handleNameChange } from "./backend/DesignActions";
 
@@ -59,9 +58,8 @@ function Budget() {
   );
   const [budgetAmountForInput, setBudgetAmountForInput] = useState(budget?.budget?.amount ?? "");
   const [designItems, setDesignItems] = useState([]);
-  const [newName, setNewName] = useState(design?.designName ?? "Untitled Design");
+  const [designName, setDesignName] = useState(design?.designName ?? "Untitled Design");
   const [isEditingBudget, setIsEditingBudget] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
   const [totalCost, setTotalCost] = useState(0);
   const [formattedTotalCost, setFormattedTotalCost] = useState("0.00");
   const [exceededBudget, setExceededBudget] = useState(0);
@@ -141,15 +139,13 @@ function Budget() {
 
   // Initialize
   useEffect(() => {
-    setLoading(true);
+    if (Object.keys(design).length > 0) return;
     const fetchedDesign = userDesigns.find((design) => design.id === designId);
     setDesign(fetchedDesign || {});
-    setNewName(fetchedDesign?.designName ?? "Untitled Design");
+    setDesignName(fetchedDesign?.designName ?? "Untitled Design");
 
     if (!fetchedDesign) {
       console.error("Design not found.");
-      navigate("/homepage");
-      setLoading(false);
       return;
     }
 
@@ -166,18 +162,18 @@ function Budget() {
       computeTotalCostAndExceededBudget(fetchedItems, fetchedBudget.budget?.amount);
     }
     setLoading(false);
-  }, []);
+  }, [userBudgets, userDesigns, userItems]);
 
   // Updates on Real-time changes on shared props
   useEffect(() => {
+    if (Object.keys(design).length === 0) return;
     const fetchedDesign = userDesigns.find((design) => design.id === designId);
 
     if (!fetchedDesign) {
       console.error("Design not found");
-      navigate("/homepage");
     } else if (!deepEqual(design, fetchedDesign)) {
       setDesign(fetchedDesign);
-      setNewName(fetchedDesign?.designName ?? "Untitled Design");
+      setDesignName(fetchedDesign?.designName ?? "Untitled Design");
     }
   }, [designs, userDesigns]);
 
@@ -350,17 +346,10 @@ function Budget() {
 
   return (
     <div className={`budget-page ${menuOpen ? "" : ""}`}>
-      <DesignHead
-        design={design}
-        newName={newName}
-        setNewName={setNewName}
-        isEditingName={isEditingName}
-        handleNameChange={() => handleNameChange(designId, newName, user, setIsEditingName)}
-        setIsEditingName={setIsEditingName}
-      />
+      <DesignHead design={design} />
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
       <div className="cutoff">
-        <div className="budgetSpace">
+        <div className="budgetSpaceImg">
           <span
             className="priceSum"
             style={{
@@ -436,7 +425,7 @@ function Budget() {
             />
           </div>
         </div>
-        <div className="budgetSpace" style={{ marginBottom: "10%" }}>
+        <div className="budgetSpaceImg" style={{ marginBottom: "10%" }}>
           {designItems.length > 0 ? (
             designItems.map((item, index) => (
               <Item

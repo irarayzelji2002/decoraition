@@ -11,52 +11,63 @@ import {
   MenuItem,
   Checkbox,
   Divider,
+  IconButton,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import EmailInput from "./EmailInput";
+import { Avatar } from "@mui/material";
 
-const ShareModal = ({
-  isOpen,
-  onClose,
-  onAddCollaborator,
-  onNext,
-  onShareProject,
-  collaborators,
-  isSecondPage,
-}) => {
-  const [newCollaborator, setNewCollaborator] = useState("");
+const ShareModal = ({ isOpen, onClose, onNext, onShareProject, isSecondPage }) => {
   const [role, setRole] = useState("Viewer");
   const [notifyPeople, setNotifyPeople] = useState(false);
+  const [isViewer, setIsViewer] = useState(false);
+  const [genAccess, setGenAccess] = useState("Restrict");
+  const [genRole, setGenRole] = useState("Viewer");
+  const users = [
+    { name: "Guest 1", email: "email1@gmail.com" },
+    { name: "Guest 2", email: "email2@gmail.com" },
+    { name: "Guest 3", email: "email3@gmail.com" },
+  ];
+
+  const handleClose = () => {
+    onClose();
+    //resett values
+  };
 
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       sx={{
         "& .MuiDialog-paper": {
-          backgroundColor: "#2E2E32", // Custom background color for the dialog
-          borderRadius: "20px", // Custom border radius for the dialog
-          width: "90%", // Custom width for the dialog
+          backgroundColor: "#2E2E32",
+          borderRadius: "20px",
+          width: "90%",
         },
       }}
     >
       <DialogTitle
         sx={{
-          backgroundColor: "var(--nav-card-modal)", // Title background color
-          color: "var(--color-white)", // Title text color
+          backgroundColor: "var(--nav-card-modal)",
+          color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
+          borderBottom: "1px solid var(--color-grey)",
+          fontWeight: "bold",
         }}
       >
-        <ArrowBackIcon
+        <IconButton
+          onClick={handleClose}
           sx={{
             color: "var(--color-white)",
-            cursor: "pointer",
-            marginRight: "16px",
+            position: "absolute",
+            right: 8,
+            top: 8,
           }}
-          onClick={onClose}
-        />
-        {isSecondPage ? "Set Roles and Notifications" : "Add Collaborators"}
+        >
+          <CloseRoundedIcon />
+        </IconButton>
+        {isSecondPage ? "Manage Access" : "Add Collaborators"}
       </DialogTitle>
 
       <DialogContent
@@ -72,13 +83,24 @@ const ShareModal = ({
         }}
       >
         {!isSecondPage ? (
-          <div style={{ width: "auto", padding: "12px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div style={{ width: "auto" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
               <EmailInput />
             </div>
-            <Divider sx={{ backgroundColor: "grey", marginBottom: "16px" }} />
+            <Divider sx={{ backgroundColor: "grey" }} />
 
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginLeft: "8px",
+              }}
+            >
               <Select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
@@ -101,20 +123,27 @@ const ShareModal = ({
                 <MenuItem value="Commenter">Commenter</MenuItem>
                 <MenuItem value="Viewer">Viewer</MenuItem>
               </Select>
-              <p style={{ color: "var(--color-white)", marginLeft: "auto" }}>Notify People</p>
+              <p
+                style={{
+                  color: "var(--color-white)",
+                  marginLeft: "auto",
+                }}
+              >
+                Notify People
+              </p>
               <Checkbox
                 checked={notifyPeople}
                 onChange={(e) => setNotifyPeople(e.target.checked)}
                 sx={{
+                  marginRight: "16px",
                   color: "var(--color-white)",
                   "&.Mui-checked": {
-                    color: "var(--brightFont)", // Change color when checked
+                    color: "var(--brightFont)",
                   },
                 }}
               />
             </div>
 
-            <br />
             <Divider sx={{ backgroundColor: "grey", marginBottom: "16px" }} />
 
             <TextField
@@ -123,9 +152,8 @@ const ShareModal = ({
               variant="standard"
               placeholder="Optional message"
               sx={{
-                marginBottom: "16px",
-                padding: "16px",
-                width: "90%",
+                padding: "20px",
+                width: "93%",
                 backgroundColor: "transparent",
                 "& .MuiInput-root": {
                   color: "var(--color-white)",
@@ -136,15 +164,15 @@ const ShareModal = ({
               variant="contained"
               onClick={onNext}
               sx={{
-                width: "95%", // Button width
-                background: "var(--gradientButton)", // Gradient background
-                borderRadius: "20px", // Button border radius
-                color: "var(--color-white)", // Button text color
+                width: "95%",
+                background: "var(--gradientButton)",
+                borderRadius: "20px",
+                color: "var(--color-white)",
                 margin: "10px",
                 fontWeight: "bold",
                 textTransform: "none",
                 "&:hover": {
-                  background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                  background: "var(--gradientButtonHover)",
                 },
               }}
             >
@@ -154,14 +182,26 @@ const ShareModal = ({
         ) : (
           <div>
             <Typography variant="body1" sx={{ marginBottom: "16px", padding: "12px" }}>
-              Assign roles and choose notification settings for the added collaborators.
+              People with access
             </Typography>
-
-            {collaborators.map((collaborator, index) => (
-              <div key={index} style={{ marginBottom: "16px" }}>
-                <Typography variant="body2" color="var(--color-white)">
-                  {collaborator}
-                </Typography>
+            {users.map((user, index) => (
+              <div className="drawerUser" key={index}>
+                <Avatar
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    marginBottom: "10px",
+                  }}
+                  src={""}
+                >
+                  {user.name.charAt(0)}
+                </Avatar>
+                <div>
+                  <Typography variant="body1" style={{ fontWeight: "bold" }}>
+                    {user.name}
+                  </Typography>
+                  <Typography variant="caption">{user.email}</Typography>
+                </div>
                 <Select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
@@ -169,38 +209,97 @@ const ShareModal = ({
                     marginRight: "16px",
                     backgroundColor: "#3E3E42",
                     color: "var(--color-white)",
+                    marginLeft: "auto",
                   }}
                 >
                   <MenuItem value="Editor">Editor</MenuItem>
                   <MenuItem value="Commenter">Commenter</MenuItem>
                   <MenuItem value="Viewer">Viewer</MenuItem>
                 </Select>
-
-                <Checkbox
-                  checked={notifyPeople}
-                  onChange={() => setNotifyPeople(!notifyPeople)}
-                  sx={{ color: "var(--color-white)" }} // Checkbox color
-                />
-                <Typography variant="body2" sx={{ display: "inline", color: "var(--color-white)" }}>
-                  Notify
-                </Typography>
               </div>
             ))}
+            <Typography variant="body1" sx={{ marginBottom: "16px", padding: "12px" }}>
+              General Access
+            </Typography>
+
+            <div className="drawerUser" style={{ gap: "0px" }}>
+              <Avatar
+                sx={{
+                  width: 56,
+                  height: 56,
+                  marginBottom: "10px",
+                  marginRight: "16px",
+                }}
+                src={""}
+              >
+                W
+              </Avatar>
+              {isViewer ? (
+                <div>
+                  <Typography variant="body1" style={{ fontWeight: "bold" }}>
+                    Anyone with link
+                  </Typography>
+                  <Typography variant="caption">
+                    Anyone on the Internet can access as an Editor
+                  </Typography>
+                </div>
+              ) : (
+                <>
+                  <Select
+                    value={genAccess}
+                    onChange={(e) => setGenAccess(e.target.value)}
+                    sx={{
+                      backgroundColor: "#3E3E42",
+                      color: "var(--color-white)",
+                      width: "60%",
+                    }}
+                  >
+                    <MenuItem value="Public">
+                      <Typography variant="body1" style={{ fontWeight: "bold" }}>
+                        Anyone with link&nbsp;
+                      </Typography>
+                      <Typography variant="caption">
+                        Anyone on the Internet can access as an Editor
+                      </Typography>
+                    </MenuItem>
+                    <MenuItem value="Restrict">
+                      <Typography variant="body1" style={{ fontWeight: "bold" }}>
+                        Restricted&nbsp;
+                      </Typography>
+                      <Typography variant="caption">Only collaborators have access</Typography>
+                    </MenuItem>
+                  </Select>
+                  <Select
+                    value={genRole}
+                    onChange={(e) => setGenRole(e.target.value)}
+                    sx={{
+                      backgroundColor: "#3E3E42",
+                      color: "var(--color-white)",
+                      width: "15%",
+                    }}
+                  >
+                    <MenuItem value="Editor">Editor</MenuItem>
+                    <MenuItem value="Commenter">Commenter</MenuItem>
+                    <MenuItem value="Viewer">Viewer</MenuItem>
+                  </Select>
+                </>
+              )}
+            </div>
 
             <Button
               fullWidth
               variant="contained"
               onClick={onShareProject}
               sx={{
-                width: "92%", // Button width
-                background: "var(--gradientButton)", // Gradient background
-                borderRadius: "20px", // Button border radius
-                color: "var(--color-white)", // Button text color
+                width: "92%",
+                background: "var(--gradientButton)",
+                borderRadius: "20px",
+                color: "var(--color-white)",
                 margin: "16px",
                 fontWeight: "bold",
                 textTransform: "none",
                 "&:hover": {
-                  background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                  background: "var(--gradientButtonHover)",
                 },
               }}
             >

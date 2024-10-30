@@ -10,6 +10,7 @@ function DesignIcon({
   createdAt = "",
   modifiedAt = "",
   optionsState = {},
+  design = {},
   setOptionsState = () => {},
 }) {
   const [clickedId, setClickedId] = useState("");
@@ -41,19 +42,23 @@ function DesignIcon({
         clickedId={clickedId}
         setClickedId={setClickedId}
         toggleOptions={toggleOptions}
+        object={design}
       />
       {/* Design image */}
-      <img
-        src={"/img/Room1.png"}
-        className="pic"
-        alt="Design"
-        onClick={onOpen}
-        style={{ objectFit: "cover", objectPosition: "top left" }}
-      />
+      <div className="homepage-thumbnail" onClick={onOpen}>
+        <img
+          src={"/img/Room1.png"}
+          className="pic"
+          alt=""
+          style={{ objectFit: "cover", objectPosition: "top left" }}
+        />
+      </div>
 
       {/* Design title */}
       <div width="100%" style={{ textAlign: "start" }}>
-        <h3 className="titleDesign">{name}</h3>
+        <h3 className="titleDesign" onClick={onOpen}>
+          {name}
+        </h3>
         <span className="dateModified">{`Modified ${modifiedAt}`}</span>
       </div>
     </div>

@@ -20,30 +20,35 @@ import ShareConfirmationModal from "./ShareConfirmationModal.jsx";
 import "../css/design.css";
 import { auth } from "../firebase.js";
 import DrawerComponent from "../pages/Homepage/DrawerComponent.jsx";
+import Version from "../pages/DesignSpace/Version.jsx";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { showToast } from "../functions/utils.js";
-
-function DesignHead({
-  toggleComments,
-  setIsSidebarOpen,
-  design,
-  newName,
-  setNewName,
-  isEditingName,
-  setIsEditingName,
+import {
   handleNameChange,
-}) {
+  handleRestoreDesignVersion,
+  handleCopyDesign,
+  handleDownloadDesign,
+} from "../pages/DesignSpace/backend/DesignActions.jsx";
+import { handleDeleteDesign } from "../pages/Homepage/backend/HomepageActions.jsx";
+import { useSharedProps } from "../contexts/SharedPropsContext.js";
+
+function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
+  const { user, userDoc, handleLogout } = useSharedProps();
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
-  const [isCopyLinkModalOpen, setIsCopyLinkModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [newName, setNewName] = useState(design?.designName ?? "Untitled Design");
+  const [isEditingName, setIsEditingName] = useState(false);
+
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [isMakeCopyModalOpen, setIsMakeCopyModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
@@ -54,8 +59,20 @@ function DesignHead({
   const [notifyPeople, setNotifyPeople] = useState(true);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const { designId } = useParams();
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDesignPath = location.pathname.includes("/design");
+
+  const handleNotifClick = () => {
+    setIsNotifOpen(true);
+  };
+
+  const handleNotifClose = () => {
+    setIsNotifOpen(false);
+  };
 
   const handleEditNameToggle = () => {
     setIsEditingName((prev) => !prev);
@@ -116,10 +133,6 @@ function DesignHead({
     setIsShareConfirmationModalOpen(false);
   };
 
-  const handleCloseCopyLinkModal = () => {
-    setIsCopyLinkModalOpen(false);
-  };
-
   const handleOpenDeleteModal = () => {
     setIsDeleteModalOpen(true);
   };
@@ -166,11 +179,11 @@ function DesignHead({
   };
 
   const handleOpenInfoModal = () => {
-    navigate(`/details/${designId}`);
+    navigate(`/details/design/${design.id}`);
   };
 
   const handleCloseInfoModal = () => {
-    setIsInfoModalOpen(false);
+    // setIsInfoModalOpen(false);
   };
   const handleInputClick = () => {
     // Enable edit mode when the input is clicked
@@ -186,39 +199,113 @@ function DesignHead({
       handleEditNameToggle();
       return;
     }
-    handleNameChange();
+    handleNameChange(design.id, newName, user, setIsEditingName);
   };
-  const handleCopyLink = () => {
-    const currentLink = window.location.href; // Get the current URL
-    navigator.clipboard
-      .writeText(currentLink)
-      .then(() => {
-        toast.success("Link copied to clipboard!", {
-          className: "custom-toast-success", // Apply custom success class
-        }); // Show toast notification
-      })
-      .catch((err) => {
-        toast.error("Failed to copy link.", {
-          className: "custom-toast-success", // Apply custom success class
-        }); // Show error toast notification
-        console.error("Failed to copy: ", err);
-      });
+
+  // Download Modal Action
+  const handleDownload = async (design, category, designVersionId, type) => {
+    if (!designVersionId) {
+      return { success: false, message: "Select a version to download" };
+    }
+    if (!type) {
+      return { success: false, message: "Select a file type" };
+    }
+    try {
+      const result = await handleDownloadDesign(design, category, designVersionId, type, user);
+      if (result.success) {
+        handleClose();
+        handleCloseDownloadModal();
+        return { success: true, message: "Design downloaded" };
+      } else {
+        return { success: false, message: "Failed to download design" };
+      }
+    } catch (error) {
+      console.error("Error downloading design:", error);
+      return { success: false, message: "Failed to download design" };
+    }
   };
+
+  // Make a Copy Modal Action
+  const handleCopy = async (design, designVersionId, shareWithCollaborators = false) => {
+    if (!designVersionId) {
+      return { success: false, message: "Select a version to copy" };
+    }
+    try {
+      const result = await handleCopyDesign(design, designVersionId, shareWithCollaborators, user);
+      if (result.success) {
+        handleClose();
+        handleCloseMakeCopyModal();
+        return { success: true, message: "Design copied" };
+      } else {
+        return { success: false, message: "Failed to copy design" };
+      }
+    } catch (error) {
+      console.error("Error copying design:", error);
+      return { success: false, message: "Failed to copy design" };
+    }
+  };
+
+  // Restore Modal Action
+  const handleRestore = async (design, designVersionId) => {
+    if (!designVersionId) {
+      return { success: false, message: "Select a version to restore" };
+    }
+    try {
+      const result = await handleRestoreDesignVersion(design, designVersionId, user);
+      if (result.success) {
+        handleClose();
+        handleCloseRestoreModal();
+        return { success: true, message: "Design restored" };
+      } else {
+        return { success: false, message: "Failed to restore design" };
+      }
+    } catch (error) {
+      console.error("Error restoring design:", error);
+      return { success: false, message: "Failed to restore design" };
+    }
+  };
+
+  // Rename Modal Action
+  const handleRename = async (newName) => {
+    if (design.designName === newName.trim()) {
+      return { success: false, message: "Name is the same as the current name." };
+    }
+    try {
+      const result = await handleNameChange(design.id, newName, user, setIsEditingName);
+      console.log("result", result);
+      if (result.success) {
+        handleClose();
+        handleCloseRenameModal();
+        return { success: true, message: "Design name updated successfully" };
+      } else {
+        return { success: false, message: "Failed to update design name" };
+      }
+    } catch (error) {
+      console.error("Error updating design name:", error);
+      return { success: false, message: "Failed to update design name" };
+    }
+  };
+
+  // Copy Link Action
+  const handleCopyLink = async () => {
+    try {
+      const currentLink = window.location.href; // Get the current URL
+      await navigator.clipboard.writeText(currentLink);
+      showToast("success", "Link copied to clipboard!");
+      handleClose();
+    } catch (err) {
+      showToast("error", "Failed to copy link.");
+      console.error("Failed to copy: ", err);
+    }
+  };
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     document.body.classList.toggle("dark-mode", !darkMode);
   };
-  const handleLogout = () => {
-    signOut(auth)
-      .then(() => {
-        navigate("/");
-      })
-      .catch((error) => {
-        console.error("Sign-out error:", error);
-      });
-  };
+
   const handleSettings = () => {
-    navigate(`/setting/${designId}`);
+    navigate(`/settings/design/${design.id}`);
   };
 
   return (
@@ -230,6 +317,7 @@ function DesignHead({
         handleLogout={handleLogout}
         darkMode={darkMode}
       />
+      <Version isDrawerOpen={isNotifOpen} onClose={handleNotifClose} />
       <div className="left">
         <IconButton
           size="large"
@@ -249,8 +337,8 @@ function DesignHead({
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  handleBlur();
                   e.target.blur();
+                  handleBlur();
                 }
               }}
               onBlur={handleBlur}
@@ -259,15 +347,17 @@ function DesignHead({
             />
           ) : (
             <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
-              {design.designName || "Untitled"}
+              {design?.designName ?? "Untitled Design"}
             </span>
           )}
         </div>
       </div>
       <div className="right">
-        <IconButton onClick={toggleComments}>
-          <CommentIcon sx={{ color: "var(--color-white)" }} />
-        </IconButton>
+        {isDesignPath && (
+          <IconButton onClick={toggleComments}>
+            <CommentIcon sx={{ color: "var(--color-white)" }} />
+          </IconButton>
+        )}
         <IconButton>
           <ShareIcon sx={{ color: "var(--color-white)" }} onClick={handleOpenShareModal} />
         </IconButton>
@@ -296,22 +386,25 @@ function DesignHead({
             <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
           ) : (
             <DefaultMenu
-              onComment={toggleComments}
-              onCopyLink={handleCopyLink}
-              onOpenDownloadModal={handleOpenDownloadModal}
-              setIsSidebarOpen={setIsSidebarOpen}
-              onSetting={handleSettings}
-              onOpenRenameModal={handleOpenRenameModal}
-              onOpenRestoreModal={handleOpenRestoreModal}
-              onOpenMakeCopyModal={handleOpenMakeCopyModal}
-              onOpenInfoModal={handleOpenInfoModal}
+              isDesign={true}
+              onComment={toggleComments} // design only
               onOpenShareModal={handleShareClick}
+              onCopyLink={handleCopyLink}
+              setIsSidebarOpen={handleNotifClick} // design only
+              onSetting={handleSettings}
+              onChangeMode={handleChangeModeClick} // design only
+              onOpenDownloadModal={handleOpenDownloadModal}
+              onOpenMakeCopyModal={handleOpenMakeCopyModal} // design only
+              onOpenRestoreModal={handleOpenRestoreModal} // design only
+              onOpenRenameModal={handleOpenRenameModal}
               onDelete={handleOpenDeleteModal}
-              onChangeMode={handleChangeModeClick}
+              onOpenInfoModal={handleOpenInfoModal}
             />
           )}
         </Menu>
       </div>
+      {/* Comment (No Modal) */}
+      {/* Share */}
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={handleCloseShareModal}
@@ -329,16 +422,50 @@ function DesignHead({
         onClose={handleCloseShareConfirmationModal}
         collaborators={collaborators}
       />
-      <CopyLinkModal isOpen={isCopyLinkModalOpen} onClose={handleCloseCopyLinkModal} />
+      {/* Copy Link (No Modal) */}
+      {/* History */}
+      {/* Settings (No Modal) */}
+      {/* Change Mode */}
+      {/* Download */}
+      <DownloadModal
+        isOpen={isDownloadModalOpen}
+        onClose={handleCloseDownloadModal}
+        isDesign={true}
+        object={design}
+      />
+      {/* Make a Copy */}
+      <MakeCopyModal
+        isOpen={isMakeCopyModalOpen}
+        onClose={handleCloseMakeCopyModal}
+        handleCopy={handleCopy}
+        design={design}
+      />
+      {/* Restore */}
+      {design.history && design.history.length > 1 && (
+        <RestoreModal
+          isOpen={isRestoreModalOpen}
+          onClose={handleCloseRestoreModal}
+          handleRestore={handleRestore}
+          design={design}
+        />
+      )}
+      {/* Rename */}
+      <RenameModal
+        isOpen={isRenameModalOpen}
+        onClose={handleCloseRenameModal}
+        handleRename={handleRename}
+        isDesign={true}
+        object={design}
+      />
+      {/* Delete */}
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        onDelete={handleDelete}
+        handleDelete={() => handleDeleteDesign(userDoc.id, design.id, navigate)}
+        isDesign={true}
+        object={design}
       />
-      <DownloadModal isOpen={isDownloadModalOpen} onClose={handleCloseDownloadModal} />
-      <RenameModal isOpen={isRenameModalOpen} onClose={handleCloseRenameModal} />
-      <RestoreModal isOpen={isRestoreModalOpen} onClose={handleCloseRestoreModal} />
-      <MakeCopyModal isOpen={isMakeCopyModalOpen} onClose={handleCloseMakeCopyModal} />
+      {/* Details */}
       <InfoModal isOpen={isInfoModalOpen} onClose={handleCloseInfoModal} />
     </div>
   );

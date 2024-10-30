@@ -1,37 +1,78 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
+  Typography,
   TextField,
   IconButton,
+  Link,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
-const RenameModal = ({ isOpen, onClose }) => {
+const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
+  // if isDesign is true, object is a design object, else it is a project object
+  const [newName, setNewName] = useState(
+    isDesign ? object?.designName ?? "Untitled Design" : object?.projectName ?? "Untitled Project"
+  );
+  const [error, setError] = useState("");
+
+  const onSubmit = async () => {
+    const result = await handleRename(newName);
+    if (!result.success) {
+      setError(result.message);
+      return;
+    }
+    setError("");
+    onClose();
+  };
+
+  const handleClose = () => {
+    setError("");
+    setNewName(
+      isDesign ? object?.designName ?? "Untitled Design" : object?.projectName ?? "Untitled Project"
+    );
+    onClose();
+  };
+
+  useEffect(() => {
+    console.log("isDesign", isDesign);
+    console.log("object", object);
+  }, []);
+
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       sx={{
         "& .MuiDialog-paper": {
-          backgroundColor: "var(  --nav-card-modal)",
+          backgroundColor: "var(--nav-card-modal)",
           borderRadius: "20px",
         },
       }}
     >
       <DialogTitle
         sx={{
-          backgroundColor: "var(  --nav-card-modal)",
+          backgroundColor: "var(--nav-card-modal)",
           color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
+          borderBottom: "1px solid var(--color-grey)",
+          fontWeight: "bold",
         }}
       >
-        <IconButton onClick={onClose} sx={{ color: "var(--color-white)", marginRight: 1 }}>
-          <ArrowBackIcon />
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            color: "var(--color-white)",
+            position: "absolute",
+            right: 8,
+            top: 8,
+          }}
+        >
+          <CloseRoundedIcon />
         </IconButton>
         Rename
       </DialogTitle>
@@ -39,10 +80,17 @@ const RenameModal = ({ isOpen, onClose }) => {
         sx={{
           backgroundColor: "var(  --nav-card-modal)",
           color: "var(--color-white)",
+          marginTop: "20px",
         }}
       >
+        <Typography variant="body1" sx={{ marginBottom: "10px" }}>
+          {isDesign ? "Design" : "Project"} Name
+        </Typography>
         <TextField
           placeholder="New Name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          helperText={error}
           variant="outlined"
           fullWidth
           sx={{
@@ -67,7 +115,7 @@ const RenameModal = ({ isOpen, onClose }) => {
         <Button
           fullWidth
           variant="contained"
-          onClick={onClose}
+          onClick={onSubmit}
           sx={{
             background: "var(--gradientButton)",
             borderRadius: "20px",
@@ -84,7 +132,7 @@ const RenameModal = ({ isOpen, onClose }) => {
         <Button
           fullWidth
           variant="contained"
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             color: "var(--color-white)",
             background: "transparent",

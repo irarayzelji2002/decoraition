@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { stringAvatar, stringToColor } from "../../functions/utils.js";
 import DelayedTooltip from "../../components/DelayedTooltip.jsx";
+import NotifTab from "./NotifTab";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -15,7 +16,6 @@ import InputBase from "@mui/material/InputBase";
 import MenuIcon from "@mui/icons-material/Menu";
 import Paper from "@mui/material/Paper";
 import SearchIcon from "@mui/icons-material/Search";
-import SettingsIcon from "@mui/icons-material/Settings";
 import Badge from "@mui/material/Badge";
 import Avatar from "@mui/material/Avatar";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -25,6 +25,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
   const navigate = useNavigate();
   const [isFocused, setIsFocused] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [accountTooltipOpen, setAccountTooltipOpen] = useState(false);
 
   const handleSearch = (event) => {
@@ -51,9 +52,14 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
     setIsDrawerOpen(false);
   };
 
-  const handleSettingsClick = () => {
-    navigate("/settings");
+  const handleNotifClick = () => {
+    setIsNotifOpen(true);
   };
+
+  const handleNotifClose = () => {
+    setIsNotifOpen(false);
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -76,17 +82,15 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
           >
             <MenuIcon sx={{ color: "var(--color-white)" }} />
           </IconButton>
-
-          <Drawer anchor="left" open={isDrawerOpen} onClose={handleDrawerClose}>
-            <DrawerComponent isDrawerOpen={isDrawerOpen} onClose={handleDrawerClose} />
-          </Drawer>
+          <DrawerComponent isDrawerOpen={isDrawerOpen} onClose={handleDrawerClose} />
 
           <Paper
             component="form"
             sx={{
               display: "flex",
               alignItems: "center",
-              width: "75%",
+              width: "100%",
+              marginRight: "12px",
               borderRadius: "24px",
               backgroundColor: "var(--inputBg)",
               transition: "width 0.3s ease-in-out",
@@ -109,58 +113,58 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
               inputProps={{ "aria-label": "search google maps" }}
             />
           </Paper>
-          <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ marginRight: 2 }} onClick={handleSettingsClick}>
-            <SettingsIcon sx={{ color: "var(--color-white)" }} />
-          </Box>
-          <Box sx={{ marginRight: 2 }}>
-            <Badge
-              sx={{
-                "& .MuiBadge-badge": {
-                  backgroundColor: "var(--color-secondary)", // Optional: to set the badge color
-                  color: "white", // Optional: to set the text color inside the badge
-                },
-              }}
-              badgeContent={2}
-            >
-              <NotificationsIcon sx={{ color: "var(--color-white)" }} />
-            </Badge>
-          </Box>
-          <Box
-            sx={{
-              color: "var(--color-white)",
-              marginRight: 1,
-              fontSize: "1em",
-              overflow: "hidden",
-              whiteSpace: "nowrap",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {userDoc?.username || "Guest"}
-          </Box>
-          <IconButton onClick={() => navigate("/settings")} sx={{ p: 0 }}>
-            <DelayedTooltip
-              title="Account"
-              delay={1000}
-              open={accountTooltipOpen}
-              setOpen={setAccountTooltipOpen}
-            >
-              <Avatar
-                {...(userDoc?.username && stringAvatar(userDoc?.username))}
-                src={userDoc?.profilePic ? userDoc?.profilePic : ""}
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Box sx={{ marginRight: 2 }}>
+              <Badge
+                onClick={handleNotifClick}
                 sx={{
-                  height: 40,
-                  width: 40,
-                  borderRadius: "50%",
-                  marginLeft: "auto",
-                  marginRight: "12px",
-                  background: "var(--gradientButton)",
-                  border: "2px solid var(--brightFont)",
-                  color: "white", // Optional: to set the text color inside the avatar
+                  cursor: "pointer",
+                  "& .MuiBadge-badge": {
+                    backgroundColor: "var(--color-secondary)", // Optional: to set the badge color
+                    color: "white", // Optional: to set the text color inside the badge
+                  },
                 }}
-              />
-            </DelayedTooltip>
-          </IconButton>
+                badgeContent={2}
+              >
+                <NotificationsIcon sx={{ color: "var(--color-white)" }} />
+              </Badge>
+            </Box>
+            <Box
+              sx={{
+                color: "var(--color-white)",
+                marginRight: 1,
+                fontSize: "1em",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {userDoc?.username || "Guest"}
+            </Box>
+            <IconButton onClick={() => navigate("/settings")} sx={{ p: 0 }}>
+              <DelayedTooltip
+                title="Account"
+                delay={1000}
+                open={accountTooltipOpen}
+                setOpen={setAccountTooltipOpen}
+              >
+                <Avatar
+                  {...(userDoc?.username && stringAvatar(userDoc?.username))}
+                  src={userDoc?.profilePic ? userDoc?.profilePic : ""}
+                  sx={{
+                    height: 40,
+                    width: 40,
+                    borderRadius: "50%",
+                    marginLeft: "auto",
+                    marginRight: "12px",
+                    background: "var(--gradientButton)",
+                    border: "2px solid var(--brightFont)",
+                    color: "white", // Optional: to set the text color inside the avatar
+                  }}
+                />
+              </DelayedTooltip>
+            </IconButton>
+          </div>
         </Toolbar>
       </AppBar>
     </Box>

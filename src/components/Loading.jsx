@@ -11,9 +11,19 @@ function Loading() {
       }}
     >
       <div className="loader">
-        <div className="bubble"></div>
-        <div className="bubble"></div>
-        <div className="bubble"></div>
+        <h1 className="navName" style={{ fontSize: "20px" }}>
+          Loading...
+        </h1>
+        <div className="dot-spinner">
+          <div className="dot-spinner__dot"></div>
+          <div className="dot-spinner__dot"></div>
+          <div className="dot-spinner__dot"></div>
+          <div className="dot-spinner__dot"></div>
+          <div className="dot-spinner__dot"></div>
+          <div className="dot-spinner__dot"></div>
+          <div className="dot-spinner__dot"></div>
+          <div className="dot-spinner__dot"></div>
+        </div>
       </div>
     </div>
   );

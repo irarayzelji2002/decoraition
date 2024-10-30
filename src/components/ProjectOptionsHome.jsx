@@ -12,6 +12,7 @@ function ProjectOptionsHome({
   createdAt = "",
   modifiedAt = "",
   optionsState = {},
+  project = {},
   setOptionsState = () => {},
 }) {
   const [clickedId, setClickedId] = useState("");
@@ -43,19 +44,23 @@ function ProjectOptionsHome({
         clickedId={clickedId}
         setClickedId={setClickedId}
         toggleOptions={toggleOptions}
+        object={project}
       />
       {/* Design image */}
-      <img
-        src={"/img/Room1.png"}
-        className="pic"
-        alt="Design"
-        onClick={onOpen}
-        style={{ objectFit: "cover", objectPosition: "top left" }}
-      />
+      <div className="homepage-thumbnail" onClick={onOpen}>
+        <img
+          src={"/img/Room1.png"}
+          className="pic"
+          alt="Design"
+          style={{ objectFit: "cover", objectPosition: "top left" }}
+        />
+      </div>
 
       {/* Design title */}
       <div width="100%" style={{ textAlign: "start" }}>
-        <h3 className="titleDesign">{name}</h3>
+        <h3 className="titleDesign" onClick={onOpen}>
+          {name}
+        </h3>
         <span className="dateModified">{`Modified ${modifiedAt}`}</span>
       </div>
     </div>

@@ -1,6 +1,6 @@
 .navName {
   font-family: "Open Sans", sans-serif !important;
-  font-size: 4em;
+  font-size: 3.6em;
   background: var(--gradientFont);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -35,7 +35,7 @@
 
 .navTagline {
   font-family: "Open Sans", sans-serif !important;
-  font-size: 1em;
+  font-size: 1.2em;
   font-weight: bold;
   text-align: center;
 }
@@ -151,6 +151,7 @@ h2 {
 }
 
 .no-content {
+  width: 100%;
   display: flex;
   color: #aaa;
   flex-direction: column;
@@ -217,7 +218,6 @@ tr:hover td {
   height: 70%;
   width: 95%;
   margin: 8px;
-  cursor: pointer;
 }
 
 .pic {
@@ -310,13 +310,96 @@ tr:hover td {
   font-size: 1.25em;
   color: var(--color-white);
   margin-bottom: 2px;
+  cursor: pointer;
 }
 
 .pic {
   width: 100%;
   height: auto;
+  cursor: pointer;
+}
+
+.homepage-thumbnail {
+  height: 200px;
+  border-radius: 8px;
+  background-color: var(--iconBg);
   margin-top: 10px;
   cursor: pointer;
+}
+
+.mark-read {
+  background: var(--gradientFont);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 0.875em;
+  font-weight: 400;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.notif-box {
+  padding: 16px;
+  padding-top: 24px;
+}
+
+.notif-box:hover {
+  background-color: var(--nav-card-modal);
+  border-radius: 8px;
+}
+
+.faq-box {
+  padding: 16px;
+  padding-top: 24px;
+  border-radius: 16px;
+  background-color: var(--bgMain);
+  width: fit-content;
+}
+
+.faq-container {
+  width: auto;
+  max-width: 600px;
+}
+
+.faq-item {
+  margin-bottom: 10px;
+  border-radius: 16px;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 15px;
+  background: var(--nav-card-modal);
+  color: var(--color-white);
+  border: none;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 16px;
+}
+
+.faq-answer {
+  display: none;
+  padding: 15px;
+  font-size: 14px;
+}
+
+.arrow {
+  transition: transform 0.3s;
+}
+
+.faq-item:hover .faq-question {
+  background-color: var(--budgetCard);
+}
+
+.faq-item.open .faq-answer {
+  display: block;
+}
+
+.faq-item.open .arrow {
+  transform: rotate(180deg);
 }
 
 @media (max-width: 1024px) {

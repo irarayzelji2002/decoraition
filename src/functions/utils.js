@@ -195,6 +195,17 @@ export const capitalizeFieldName = (field) => {
   return splitField.charAt(0).toUpperCase() + splitField.slice(1).toLowerCase();
 };
 
+export function capitalizeFirstLowerRest(str) {
+  const words = str.split(" ");
+  if (words[0]) {
+    words[0] = words[0][0].toUpperCase() + words[0].slice(1).toLowerCase();
+  }
+  if (words[1]) {
+    words[1] = words[1][0].toLowerCase() + words[1].slice(1);
+  }
+  return words.join(" ");
+}
+
 export const toCamelCase = (fieldName) => {
   return fieldName
     .split(" ") // Split by spaces

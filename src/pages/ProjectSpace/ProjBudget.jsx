@@ -97,7 +97,7 @@ function ProjBudget() {
         </span>
         <div style={{ marginBottom: "10%" }}>
           {designs.length > 0 ? (
-            designs.slice(0, 6).map((design) => {
+            designs.map((design) => {
               const totalCost = designBudgetItems[design.id]?.reduce(
                 (sum, item) => sum + parseFloat(item.cost),
                 0
@@ -118,6 +118,7 @@ function ProjBudget() {
                         src="../../img/logoWhitebg.png"
                         alt={`design preview `}
                         className="image-preview"
+                        style={{ marginRight: "10px" }}
                       />
                     </div>
                   </div>

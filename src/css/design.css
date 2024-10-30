@@ -252,6 +252,7 @@ h6 {
 
 .comment-section {
   display: flex;
+  height: 100vh;
   width: 30%;
   background-color: var(--nav-card-modal);
   padding: 10px;
@@ -285,7 +286,7 @@ textarea {
   background-image: var(--gradientButton);
   border-radius: 20px;
   font-weight: bold;
-  color: var(--color-white);
+  color: var(--color-white) !important;
   border: none;
   padding: 10px 15px;
   cursor: pointer;
@@ -655,6 +656,20 @@ textarea {
   border: 2px solid var(--brightFont);
 }
 
+.circle-small {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--color-grey);
+  background-color: transparent;
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
+}
+
+.circle-small:hover {
+  border: 2px solid var(--brightFont);
+}
+
 .plus-circle {
   display: flex;
   font-size: 2.25em;
@@ -670,7 +685,49 @@ textarea {
   background-image: var(--gradientCircle);
 }
 
+.tabStyle {
+  font-weight: bold;
+  text-transform: none;
+  color: var(--color-white);
+}
+
+.tabStyle.active {
+  color: var(--brightFont);
+}
+
+.tabStyle.Mui-selected {
+  color: transparent; /* Hide the actual text color */
+  background-image: var(--gradientFont); /* Apply background image */
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-weight: bold; /* Optional: make text bold to stand out */
+}
+
 .css-4445e4 {
+}
+
+.select-image-preview {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  border: 1px solid var(--color-grey);
+  margin: 5px 15px 5px 0px;
+  background-color: var(--selectImagePreview);
+  overflow: hidden;
+}
+
+.select-image-preview img {
+  width: 105%;
+  height: 105%;
+  border-radius: 8px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.error-text {
+  color: var(--errorText);
+  font-size: 0.875em;
 }
 
 @media (max-width: 600px) {

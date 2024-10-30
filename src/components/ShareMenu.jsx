@@ -1,34 +1,30 @@
 import React from "react";
 import { MenuItem, ListItemIcon, ListItemText } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import { toast } from "react-toastify";
 import { showToast } from "../functions/utils";
 
 const ShareMenu = ({ onClose, onBackToMenu, onOpenShareModal }) => {
-  const handleCopyLink = () => {
-    const currentLink = window.location.href; // Get the current URL
-    navigator.clipboard
-      .writeText(currentLink)
-      .then(() => {
-        toast.success("Link copied to clipboard!", {
-          className: "custom-toast-success", // Apply custom success class
-        }); // Show toast notification
-      })
-      .catch((err) => {
-        toast.error("Failed to copy link.", {
-          className: "custom-toast-success", // Apply custom success class
-        }); // Show error toast notification
-        console.error("Failed to copy: ", err);
-      });
-    onClose(); // Close the menu after copying the link
+  // Copy Link Action
+  const handleCopyLink = async () => {
+    try {
+      const currentLink = window.location.href; // Get the current URL
+      await navigator.clipboard.writeText(currentLink);
+      showToast("success", "Link copied to clipboard!");
+      onClose();
+    } catch (err) {
+      showToast("error", "Failed to copy link.");
+      console.error("Failed to copy: ", err);
+    }
   };
 
   return (
     <>
       <MenuItem onClick={onBackToMenu}>
         <ListItemIcon>
-          <ArrowBackIcon sx={{ color: "var(--color-white)" }} />
+          <ArrowBackIosNewRoundedIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Share" />
       </MenuItem>
@@ -39,9 +35,6 @@ const ShareMenu = ({ onClose, onBackToMenu, onOpenShareModal }) => {
         <ListItemText primary="Manage Access" />
       </MenuItem>
       <MenuItem onClick={handleCopyLink}>
-        <ListItemIcon>
-          <ContentCopy sx={{ color: "var(--color-white)" }} />
-        </ListItemIcon>
         <ListItemText primary="Copy Link" />
       </MenuItem>
     </>

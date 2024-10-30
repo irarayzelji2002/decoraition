@@ -104,6 +104,17 @@ router.put(
   budgetController.updateItemIncludedInTotal
 );
 router.post("/design/item/:itemId/delete-item", authenticateUser, budgetController.deleteItem);
+router.get(
+  "/design/:designId/version-details",
+  authenticateUser,
+  designController.getDesignVersionDetails
+);
+router.post(
+  "/design/:designId/restore/:versionId",
+  authenticateUser,
+  designController.restoreDesignVersion
+);
+router.post("/design/:designId/copy/:versionId", authenticateUser, designController.copyDesign);
 
 // Project routes
 router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);

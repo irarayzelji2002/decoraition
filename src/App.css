@@ -63,6 +63,81 @@ select:-webkit-autofill {
   width: 100%;
 }
 
+.small-btn {
+  text-transform: none;
+  font-weight: bold;
+  border-radius: 20px !important;
+  width: 150px;
+  background: var(--gradientButton);
+}
+
+.small-btn:hover {
+  background: var(--gradientButtonHover);
+}
+
+.small-btn.editing {
+  background: linear-gradient(to right, #4caf50, #81c784);
+}
+
+.small-btn.editing:hover {
+  background: linear-gradient(to right, #388e3c, #66bb6a);
+}
+
+.invisible-button {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.invisible-button:hover {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.form-control-label-right {
+  display: flex !important;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.form-control-label-right .MuiFormControlLabel-label {
+  flex-grow: 1;
+}
+
+.see-dropdown {
+  width: 140px;
+}
+
+.custom-select {
+  width: 100%;
+  color: var(--color-white) !important;
+  border: 2px solid var(--borderInput) !important;
+}
+
+.custom-select .MuiOutlinedInput-notchedOutline {
+  border: none;
+}
+
+.custom-select:hover .MuiOutlinedInput-notchedOutline {
+  border: none;
+}
+
+.custom-select.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border: none;
+}
+
+.center-me {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: auto;
+}
+
+.error-text {
+  color: var(--errorText);
+  font-size: 0.875em;
+}
+
 :root {
   --bg-header: url("../public/img/bg-login.png");
   --bg-image: #1f1e22;
@@ -106,11 +181,15 @@ select:-webkit-autofill {
   --borderLanding: #f15f3e;
   --landingGradientEven: linear-gradient(270deg, #f89a47cc, #f15f3e99, #ec207300);
   --landingGradientOdd: linear-gradient(90deg, #f89a47cc, #f15f3e99, #ec207300);
+  --uib-color: #ec2073;
   --table-stroke: #3e3c47;
   --table-rows: #27262c;
   --table-rows-hover: #34333b;
   --lighterDarkBg: #27262c;
   --iconDark: #525156;
+  --greyText: #b2b2b4;
+  --disabledButton: #626168;
+  --selectImagePreview: #4b4955;
 }
 
 .light-mode {

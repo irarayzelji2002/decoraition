@@ -8,41 +8,55 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const CopyLinkModal = ({ isOpen, onClose }) => {
+  const handleClose = () => {
+    onClose();
+    //resett values
+  };
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       sx={{
         "& .MuiDialog-paper": {
-          backgroundColor: "var(  --nav-card-modal)", // Change this to your desired background color
-          borderRadius: "20px", // Change this to your desired border radius
+          backgroundColor: "var(--nav-card-modal)",
+          borderRadius: "20px",
         },
       }}
     >
       <DialogTitle
         sx={{
-          backgroundColor: "var(  --nav-card-modal)",
+          backgroundColor: "var(--nav-card-modal)",
           color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
+          borderBottom: "1px solid var(--color-grey)",
+          fontWeight: "bold",
         }}
       >
-        <IconButton onClick={onClose} sx={{ color: "var(--color-white)", marginRight: 1 }}>
-          <ArrowBackIcon />
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            color: "var(--color-white)",
+            position: "absolute",
+            right: 8,
+            top: 8,
+          }}
+        >
+          <CloseRoundedIcon />
         </IconButton>
         Link Copied
       </DialogTitle>
       <DialogContent sx={{ backgroundColor: "var(--nav-card-modal)", color: "var(--color-white)" }}>
         <Typography variant="body1">The link has been copied to your clipboard.</Typography>
       </DialogContent>
-      <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)" }}>
+      <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
         <Button
           fullWidth
           variant="contained"
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             background: "var(--gradientButton)",
             borderRadius: "20px",

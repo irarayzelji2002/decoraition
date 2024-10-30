@@ -6,6 +6,7 @@ import ProjectHead from "./ProjectHead";
 import BottomBarDesign from "./BottomBarProject";
 import { useParams } from "react-router-dom";
 import EditPen from "../DesignSpace/svg/EditPen";
+import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import Trash from "../DesignSpace/svg/Trash";
 import { fetchTasks, deleteTask } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
@@ -16,8 +17,14 @@ function Timeline() {
   const [date, setDate] = useState(new Date());
   const { projectId } = useParams();
   const [tasks, setTasks] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
-
+  const openDeleteModal = () => {
+    setShowDeleteModal(true);
+  };
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
   useEffect(() => {
     const fetchAndSetTasks = async () => {
       const currentUser = auth.currentUser;
@@ -89,13 +96,18 @@ function Timeline() {
                     <div onClick={() => handleEditClick(task)}>
                       <EditPen />
                     </div>
-                    <div onClick={() => handleDelete(task.id)}>
+                    <div onClick={openDeleteModal}>
                       <Trash />
                     </div>
                   </div>
                 </div>
               ))
             )}
+            <DeleteConfirmationModal
+              isOpen={showDeleteModal}
+              onClose={closeDeleteModal}
+              onDelete={handleDelete}
+            />
           </div>
         </div>
       </div>

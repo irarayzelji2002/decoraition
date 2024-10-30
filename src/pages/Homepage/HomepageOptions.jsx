@@ -4,9 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { showToast } from "../../functions/utils";
 import { handleDeleteDesign, handleDeleteProject } from "./backend/HomepageActions";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import {
+  handleNameChange as handleNameChangeDesign,
+  handleCopyDesign,
+} from "../DesignSpace/backend/DesignActions";
+import { handleNameChange as handleNameChangeProject } from "../ProjectSpace/backend/ProjectDetails";
 
 import ShareModal from "../../components/ShareModal";
 import CopyLinkModal from "../../components/CopyLinkModal";
+import DownloadModal from "../../components/DownloadModal";
 import MakeCopyModal from "../../components/MakeCopyModal";
 import RenameModal from "../../components/RenameModal";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
@@ -14,6 +20,7 @@ import InfoModal from "../../components/InfoModal";
 
 import IconButton from "@mui/material/IconButton";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 import {
   OpenInNew as OpenInNewIcon,
@@ -23,12 +30,14 @@ import {
   Link as LinkIcon,
   Share as ShareIcon,
   FileCopy as FileCopyIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
 import DriveFileRenameOutlineRoundedIcon from "@mui/icons-material/DriveFileRenameOutlineRounded";
 
 function HomepageOptions({
   isDesign,
   id,
+  object,
   onOpen,
   isTable = false,
   optionsState = {},
@@ -48,12 +57,15 @@ function HomepageOptions({
   },
 }) {
   const navigate = useNavigate();
-  const { appURL, userDoc } = useSharedProps();
+  const { appURL, user, userDoc } = useSharedProps();
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showCopyLinkModal, setShowCopyLinkModal] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const optionsRef = useRef(null);
 
   const handleToggleOptions = (id) => {
@@ -80,15 +92,34 @@ function HomepageOptions({
   };
 
   // Copy Link Functions
-  const openCopyLinkModal = () => {
-    navigator.clipboard.writeText(`${appURL}/${isDesign ? "design" : "project"}/${id}`);
-    showToast("success", "Link copied to clipboard");
-    // setShowCopyLinkModal(true);
-    toggleOptions(id);
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${appURL}/${isDesign ? "design" : "project"}/${id}`);
+      showToast("success", "Link copied to clipboard!");
+      toggleOptions(id);
+    } catch (err) {
+      showToast("error", "Failed to copy link.");
+      console.error("Failed to copy: ", err);
+    }
   };
 
   const closeCopyLinkModal = () => {
     setShowCopyLinkModal(false);
+  };
+
+  // Settings Fucntions
+  const handleSettings = () => {
+    navigate(`/settings/${isDesign ? "design" : "project"}/${id}`);
+  };
+
+  // Download Functions
+  const openDownloadModal = () => {
+    setShowDownloadModal(true);
+    toggleOptions(id);
+  };
+
+  const closeDownloadModal = () => {
+    setShowDownloadModal(false);
   };
 
   // Make a Copy Functions
@@ -101,6 +132,25 @@ function HomepageOptions({
     setShowCopyModal(false);
   };
 
+  // Make a Copy Modal Action
+  const handleCopy = async (design, designVersionId, shareWithCollaborators = false) => {
+    if (!designVersionId) {
+      return { success: false, message: "Select a version to copy" };
+    }
+    try {
+      const result = await handleCopyDesign(design, designVersionId, shareWithCollaborators, user);
+      if (result.success) {
+        closeCopyModal();
+        return { success: true, message: "Design copied" };
+      } else {
+        return { success: false, message: "Failed to copy design" };
+      }
+    } catch (error) {
+      console.error("Error copying design:", error);
+      return { success: false, message: "Failed to copy design" };
+    }
+  };
+
   // Rename Functions
   const openRenameModal = () => {
     setShowRenameModal(true);
@@ -109,6 +159,42 @@ function HomepageOptions({
 
   const closeRenameModal = () => {
     setShowRenameModal(false);
+  };
+
+  const handleRename = async (newName) => {
+    if (isDesign) {
+      if (object.designName === newName.trim()) {
+        return { success: false, message: "Name is the same as the current name." };
+      }
+    } else {
+      if (object.projectName === newName.trim()) {
+        return { success: false, message: "Name is the same as the current name." };
+      }
+    }
+    try {
+      const result = (await isDesign)
+        ? handleNameChangeDesign(object.id, newName, user, setIsEditingName)
+        : handleNameChangeProject(object.id, newName, user, setIsEditingName);
+      console.log("result", result);
+      if (result.success) {
+        closeRenameModal();
+        return {
+          success: true,
+          message: `${isDesign ? "Design" : "Project"} name updated successfully`,
+        };
+      } else {
+        return {
+          success: false,
+          message: `Failed to update ${isDesign ? "design" : "project"} name`,
+        };
+      }
+    } catch (error) {
+      console.error(`Error updating ${isDesign ? "design" : "project"} name:`, error);
+      return {
+        success: false,
+        message: `Failed to update ${isDesign ? "design" : "project"} name`,
+      };
+    }
   };
 
   // Delete Functions
@@ -125,6 +211,15 @@ function HomepageOptions({
     if (isDesign) handleDeleteDesign(userId, id, navigate);
     else handleDeleteProject(userId, id, navigate);
     closeDeleteModal();
+  };
+
+  // Info Functions
+  const handleOpenInfoModal = () => {
+    navigate(`/details/${isDesign ? "design" : "project"}/${id}`);
+  };
+
+  const handleCloseInfoModal = () => {
+    // setIsInfoModalOpen(false);
   };
 
   useEffect(() => {
@@ -168,9 +263,17 @@ function HomepageOptions({
               <ShareIcon style={{ fontSize: 20 }} className="icon" />
               Share
             </div>
-            <div className="dropdown-item" onClick={openCopyLinkModal}>
+            <div className="dropdown-item" onClick={handleCopyLink}>
               <LinkIcon style={{ fontSize: 20 }} className="icon" />
               Copy Link
+            </div>
+            <div className="dropdown-item" onClick={handleSettings}>
+              <SettingsIcon style={{ fontSize: 20 }} className="icon" />
+              Settings
+            </div>
+            <div className="dropdown-item" onClick={openDownloadModal}>
+              <DownloadIcon style={{ fontSize: 20 }} className="icon" />
+              Download
             </div>
             {isDesign && (
               <div className="dropdown-item" onClick={openCopyModal}>
@@ -186,7 +289,7 @@ function HomepageOptions({
               <DeleteIcon style={{ fontSize: 20 }} className="icon" />
               Delete
             </div>
-            <div className="dropdown-item">
+            <div className="dropdown-item" onClick={handleOpenInfoModal}>
               <InfoIcon style={{ fontSize: 20 }} className="icon" />
               Details
             </div>
@@ -194,20 +297,40 @@ function HomepageOptions({
         )}
       </div>
 
-      {/* Modals */}
+      {/* Share */}
       <ShareModal isOpen={showShareModal} onClose={closeShareModal} />
-
-      <CopyLinkModal isOpen={showCopyLinkModal} onClose={closeCopyModal} />
-
-      <MakeCopyModal isOpen={showCopyModal} onClose={closeCopyLinkModal} />
-
-      <RenameModal isOpen={showRenameModal} onClose={closeRenameModal} />
-
+      {/* Download */}
+      <DownloadModal
+        isOpen={showDownloadModal}
+        onClose={closeDownloadModal}
+        isDesign={isDesign}
+        object={object}
+      />
+      {/* Make a Copy */}
+      <MakeCopyModal
+        isOpen={showCopyModal}
+        onClose={closeCopyModal}
+        handleCopy={handleCopy}
+        design={object}
+      />
+      {/* Rename */}
+      <RenameModal
+        isOpen={showRenameModal}
+        onClose={closeRenameModal}
+        handleRename={handleRename}
+        isDesign={isDesign}
+        object={object}
+      />
+      {/* Delete */}
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={closeDeleteModal}
-        onDelete={() => handleDelete(userDoc.id, id, navigate)}
+        handleDelete={() => handleDelete(userDoc.id, id, navigate)}
+        isDesign={isDesign}
+        object={object}
       />
+      {/* Details */}
+      <InfoModal isOpen={isInfoModalOpen} onClose={handleCloseInfoModal} />
     </>
   );
 }

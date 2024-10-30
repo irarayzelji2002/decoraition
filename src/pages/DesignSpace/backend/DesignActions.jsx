@@ -83,9 +83,124 @@ export const handleNameChange = async (designId, newName, user, setIsEditingName
     if (response.status === 200) {
       setIsEditingName(false);
       showToast("success", "Design name updated successfully");
+      return { success: true, message: "Design name updated successfully" };
     }
   } catch (error) {
     console.error("Error updating design name:", error);
     showToast("error", "Failed to update design name");
+    return { success: false, message: "Failed to update design name" };
+  }
+};
+
+export const fetchVersionDetails = async (design, user) => {
+  if (design?.history && design.history.length > 1) {
+    try {
+      const response = await axios.get(`/api/design/${design.id}/version-details`, {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      });
+      return { success: true, versionDetails: response.data.versionDetails };
+    } catch (error) {
+      console.error("Error fetching version details:", error);
+      return { success: false, versionDetails: [], message: "Failed to fetch version details" };
+    }
+  }
+  return { success: false, versionDetails: [], message: "No history available" };
+};
+
+export const handleRestoreDesignVersion = async (design, designVersionId, user) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${design.id}/restore/${designVersionId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      return {
+        success: true,
+        message: "Design version restored successfully",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Failed to restore design version",
+      };
+    }
+  } catch (error) {
+    console.error("Error restoring design version:", error);
+    return {
+      success: false,
+      message: error.response?.data?.error || "Failed to restore design version",
+    };
+  }
+};
+
+export const handleCopyDesign = async (design, designVersionId, shareWithCollaborators, user) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${design.id}/copy/${designVersionId}`,
+      { userId: user.id, shareWithCollaborators },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      return {
+        success: true,
+        message: "Design copied successfully",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Failed to copy design",
+      };
+    }
+  } catch (error) {
+    console.error("Error copying design:", error);
+    return {
+      success: false,
+      message: error.response?.data?.error || "Failed to copy design",
+    };
+  }
+};
+
+export const handleDownloadDesign = async (design, category, designVersionId, type, user) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${design.id}/download/${designVersionId}`,
+      { userId: user.id, category, type },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      return {
+        success: true,
+        message: "Design downloaded successfully",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Failed to download design",
+      };
+    }
+  } catch (error) {
+    console.error("Error downloading design:", error);
+    return {
+      success: false,
+      message: error.response?.data?.error || "Failed to download design",
+    };
   }
 };

@@ -1,57 +1,115 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Typography,
+  TextField,
   Button,
   IconButton,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
-const DeleteConfirmationModal = ({ isOpen, onClose, onDelete }) => {
+const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, object }) => {
+  // if isDesign is true, object is a design object, else it is a project object
+  const initConfirmText = isDesign
+    ? object?.designName ?? "Untitled Design"
+    : object?.projectName ?? "Untitled Project";
+  const [confirmText, setConfirmText] = useState("");
+  const [error, setError] = useState("");
+
+  const onSubmit = async () => {
+    if (confirmText !== initConfirmText) {
+      setError("Incorrect value entered");
+      return;
+    }
+    const result = await handleDelete();
+    if (!result.success) {
+      setError(result.message);
+      return;
+    }
+    setError("");
+    setConfirmText("");
+    onClose();
+  };
+
+  const handleClose = () => {
+    setError("");
+    setConfirmText("");
+    onClose();
+    console.log("confirmText", confirmText);
+  };
+
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       sx={{
         "& .MuiDialog-paper": {
-          backgroundColor: "var(  --nav-card-modal)", // Custom background color for the dialog
-          borderRadius: "20px", // Custom border radius for the dialog
+          backgroundColor: "var(--nav-card-modal)",
+          borderRadius: "20px",
         },
       }}
     >
       <DialogTitle
         sx={{
-          backgroundColor: "var(  --nav-card-modal)", // Title background color
-          color: "var(--color-white)", // Set title text color to white
+          backgroundColor: "var(--nav-card-modal)",
+          color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
+          borderBottom: "1px solid var(--color-grey)",
+          fontWeight: "bold",
         }}
       >
         <IconButton
-          onClick={onClose}
-          sx={{ color: "var(--color-white)", marginRight: 1 }} // Set icon color to white
+          onClick={handleClose}
+          sx={{
+            color: "var(--color-white)",
+            position: "absolute",
+            right: 8,
+            top: 8,
+          }}
         >
-          <ArrowBackIcon />
+          <CloseRoundedIcon />
         </IconButton>
         <Typography variant="h6" sx={{ color: "var(--color-white)" }}>
-          {" "}
-          Confirm Delete
+          Delete
         </Typography>
       </DialogTitle>
       <DialogContent
         sx={{
           backgroundColor: "var(  --nav-card-modal)", // Content background color
           color: "var(--color-white)", // Text color in the content
+          marginTop: "20px",
         }}
       >
-        <Typography variant="body1">
-          Are you sure you want to delete this item?
-          <br />
-          This action cannot be undone.
+        <Typography variant="body1" sx={{ marginBottom: "10px" }}>
+          Enter "{initConfirmText}" to confirm deletion
         </Typography>
+        <TextField
+          placeholder={initConfirmText}
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          helperText={error}
+          variant="outlined"
+          fullWidth
+          sx={{
+            backgroundColor: "var(  --nav-card-modal)",
+            input: { color: "var(--color-white)" }, //placehold color
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var( --borderInput)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var( --borderInput)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--brightFont)",
+              },
+            },
+          }}
+        />
       </DialogContent>
       <DialogActions
         sx={{ backgroundColor: "var(--nav-card-modal)", margin: "10px" }} // Actions background color
@@ -59,7 +117,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onDelete }) => {
         <Button
           fullWidth
           variant="contained"
-          onClick={onDelete}
+          onClick={onSubmit}
           sx={{
             background: "var(--gradientButton)",
             borderRadius: "20px",
@@ -76,7 +134,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onDelete }) => {
         <Button
           fullWidth
           variant="contained"
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             color: "var(--color-white)",
             background: "transparent",

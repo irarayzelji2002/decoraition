@@ -29,19 +29,15 @@ import {
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import HomeIcon from "@mui/icons-material/Home";
-import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
-import FolderIcon from "@mui/icons-material/Folder";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
+import NotifTab from "./NotifTab";
 import { auth } from "../../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { ArrowBackIos } from "@mui/icons-material";
 import { fetchUserData, fetchDesigns, fetchProjects } from "./backend/HomepageFunctions.jsx";
-import { DesignIcn, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/DesignSvg.jsx";
+import { DesignIcn, FAQ, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/DesignSvg.jsx";
 
-const DrawerComponent = ({ isDrawerOpen, onClose }) => {
+const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
   const navigate = useNavigate();
 
   const {
@@ -58,8 +54,6 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
   const [userDesignsLatest, setUserDesignsLatest] = useState([]);
   const [userProjectsLatest, setUserProjectsLatest] = useState([]);
   const [darkMode, setDarkMode] = useState(initDarkMode);
-  const [showOptions, setShowOptions] = useState(false);
-  const [username, setUsername] = useState("");
   const [activeItem, setActiveItem] = useState(null);
   const [activeGroup, setActiveGroup] = useState(null);
   const optionsRef = useRef(null);
@@ -79,10 +73,6 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
     });
     setUserProjectsLatest(projectsByLatest);
   }, [projects, userProjects]);
-
-  const toggleOptions = () => {
-    setShowOptions(!showOptions);
-  };
 
   const handleClickOutside = (event) => {
     if (optionsRef.current && !optionsRef.current.contains(event.target)) {
@@ -136,14 +126,25 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
     return getDesignImage(latestDesignId);
   };
 
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  const handleNotifClick = () => {
+    setIsNotifOpen(true);
+  };
+
+  const handleNotifClose = () => {
+    setIsNotifOpen(false);
+  };
+
   return (
     <Drawer
       anchor="left"
-      open={isDrawerOpen}
+      open={Boolean(isDrawerOpen)}
       onClose={onClose}
       sx={{
         "& .MuiDrawer-paper": {
           width: { xs: "80%", sm: "25%" },
+          minWidth: "300px",
           backgroundColor: darkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
           color: darkMode ? "white" : "black",
           padding: "20px",
@@ -168,15 +169,15 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
           <h2
             className="navName"
             style={{
-              fontSize: "1.75em",
+              fontSize: "1.5em",
               marginTop: "-16px",
-              width: "60%",
+              width: "auto",
             }}
           >
             DecorAItion
           </h2>
           <IconButton
-            sx={{ color: "white", marginLeft: "6px" }}
+            sx={{ color: "white", marginLeft: "auto" }}
             onClick={() => toggleDarkMode(user, userDoc?.id, darkMode, setDarkMode)}
           >
             {darkMode ? (
@@ -185,9 +186,12 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
               <LightModeIcon sx={{ color: "var(--color-black)" }} />
             )}
           </IconButton>
-          <IconButton sx={{ color: "white" }}>
+          <IconButton onClick={handleNotifClick} sx={{ color: "white" }}>
             <NotificationsIcon sx={{ color: "var(--color-white)" }} />
           </IconButton>
+          <div onClick={onClose}>
+            <NotifTab isDrawerOpen={isNotifOpen} onClose={handleNotifClose} />
+          </div>
         </div>
       </div>
 
@@ -387,13 +391,20 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
         <Divider sx={{ backgroundColor: "gray", my: 2 }} />
 
         {/* Settings Menu Item */}
-        <ListItem button onClick={() => navigate("/settings")}>
+        {/* path to change? */}
+        <ListItem onClick={() => navigate("/faq")} style={{ cursor: "pointer" }}>
+          <ListItemIcon>
+            <FAQ />
+          </ListItemIcon>
+          <ListItemText primary="FAQ" />
+        </ListItem>
+        <ListItem onClick={() => navigate("/settings")} style={{ cursor: "pointer" }}>
           <ListItemIcon>
             <SettingsIcn />
           </ListItemIcon>
           <ListItemText primary="Settings" />
         </ListItem>
-        <ListItem button onClick={() => handleLogout(navigate)}>
+        <ListItem onClick={() => handleLogout(navigate)} style={{ cursor: "pointer" }}>
           <ListItemIcon>
             <LogoutIcn />
           </ListItemIcon>

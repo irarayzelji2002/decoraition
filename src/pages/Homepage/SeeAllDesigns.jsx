@@ -179,6 +179,7 @@ export default function SeeAllDesigns() {
                             id={design.id}
                             name={design.designName}
                             designId={design.id}
+                            design={design}
                             onDelete={() => handleDeleteDesign(user, design.id, navigate)}
                             onOpen={() =>
                               navigate(`/design/${design.id}`, {

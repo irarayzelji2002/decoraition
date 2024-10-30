@@ -44,6 +44,7 @@ import {
   Save as SaveIcon,
   Delete as DeleteIcon,
   CloseRounded as CloseRoundedIcon,
+  Link as LinkIcon,
 } from "@mui/icons-material";
 import Link from "@mui/material/Link";
 
@@ -971,17 +972,19 @@ function Settings() {
           onClose={() => setIsLinkAccountModalOpen(false)}
           sx={{
             "& .MuiDialog-paper": {
-              backgroundColor: "var(  --nav-card-modal)",
+              backgroundColor: "var(--nav-card-modal)",
               borderRadius: "20px",
             },
           }}
         >
           <DialogTitle
             sx={{
-              backgroundColor: "var(  --nav-card-modal)",
+              backgroundColor: "var(--nav-card-modal)",
               color: "var(--color-white)",
               display: "flex",
               alignItems: "center",
+              borderBottom: "1px solid var(--color-grey)",
+              fontWeight: "bold",
             }}
           >
             <IconButton
@@ -1070,17 +1073,19 @@ function Settings() {
           onClose={() => setIsUnlinkAccountModalOpen(false)}
           sx={{
             "& .MuiDialog-paper": {
-              backgroundColor: "var(  --nav-card-modal)",
+              backgroundColor: "var(--nav-card-modal)",
               borderRadius: "20px",
             },
           }}
         >
           <DialogTitle
             sx={{
-              backgroundColor: "var(  --nav-card-modal)",
+              backgroundColor: "var(--nav-card-modal)",
               color: "var(--color-white)",
               display: "flex",
               alignItems: "center",
+              borderBottom: "1px solid var(--color-grey)",
+              fontWeight: "bold",
             }}
           >
             <IconButton
@@ -1172,17 +1177,19 @@ function Settings() {
           onClose={handleChangeProfileModalClose}
           sx={{
             "& .MuiDialog-paper": {
-              backgroundColor: "var(  --nav-card-modal)",
+              backgroundColor: "var(--nav-card-modal)",
               borderRadius: "20px",
             },
           }}
         >
           <DialogTitle
             sx={{
-              backgroundColor: "var(  --nav-card-modal)",
+              backgroundColor: "var(--nav-card-modal)",
               color: "var(--color-white)",
               display: "flex",
               alignItems: "center",
+              borderBottom: "1px solid var(--color-grey)",
+              fontWeight: "bold",
             }}
           >
             <IconButton
@@ -1291,17 +1298,19 @@ function Settings() {
           onClose={() => setIsRemoveProfileModalOpen(false)}
           sx={{
             "& .MuiDialog-paper": {
-              backgroundColor: "var(  --nav-card-modal)",
+              backgroundColor: "var(--nav-card-modal)",
               borderRadius: "20px",
             },
           }}
         >
           <DialogTitle
             sx={{
-              backgroundColor: "var(  --nav-card-modal)",
+              backgroundColor: "var(--nav-card-modal)",
               color: "var(--color-white)",
               display: "flex",
               alignItems: "center",
+              borderBottom: "1px solid var(--color-grey)",
+              fontWeight: "bold",
             }}
           >
             <IconButton

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { onSnapshot, doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { Paper, IconButton, InputBase } from "@mui/material";
+import { Paper, IconButton, InputBase, List } from "@mui/material";
 import {
   Search as SearchIcon,
   Add as AddIcon,
@@ -18,12 +18,16 @@ import BottomBarDesign from "./BottomBarProject";
 import Loading from "../../components/Loading";
 import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import "../../css/seeAll.css";
 import "../../css/project.css";
 import { fetchDesigns, handleCreateDesign, handleDeleteDesign } from "./backend/ProjectDetails";
 import { Button } from "@mui/material";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, VerticalIcon } from "./svg/ExportIcon";
+import { Typography } from "@mui/material";
+import { ListIcon } from "./svg/ExportIcon";
+import ItemList from "./ItemList";
 import DesignSvg from "../Homepage/svg/DesignSvg";
 
 function Project() {
@@ -36,8 +40,14 @@ function Project() {
   const [designs, setDesigns] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [isVertical, setIsVertical] = useState(false);
   const navigate = useNavigate();
-
+  const handleVerticalClick = () => {
+    setIsVertical(true);
+  };
+  const handleHorizontalClick = () => {
+    setIsVertical(false);
+  };
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
@@ -176,50 +186,96 @@ function Project() {
       </div>
       <div
         style={{
-          display: "flex",
-          width: "auto",
-
-          padding: "20px",
+          paddingBottom: "20%",
         }}
       >
-        <span className="SubtitleBudget" style={{ marginLeft: "20px", fontSize: "30px" }}>
-          Project Name
-          <br />
-          <span
-            className="SubtitlePrice"
-            style={{
-              backgroundColor: "transparent",
-            }}
-          >
-            Designs
-          </span>
-        </span>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ width: "90%" }}>
+            <div style={{ display: "flex" }}>
+              <span
+                className="SubtitlePrice"
+                style={{
+                  backgroundColor: "transparent",
+                  fontSize: "1.5rem",
+                }}
+              >
+                Designs
+              </span>
+              <div className="button-container" style={{ display: "flex", marginLeft: "auto" }}>
+                <Button
+                  className="gradient-from-none"
+                  style={{ marginRight: "10px" }}
+                  onClick={handleHorizontalClick}
+                >
+                  <HorizontalIcon />
+                </Button>
+                <Button className="gradient-from-none" onClick={handleVerticalClick}>
+                  <ListIcon />
+                </Button>
+              </div>
+            </div>
+            {isVertical && (
+              <div
+                className="design-item"
+                style={{ backgroundColor: "transparent", border: "none" }}
+              >
+                <div className="list-content">
+                  <Typography variant="h6" className="ellipsis-text" style={{ width: "20%" }}>
+                    Name
+                  </Typography>
+                  <Typography variant="body2" className="ellipsis-text">
+                    Owner
+                  </Typography>
+                  <Typography variant="body2" className="ellipsis-text">
+                    Date Modified
+                  </Typography>
+                  <Typography variant="body2" className="ellipsis-text">
+                    Created
+                  </Typography>
+                  <IconButton style={{ opacity: 0 }}>
+                    <MoreVertIcon style={{ color: "var(--color-white)" }} />
+                  </IconButton>
+                </div>
+              </div>
+            )}
+          </div>
 
-        <div className="button-container" style={{ display: "flex", marginLeft: "auto" }}>
-          <Button style={{ marginRight: "10px" }}>
-            <HorizontalIcon />
-          </Button>
-          <Button>
-            <VerticalIcon />
-          </Button>
-        </div>
-      </div>
-      <div style={{ paddingBottom: "20%" }}>
-        <div className="layout">
-          {designs.length > 0 &&
-            designs.slice(0, 6).map((design) => (
-              <DesignIcon
-                key={design.id}
-                name={design.name}
-                designId={design.id}
-                onDelete={() => handleDeleteDesign(projectId, design.id)}
-                onOpen={() =>
-                  navigate(`/design/${design.id}`, {
-                    state: { designId: design.id },
-                  })
-                }
-              />
-            ))}
+          <div className={`layout ${isVertical ? "vertical" : ""}`} style={{ width: "90%" }}>
+            {isVertical
+              ? designs.length > 0 &&
+                designs.slice(0, 6).map((design) => (
+                  <ItemList
+                    key={design.id}
+                    name={design.name}
+                    designId={design.id}
+                    onDelete={() => handleDeleteDesign(projectId, design.id)}
+                    onOpen={() =>
+                      navigate(`/design/${design.id}`, {
+                        state: { designId: design.id },
+                      })
+                    }
+                  />
+                ))
+              : designs.length > 0 &&
+                designs
+                  .slice(0, 6)
+                  .map((design) => (
+                    <DesignIcon
+                      key={design.id}
+                      design={design}
+                      projectId={projectId}
+                      handleDeleteDesign={handleDeleteDesign}
+                    />
+                  ))}
+          </div>
         </div>
         {designs.length === 0 && (
           <div className="no-content">

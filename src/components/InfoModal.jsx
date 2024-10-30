@@ -8,33 +8,44 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const InfoModal = ({ isOpen, onClose }) => {
+  const handleClose = () => {
+    onClose();
+    //resett values
+  };
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       sx={{
         "& .MuiDialog-paper": {
-          backgroundColor: "var(  --nav-card-modal)", // Custom background color for the dialog
-          borderRadius: "20px", // Custom border radius for the dialog
+          backgroundColor: "var(--nav-card-modal)",
+          borderRadius: "20px",
         },
       }}
     >
       <DialogTitle
         sx={{
-          backgroundColor: "var(  --nav-card-modal)", // Title background color
-          color: "whitesmoke", // Set title text color to white
+          backgroundColor: "var(--nav-card-modal)",
+          color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
+          borderBottom: "1px solid var(--color-grey)",
+          fontWeight: "bold",
         }}
       >
         <IconButton
-          onClick={onClose}
-          sx={{ color: "whitesmoke", marginRight: 1 }} // Set icon color to white
+          onClick={handleClose}
+          sx={{
+            color: "var(--color-white)",
+            position: "absolute",
+            right: 8,
+            top: 8,
+          }}
         >
-          <ArrowBackIcon />
+          <CloseRoundedIcon />
         </IconButton>
         <Typography variant="h6" sx={{ color: "whitesmoke" }}>
           {" "}
@@ -59,7 +70,7 @@ const InfoModal = ({ isOpen, onClose }) => {
         <Button
           fullWidth
           variant="contained"
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             background: "var(--gradientButton)",
             borderRadius: "20px",

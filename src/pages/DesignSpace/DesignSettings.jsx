@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { showToast } from "../../functions/utils";
 import TopBar from "../../components/TopBar";
-import { db } from "../../firebase"; // Import your Firestore instance
+import { db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import {
   Typography,
@@ -17,8 +17,8 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import "../../css/designSettings.css"; // Import the CSS file
-import PublicRoundedIcon from "@mui/icons-material/PublicRounded"; // Import the globe icon
+import "../../css/designSettings.css";
+import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
 import PublicOffRoundedIcon from "@mui/icons-material/PublicOffRounded";
 import { ThemeProvider } from "@emotion/react";
 import { createTheme } from "@mui/material/styles";
@@ -46,7 +46,7 @@ const theme = createTheme({
   },
 });
 
-function DesignSettings() {
+const DesignSettings = () => {
   const { user, designs, userDesigns } = useSharedProps();
   const { designId } = useParams({}); // Get the designId parameter from the URL
   const [design, setDesign] = useState();
@@ -130,9 +130,7 @@ function DesignSettings() {
     }
   }, [designId, userDesigns]);
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab); // Change active tab
-  };
+  const handleTabChange = useCallback((tab) => setActiveTab(tab), []);
 
   const handleSaveDesignSettings = async () => {
     try {
@@ -198,13 +196,13 @@ function DesignSettings() {
         setDeletionDays={setDeletionDays}
         notifyDays={notifyDays}
         setNotifyDays={setNotifyDays}
-        activeTab={activeTab} // Pass activeTab to SettingsContent
-        handleTabChange={handleTabChange} // Pass handleTabChange function
+        activeTab={activeTab}
+        handleTabChange={handleTabChange}
         handleSaveDesignSettings={handleSaveDesignSettings}
       />
     </div>
   );
-}
+};
 
 export default DesignSettings;
 
@@ -261,57 +259,13 @@ const SettingsContent = ({
           value={generalAccessSetting}
           onChange={(e) => setGeneralAccessSetting(parseInt(e.target.value, 10))}
           className="accessSelect"
-          sx={{
-            "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: "var(--borderInput)",
-            },
-            "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "var(--bright-grey)",
-            },
-            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-              borderColor: "var(--bright-grey)",
-            },
-            "& .MuiSelect-select": {
-              color: "var(--color-white)",
-            },
-            "& .MuiSvgIcon-root": {
-              color: "var(--color-white)", // Set the arrow icon color to white
-            },
-          }}
+          sx={selectStyles}
         >
-          <MenuItem
-            value={0}
-            sx={{
-              backgroundColor: "var(--bgColor)",
-              color: "var(--color-grey)",
-              "&:hover": {
-                backgroundColor: "var(--dropdownHover)",
-                color: "var(--color-white)",
-              },
-              "&.Mui-selected": {
-                backgroundColor: "var(--dropdownSelected)",
-                color: "var(--color-white)",
-              },
-            }}
-          >
+          <MenuItem value={0} sx={menuItemStyles}>
             <div>Restricted</div>
             <div>Only collaborators can access</div>
           </MenuItem>
-          <MenuItem
-            value={1}
-            sx={{
-              backgroundColor: "var(--bgColor)",
-              color: "var(--color-white)",
-              "&:hover": {
-                backgroundColor: "var(--dropdownHover)",
-                color: "var(--color-white)",
-              },
-              "&.Mui-selected": {
-                backgroundColor: "var(--dropdownSelected)",
-                color: "var(--color-white)",
-              },
-            }}
-          >
+          <MenuItem value={1} sx={menuItemStyles}>
             <div>Anyone with the link</div>
             <div>Anyone on the internet can access</div>
           </MenuItem>
@@ -389,439 +343,60 @@ const SettingsContent = ({
       </Box>
       {/* Viewer Settings */}
       <Typography className="viewerSettingsTitle">Viewer settings</Typography>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={allowDownload}
-            onChange={(e) => setAllowDownload(e.target.checked)}
-            color="warning"
-            sx={{
-              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)",
-              },
-              "& .MuiSwitch-thumb": {
-                backgroundImage: "var(--color-white)", // Apply gradient to the thumb
-              },
-              "& .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)", // Track color
-              },
-            }}
-          />
-        }
+      <CustomSwitch
         label="Allow to download"
-        labelPlacement="start"
-        className="viewerSettingsLabel"
-      />{" "}
+        checked={allowDownload}
+        onChange={(e) => setAllowDownload(e.target.checked)}
+      />
       {/* Allow to view history */}
-      <FormControlLabel
-        control={
-          <Switch
-            checked={allowViewHistory}
-            onChange={(e) => setAllowViewHistory(e.target.checked)}
-            color="warning"
-            sx={{
-              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)",
-              },
-              "& .MuiSwitch-thumb": {
-                backgroundImage: "var(--color-white)", // Apply gradient to the thumb
-              },
-              "& .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)", // Track color
-              },
-            }}
-          />
-        }
+      <CustomSwitch
         label="Allow to view history"
-        labelPlacement="start"
-        className="viewerSettingsLabel"
+        checked={allowViewHistory}
+        onChange={(e) => setAllowViewHistory(e.target.checked)}
       />
       {/* Allow to make a copy */}
-      <FormControlLabel
-        control={
-          <Switch
-            checked={allowCopy}
-            onChange={(e) => setAllowCopy(e.target.checked)}
-            color="warning"
-            sx={{
-              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)",
-              },
-              "& .MuiSwitch-thumb": {
-                backgroundImage: "var(--color-white)", // Apply gradient to the thumb
-              },
-              "& .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)", // Track color
-              },
-            }}
-          />
-        }
+      <CustomSwitch
         label="Allow to make a copy"
-        labelPlacement="start"
-        className="viewerSettingsLabel"
+        checked={allowCopy}
+        onChange={(e) => setAllowCopy(e.target.checked)}
       />
       {/* History Settings */}
       <Typography className="viewerSettingsTitle">History settings</Typography>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={documentCopyByOwner}
-            onChange={(e) => setDocumentCopyByOwner(e.target.checked)}
-            color="warning"
-            sx={{
-              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)",
-              },
-              "& .MuiSwitch-thumb": {
-                backgroundImage: "var(--color-white)", // Apply gradient to the thumb
-              },
-              "& .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)", // Track color
-              },
-            }}
-          />
-        }
+      <CustomSwitch
         label="Document copies made by owner"
-        labelPlacement="start"
-        className="HistorySettingsLabel"
-      />{" "}
-      <FormControlLabel
-        control={
-          <Switch
-            checked={documentCopyByEditor}
-            onChange={(e) => setDocumentCopyByEditor(e.target.checked)}
-            color="warning"
-            sx={{
-              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)",
-              },
-              "& .MuiSwitch-thumb": {
-                backgroundImage: "var(--color-white)", // Apply gradient to the thumb
-              },
-              "& .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)", // Track color
-              },
-            }}
-          />
-        }
+        checked={documentCopyByOwner}
+        onChange={(e) => setDocumentCopyByOwner(e.target.checked)}
+      />
+      <CustomSwitch
         label="Document copies made by editor"
-        labelPlacement="start"
-        className="HistorySettingsLabel"
+        checked={documentCopyByEditor}
+        onChange={(e) => setDocumentCopyByEditor(e.target.checked)}
       />
       {/* Inactivity and Deletion */}
       <Typography className="inactivityTitle">Inactivity and deletion</Typography>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={inactivityEnabled}
-            onChange={(e) => setInactivityEnabled(e.target.checked)}
-            color="warning"
-            sx={{
-              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)",
-              },
-              "& .MuiSwitch-thumb": {
-                backgroundImage: "var(--color-white)", // Apply gradient to the thumb
-              },
-              "& .MuiSwitch-track": {
-                backgroundColor: "var(--inputBg)", // Track color
-              },
-            }}
-          />
-        }
+      <CustomSwitch
         label="Enable inactivity and deletion"
-        labelPlacement="start"
-        className="inactivityLabel"
+        checked={inactivityEnabled}
+        onChange={(e) => setInactivityEnabled(e.target.checked)}
       />
       {/* Inactivity Settings */}
       {inactivityEnabled && (
         <>
-          <Box className="inactivitySettings">
-            <Typography>Number of days before inactivity after user inactivity</Typography>
-            <Select
-              value={inactivityDays}
-              onChange={(e) => setInactivityDays(parseInt(e.target.value, 10))}
-              className="accessSelect" //old inactivityTextField
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--borderInput)",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--bright-grey)",
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--bright-grey)",
-                },
-                "& .MuiSelect-select": {
-                  color: "var(--color-white)",
-                },
-                "& .MuiSvgIcon-root": {
-                  color: "var(--color-white)", // Set the arrow icon color to white
-                },
-              }}
-            >
-              <MenuItem
-                value={15}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>15 days</div>
-              </MenuItem>
-              <MenuItem
-                value={30}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>30 days</div>
-              </MenuItem>
-              <MenuItem
-                value={45}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>45 days</div>
-              </MenuItem>
-              <MenuItem
-                value={60}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>60 days</div>
-              </MenuItem>
-            </Select>
-          </Box>
-
-          <Box className="inactivitySettings">
-            <Typography>Number of days before deletion after project inactivity</Typography>
-            <Select
-              value={deletionDays}
-              onChange={(e) => setDeletionDays(parseInt(e.target.value, 10))}
-              className="accessSelect" //old inactivityTextField
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--borderInput)",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--bright-grey)",
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--bright-grey)",
-                },
-                "& .MuiSelect-select": {
-                  color: "var(--color-white)",
-                },
-                "& .MuiSvgIcon-root": {
-                  color: "var(--color-white)", // Set the arrow icon color to white
-                },
-              }}
-            >
-              <MenuItem
-                value={15}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>15 days</div>
-              </MenuItem>
-              <MenuItem
-                value={30}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>30 days</div>
-              </MenuItem>
-              <MenuItem
-                value={45}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>45 days</div>
-              </MenuItem>
-              <MenuItem
-                value={60}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>60 days</div>
-              </MenuItem>
-            </Select>
-          </Box>
-
-          <Box className="inactivitySettings">
-            <Typography>
-              Notify collaborators number of days prior to entering inactivity mode and deletion
-            </Typography>
-            <Select
-              value={notifyDays}
-              onChange={(e) => setNotifyDays(parseInt(e.target.value, 10))}
-              className="accessSelect" //old inactivityTextField
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--borderInput)",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--bright-grey)",
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--bright-grey)",
-                },
-                "& .MuiSelect-select": {
-                  color: "var(--color-white)",
-                },
-                "& .MuiSvgIcon-root": {
-                  color: "var(--color-white)", // Set the arrow icon color to white
-                },
-              }}
-            >
-              <MenuItem
-                value={3}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>3 days</div>
-              </MenuItem>
-              <MenuItem
-                value={7}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>7 days</div>
-              </MenuItem>
-              <MenuItem
-                value={14}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>14 days</div>
-              </MenuItem>
-              <MenuItem
-                value={30}
-                sx={{
-                  backgroundColor: "var(--bgColor)",
-                  color: "var(--color-white)",
-                  "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
-                    color: "var(--color-white)",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "var(--dropdownSelected)",
-                    color: "var(--color-white)",
-                  },
-                }}
-              >
-                <div>30 days</div>
-              </MenuItem>
-            </Select>
-          </Box>
+          <InactivitySetting
+            label="Number of days before inactivity after user inactivity"
+            value={inactivityDays}
+            onChange={(e) => setInactivityDays(parseInt(e.target.value, 10))}
+          />
+          <InactivitySetting
+            label="Number of days before deletion after design inactivity"
+            value={deletionDays}
+            onChange={(e) => setDeletionDays(parseInt(e.target.value, 10))}
+          />
+          <InactivitySetting
+            label="Notify collaborators number of days prior to entering inactivity mode and deletion"
+            value={notifyDays}
+            onChange={(e) => setNotifyDays(parseInt(e.target.value, 10))}
+          />
         </>
       )}
       {/* Save Button */}
@@ -833,3 +408,110 @@ const SettingsContent = ({
     </div>
   </ThemeProvider>
 );
+
+// Custom Switch Component for reusability
+const CustomSwitch = ({ label, checked, onChange }) => (
+  <Box
+    className="customSwitchContainer"
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: "100%",
+      marginBottom: "1rem",
+    }}
+  >
+    <Typography className="switchLabel">{label}</Typography>
+    <Switch checked={checked} onChange={onChange} color="warning" sx={switchStyles} />
+  </Box>
+);
+
+// Inactivity Setting Component for input fields
+const InactivitySetting = ({ label, value, onChange }) => (
+  <Box className="inactivitySettings">
+    <Typography>{label}</Typography>
+    <TextField
+      type="number"
+      value={value}
+      onChange={onChange}
+      className="inactivityTextField"
+      inputProps={textFieldInputProps}
+      sx={textFieldStyles}
+    />
+  </Box>
+);
+
+// Reusable styles for MenuItem
+const menuItemStyles = {
+  backgroundColor: "var(--bgColor)",
+  color: "var(--color-white)",
+  "&:hover": {
+    backgroundColor: "var(--dropdownHover)",
+    color: "var(--color-white)",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "var(--dropdownSelected)",
+    color: "var(--color-white)",
+  },
+};
+
+// Styles for Switch
+const switchStyles = {
+  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+    backgroundColor: "var(--inputBg)",
+  },
+  "& .MuiSwitch-thumb": {
+    backgroundImage: "var(--color-white)",
+  },
+  "& .MuiSwitch-track": {
+    backgroundColor: "var(--inputBg)",
+  },
+};
+
+// Styles for Select
+const selectStyles = {
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--inputBg)",
+    borderWidth: 2, // border thickness
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--bright-grey)", //  hover
+  },
+  "& .MuiSelect-select": {
+    color: "var(--color-white)", //
+  },
+
+  "& .MuiSelect-icon": {
+    color: "var(--color-white)", // dropdown arrow icon color to white
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--bright-grey)", // focused state
+  },
+};
+
+// Styles for TextField
+const textFieldStyles = {
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderWidth: 2, // border thickness
+  },
+  "& .MuiOutlinedInput-root": {
+    borderColor: "var(--borderInput)",
+
+    "& fieldset": {
+      borderColor: "var(--borderInput)",
+    },
+    "&:hover fieldset": {
+      borderColor: "var(--bright-grey)",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "var(--bright-grey)",
+    },
+  },
+  "& input": {
+    color: "var(--color-white)", // input text color
+  },
+};
+
+const textFieldInputProps = {
+  style: { color: "var(--color-white)" }, // Input text color
+};

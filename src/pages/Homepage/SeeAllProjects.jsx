@@ -180,14 +180,21 @@ export default function SeeAllProjects() {
                           <ProjectOptionsHome
                             id={project.id}
                             name={project.projectName}
+                            project={project}
                             onOpen={() =>
                               navigate(`/project/${project.id}`, {
                                 state: { projectId: project.id },
                               })
                             }
-                            managers={getUsernames(project.managers).then((usernames) =>
-                              usernames.join(", ")
-                            )}
+                            managers={(async () => {
+                              const usernames = getUsernames(project.managers);
+                              return usernames.then((usernames) => {
+                                if (usernames.length > 3) {
+                                  return usernames.slice(0, 3).join(", ") + ", and more";
+                                }
+                                return usernames.join(", ");
+                              });
+                            })()}
                             createdAt={formatDateLong(project.createdAt)}
                             modifiedAt={formatDateLong(project.modifiedAt)}
                             optionsState={optionsState}

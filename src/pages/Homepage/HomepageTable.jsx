@@ -19,6 +19,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import { visuallyHidden } from "@mui/utils";
 import { getUsername } from "./backend/HomepageActions";
 import "../../css/homepage.css";
+import { projectId } from "../../../server/firebaseConfig";
 
 function EnhancedTableHead(props) {
   const {
@@ -305,12 +306,13 @@ function EnhancedTable({
                       {optionsState.showOptions && optionsState.selectedId === row.id && (
                         <div style={{ position: "absolute" }}>
                           <HomepageOptions
-                            isDesign={false}
+                            isDesign={isDesign}
                             isTable={true}
                             id={row.id}
                             onOpen={(event) => handleClick(event, row.id, isDesign, navigate)}
                             optionsState={optionsState}
                             setOptionsState={setOptionsState}
+                            object={rows}
                           />
                         </div>
                       )}

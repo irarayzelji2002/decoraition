@@ -61,7 +61,8 @@ function Homepage() {
     showOptions: false,
     selectedId: null,
   });
-  const [threshold, setThreshold] = useState(0);
+  const [thresholdDesign, setThresholdDesign] = useState(0);
+  const [thresholdProject, setThresholdProject] = useState(0);
 
   const loadDesignDataForView = async () => {
     setLoadingDesigns(true);
@@ -137,16 +138,55 @@ function Homepage() {
     setLoadingProjects(false);
   };
 
+  const setThresholdAfterViewChange = (type) => {
+    if (type === "designs") {
+      if (viewForDesigns === 0) {
+        // tiled view
+        const thresholdDesign = 6;
+        setThresholdDesign(thresholdDesign);
+        const remainder = numToShowMoreDesign % thresholdDesign;
+        if (numToShowMoreDesign >= remainder && remainder !== 0) {
+          setNumToShowMoreDesign(numToShowMoreDesign - remainder + thresholdDesign);
+        }
+      } else if (viewForDesigns === 1) {
+        // list view
+        const thresholdDesign = 10;
+        setThresholdDesign(thresholdDesign);
+        const remainder = numToShowMoreDesign % thresholdDesign;
+        if (numToShowMoreDesign >= remainder && remainder !== 0) {
+          setNumToShowMoreDesign(numToShowMoreDesign - remainder + thresholdDesign);
+        }
+      }
+    } else if (type === "projects") {
+      if (viewForProjects === 0) {
+        // tiled view
+        const thresholdProject = 6;
+        setThresholdProject(thresholdProject);
+        const remainder = numToShowMoreProject % thresholdProject;
+        if (numToShowMoreProject >= remainder && remainder !== 0) {
+          setNumToShowMoreProject(numToShowMoreProject - remainder + thresholdProject);
+        }
+      } else if (viewForProjects === 1) {
+        // list view
+        const thresholdProject = 10;
+        setThresholdProject(thresholdProject);
+        const remainder = numToShowMoreProject % thresholdProject;
+        if (numToShowMoreProject >= remainder && remainder !== 0) {
+          setNumToShowMoreProject(numToShowMoreProject - remainder + thresholdProject);
+        }
+      }
+    }
+  };
+
   useEffect(() => {
     loadDesignDataForView();
     loadProjectDataForView();
-
-    if (viewForProjects === 0) {
-      setThreshold(6);
-    } else if (viewForProjects !== 1) {
-      setThreshold(10);
-    }
   }, []);
+
+  useEffect(() => {
+    setThresholdAfterViewChange("designs");
+    setThresholdAfterViewChange("projects");
+  }, [filteredDesigns, filteredProjects]);
 
   useEffect(() => {
     loadDesignDataForView();
@@ -162,39 +202,11 @@ function Homepage() {
   }, [userDoc]);
 
   useEffect(() => {
-    if (viewForDesigns === 0) {
-      // tiled view
-      const remainder = numToShowMoreDesign % 6;
-      if (remainder !== 0) {
-        setNumToShowMoreDesign(numToShowMoreDesign - remainder + 6);
-      }
-    } else if (viewForDesigns !== 1) {
-      // list view
-      const remainder = numToShowMoreDesign % 10;
-      if (remainder !== 0) {
-        setNumToShowMoreDesign(numToShowMoreDesign - remainder + 10);
-      }
-    }
+    setThresholdAfterViewChange("designs");
   }, [viewForDesigns]);
 
   useEffect(() => {
-    if (viewForProjects === 0) {
-      // tiled view
-      const threshold = 6;
-      setThreshold(threshold);
-      const remainder = numToShowMoreProject % threshold;
-      if (remainder !== 0) {
-        setNumToShowMoreProject(numToShowMoreProject - remainder + threshold);
-      }
-    } else if (viewForProjects !== 1) {
-      // list view
-      const threshold = 10;
-      setThreshold(threshold);
-      const remainder = numToShowMoreProject % threshold;
-      if (remainder !== 0) {
-        setNumToShowMoreProject(numToShowMoreProject - remainder + threshold);
-      }
-    }
+    setThresholdAfterViewChange("projects");
   }, [viewForProjects]);
 
   return (
@@ -210,8 +222,7 @@ function Homepage() {
           <div className="header">
             <img
               style={{
-                height: "100px",
-                paddingTop: "18px",
+                height: "96px",
                 marginRight: "14px",
               }}
               src="/img/Logo-Colored.png"
@@ -279,6 +290,7 @@ function Homepage() {
                           <DesignIcon
                             id={design.id}
                             name={design.designName}
+                            design={design}
                             onOpen={() =>
                               navigate(`/design/${design.id}`, {
                                 state: { designId: design.id },
@@ -317,25 +329,26 @@ function Homepage() {
             </div>
           </div>
         </section>
-        {filteredDesigns.length > threshold + numToShowMoreDesign && (
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={() => setNumToShowMoreDesign(numToShowMoreDesign + threshold)}
-            sx={{
-              background: "var(--gradientButton)",
-              borderRadius: "20px",
-              color: "var(--color-white)",
-              fontWeight: "bold",
-              textTransform: "none",
-              "&:hover": {
-                background: "var(--gradientButtonHover)",
-              },
-            }}
-          >
-            Show More
-          </Button>
-        )}
+        {filteredDesigns.length > thresholdDesign &&
+          numToShowMoreDesign < filteredDesigns.length && (
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => setNumToShowMoreDesign(numToShowMoreDesign + thresholdDesign)}
+              sx={{
+                background: "var(--gradientButton)",
+                borderRadius: "20px",
+                color: "var(--color-white)",
+                fontWeight: "bold",
+                textTransform: "none",
+                "&:hover": {
+                  background: "var(--gradientButtonHover)",
+                },
+              }}
+            >
+              Show More
+            </Button>
+          )}
 
         <section className="recent-section">
           <div className="recent-designs">
@@ -376,6 +389,7 @@ function Homepage() {
                           <ProjectOptionsHome
                             id={project.id}
                             name={project.projectName}
+                            project={project}
                             onOpen={() =>
                               navigate(`/project/${project.id}`, {
                                 state: {
@@ -383,9 +397,15 @@ function Homepage() {
                                 },
                               })
                             }
-                            managers={getUsernames(project.managers).then((usernames) =>
-                              usernames.join(", ")
-                            )}
+                            managers={(async () => {
+                              const usernames = getUsernames(project.managers);
+                              return usernames.then((usernames) => {
+                                if (usernames.length > 3) {
+                                  return usernames.slice(0, 3).join(", ") + ", and more";
+                                }
+                                return usernames.join(", ");
+                              });
+                            })()}
                             createdAt={formatDateLong(project.createdAt)}
                             modifiedAt={formatDateLong(project.modifiedAt)}
                             optionsState={optionsState}
@@ -418,25 +438,26 @@ function Homepage() {
             </div>
           </div>
         </section>
-        {filteredProjects.length > threshold + numToShowMoreProject && (
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={() => setNumToShowMoreProject(numToShowMoreProject + threshold)}
-            sx={{
-              background: "var(--gradientButton)",
-              borderRadius: "20px",
-              color: "var(--color-white)",
-              fontWeight: "bold",
-              textTransform: "none",
-              "&:hover": {
-                background: "var(--gradientButtonHover)",
-              },
-            }}
-          >
-            Show More
-          </Button>
-        )}
+        {filteredProjects.length > thresholdProject &&
+          numToShowMoreProject < filteredProjects.length && (
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => setNumToShowMoreProject(numToShowMoreProject + thresholdProject)}
+              sx={{
+                background: "var(--gradientButton)",
+                borderRadius: "20px",
+                color: "var(--color-white)",
+                fontWeight: "bold",
+                textTransform: "none",
+                "&:hover": {
+                  background: "var(--gradientButtonHover)",
+                },
+              }}
+            >
+              Show More
+            </Button>
+          )}
 
         <div className="circle-button-container" style={{ bottom: "30px" }}>
           {menuOpen && (

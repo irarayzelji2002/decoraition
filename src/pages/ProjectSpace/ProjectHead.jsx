@@ -26,8 +26,13 @@ import { useNavigate } from "react-router-dom";
 import { useHandleNameChange, useProjectDetails } from "./backend/ProjectDetails";
 import { useParams } from "react-router-dom";
 import { showToast } from "../../functions/utils.js";
+import { handleDeleteProject } from "../Homepage/backend/HomepageActions.jsx";
+import { useSharedProps } from "../../contexts/SharedPropsContext.js";
+import { handleNameChange } from "./backend/ProjectDetails";
 
-function ProjectHead({ designName }) {
+function ProjectHead({ project }) {
+  const { user, userDoc, handleLogout } = useSharedProps();
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
@@ -36,7 +41,11 @@ function ProjectHead({ designName }) {
   const [isCopyLinkModalOpen, setIsCopyLinkModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [newName, setNewName] = useState(project?.projectName ?? "Untitled Project");
+  const [isEditingName, setIsEditingName] = useState(false);
+
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
@@ -45,22 +54,18 @@ function ProjectHead({ designName }) {
   const [role, setRole] = useState("Editor");
   const [notifyPeople, setNotifyPeople] = useState(true);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [tempName, setTempName] = useState(designName);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
   const [designs, setDesigns] = useState([]);
   const [userId, setUserId] = useState(null);
   const [projectData, setProjectData] = useState(null);
-  const [newName, setNewName] = useState("");
-  const [isEditingName, setIsEditingName] = useState(false);
   const { projectId } = useParams();
 
   const navigate = useNavigate();
 
   useProjectDetails(projectId, setUserId, setProjectData, setNewName);
-  const handleNameChange = useHandleNameChange(newName, userId, projectId, setIsEditingName);
 
   const handleEditNameToggle = () => {
     setIsEditingName((prev) => !prev);
@@ -168,11 +173,11 @@ function ProjectHead({ designName }) {
   };
 
   const handleOpenInfoModal = () => {
-    setIsInfoModalOpen(true);
+    navigate(`/details/project/${projectId}`);
   };
 
   const handleCloseInfoModal = () => {
-    setIsInfoModalOpen(false);
+    // setIsInfoModalOpen(false);
   };
   const handleInputClick = () => {
     // Enable edit mode when the input is clicked
@@ -190,49 +195,41 @@ function ProjectHead({ designName }) {
     setDarkMode(!darkMode);
     document.body.classList.toggle("dark-mode", !darkMode);
   };
-  const handleLogout = () => {
-    signOut(auth)
-      .then(() => {
-        navigate("/");
-      })
-      .catch((error) => {
-        console.error("Sign-out error:", error);
-      });
-  };
   const handleSettings = () => {
-    navigate(`/projSetting/${projectId}`);
+    navigate(`/settings/project/${projectId}`);
   };
 
-  const handleCopyLink = () => {
-    const currentLink = window.location.href; // Get the current URL
-    navigator.clipboard
-      .writeText(currentLink)
-      .then(() => {
-        toast.success("Link copied to clipboard!", {
-          className: "custom-toast-success", // Apply custom success class
-        }); // Show toast notification
-      })
-      .catch((err) => {
-        toast.error("Failed to copy link.", {
-          className: "custom-toast-success", // Apply custom success class
-        }); // Show error toast notification
-        console.error("Failed to copy: ", err);
-      });
+  // Rename Modal Action
+  const handleRename = (newName) => {
+    if (project.projectName === newName.trim()) {
+      return { success: false, message: "Name is the same as the current name." };
+    }
+    const result = handleNameChange(projectId, newName, user, setIsEditingName);
+    if (result.success) {
+      handleClose();
+      handleCloseRenameModal();
+      return { success: true, message: "Project name updated successfully" };
+    } else {
+      return { success: false, message: "Failed to update project name" };
+    }
+  };
+
+  // Copy Link Action
+  const handleCopyLink = async () => {
+    try {
+      const currentLink = window.location.href; // Get the current URL
+      await navigator.clipboard.writeText(currentLink);
+      showToast("success", "Link copied to clipboard!");
+      handleClose();
+    } catch (err) {
+      showToast("error", "Failed to copy link.");
+      console.error("Failed to copy: ", err);
+    }
   };
 
   return (
     <div className={`designHead stickyMenu ${menuOpen ? "darkened" : ""}`}>
-      <DrawerComponent
-        isDrawerOpen={isDrawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        toggleDarkMode={toggleDarkMode}
-        handleLogout={handleLogout}
-        handleSettings={handleSettings}
-        darkMode={darkMode}
-        username={username}
-        userEmail={user ? user.email : ""}
-        designs={designs}
-      />
+      <DrawerComponent isDrawerOpen={isDrawerOpen} onClose={() => setDrawerOpen(false)} />
       <div className="left">
         <IconButton
           size="large"
@@ -296,20 +293,19 @@ function ProjectHead({ designName }) {
             <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
           ) : (
             <DefaultMenu
-              project={true}
-              onClose={handleClose}
+              isDesign={false}
+              onOpenShareModal={handleShareClick}
               onCopyLink={handleCopyLink}
+              onSetting={handleSettings}
               onOpenDownloadModal={handleOpenDownloadModal}
               onOpenRenameModal={handleOpenRenameModal}
-              onSetting={handleSettings}
-              onOpenInfoModal={handleOpenInfoModal}
-              onOpenShareModal={handleShareClick}
               onDelete={handleOpenDeleteModal}
-              onChangeMode={handleChangeModeClick}
+              onOpenInfoModal={handleOpenInfoModal}
             />
           )}
         </Menu>
       </div>
+      {/* Share */}
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={handleCloseShareModal}
@@ -327,15 +323,32 @@ function ProjectHead({ designName }) {
         onClose={handleCloseShareConfirmationModal}
         collaborators={collaborators}
       />
-      <CopyLinkModal isOpen={isCopyLinkModalOpen} onClose={handleCloseCopyLinkModal} />
+      {/* Copy Link (No Modal) */}
+      {/* Settings (No Modal) */}
+      {/* Download */}
+      <DownloadModal
+        isOpen={isDownloadModalOpen}
+        onClose={handleCloseDownloadModal}
+        isDesign={false}
+        object={project}
+      />
+      {/* Rename */}
+      <RenameModal
+        isOpen={isRenameModalOpen}
+        onClose={handleCloseRenameModal}
+        handleRename={handleRename}
+        isDesign={false}
+        object={project}
+      />
+      {/* Delete */}
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        onDelete={handleDelete}
+        handleDelete={() => handleDeleteProject(userDoc.id, projectId, navigate)}
+        isDesign={false}
+        object={project}
       />
-      <DownloadModal isOpen={isDownloadModalOpen} onClose={handleCloseDownloadModal} />
-      <RenameModal isOpen={isRenameModalOpen} onClose={handleCloseRenameModal} />
-      <RestoreModal isOpen={isRestoreModalOpen} onClose={handleCloseRestoreModal} />
+      {/* Details */}
       <InfoModal isOpen={isInfoModalOpen} onClose={handleCloseInfoModal} />
     </div>
   );

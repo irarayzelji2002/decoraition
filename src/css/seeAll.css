@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: row;
   justify-content: start;
-  padding: 40px;
+  width: 90%;
 }
 
 .dropdown {
@@ -34,6 +34,65 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
+}
+
+.dropdownNew {
+  color: var(--color-white);
+  background-color: var(--bgMain);
+  border-bottom: 1px solid #4a4a4d;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.color-picker {
+  height: 50px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: #4a4a4d 2px solid;
+  margin: 8px;
+  border-radius: 8px;
+}
+
+.color-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ff0000; /* Example color, change as needed */
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.color-text {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.color-dropper {
+  margin-left: auto;
+}
+
+.modalColor {
+  background-color: var(--nav-card-modal);
+  padding: 20px;
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 100px;
+  margin-bottom: auto;
+  border-radius: 8px;
+}
+
+.dropdownNew.Mui-focused {
+  border-bottom: 1px solid var(--color-white); /* Change border color when focused */
+  outline: none;
+  box-shadow: none; /* Remove blue outline effect */
+  color: var(--color-white); /* Ensure text color remains white */
+}
+
+.dropdownNew.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-white);
 }
 
 .modal-content {
@@ -114,4 +173,47 @@
 .pagination-arrow:hover {
   background-image: var(--gradientButton);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.scrollable-div {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* Allow content to wrap */
+  margin: 16px;
+  width: 95%;
+  margin-top: 24px;
+}
+
+.custom-selectAll {
+  color: var(--color-white) !important;
+  border-radius: 12px !important;
+  border: 2px solid var(--borderInput) !important;
+  margin-left: 12px;
+  height: 40px;
+  margin-bottom: 12px;
+}
+
+.custom-selectAll .MuiOutlinedInput-notchedOutline {
+  border: none;
+}
+
+.custom-selectAll:hover .MuiOutlinedInput-notchedOutline {
+  border: none;
+}
+
+.custom-selectAll.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border: none;
+}
+
+.label-dropdown {
+  color: var(--color-white) !important;
+  margin-left: 12px;
+  margin-top: -4px;
+  font-size: 12px !important;
+}
+
+@media (max-width: 600px) {
+  .scrollable-div {
+    justify-content: start;
+  }
 }

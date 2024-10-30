@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Chip, TextField, Box, InputAdornment, Divider } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import { AddCollaborators } from "../pages/DesignSpace/svg/AddImage";
 
 const EmailInput = () => {
   const [emails, setEmails] = useState([]);
@@ -28,7 +29,7 @@ const EmailInput = () => {
   return (
     <Box sx={{ width: "100%" }}>
       <Box display="flex" justifyContent="start" alignItems="center">
-        <PersonAddIcon sx={{ mr: 1 }} />
+        <AddCollaborators />
         <input // Input field at the top
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
@@ -44,7 +45,7 @@ const EmailInput = () => {
         />
       </Box>
 
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, marginTop: 1 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, marginLeft: "16px" }}>
         {emails.map((email, index) => (
           <Chip
             key={index}
@@ -52,7 +53,7 @@ const EmailInput = () => {
             onDelete={() => handleDelete(email)}
             sx={{
               height: 24,
-
+              margin: 0.5,
               backgroundColor: "var(--budgetCard)",
               color: "var(--color-white)",
               "&:hover": {

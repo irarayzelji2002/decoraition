@@ -71,3 +71,28 @@ h5 {
   text-decoration-color: var(--color-quaternary-hover) !important;
   cursor: pointer;
 }
+
+.terms-checkbox {
+  display: flex;
+  align-items: center;
+  color: #fff; /* Adjust color as needed */
+  font-size: 16px;
+}
+
+.terms-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  accent-color: #d33; /* Customize checkbox color */
+}
+
+.terms-checkbox label {
+  font-size: 16px;
+  color: #d3d3d3;
+}
+
+.terms-checkbox a {
+  color: #d33;
+  text-decoration: underline;
+  font-weight: bold;
+}

@@ -27,6 +27,9 @@
     "dotenv": "^16.4.5",
     "env-cmd": "^10.1.0",
     "firebase": "^10.13.1",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
+    "jszip": "^3.10.1",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
     "mui-color-input": "^4.0.0",
@@ -53,7 +56,8 @@
     "workbox-range-requests": "^6.6.0",
     "workbox-routing": "^6.6.0",
     "workbox-strategies": "^6.6.0",
-    "workbox-streams": "^6.6.0"
+    "workbox-streams": "^6.6.0",
+    "xlsx-js-style": "^1.2.0"
   },
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run react\"",

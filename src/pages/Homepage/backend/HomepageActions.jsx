@@ -107,12 +107,15 @@ export const handleDeleteDesign = async (user, designId, navigate) => {
     if (response.status === 200) {
       showToast("success", "Design deleted successfully");
       navigate("/seeAllDesigns");
+      return { success: true, message: "Design deleted successfully" };
     } else {
       showToast("error", "Failed to delete design.");
+      return { success: false, message: "Failed to delete design" };
     }
   } catch (error) {
     console.error("Error deleting design:", error);
     showToast("error", "Failed to delete design");
+    return { success: false, message: "Failed to delete design" };
   }
 };
 
@@ -132,12 +135,15 @@ export const handleDeleteProject = async (user, projectId, navigate) => {
     if (response.status === 200) {
       showToast("success", "Project deleted successfully");
       navigate("/seeAllProjects");
+      return { success: false, message: "Project deleted successfully" };
     } else {
       showToast("error", "Failed to delete project.");
+      return { success: false, message: "Failed to delete project" };
     }
   } catch (error) {
     console.error("Error deleting project:", error);
     showToast("error", "Failed to delete project");
+    return { success: false, message: "Failed to delete project" };
   }
 };
 
@@ -238,6 +244,62 @@ export const formatDateLong = (timestamp) => {
       day: "numeric",
       year: "numeric",
     })
+  );
+};
+
+// For Details Modal
+export const formatDateDetail = (timestamp) => {
+  const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+
+  const dateAgo = formatDateAgo(date);
+  if (dateAgo) return dateAgo;
+
+  // Get hours and minutes from the date object
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  // Format time in AM/PM format
+  const formattedTime = `${hours % 12 || 12}:${minutes.toString().padStart(2, "0")} ${
+    hours >= 12 ? "PM" : "AM"
+  }`;
+
+  // If more than a day, return the date in "Month Day, Year" format with time
+  return (
+    date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }) +
+    " at " +
+    formattedTime
+  );
+};
+
+// For Restore and History Modal
+export const formatDateDetailComma = (timestamp) => {
+  const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+
+  const dateAgo = formatDateAgo(date);
+  if (dateAgo) return dateAgo;
+
+  // Get hours and minutes from the date object
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  // Format time in AM/PM format
+  const formattedTime = `${hours % 12 || 12}:${minutes.toString().padStart(2, "0")} ${
+    hours >= 12 ? "PM" : "AM"
+  }`;
+
+  // If more than a day, return the date in "Month Day, Year" format with time
+  return (
+    date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }) +
+    ", " +
+    formattedTime
   );
 };
 

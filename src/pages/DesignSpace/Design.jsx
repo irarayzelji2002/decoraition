@@ -12,8 +12,7 @@ import { getAuth } from "firebase/auth";
 import PromptBar from "./PromptBar";
 import BottomBar from "./BottomBar";
 import Loading from "../../components/Loading";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import CommentTabs from "./CommentTabs";
 import { ToastContainer, toast } from "react-toastify";
 import Version from "./Version";
 import "../../css/design.css";
@@ -35,45 +34,29 @@ function Design() {
   const [design, setDesign] = useState({});
 
   // const [designData, setDesignData] = useState(null);
-  const [newName, setNewName] = useState(design?.designName ?? "Untitled Design");
   const [showComments, setShowComments] = useState(false);
 
   const [showPromptBar, setShowPromptBar] = useState(true);
   const [numImageFrames, setNumImageFrames] = useState(2);
-  const [isEditingName, setIsEditingName] = useState(false);
   // const [userId, setUserId] = useState(null);
   const [status, setStatus] = useState("Open");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar
   const [activeTab, setActiveTab] = useState(0);
 
   const [loading, setLoading] = useState(true);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   useEffect(() => {
     if (designId && userDesigns.length > 0) {
-      setLoading(true);
-      const fetchedDesign = userDesigns.find((design) => design.id === designId);
+      const fetchedDesign = userDesigns.find((d) => d.id === designId);
 
       if (!fetchedDesign) {
         console.error("Design not found.");
-      } else {
+      } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
         setDesign(fetchedDesign);
-        setNewName(fetchedDesign?.designName ?? "Untitled Design");
-      }
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (designId && userDesigns.length > 0) {
-      const fetchedDesign = userDesigns.find((design) => design.id === designId);
-
-      if (!fetchedDesign) {
-        console.error("Design not found.");
-      } else if (!deepEqual(design, fetchedDesign)) {
-        setDesign(fetchedDesign);
-        setNewName(fetchedDesign?.designName ?? "Untitled Design");
       }
     }
+    setLoading(false);
   }, [designId, userDesigns]);
 
   const handleTabChange = (event, newValue) => {
@@ -103,6 +86,14 @@ function Design() {
     return cleanup;
   }, [isSidebarOpen]);
 
+  const handleNotifClick = () => {
+    setIsNotifOpen(true);
+  };
+
+  const handleNotifClose = () => {
+    setIsNotifOpen(false);
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -115,43 +106,21 @@ function Design() {
     <div className="whole">
       <DesignHead
         design={design}
-        newName={newName}
-        setNewName={setNewName}
-        isEditingName={isEditingName}
         toggleComments={() => toggleComments(setShowComments)}
-        handleNameChange={() => handleNameChange(designId, newName, user, setIsEditingName)}
-        setIsEditingName={setIsEditingName}
-        setIsSidebarOpen={setIsSidebarOpen}
+        setIsSidebarOpen={handleNotifClick}
       />
 
       <>
         <div className="create-design">
           <div className="workspace">
             {showPromptBar && <PromptBar />}
-            <div className="fixed-arrow-button" onClick={() => togglePromptBar(setShowPromptBar)}>
-              {/* <div className="arrow-button">
-                {showPromptBar ? (
-                  <ArrowBackIosIcon sx={{ color: "var(--color-white) " }} />
-                ) : (
-                  <ArrowForwardIosIcon sx={{ color: "var(--color-white)" }} />
-                )}
-              </div> */}
-            </div>
+            <div
+              className="fixed-arrow-button"
+              onClick={() => togglePromptBar(setShowPromptBar)}
+            ></div>
 
+            <Version isDrawerOpen={isNotifOpen} onClose={handleNotifClose} />
             <div className="working-area">
-              <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
-                <button onClick={() => setIsSidebarOpen(false)} className="close-sidebar">
-                  Close
-                </button>
-                <div className="sidebar-content">
-                  <Version />
-                </div>
-              </div>
-
-              {isSidebarOpen && (
-                <div className="overlay" onClick={() => setIsSidebarOpen(false)}></div>
-              )}
-
               <div className="frame-buttons">
                 <button onClick={() => setNumImageFrames(2)}>
                   <TwoFrames />
@@ -173,89 +142,12 @@ function Design() {
               </div>
             </div>
             {showComments && (
-              <div className="comment-section">
-                <Tabs
-                  value={activeTab}
-                  onChange={handleTabChange}
-                  TabIndicatorProps={{
-                    style: {
-                      backgroundImage: "var(--gradientFont)", // Customize the indicator color
-                    },
-                  }}
-                >
-                  <Tab
-                    sx={{
-                      fontWeight: "bold",
-                      textTransform: "none",
-                      color: activeTab === 0 ? "var(--brightFont)" : "var(--color-white)",
-
-                      "&.Mui-selected": {
-                        color: "transparent", // Hide the actual text color
-                        backgroundImage: "var(--gradientFont)", // Apply background image
-                        backgroundClip: "text",
-                        WebkitBackgroundClip: "text",
-                        fontWeight: "bold", // Optional: make text bold to stand out
-                      },
-                    }}
-                    label="All Comments"
-                  />
-                  <Tab
-                    sx={{
-                      fontWeight: "bold",
-                      textTransform: "none",
-                      color: activeTab === 1 ? "var(--brightFont)" : "var(--color-white)",
-                      "&:focus": {
-                        outline: "none",
-                        backgroundColor: "transparent",
-                      },
-                      "&:active": {
-                        outline: "none",
-                        backgroundColor: "transparent",
-                      },
-
-                      "&.Mui-selected": {
-                        color: "transparent", // Hide the actual text color
-                        backgroundImage: "var(--gradientFont)", // Apply background image
-                        backgroundClip: "text",
-                        WebkitBackgroundClip: "text",
-                        fontWeight: "bold",
-                      },
-                    }}
-                    label="For You"
-                  />
-                </Tabs>
-
-                <Select
-                  value={status}
-                  onChange={handleStatusChange}
-                  displayEmpty
-                  sx={{
-                    marginTop: 2,
-                    marginBottom: 2,
-                    color: "var(--color-grey)",
-                    borderRadius: 2,
-                    border: "1px solid var(--color-grey)",
-                    width: "150px",
-                    height: "30px",
-                  }}
-                >
-                  <MenuItem value="Open">Open</MenuItem>
-                  <MenuItem value="Resolved">Resolved</MenuItem>
-                </Select>
-
-                {activeTab === 0 && (
-                  <>
-                    <CommentContainer />
-                    <button className="add-comment-button">Add a comment</button>
-                  </>
-                )}
-                {activeTab === 1 && (
-                  <>
-                    <CommentContainer />
-                    <button className="add-comment-button">Add a comment</button>
-                  </>
-                )}
-              </div>
+              <CommentTabs
+                activeTab={activeTab}
+                handleTabChange={handleTabChange}
+                status={status}
+                handleStatusChange={handleStatusChange}
+              />
             )}
           </div>
         </div>

@@ -14,6 +14,8 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Link from "@mui/material/Link";
 import InputAdornment from "@mui/material/InputAdornment";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -62,6 +64,7 @@ const Signup = () => {
   const [username, setUsername] = useState("");
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -86,6 +89,7 @@ const Signup = () => {
       formErrors.password = "Password must contain at least 1 special character";
     if (!confirmPassword) formErrors.confirmPassword = "Please confirm your password";
     else if (password !== confirmPassword) formErrors.confirmPassword = "Passwords do not match";
+    if (!isChecked) formErrors.terms = "Please agree to the terms and conditions";
 
     return formErrors;
   };
@@ -269,6 +273,7 @@ const Signup = () => {
               }}
               sx={commonInputStyles}
             />
+            <TermsCheckbox isChecked={isChecked} setIsChecked={setIsChecked} errors={errors} />
             <Button
               type="submit"
               fullWidth
@@ -302,3 +307,46 @@ const Signup = () => {
 };
 
 export default Signup;
+
+const TermsCheckbox = ({ isChecked, setIsChecked, errors }) => {
+  const handleChange = (event) => {
+    setIsChecked(event.target.checked);
+  };
+
+  return (
+    <div className="terms-checkbox">
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={isChecked}
+            onChange={handleChange}
+            sx={{
+              color: "var(--color-white)",
+              "&.Mui-checked": {
+                color: "var(--brightFont)",
+              },
+              borderRadius: "4px",
+              "& .MuiSvgIcon-root": {
+                fontSize: 28,
+              },
+            }}
+          />
+        }
+        label={
+          <label htmlFor="terms">
+            I understand and agree with{" "}
+            <a href="/terms" target="_blank" rel="noopener noreferrer">
+              Terms & Conditions
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer">
+              Privacy & Policy
+            </a>
+            .
+          </label>
+        }
+      />
+      {errors?.terms && <p className="error-text">{errors.terms}</p>}
+    </div>
+  );
+};

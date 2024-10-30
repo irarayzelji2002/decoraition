@@ -11,10 +11,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import InfoIcon from "@mui/icons-material/Info";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
+import DriveFileRenameOutlineRoundedIcon from "@mui/icons-material/DriveFileRenameOutlineRounded";
 import { Link, useNavigate } from "react-router-dom";
 
 const DefaultMenu = ({
-  project,
+  isDesign,
   onComment,
   onCopyLink,
   onOpenDownloadModal,
@@ -30,7 +31,7 @@ const DefaultMenu = ({
 }) => {
   return (
     <>
-      {!project && (
+      {isDesign && (
         <MenuItem onClick={onComment}>
           <ListItemIcon>
             <CommentIcon sx={{ color: "var(--color-white)" }} />
@@ -50,7 +51,7 @@ const DefaultMenu = ({
         </ListItemIcon>
         <ListItemText primary="Copy Link" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
-      {!project && (
+      {isDesign && (
         <MenuItem onClick={setIsSidebarOpen}>
           <ListItemIcon>
             <HistoryIcon sx={{ color: "var(--color-white)" }} />
@@ -64,7 +65,7 @@ const DefaultMenu = ({
         </ListItemIcon>
         <ListItemText primary="Settings" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
-      {!project && (
+      {isDesign && (
         <MenuItem onClick={onChangeMode}>
           <ListItemIcon>
             <EditIcon sx={{ color: "var(--color-white)" }} />
@@ -78,7 +79,7 @@ const DefaultMenu = ({
         </ListItemIcon>
         <ListItemText primary="Download" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
-      {!project && (
+      {isDesign && (
         <MenuItem onClick={onOpenMakeCopyModal}>
           <ListItemIcon>
             <FileCopyIcon sx={{ color: "var(--color-white)" }} />
@@ -86,7 +87,7 @@ const DefaultMenu = ({
           <ListItemText primary="Make a Copy" sx={{ color: "var(--color-white)" }} />
         </MenuItem>
       )}
-      {!project && (
+      {isDesign && (
         <MenuItem onClick={onOpenRestoreModal}>
           <ListItemIcon>
             <RestoreIcon sx={{ color: "var(--color-white)" }} />
@@ -96,7 +97,7 @@ const DefaultMenu = ({
       )}
       <MenuItem onClick={onOpenRenameModal}>
         <ListItemIcon>
-          <EditIcon sx={{ color: "var(--color-white)" }} />
+          <DriveFileRenameOutlineRoundedIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Rename" sx={{ color: "var(--color-white)" }} />
       </MenuItem>
@@ -105,7 +106,7 @@ const DefaultMenu = ({
           <DeleteIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Delete" sx={{ color: "var(--color-white)" }} />
-      </MenuItem>{" "}
+      </MenuItem>
       <MenuItem onClick={onOpenInfoModal}>
         <ListItemIcon>
           <InfoIcon sx={{ color: "var(--color-white)" }} />

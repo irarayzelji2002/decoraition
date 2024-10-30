@@ -1,0 +1,41 @@
+.error-container {
+  background-image: var(--bg-header);
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+.error-title {
+  font-size: 10rem;
+  background-image: var(--gradientFont);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+.error-message {
+  font-size: 2rem;
+  background-image: var(--gradientFont);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+.back-home {
+  padding: 10px 20px;
+  background-image: var(--gradientButton);
+  color: white;
+  text-decoration: none;
+  border-radius: 20px;
+  font-weight: bold;
+}
+.back-home:hover {
+  background-image: var(--gradientButtonHover);
+  font-weight: bold;
+}

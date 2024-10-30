@@ -6,7 +6,11 @@ import { useAuth } from "./contexts/AuthContext.js";
 import "./App.css";
 import Layout from "./components/Layout.jsx";
 import Loading from "./components/Loading.jsx";
+import Error from "./components/Error.jsx";
 import Landing from "./pages/Landing/Landing.jsx";
+import FAQ from "./pages/Homepage/FAQ.jsx";
+import Terms from "./pages/Account/Terms.jsx";
+import Privacy from "./pages/Account/Privacy.jsx";
 import Login from "./pages/Account/Login.jsx";
 import Register from "./pages/Account/Register.jsx";
 import Users from "./users.js";
@@ -28,10 +32,12 @@ import ProjBudget from "./pages/ProjectSpace/ProjBudget.jsx";
 import PlanMap from "./pages/ProjectSpace/PlanMap.jsx";
 import Timeline from "./pages/ProjectSpace/Timeline.jsx";
 import AddPin from "./pages/ProjectSpace/AddPin.jsx";
+import PinOrder from "./pages/ProjectSpace/PinOrder.jsx";
 import EditEvent from "./pages/ProjectSpace/EditEvent.jsx";
 import ProjSetting from "./pages/Settings/ProjSetting.jsx";
 import Version from "./pages/DesignSpace/Version.jsx";
 import DesignSettings from "./pages/DesignSpace/DesignSettings.jsx";
+import GenerateImgLoadingPage from "./components/GenerateImgLoadingPage.jsx";
 
 function ProtectedRoute({ children }) {
   const { user, userDoc, userDocFetched } = useAuth();
@@ -64,6 +70,10 @@ function App() {
               {/* PUBLIC ROUTES */}
               <Route path="/" element={<StartElement />} />
               <Route path="/landing" element={<Landing />} />
+              <Route path="/error" element={<Error />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
 
               {/* AUTH PUBLIC ROUTES */}
               <Route
@@ -141,7 +151,7 @@ function App() {
                 }
               />
               <Route
-                path="/details/:designId"
+                path="/details/:type/:id"
                 element={
                   <ProtectedRoute>
                     <Details />
@@ -167,7 +177,15 @@ function App() {
                 }
               />
               <Route
-                path="/setting/:designId"
+                path="/generateImgLoadingPage"
+                element={
+                  <ProtectedRoute>
+                    <GenerateImgLoadingPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings/design/:designId"
                 element={
                   <ProtectedRoute>
                     <DesignSettings />
@@ -216,7 +234,7 @@ function App() {
                 }
               />
               <Route
-                path="/projSetting/:projectId"
+                path="/settings/project/:projectId"
                 element={
                   <ProtectedRoute>
                     <ProjSetting />
@@ -244,6 +262,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <AddPin />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/pinOrder/:projectId"
+                element={
+                  <ProtectedRoute>
+                    <PinOrder />
                   </ProtectedRoute>
                 }
               />

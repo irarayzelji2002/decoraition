@@ -115,15 +115,26 @@ router.post(
   designController.restoreDesignVersion
 );
 router.post("/design/:designId/copy/:versionId", authenticateUser, designController.copyDesign);
+router.post("/design/:designId/share", authenticateUser, designController.shareDesign);
+router.post(
+  "/design/:designId/change-access",
+  authenticateUser,
+  designController.changeAccessDesign
+);
 
 // Project routes
 router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);
-router.post("/project/create", authenticateUser, projectController.handleCreateProject);
-router.post("/project/delete/:projectId", authenticateUser, projectController.handleDeleteProject);
+router.post("/project/create", authenticateUser, projectController.createProject);
+router.post("/project/delete/:projectId", authenticateUser, projectController.deleteProject);
 router.put(
   "/project/:projectId/update-name",
   authenticateUser,
   projectController.updateProjectName
+);
+router.put(
+  "/project/:projectId/update-settings",
+  authenticateUser,
+  projectController.updateProjectSettings
 );
 
 module.exports = router;

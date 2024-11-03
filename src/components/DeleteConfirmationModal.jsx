@@ -10,6 +10,7 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { showToast } from "../functions/utils";
 
 const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, object }) => {
   // if isDesign is true, object is a design object, else it is a project object
@@ -29,9 +30,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
       setError(result.message);
       return;
     }
-    setError("");
-    setConfirmText("");
-    onClose();
+    handleClose();
   };
 
   const handleClose = () => {
@@ -58,7 +57,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
           color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
-          borderBottom: "1px solid var(--color-grey)",
+          borderBottom: "1px solid var(--inputBg)",
           fontWeight: "bold",
         }}
       >

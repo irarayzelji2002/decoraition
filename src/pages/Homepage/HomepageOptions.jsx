@@ -11,6 +11,8 @@ import {
 import { handleNameChange as handleNameChangeProject } from "../ProjectSpace/backend/ProjectDetails";
 
 import ShareModal from "../../components/ShareModal";
+import ManageAccessModal from "../../components/ManageAccessModal.jsx";
+import ShareMenu from "../../components/ShareMenu";
 import CopyLinkModal from "../../components/CopyLinkModal";
 import DownloadModal from "../../components/DownloadModal";
 import MakeCopyModal from "../../components/MakeCopyModal";
@@ -58,7 +60,11 @@ function HomepageOptions({
 }) {
   const navigate = useNavigate();
   const { appURL, user, userDoc } = useSharedProps();
+  const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showManageAccessModal, setShowManageAccessModal] = useState(false);
+  const [showViewCollabModal, setShowViewCollabModal] = useState(false);
+  const [isViewCollab, setIsViewCollab] = useState(true);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -67,6 +73,47 @@ function HomepageOptions({
   const [isEditingName, setIsEditingName] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const optionsRef = useRef(null);
+
+  useEffect(() => {
+    // Find access level of the user (to display Manage Access/View Collaborators in ShareMenu)
+    if (isDesign) {
+      const design = object;
+      if (!design || !user || !userDoc) return;
+
+      // Check if user is owner or editor (manage access), then commenters and viewers (view only)
+      if (userDoc.id === design.owner) {
+        setIsViewCollab(false);
+        return;
+      }
+      if (design.editors?.includes(userDoc.id)) {
+        setIsViewCollab(false);
+        return;
+      }
+      if (design.commenters?.includes(userDoc.id) || design.viewers?.includes(userDoc.id)) {
+        setIsViewCollab(true);
+        return;
+      }
+      setIsViewCollab(true);
+    } else {
+      const project = object;
+      if (!project || !user || !userDoc) return;
+
+      // Check if user is manager or content manager (manage access), then contributor and viewers (view only)
+      if (project.managers?.includes(userDoc.id)) {
+        setIsViewCollab(false);
+        return;
+      }
+      if (project.contentManagers?.includes(userDoc.id)) {
+        setIsViewCollab(false);
+        return;
+      }
+      if (project.contributors?.includes(userDoc.id) || project.viewers?.includes(userDoc.id)) {
+        setIsViewCollab(true);
+        return;
+      }
+      setIsViewCollab(true);
+    }
+  }, [object, user, userDoc]);
 
   const handleToggleOptions = (id) => {
     setClickedId(id);
@@ -78,6 +125,7 @@ function HomepageOptions({
   const handleClickOutside = (event) => {
     if (optionsRef.current && !optionsRef.current.contains(event.target)) {
       toggleOptions(id);
+      setIsShareMenuOpen(false);
     }
   };
 
@@ -89,6 +137,24 @@ function HomepageOptions({
 
   const closeShareModal = () => {
     setShowShareModal(false);
+  };
+
+  const openManageAccessModal = () => {
+    setShowManageAccessModal(true);
+    toggleOptions(id);
+  };
+
+  const closeManageAccessModal = () => {
+    setShowManageAccessModal(false);
+  };
+
+  const openViewCollabModal = () => {
+    setShowViewCollabModal(true);
+    toggleOptions(id);
+  };
+
+  const closeViewCollabModal = () => {
+    setShowViewCollabModal(false);
   };
 
   // Copy Link Functions
@@ -245,60 +311,93 @@ function HomepageOptions({
             </IconButton>
           </h3>
         )}
-        {optionsState.showOptions && optionsState.selectedId === id && (
-          <div
-            ref={optionsRef}
-            className="dropdown-menu"
-            style={{
-              marginRight: isTable ? "-50px" : !isTable ? "-10px" : "",
-              marginTop: isTable ? "6px" : !isTable ? "10px" : "",
-              top: !isTable ? "100%" : "",
-            }}
-          >
-            <div className="dropdown-item" onClick={onOpen}>
-              <OpenInNewIcon style={{ fontSize: 20 }} className="icon" />
-              Open
-            </div>
-            <div className="dropdown-item" onClick={openShareModal}>
-              <ShareIcon style={{ fontSize: 20 }} className="icon" />
-              Share
-            </div>
-            <div className="dropdown-item" onClick={handleCopyLink}>
-              <LinkIcon style={{ fontSize: 20 }} className="icon" />
-              Copy Link
-            </div>
-            <div className="dropdown-item" onClick={handleSettings}>
-              <SettingsIcon style={{ fontSize: 20 }} className="icon" />
-              Settings
-            </div>
-            <div className="dropdown-item" onClick={openDownloadModal}>
-              <DownloadIcon style={{ fontSize: 20 }} className="icon" />
-              Download
-            </div>
-            {isDesign && (
-              <div className="dropdown-item" onClick={openCopyModal}>
-                <FileCopyIcon style={{ fontSize: 20 }} className="icon" />
-                Make a copy
+        {optionsState.showOptions &&
+          optionsState.selectedId === id &&
+          (isShareMenuOpen ? (
+            <ShareMenu
+              onClose={() => setIsShareMenuOpen(false)}
+              onBackToMenu={() => setIsShareMenuOpen(false)}
+              onOpenShareModal={openShareModal}
+              onOpenManageAccessModal={openManageAccessModal}
+              onOpenManageAccessModalView={openViewCollabModal}
+              isViewCollab={isViewCollab}
+            />
+          ) : (
+            <div
+              ref={optionsRef}
+              className="dropdown-menu"
+              style={{
+                marginRight: isTable ? "-50px" : !isTable ? "-10px" : "",
+                marginTop: isTable ? "6px" : !isTable ? "10px" : "",
+                top: !isTable ? "100%" : "",
+              }}
+            >
+              <div className="dropdown-item" onClick={onOpen}>
+                <OpenInNewIcon style={{ fontSize: 20 }} className="icon" />
+                Open
               </div>
-            )}
-            <div className="dropdown-item" onClick={openRenameModal}>
-              <DriveFileRenameOutlineRoundedIcon style={{ fontSize: 20 }} className="icon" />
-              Rename
+              <div className="dropdown-item" onClick={() => setIsShareMenuOpen(true)}>
+                <ShareIcon style={{ fontSize: 20 }} className="icon" />
+                Share
+              </div>
+              <div className="dropdown-item" onClick={handleCopyLink}>
+                <LinkIcon style={{ fontSize: 20 }} className="icon" />
+                Copy Link
+              </div>
+              <div className="dropdown-item" onClick={handleSettings}>
+                <SettingsIcon style={{ fontSize: 20 }} className="icon" />
+                Settings
+              </div>
+              <div className="dropdown-item" onClick={openDownloadModal}>
+                <DownloadIcon style={{ fontSize: 20 }} className="icon" />
+                Download
+              </div>
+              {isDesign && (
+                <div className="dropdown-item" onClick={openCopyModal}>
+                  <FileCopyIcon style={{ fontSize: 20 }} className="icon" />
+                  Make a copy
+                </div>
+              )}
+              <div className="dropdown-item" onClick={openRenameModal}>
+                <DriveFileRenameOutlineRoundedIcon style={{ fontSize: 20 }} className="icon" />
+                Rename
+              </div>
+              <div className="dropdown-item" onClick={openDeleteModal}>
+                <DeleteIcon style={{ fontSize: 20 }} className="icon" />
+                Delete
+              </div>
+              <div className="dropdown-item" onClick={handleOpenInfoModal}>
+                <InfoIcon style={{ fontSize: 20 }} className="icon" />
+                Details
+              </div>
             </div>
-            <div className="dropdown-item" onClick={openDeleteModal}>
-              <DeleteIcon style={{ fontSize: 20 }} className="icon" />
-              Delete
-            </div>
-            <div className="dropdown-item" onClick={handleOpenInfoModal}>
-              <InfoIcon style={{ fontSize: 20 }} className="icon" />
-              Details
-            </div>
-          </div>
-        )}
+          ))}
       </div>
 
       {/* Share */}
-      <ShareModal isOpen={showShareModal} onClose={closeShareModal} />
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={closeShareModal}
+        handleShare={() => {}}
+        isDesign={isDesign}
+        object={object}
+      />
+      <ManageAccessModal
+        isOpen={showManageAccessModal}
+        onClose={closeManageAccessModal}
+        handleSave={() => {}}
+        isDesign={isDesign}
+        object={object}
+        isViewCollab={false}
+      />
+      <ManageAccessModal
+        isOpen={showViewCollabModal}
+        onClose={closeViewCollabModal}
+        handleAccessChange={() => {}}
+        isDesign={isDesign}
+        object={object}
+        isViewCollab={true}
+      />
       {/* Download */}
       <DownloadModal
         isOpen={showDownloadModal}

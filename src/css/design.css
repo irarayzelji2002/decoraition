@@ -50,6 +50,7 @@
     margin-right: 4px;
   }
 }
+
 .seeAll {
   color: var(--brightFont) !important;
   text-align: right;
@@ -760,5 +761,176 @@ textarea {
     flex-direction: column;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for better visibility */
     z-index: 1; /* Ensure it is above other elements */
+  }
+}
+
+/* History/Version */
+.historyContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 100px;
+}
+
+.selectVersionImgContainer {
+  width: 110px;
+  /* Make the outer div slightly larger */
+  height: 110px;
+  border-radius: 50%;
+  padding: 4px;
+  /* Padding width determines border thickness */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin: auto;
+}
+
+.selectVersionImgContainer img {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.versionTitle {
+  text-align: center;
+  font-weight: 500;
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+
+.copyByTitle {
+  text-align: center;
+  margin-top: 5px;
+  color: var(--greyTextDarker);
+  font-size: 0.9rem;
+}
+
+.copyByTitle span {
+  display: block;
+}
+
+.copiedDesignTitle {
+  text-align: center;
+  margin-top: 5px;
+  color: var(--greyTextDarker);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.versionLine.vertical {
+  width: 3px;
+  height: 40px;
+  background: var(--noContent);
+  margin-left: 50%;
+}
+
+.origDesignExtraVertLine {
+  position: absolute;
+  bottom: -42px;
+  width: 3px;
+  height: 45px;
+  background: var(--noContent);
+  margin-left: 50%;
+}
+
+.versionLine.vertical.orig1 {
+  position: absolute;
+}
+
+.versionLine.vertical.copy {
+  /* margin-top: 2px;
+  margin-bottom: 10px; */
+
+  margin-top: -158px;
+  margin-bottom: 10px;
+  margin-left: 7%;
+  height: 220px;
+  position: absolute;
+}
+
+.versionLine.horizontal {
+  height: 3px;
+  width: 102px;
+  background: var(--noContent);
+  margin-top: 60px;
+  position: absolute;
+  transform: translateX(-32%);
+}
+
+.versionLine.horizontal.copy {
+  width: 52px;
+  transform: translateX(16px);
+}
+
+.versionItem {
+  position: relative;
+  margin: 26px 0;
+  width: 200px;
+}
+
+.origDesign {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.copiedVersionItem {
+  margin-left: 35px;
+  margin-bottom: 20px;
+  width: 200px;
+  height: 200px;
+}
+
+.copiedDesigns {
+  position: absolute;
+  margin-left: 200px;
+  margin-top: -201px;
+}
+
+.versionButtonsDiv {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 20px 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+  border-top: 1px solid var(--inputBg);
+}
+
+.conditionalPadding {
+  padding-bottom: 90px;
+}
+
+.historyImageFrame {
+  width: 512px;
+  height: 512px;
+  position: relative;
+  border: var(--nav-card-modal) 3px solid;
+  border-radius: 15px;
+  background-color: var(--dropdownSelected);
+}
+
+.historyImagePreview {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  position: absolute;
+  border-radius: 12px;
+}
+
+@media (max-width: 460px) {
+  .conditionalPadding {
+    padding-bottom: 147px;
+  }
+}
+
+@media (max-width: 460px) {
+  .historyContainer {
+    margin-bottom: 157px;
   }
 }

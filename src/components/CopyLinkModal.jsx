@@ -32,7 +32,7 @@ const CopyLinkModal = ({ isOpen, onClose }) => {
           color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
-          borderBottom: "1px solid var(--color-grey)",
+          borderBottom: "1px solid var(--inputBg)",
           fontWeight: "bold",
         }}
       >

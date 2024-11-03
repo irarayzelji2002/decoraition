@@ -1,18 +1,25 @@
-import React from "react";
-import { MenuItem, ListItemIcon, ListItemText } from "@mui/material";
-import CommentIcon from "@mui/icons-material/Comment";
-import ShareIcon from "@mui/icons-material/Share";
-import ContentCopy from "@mui/icons-material/ContentCopy";
-import HistoryIcon from "@mui/icons-material/History";
-import SettingsIcon from "@mui/icons-material/Settings";
-import DownloadIcon from "@mui/icons-material/Download";
-import RestoreIcon from "@mui/icons-material/Restore";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import InfoIcon from "@mui/icons-material/Info";
-import FileCopyIcon from "@mui/icons-material/FileCopy";
-import DriveFileRenameOutlineRoundedIcon from "@mui/icons-material/DriveFileRenameOutlineRounded";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { MenuItem, ListItemIcon, ListItemText, styled } from "@mui/material";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import {
+  CommentIcon,
+  ShareIcon,
+  CopyLinkIcon,
+  HistoryIcon,
+  SettingsIcon,
+  ViewIcon,
+  EditIcon,
+  DownloadIcon,
+  MakeACopyIcon,
+  RestoreIcon,
+  RenameIcon,
+  DeleteIcon,
+  DetailsIcon,
+} from "./svg/DefaultMenuIcons";
+
+const CustomMenuItem = styled(MenuItem)({
+  minHeight: "2.6rem !important",
+});
 
 const DefaultMenu = ({
   isDesign,
@@ -27,92 +34,127 @@ const DefaultMenu = ({
   onDelete,
   setIsSidebarOpen,
   onChangeMode,
+  changeMode = "Viewing",
   onSetting,
+  designSettingsVisibility = {
+    isDownloadVisible: false,
+    isHistoryVisible: false,
+    isMakeCopyVisible: false,
+    isRestoreVisible: false,
+    isRenameVisible: false,
+    isDeleteVisible: false,
+    isChangeModeVisible: false,
+  },
+  projectSettingsVisibility = {
+    isDownloadVisible: false,
+    isRenameVisible: false,
+    isDeleteVisible: false,
+  },
 }) => {
+  const [changeModeIcon, setChangeModeIcon] = useState(null);
+
+  useEffect(() => {
+    if (changeMode === "Editing") {
+      setChangeModeIcon(<EditIcon sx={{ color: "var(--color-white)" }} />);
+    } else if (changeMode === "Commenting") {
+      setChangeModeIcon(<CommentIcon sx={{ color: "var(--color-white)" }} />);
+    } else if (changeMode === "Viewing") {
+      setChangeModeIcon(<ViewIcon sx={{ color: "var(--color-white)" }} />);
+    }
+  }, [changeMode]);
   return (
     <>
       {isDesign && (
-        <MenuItem onClick={onComment}>
+        <CustomMenuItem onClick={onComment}>
           <ListItemIcon>
             <CommentIcon sx={{ color: "var(--color-white)" }} />
           </ListItemIcon>
           <ListItemText primary="Comment" sx={{ color: "var(--color-white)" }} />
-        </MenuItem>
+        </CustomMenuItem>
       )}
-      <MenuItem onClick={onOpenShareModal}>
+      <CustomMenuItem onClick={onOpenShareModal} sx={{ paddingRight: "10px" }}>
         <ListItemIcon>
           <ShareIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Share" sx={{ color: "var(--color-white)" }} />
-      </MenuItem>
-      <MenuItem onClick={onCopyLink}>
+        <ChevronRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
+      </CustomMenuItem>
+      <CustomMenuItem onClick={onCopyLink}>
         <ListItemIcon>
-          <ContentCopy sx={{ color: "var(--color-white)" }} />
+          <CopyLinkIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Copy Link" sx={{ color: "var(--color-white)" }} />
-      </MenuItem>
-      {isDesign && (
-        <MenuItem onClick={setIsSidebarOpen}>
+      </CustomMenuItem>
+      {isDesign && designSettingsVisibility.isHistoryVisible && (
+        <CustomMenuItem onClick={setIsSidebarOpen}>
           <ListItemIcon>
             <HistoryIcon sx={{ color: "var(--color-white)" }} />
           </ListItemIcon>
           <ListItemText primary="History" sx={{ color: "var(--color-white)" }} />
-        </MenuItem>
+        </CustomMenuItem>
       )}
-      <MenuItem onClick={onSetting}>
+      <CustomMenuItem onClick={onSetting}>
         <ListItemIcon>
           <SettingsIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Settings" sx={{ color: "var(--color-white)" }} />
-      </MenuItem>
-      {isDesign && (
-        <MenuItem onClick={onChangeMode}>
-          <ListItemIcon>
-            <EditIcon sx={{ color: "var(--color-white)" }} />
-          </ListItemIcon>
+      </CustomMenuItem>
+      {isDesign && designSettingsVisibility.isChangeModeVisible && (
+        <CustomMenuItem onClick={onChangeMode} sx={{ paddingRight: "10px" }}>
+          <ListItemIcon>{changeModeIcon}</ListItemIcon>
           <ListItemText primary="Change Mode" sx={{ color: "var(--color-white)" }} />
-        </MenuItem>
+          <ChevronRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
+        </CustomMenuItem>
       )}
-      <MenuItem onClick={onOpenDownloadModal}>
-        <ListItemIcon>
-          <DownloadIcon sx={{ color: "var(--color-white)" }} />
-        </ListItemIcon>
-        <ListItemText primary="Download" sx={{ color: "var(--color-white)" }} />
-      </MenuItem>
-      {isDesign && (
-        <MenuItem onClick={onOpenMakeCopyModal}>
+      {((isDesign && designSettingsVisibility.isDownloadVisible) ||
+        (!isDesign && projectSettingsVisibility.isDownloadVisible)) && (
+        <CustomMenuItem onClick={onOpenDownloadModal}>
           <ListItemIcon>
-            <FileCopyIcon sx={{ color: "var(--color-white)" }} />
+            <DownloadIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="Download" sx={{ color: "var(--color-white)" }} />
+        </CustomMenuItem>
+      )}
+      {isDesign && designSettingsVisibility.isMakeCopyVisible && (
+        <CustomMenuItem onClick={onOpenMakeCopyModal}>
+          <ListItemIcon>
+            <MakeACopyIcon sx={{ color: "var(--color-white)" }} />
           </ListItemIcon>
           <ListItemText primary="Make a Copy" sx={{ color: "var(--color-white)" }} />
-        </MenuItem>
+        </CustomMenuItem>
       )}
-      {isDesign && (
-        <MenuItem onClick={onOpenRestoreModal}>
+      {isDesign && designSettingsVisibility.isRestoreVisible && (
+        <CustomMenuItem onClick={onOpenRestoreModal}>
           <ListItemIcon>
             <RestoreIcon sx={{ color: "var(--color-white)" }} />
           </ListItemIcon>
           <ListItemText primary="Restore" sx={{ color: "var(--color-white)" }} />
-        </MenuItem>
+        </CustomMenuItem>
       )}
-      <MenuItem onClick={onOpenRenameModal}>
+      {((isDesign && designSettingsVisibility.isRenameVisible) ||
+        (!isDesign && projectSettingsVisibility.isRenameVisible)) && (
+        <CustomMenuItem onClick={onOpenRenameModal}>
+          <ListItemIcon>
+            <RenameIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="Rename" sx={{ color: "var(--color-white)" }} />
+        </CustomMenuItem>
+      )}
+      {((isDesign && designSettingsVisibility.isDeleteVisible) ||
+        (!isDesign && projectSettingsVisibility.isDeleteVisible)) && (
+        <CustomMenuItem onClick={onDelete}>
+          <ListItemIcon>
+            <DeleteIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="Delete" sx={{ color: "var(--color-white)" }} />
+        </CustomMenuItem>
+      )}
+      <CustomMenuItem onClick={onOpenInfoModal}>
         <ListItemIcon>
-          <DriveFileRenameOutlineRoundedIcon sx={{ color: "var(--color-white)" }} />
-        </ListItemIcon>
-        <ListItemText primary="Rename" sx={{ color: "var(--color-white)" }} />
-      </MenuItem>
-      <MenuItem onClick={onDelete}>
-        <ListItemIcon>
-          <DeleteIcon sx={{ color: "var(--color-white)" }} />
-        </ListItemIcon>
-        <ListItemText primary="Delete" sx={{ color: "var(--color-white)" }} />
-      </MenuItem>
-      <MenuItem onClick={onOpenInfoModal}>
-        <ListItemIcon>
-          <InfoIcon sx={{ color: "var(--color-white)" }} />
+          <DetailsIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Details" sx={{ color: "var(--color-white)" }} />
-      </MenuItem>
+      </CustomMenuItem>
     </>
   );
 };

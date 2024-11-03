@@ -2,7 +2,8 @@
 .loader {
   display: flex;
   justify-content: center;
-  background-image: var(--bg-header);
+  /* background-image: var(--bg-header); */
+  /* background-color: var(--bgMain); */
   align-items: center;
   flex-direction: column;
   gap: 30px;

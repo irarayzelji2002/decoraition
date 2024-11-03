@@ -35,10 +35,30 @@ export const getErrMessage = (variable, errors) => {
   }
 };
 
-export const stringAvatar = (passedname) => {
+export const stringAvatarColor = (passedname) => {
   let name = "";
   let initials = "";
   let bgColor = "#ff6262";
+  if (passedname === "undefined" || passedname === "null") {
+    name = "";
+    bgColor = "#F26B27";
+  } else if (passedname === "Deleted User") {
+    name = "";
+    bgColor = "#EF4E59";
+  } else {
+    name = passedname;
+    bgColor = stringToColor(name);
+  }
+
+  return {
+    backgroundColor: `${bgColor} !important`,
+    color: `${getContrastingTextColor(stringToColor(name))} !important`,
+  };
+};
+
+export const stringAvatarInitials = (passedname) => {
+  let name = "";
+  let initials = "";
   if (passedname === "undefined" || passedname === "null") {
     name = "";
   } else if (passedname === "Deleted User") {
@@ -47,16 +67,9 @@ export const stringAvatar = (passedname) => {
     name = passedname;
     const nameParts = name.split(" ");
     initials = nameParts.length > 1 ? `${nameParts[0][0]}${nameParts[1][0]}` : `${nameParts[0][0]}`;
-    bgColor = stringToColor(name);
   }
 
-  return {
-    sx: {
-      backgroundColor: `${bgColor} !important`,
-      color: `${getContrastingTextColor(stringToColor(name))} !important`,
-    },
-    children: initials.toUpperCase(),
-  };
+  return initials.toUpperCase();
 };
 
 export const stringToColor = (string) => {

@@ -11,6 +11,7 @@ import {
   Link,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { showToast } from "../functions/utils";
 
 const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
   // if isDesign is true, object is a design object, else it is a project object
@@ -22,11 +23,12 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
   const onSubmit = async () => {
     const result = await handleRename(newName);
     if (!result.success) {
-      setError(result.message);
+      if (result.message === "Name is the same as the current name") setError(result.message);
+      else showToast("error", result.message);
       return;
     }
-    setError("");
-    onClose();
+    showToast("success", "Design name updated successfully");
+    handleClose();
   };
 
   const handleClose = () => {
@@ -59,7 +61,7 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
           color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
-          borderBottom: "1px solid var(--color-grey)",
+          borderBottom: "1px solid var(--inputBg)",
           fontWeight: "bold",
         }}
       >

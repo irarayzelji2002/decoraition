@@ -20,6 +20,7 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
       open={isDrawerOpen}
       onClose={onClose}
       sx={{
+        zIndex: "13001",
         "& .MuiDrawer-paper": {
           width: { xs: "83%", sm: "38%" },
           minWidth: "300px",

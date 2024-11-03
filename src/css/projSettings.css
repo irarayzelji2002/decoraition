@@ -1,13 +1,12 @@
-.settingsContainer {
-  margin: 150px auto;
-  padding-bottom: 100px;
-  margin-top: 20px;
-  max-width: 1200px;
+.settingsContainerProj {
+  margin: auto;
+  padding: 20px;
+  max-width: 800px;
 }
 
 .generalAccessTitle {
   font-weight: bold;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .accessBox {
@@ -48,8 +47,10 @@
 }
 
 .viewerSettingsTitle {
-  font-weight: bold;
-  margin-bottom: 2rem;
+  font-size: 1.1rem !important;
+  font-weight: bold !important;
+  margin-bottom: 1rem !important;
+  margin-top: 2rem !important;
 }
 
 .viewerSettingsLabel {
@@ -60,8 +61,10 @@
 }
 
 .inactivityTitle {
-  font-weight: bold;
-  margin-bottom: 2rem;
+  font-size: 1.1rem !important;
+  font-weight: bold !important;
+  margin-bottom: 1rem !important;
+  margin-top: 2rem !important;
 }
 
 .inactivityLabel {
@@ -72,7 +75,10 @@
 }
 
 .inactivitySettings {
-  margin-bottom: 2rem;
+  font-size: 1.1rem !important;
+  font-weight: bold !important;
+  margin-bottom: 1.5rem !important;
+  margin-top: 1rem !important;
 }
 
 .inactivityTextField {
@@ -83,7 +89,8 @@
 .saveButtonContainer {
   display: flex;
   justify-content: center;
-  margin-top: 4rem;
+  margin-top: 2rem;
+  margin-bottom: 30px;
 }
 
 .saveButton.MuiButton-root {
@@ -108,7 +115,7 @@
 
 @media (max-width: 768px) {
   .settingsContainer {
-    margin: 100px 20px;
+    /* margin: 100px 20px; */
     padding-bottom: 50px;
   }
 

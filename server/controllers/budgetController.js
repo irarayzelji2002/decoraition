@@ -189,30 +189,66 @@ exports.updateItemIncludedInTotal = async (req, res) => {
 
 // Delete Budget Item
 exports.deleteItem = async (req, res) => {
+  let deletedItem = null;
+  let previousItems = null;
   try {
     const { itemId } = req.params;
     const { budgetId } = req.body;
 
-    // Delete the item from the items collection
-    await db.collection("items").doc(itemId).delete();
+    // Get item data first to store for potential rollback
+    const itemRef = db.collection("items").doc(itemId);
+    const itemDoc = await itemRef.get();
+    if (!itemDoc.exists) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+    deletedItem = itemDoc.data();
 
-    // Remove item from budget
+    // Update budget first
     const budgetRef = db.collection("budgets").doc(budgetId);
     const budgetDoc = await budgetRef.get();
     if (!budgetDoc.exists) {
       return res.status(404).json({ error: "Budget not found" });
     }
-    const currentItems = budgetDoc.data().items || [];
-    const updatedItems = currentItems.filter((id) => id !== itemId);
 
-    // Update the budget document with the new items array
+    previousItems = budgetDoc.data().items || [];
+    const updatedItems = previousItems.filter((id) => id !== itemId);
+
+    // Update the budget document with the new items array then delete the item from items collection
     await budgetRef.update({ items: updatedItems });
+    await itemRef.delete();
 
-    res
-      .status(200)
-      .json({ message: "Item deleted successfully and removed from budget", items: updatedItems });
+    res.status(200).json({
+      message: "Item deleted successfully and removed from budget",
+      items: updatedItems,
+    });
   } catch (error) {
     console.error("Error deleting item:", error);
-    res.status(500).json({ error: "Failed to delete item" });
+
+    // Rollback mechanism
+    try {
+      const { itemId } = req.params;
+      const { budgetId } = req.body;
+
+      if (deletedItem) {
+        // Restore deleted item if it was deleted
+        await db.collection("items").doc(itemId).set(deletedItem);
+      }
+
+      if (previousItems) {
+        // Restore budget's items array if it was updated
+        await db.collection("budgets").doc(budgetId).update({
+          items: previousItems,
+        });
+      }
+
+      console.log("Rollback completed successfully");
+    } catch (rollbackError) {
+      console.error("Error during rollback:", rollbackError);
+    }
+
+    res.status(500).json({
+      error: "Failed to delete item",
+      details: error.message,
+    });
   }
 };

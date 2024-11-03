@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "../../css/design.css";
 import Slider from "@mui/joy/Slider";
 import Button from "@mui/joy/Button";
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { FormControl, Select, Option } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Modal, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -11,8 +11,18 @@ import AddImage from "./svg/AddImage";
 import AddColor from "./svg/AddColor";
 
 import CreatePallete from "./CreatePallete";
-import { CssVarsProvider } from "@mui/joy/styles";
+import { extendTheme, CssVarsProvider } from "@mui/joy/styles";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+
+const theme = extendTheme({
+  components: {
+    JoySelect: {
+      defaultProps: {
+        indicator: <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />,
+      },
+    },
+  },
+});
 
 function PromptBar() {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
@@ -43,7 +53,7 @@ function PromptBar() {
   };
 
   return (
-    <CssVarsProvider>
+    <CssVarsProvider theme={theme}>
       <div className="promptBar">
         <h3>
           Describe your Idea
@@ -97,7 +107,7 @@ function PromptBar() {
           }}
         >
           <div>
-            <h3>Upload image of the space</h3>
+            <h3>Upload an image of the space</h3>
             <h6>optional</h6>
           </div>
 
@@ -125,7 +135,7 @@ function PromptBar() {
           }}
         >
           <div>
-            <h3>Upload image for style reference</h3>
+            <h3>Upload an image for style reference</h3>
             <h6>optional</h6>
           </div>
 
@@ -155,7 +165,7 @@ function PromptBar() {
           }}
         >
           <div>
-            <h3>Choose a Color Palette</h3>
+            <h3>Use a Color Palette</h3>
             <h6>optional</h6>
           </div>
 
@@ -175,22 +185,27 @@ function PromptBar() {
             <AddColor />
           </Button>
         </div>
-        <h6 style={{ margin: "8px" }}>Select your color pallete</h6>
+        {/* <h6 style={{ margin: "8px" }}>Select your color pallete</h6> */}
         <FormControl sx={{ width: "100%" }}>
           <Select
             id="date-modified-select"
             className="custom-select"
             value={dateModified}
-            label="Choose Pallete"
+            placeholder="Select a color pallete"
             onChange={(e) => setDateModified(e.target.value)}
-            IconComponent={(props) => (
-              <ArrowDropDownIcon {...props} sx={{ color: "var(--color-white) !important" }} />
-            )}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  borderRadius: "10px",
+                  "& .MuiMenu-list": {
+                    padding: 0,
+                  },
+                },
+              },
+            }}
           >
-            <MenuItem>
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value="2023-01-01">
+            <Option value="">None</Option>
+            <Option value="Red-Green">
               <div style={{ display: "flex", gap: "2px" }}>
                 Red-Green &nbsp;
                 <div style={{ display: "flex", marginLeft: "auto" }}>
@@ -208,8 +223,8 @@ function PromptBar() {
                   ></div>
                 </div>
               </div>
-            </MenuItem>
-            <MenuItem value="2023-02-01">
+            </Option>
+            <Option value="Pink-Yellow">
               <div style={{ display: "flex", gap: "2px" }}>
                 Pink-Yellow &nbsp;
                 <div style={{ display: "flex", marginLeft: "auto" }}>
@@ -227,8 +242,8 @@ function PromptBar() {
                   ></div>
                 </div>
               </div>
-            </MenuItem>
-            <MenuItem value="2023-03-01">
+            </Option>
+            <Option value="Among Us">
               <div style={{ display: "flex", gap: "2px" }}>
                 Among Us &nbsp;
                 <div style={{ display: "flex", marginLeft: "auto" }}>
@@ -246,7 +261,7 @@ function PromptBar() {
                   ></div>
                 </div>
               </div>
-            </MenuItem>
+            </Option>
           </Select>
         </FormControl>
         <Button

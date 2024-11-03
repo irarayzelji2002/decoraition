@@ -82,18 +82,16 @@ export const handleNameChange = async (designId, newName, user, setIsEditingName
     );
     if (response.status === 200) {
       setIsEditingName(false);
-      showToast("success", "Design name updated successfully");
       return { success: true, message: "Design name updated successfully" };
     }
   } catch (error) {
     console.error("Error updating design name:", error);
-    showToast("error", "Failed to update design name");
     return { success: false, message: "Failed to update design name" };
   }
 };
 
 export const fetchVersionDetails = async (design, user) => {
-  if (design?.history && design.history.length > 1) {
+  if (design?.history && design.history.length > 0) {
     try {
       const response = await axios.get(`/api/design/${design.id}/version-details`, {
         headers: {
@@ -173,11 +171,11 @@ export const handleCopyDesign = async (design, designVersionId, shareWithCollabo
   }
 };
 
-export const handleDownloadDesign = async (design, category, designVersionId, type, user) => {
+export const handleAddCollaborators = async (design, emails, role, message, notifyPeople, user) => {
   try {
     const response = await axios.post(
-      `/api/design/${design.id}/download/${designVersionId}`,
-      { userId: user.id, category, type },
+      `/api/design/${design.id}/share`,
+      { userId: user.id, emails, role, message, notifyPeople },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -188,19 +186,51 @@ export const handleDownloadDesign = async (design, category, designVersionId, ty
     if (response.data.success) {
       return {
         success: true,
-        message: "Design downloaded successfully",
+        message: "Design shared successfully",
       };
     } else {
       return {
         success: false,
-        message: "Failed to download design",
+        message: "Failed to share design",
       };
     }
   } catch (error) {
-    console.error("Error downloading design:", error);
+    console.error("Error sharing design:", error);
     return {
       success: false,
-      message: error.response?.data?.error || "Failed to download design",
+      message: error.response?.data?.error || "Failed to share design",
+    };
+  }
+};
+
+export const handleAccessChange = async (design, initEmailsWithRole, emailsWithRole, user) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${design.id}/change-access`,
+      { userId: user.id, initEmailsWithRole, emailsWithRole },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      return {
+        success: true,
+        message: "Design collaborators' access changed",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Failed to change access of design collaborators",
+      };
+    }
+  } catch (error) {
+    console.error("Error changing access of design collaborators:", error);
+    return {
+      success: false,
+      message: error.response?.data?.error || "Failed to change access of design collaborators",
     };
   }
 };

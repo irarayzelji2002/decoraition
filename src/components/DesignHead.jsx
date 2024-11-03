@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { IconButton, Menu } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import CommentIcon from "@mui/icons-material/Comment";
-import ShareIcon from "@mui/icons-material/Share";
+import { CommentIcon, ShareIcon } from "./svg/DefaultMenuIcons";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { signOut } from "firebase/auth";
 import ChangeModeMenu from "./ChangeModeMenu.jsx";
@@ -14,6 +14,7 @@ import InfoModal from "./InfoModal.jsx";
 import RenameModal from "./RenameModal.jsx";
 import RestoreModal from "./RestoreModal.jsx";
 import ShareModal from "./ShareModal.jsx";
+import ManageAccessModal from "./ManageAccessModal.jsx";
 import ShareMenu from "./ShareMenu.jsx";
 import MakeCopyModal from "./MakeCopyModal.jsx";
 import ShareConfirmationModal from "./ShareConfirmationModal.jsx";
@@ -21,57 +22,114 @@ import "../css/design.css";
 import { auth } from "../firebase.js";
 import DrawerComponent from "../pages/Homepage/DrawerComponent.jsx";
 import Version from "../pages/DesignSpace/Version.jsx";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useParams, useLocation } from "react-router-dom";
 import { showToast } from "../functions/utils.js";
 import {
   handleNameChange,
   handleRestoreDesignVersion,
   handleCopyDesign,
-  handleDownloadDesign,
+  handleAddCollaborators,
+  handleAccessChange as handleAccessChangeDesign,
 } from "../pages/DesignSpace/backend/DesignActions.jsx";
 import { handleDeleteDesign } from "../pages/Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../contexts/SharedPropsContext.js";
+import { toggleComments } from "../pages/DesignSpace/backend/DesignActions.jsx";
 
-function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
+function DesignHead({ design, changeMode, setChangeMode, setShowComments = () => {} }) {
   const { user, userDoc, handleLogout } = useSharedProps();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isDesignPath = location.pathname.startsWith("/design");
+  const { designId } = useParams();
 
   const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorElShare, setAnchorElShare] = useState(null);
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
+  const [isChangeModeVisible, setIsChangeModeVisible] = useState(false);
+  const [role, setRole] = useState(0); //0 for viewer (default), 1 for editor, 2 for commenter, 3 for owner
+
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isManageAccessModalOpen, setIsManageAccessModalOpen] = useState(false);
+  const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
+  const [isViewCollab, setIsViewCollab] = useState(false);
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleteVisible, setIsDeleteVisible] = useState(false);
+
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [isDownloadVisible, setIsDownloadVisible] = useState(false);
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [isRenameVisible, setIsRenameVisible] = useState(false);
   const [newName, setNewName] = useState(design?.designName ?? "Untitled Design");
   const [isEditingName, setIsEditingName] = useState(false);
 
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+  const [isRestoreVisible, setIsRestoreVisible] = useState(false);
+
   const [isMakeCopyModalOpen, setIsMakeCopyModalOpen] = useState(false);
+  const [isMakeCopyVisible, setIsMakeCopyVisible] = useState(false);
+
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const [collaborators, setCollaborators] = useState([]);
-  const [newCollaborator, setNewCollaborator] = useState("");
-  const [isSecondPage, setIsSecondPage] = useState(false);
-  const [role, setRole] = useState("Editor");
-  const [notifyPeople, setNotifyPeople] = useState(true);
+  // const [collaborators, setCollaborators] = useState([]);
+  // const [newCollaborator, setNewCollaborator] = useState("");
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const { designId } = useParams();
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false); // history
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isDesignPath = location.pathname.includes("/design");
+  useEffect(() => {
+    if (!design || !user || !userDoc) return;
 
-  const handleNotifClick = () => {
-    setIsNotifOpen(true);
+    let newRole = 0;
+
+    // First check if restricted access
+    if (design?.designSettings?.generalAccessSetting === 0) {
+      // Only check explicit roles
+      if (userDoc.id === design.owner) newRole = 3;
+      else if (design.editors?.includes(userDoc.id)) newRole = 1;
+      else if (design.commenters?.includes(userDoc.id)) newRole = 2;
+      else if (design.viewers?.includes(userDoc.id)) newRole = 0;
+    } else {
+      // Anyone with link - check both explicit roles and general access
+      if (userDoc.id === design.owner) newRole = 3;
+      else if (
+        design.editors?.includes(userDoc.id) ||
+        design?.designSettings?.generalAccessRole === 1
+      )
+        newRole = 1;
+      else if (
+        design.commenters?.includes(userDoc.id) ||
+        design?.designSettings?.generalAccessRole === 2
+      )
+        newRole = 2;
+      else newRole = design?.designSettings?.generalAccessRole ?? 0;
+    }
+
+    // Set role and all dependent flags
+    setRole(newRole);
+    setIsViewCollab(newRole < 1);
+    setIsChangeModeVisible(newRole > 0);
+    if (design.history && design.history.length > 0)
+      setIsRestoreVisible(newRole === 1 || newRole === 3);
+    setIsRenameVisible(newRole === 1 || newRole === 3);
+    setIsDeleteVisible(newRole === 1 || newRole === 3);
+    // Set visibility based on design settings
+    setIsDownloadVisible(!!design?.designSettings?.allowDownload);
+    setIsHistoryVisible(!!design?.designSettings?.allowViewHistory);
+    setIsMakeCopyVisible(!!design?.designSettings?.allowCopy);
+  }, [design, user, userDoc]);
+
+  const handleHistoryClick = () => {
+    setIsHistoryOpen(true);
+    handleClose();
   };
 
-  const handleNotifClose = () => {
-    setIsNotifOpen(false);
+  const handleHistoryClose = () => {
+    setIsHistoryOpen(false);
   };
 
   const handleEditNameToggle = () => {
@@ -88,7 +146,15 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
     setIsChangeModeMenuOpen(false);
   };
 
-  const handleShareClick = () => {
+  const handleCloseShare = () => {
+    setAnchorElShare(null);
+    setIsShareMenuOpen(false);
+  };
+
+  const handleShareClick = (event) => {
+    console.log("Share clicked");
+    console.log("anchorEl", anchorEl);
+    setAnchorElShare(event.currentTarget);
     setIsShareMenuOpen(true);
   };
 
@@ -108,26 +174,39 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
 
   const handleCloseShareModal = () => {
     setIsShareModalOpen(false);
-    setIsSecondPage(false);
   };
 
-  const handleAddCollaborator = () => {
-    if (newCollaborator.trim() !== "") {
-      setCollaborators([...collaborators, newCollaborator]);
-      setNewCollaborator("");
-    }
+  const handleOpenManageAccessModal = () => {
+    setIsManageAccessModalOpen(true);
+    handleClose();
   };
 
-  const handleNext = () => {
-    setIsSecondPage(true);
+  const handleCloseManageAccessModal = () => {
+    setIsManageAccessModalOpen(false);
   };
 
-  const handleShareProject = () => {
-    if (collaborators.length > 0) {
-      setIsShareModalOpen(false);
-      setIsShareConfirmationModalOpen(true);
-    }
+  const handleOpenViewCollabModal = () => {
+    setIsViewCollabModalOpen(true);
+    handleClose();
   };
+
+  const handleCloseViewCollabModal = () => {
+    setIsViewCollabModalOpen(false);
+  };
+
+  // const handleAddCollaborator = () => {
+  //   if (newCollaborator.trim() !== "") {
+  //     setCollaborators([...collaborators, newCollaborator]);
+  //     setNewCollaborator("");
+  //   }
+  // };
+
+  // const handleShareProject = () => {
+  //   if (collaborators.length > 0) {
+  //     setIsShareModalOpen(false);
+  //     setIsShareConfirmationModalOpen(true);
+  //   }
+  // };
 
   const handleCloseShareConfirmationModal = () => {
     setIsShareConfirmationModalOpen(false);
@@ -135,19 +214,16 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
 
   const handleOpenDeleteModal = () => {
     setIsDeleteModalOpen(true);
+    handleClose();
   };
 
   const handleCloseDeleteModal = () => {
     setIsDeleteModalOpen(false);
   };
 
-  const handleDelete = () => {
-    console.log("Item deleted");
-    handleCloseDeleteModal();
-  };
-
   const handleOpenDownloadModal = () => {
     setIsDownloadModalOpen(true);
+    handleClose();
   };
 
   const handleCloseDownloadModal = () => {
@@ -156,6 +232,7 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
 
   const handleOpenRenameModal = () => {
     setIsRenameModalOpen(true);
+    handleClose();
   };
 
   const handleCloseRenameModal = () => {
@@ -164,6 +241,7 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
 
   const handleOpenRestoreModal = () => {
     setIsRestoreModalOpen(true);
+    handleClose();
   };
 
   const handleCloseRestoreModal = () => {
@@ -172,6 +250,7 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
 
   const handleOpenMakeCopyModal = () => {
     setIsMakeCopyModalOpen(true);
+    handleClose();
   };
 
   const handleCloseMakeCopyModal = () => {
@@ -179,6 +258,7 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
   };
 
   const handleOpenInfoModal = () => {
+    handleClose();
     navigate(`/details/design/${design.id}`);
   };
 
@@ -203,25 +283,69 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
   };
 
   // Download Modal Action
-  const handleDownload = async (design, category, designVersionId, type) => {
-    if (!designVersionId) {
-      return { success: false, message: "Select a version to download" };
+  const handleShare = async (design, emails, role, message, notifyPeople = false) => {
+    if (emails.length === 0) {
+      return { success: false, message: "No email addresses added" };
     }
-    if (!type) {
-      return { success: false, message: "Select a file type" };
+    if (!role) {
+      return { success: false, message: "Select a role" };
     }
     try {
-      const result = await handleDownloadDesign(design, category, designVersionId, type, user);
+      const result = await handleAddCollaborators(
+        design,
+        emails,
+        role,
+        message,
+        notifyPeople,
+        user
+      );
       if (result.success) {
         handleClose();
-        handleCloseDownloadModal();
-        return { success: true, message: "Design downloaded" };
+        handleCloseShareModal();
+        return { success: true, message: "Design shared to collaborators" };
       } else {
-        return { success: false, message: "Failed to download design" };
+        return { success: false, message: "Failed to share design to collaborators" };
       }
     } catch (error) {
-      console.error("Error downloading design:", error);
-      return { success: false, message: "Failed to download design" };
+      console.error("Error sharing design:", error);
+      return { success: false, message: "Failed to share design to collaborators" };
+    }
+  };
+
+  const handleAccessChange = async (design, initEmailsWithRole, emailsWithRole) => {
+    // Filter emails with role changes and create synchronized lists
+    const changedEmailsWithRole = emailsWithRole.filter((email) => {
+      const initialEmail = initEmailsWithRole.find(
+        (initEmail) => initEmail.userId === email.userId
+      );
+      return initialEmail && initialEmail.role !== email.role;
+    });
+
+    const changedInitEmailsWithRole = initEmailsWithRole.filter((initEmail) =>
+      changedEmailsWithRole.some((email) => email.userId === initEmail.userId)
+    );
+
+    // If no roles have changed, return early
+    if (changedEmailsWithRole.length === 0) {
+      return { success: false, message: "No email addresses changed" };
+    }
+    try {
+      const result = await handleAccessChangeDesign(
+        design,
+        changedInitEmailsWithRole,
+        changedEmailsWithRole,
+        user
+      );
+      if (result.success) {
+        handleClose();
+        handleCloseManageAccessModal();
+        return { success: true, message: "Design collaborators' access changed" };
+      } else {
+        return { success: false, message: "Failed to change access of collaborators" };
+      }
+    } catch (error) {
+      console.error("Error changing access of collaborators:", error);
+      return { success: false, message: "Failed to change access of collaborators" };
     }
   };
 
@@ -268,7 +392,7 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
   // Rename Modal Action
   const handleRename = async (newName) => {
     if (design.designName === newName.trim()) {
-      return { success: false, message: "Name is the same as the current name." };
+      return { success: false, message: "Name is the same as the current name" };
     }
     try {
       const result = await handleNameChange(design.id, newName, user, setIsEditingName);
@@ -317,7 +441,14 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
         handleLogout={handleLogout}
         darkMode={darkMode}
       />
-      <Version isDrawerOpen={isNotifOpen} onClose={handleNotifClose} />
+      <Version
+        isDrawerOpen={isHistoryOpen}
+        onClose={handleHistoryClose}
+        design={design}
+        isHistory={true}
+        handleSelect={null}
+        title="History"
+      />
       <div className="left">
         <IconButton
           size="large"
@@ -353,75 +484,180 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
         </div>
       </div>
       <div className="right">
-        {isDesignPath && (
-          <IconButton onClick={toggleComments}>
+        {isDesignPath && (role === 1 || role === 2 || role === 3) && (
+          <IconButton onClick={() => toggleComments(setShowComments)}>
             <CommentIcon sx={{ color: "var(--color-white)" }} />
           </IconButton>
         )}
-        <IconButton>
-          <ShareIcon sx={{ color: "var(--color-white)" }} onClick={handleOpenShareModal} />
+        <IconButton onClick={handleShareClick}>
+          <ShareIcon sx={{ color: "var(--color-white)" }} />
         </IconButton>
-        <IconButton onClick={handleClick}>
-          <MoreVertIcon sx={{ color: "var(--color-white)" }} />
+        <IconButton onClick={handleClick} sx={{ padding: "5px" }}>
+          <MoreVertIcon sx={{ color: "var(--color-white)", fontSize: "1.9rem" }} />
         </IconButton>
+        {anchorEl === null && isShareMenuOpen && (
+          <Menu
+            anchorEl={anchorElShare}
+            open={Boolean(anchorElShare)}
+            onClose={handleCloseShare}
+            slotProps={{
+              paper: {
+                elevation: 0,
+                sx: {
+                  overflow: "visible",
+                  filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                  mt: 1.5,
+                  backgroundColor: "#27262C",
+                  color: "var(--color-white)",
+                  minWidth: "220px",
+                  top: "62px !important",
+                  right: "0px !important",
+                  left: "auto !important",
+                  borderTopLeftRadius: "0px",
+                  borderTopRightRadius: "0px",
+                  borderBottomLeftRadius: "10px",
+                  borderBottomRightRadius: "0px",
+                },
+              },
+            }}
+            MenuListProps={{
+              sx: {
+                color: "var(--color-white)",
+                padding: "0px !important",
+              },
+            }}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          >
+            <ShareMenu
+              onClose={handleCloseShare}
+              onBackToMenu={handleCloseShare}
+              onOpenShareModal={handleOpenShareModal}
+              onOpenManageAccessModal={handleOpenManageAccessModal}
+              onOpenManageAccessModalView={handleOpenViewCollabModal}
+              isViewCollab={isViewCollab}
+              isFromMenu={false}
+            />
+          </Menu>
+        )}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleClose}
-          PaperProps={{
-            style: {
-              backgroundColor: "#27262C",
-              color: "white",
-              minWidth: "200px",
+          slotProps={{
+            paper: {
+              elevation: 0,
+              sx: {
+                overflow: "visible",
+                filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                mt: 1.5,
+                backgroundColor: "#27262C",
+                color: "var(--color-white)",
+                minWidth: "220px",
+                top: "62px !important",
+                right: "0px !important",
+                left: "auto !important",
+                borderTopLeftRadius: "0px",
+                borderTopRightRadius: "0px",
+                borderBottomLeftRadius: "10px",
+                borderBottomRightRadius: "0px",
+              },
             },
           }}
+          MenuListProps={{
+            sx: {
+              color: "var(--color-white)",
+              padding: "0px !important",
+            },
+          }}
+          transformOrigin={{ horizontal: "right", vertical: "top" }}
+          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
           {isShareMenuOpen ? (
             <ShareMenu
               onClose={handleClose}
               onBackToMenu={handleBackToMenu}
               onOpenShareModal={handleOpenShareModal}
+              onOpenManageAccessModal={handleOpenManageAccessModal}
+              onOpenManageAccessModalView={handleOpenViewCollabModal}
+              isViewCollab={isViewCollab}
             />
           ) : isChangeModeMenuOpen ? (
-            <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
+            <ChangeModeMenu
+              onClose={handleClose}
+              onBackToMenu={handleBackToMenu}
+              role={role}
+              changeMode={changeMode}
+              setChangeMode={setChangeMode}
+            />
           ) : (
             <DefaultMenu
               isDesign={true}
-              onComment={toggleComments} // design only
+              onComment={() => toggleComments(setShowComments)} // design only
               onOpenShareModal={handleShareClick}
               onCopyLink={handleCopyLink}
-              setIsSidebarOpen={handleNotifClick} // design only
+              setIsSidebarOpen={handleHistoryClick} // design only
               onSetting={handleSettings}
               onChangeMode={handleChangeModeClick} // design only
+              changeMode={changeMode}
               onOpenDownloadModal={handleOpenDownloadModal}
               onOpenMakeCopyModal={handleOpenMakeCopyModal} // design only
               onOpenRestoreModal={handleOpenRestoreModal} // design only
               onOpenRenameModal={handleOpenRenameModal}
               onDelete={handleOpenDeleteModal}
               onOpenInfoModal={handleOpenInfoModal}
+              designSettingsVisibility={{
+                isDownloadVisible,
+                isHistoryVisible,
+                isMakeCopyVisible,
+                isRestoreVisible,
+                isRenameVisible,
+                isDeleteVisible,
+                isChangeModeVisible,
+              }}
             />
           )}
         </Menu>
       </div>
       {/* Comment (No Modal) */}
       {/* Share */}
-      <ShareModal
+      {/* <ShareModal
         isOpen={isShareModalOpen}
         onClose={handleCloseShareModal}
         onAddCollaborator={handleAddCollaborator}
-        onNext={handleNext}
         onShareProject={handleShareProject}
         collaborators={collaborators}
         newCollaborator={newCollaborator}
-        isSecondPage={isSecondPage}
-        role={role}
-        notifyPeople={notifyPeople}
+        isDesign={true}
+      /> */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={handleCloseShareModal}
+        handleShare={handleShare}
+        isDesign={true}
+        object={design}
       />
-      <ShareConfirmationModal
+      <ManageAccessModal
+        isOpen={isManageAccessModalOpen}
+        onClose={handleCloseManageAccessModal}
+        handleAccessChange={handleAccessChange}
+        isDesign={true}
+        object={design}
+        isViewCollab={false}
+      />
+      <ManageAccessModal
+        isOpen={isViewCollabModalOpen}
+        onClose={handleCloseViewCollabModal}
+        handleAccessChange={() => {}}
+        isDesign={true}
+        object={design}
+        isViewCollab={true}
+      />
+      {/* <ShareConfirmationModal
         isOpen={isShareConfirmationModalOpen}
         onClose={handleCloseShareConfirmationModal}
         collaborators={collaborators}
-      />
+      /> */}
       {/* Copy Link (No Modal) */}
       {/* History */}
       {/* Settings (No Modal) */}
@@ -441,14 +677,12 @@ function DesignHead({ toggleComments, setIsSidebarOpen, design }) {
         design={design}
       />
       {/* Restore */}
-      {design.history && design.history.length > 1 && (
-        <RestoreModal
-          isOpen={isRestoreModalOpen}
-          onClose={handleCloseRestoreModal}
-          handleRestore={handleRestore}
-          design={design}
-        />
-      )}
+      <RestoreModal
+        isOpen={isRestoreModalOpen}
+        onClose={handleCloseRestoreModal}
+        handleRestore={handleRestore}
+        design={design}
+      />
       {/* Rename */}
       <RenameModal
         isOpen={isRenameModalOpen}

@@ -34,9 +34,9 @@ import Timeline from "./pages/ProjectSpace/Timeline.jsx";
 import AddPin from "./pages/ProjectSpace/AddPin.jsx";
 import PinOrder from "./pages/ProjectSpace/PinOrder.jsx";
 import EditEvent from "./pages/ProjectSpace/EditEvent.jsx";
-import ProjSetting from "./pages/Settings/ProjSetting.jsx";
 import Version from "./pages/DesignSpace/Version.jsx";
 import DesignSettings from "./pages/DesignSpace/DesignSettings.jsx";
+import ProjectSettings from "./pages/ProjectSpace/ProjectSettings.jsx";
 import GenerateImgLoadingPage from "./components/GenerateImgLoadingPage.jsx";
 
 function ProtectedRoute({ children }) {
@@ -127,14 +127,6 @@ function App() {
                 }
               />
               <Route
-                path="/version"
-                element={
-                  <ProtectedRoute>
-                    <Version />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
                 path="/seeAllDesigns"
                 element={
                   <ProtectedRoute>
@@ -150,14 +142,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/details/:type/:id"
-                element={
-                  <ProtectedRoute>
-                    <Details />
-                  </ProtectedRoute>
-                }
-              />
               {/* Account */}
               <Route
                 path="/settings"
@@ -167,12 +151,29 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Design & Project Space */}
+              <Route
+                path="/details/:type/:id"
+                element={
+                  <ProtectedRoute>
+                    <Details />
+                  </ProtectedRoute>
+                }
+              />
               {/* Design Space */}
               <Route
                 path="/design/:designId"
                 element={
                   <ProtectedRoute>
                     <Design />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/version"
+                element={
+                  <ProtectedRoute>
+                    <Version />
                   </ProtectedRoute>
                 }
               />
@@ -237,7 +238,7 @@ function App() {
                 path="/settings/project/:projectId"
                 element={
                   <ProtectedRoute>
-                    <ProjSetting />
+                    <ProjectSettings />
                   </ProtectedRoute>
                 }
               />

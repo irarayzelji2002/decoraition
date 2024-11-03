@@ -13,6 +13,7 @@ import {
   toggleMenu,
   formatDate,
 } from "./backend/HomepageActions";
+import { stringAvatarColor, stringAvatarInitials } from "../../functions/utils.js";
 
 import {
   Drawer,
@@ -142,6 +143,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
       open={Boolean(isDrawerOpen)}
       onClose={onClose}
       sx={{
+        zIndex: "13001",
         "& .MuiDrawer-paper": {
           width: { xs: "80%", sm: "25%" },
           minWidth: "300px",
@@ -201,8 +203,11 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
             width: 56,
             height: 56,
             marginBottom: "10px",
+            border: "3px solid var(--brightFont)",
+            ...stringAvatarColor(userDoc?.username),
           }}
           src={userDoc?.profilePic || ""}
+          children={stringAvatarInitials(userDoc?.username)}
         >
           {userDoc?.username ? userDoc?.username.charAt(0).toUpperCase() : ""}
         </Avatar>

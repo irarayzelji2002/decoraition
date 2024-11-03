@@ -165,6 +165,7 @@ select:-webkit-autofill {
   --brightFontHover: #ff9058;
   --borderInput: #515151;
   --gradientCircle: linear-gradient(20deg, #ec2073, #ff894d);
+  --gradientCircleDisabled: linear-gradient(20deg, #db3074, #e78655);
   --gradientCircleHover: linear-gradient(20deg, #ff894d, #ec2073);
   --gradientButton: linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);
   --gradientButtonHover: linear-gradient(90deg, #ec2073, #f15f3e, #f89a47);
@@ -176,8 +177,9 @@ select:-webkit-autofill {
   --bgMain: #1e1d21;
   --slider: #707070;
   --dropdown: #25232a;
-  --dropdownHover: #3e3c47;
-  --dropdownSelected: #32313a;
+  --dropdownHover: #32313a;
+  --dropdownSelected: #3e3c47;
+  --dropdownSelectedHover: #4a4853;
   --borderLanding: #f15f3e;
   --landingGradientEven: linear-gradient(270deg, #f89a47cc, #f15f3e99, #ec207300);
   --landingGradientOdd: linear-gradient(90deg, #f89a47cc, #f15f3e99, #ec207300);
@@ -188,8 +190,10 @@ select:-webkit-autofill {
   --lighterDarkBg: #27262c;
   --iconDark: #525156;
   --greyText: #b2b2b4;
+  --greyTextDarker: #848385;
   --disabledButton: #626168;
   --selectImagePreview: #4b4955;
+  --noContent: #4b4a4d;
 }
 
 .light-mode {

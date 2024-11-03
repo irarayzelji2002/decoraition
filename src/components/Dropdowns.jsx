@@ -16,19 +16,28 @@ export default function SelectSmall() {
     <div className="scrollable-div">
       {/* Owner Select */}
       <FormControl className="see-dropdown">
-        <InputLabel className="label-dropdown">Owner</InputLabel>
+        {/* <InputLabel className="label-dropdown">Owner</InputLabel> */}
         <Select
           labelId="owner-select-label"
           id="owner-select"
           className="custom-selectAll"
           value={owner}
-          label="Owner"
           onChange={(e) => setOwner(e.target.value)}
           IconComponent={(props) => (
             <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
           )}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                borderRadius: "10px",
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+              },
+            },
+          }}
         >
-          <MenuItem value="">None</MenuItem>
+          <MenuItem value="">Owner</MenuItem>
           <MenuItem value="userId1">Jakob</MenuItem>
           <MenuItem value="userId2">Aliah</MenuItem>
           <MenuItem value="userId3">Yna</MenuItem>
@@ -38,19 +47,28 @@ export default function SelectSmall() {
 
       {/* Date Modified Select */}
       <FormControl className="see-dropdown">
-        <InputLabel className="label-dropdown">Date Modified</InputLabel>
+        {/* <InputLabel className="label-dropdown">Date Modified</InputLabel> */}
         <Select
           labelId="date-modified-select-label"
           id="date-modified-select"
           className="custom-selectAll"
           value={dateModified}
-          label="Date Modified"
           onChange={(e) => setDateModified(e.target.value)}
           IconComponent={(props) => (
             <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
           )}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                borderRadius: "10px",
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+              },
+            },
+          }}
         >
-          <MenuItem value="">None</MenuItem>
+          <MenuItem value="">Date Modified</MenuItem>
           <MenuItem value="timestamp">01/01/24</MenuItem>
           <MenuItem value="timestamp">10/20/24</MenuItem>
           <MenuItem value="timestamp">07/19/23</MenuItem>
@@ -60,19 +78,28 @@ export default function SelectSmall() {
 
       {/* Date Created Select */}
       <FormControl className="see-dropdown">
-        <InputLabel className="label-dropdown">Date Created</InputLabel>
+        {/* <InputLabel className="label-dropdown">Date Created</InputLabel> */}
         <Select
           labelId="date-created-select-label"
           id="date-created-select"
           className="custom-selectAll"
           value={dateCreated}
-          label="Date Created"
           onChange={(e) => setDateCreated(e.target.value)}
           IconComponent={(props) => (
             <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
           )}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                borderRadius: "10px",
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+              },
+            },
+          }}
         >
-          <MenuItem value="">None</MenuItem>
+          <MenuItem value="">Date Created</MenuItem>
           <MenuItem value="timestamp">01/01/24</MenuItem>
           <MenuItem value="timestamp">10/20/24</MenuItem>
           <MenuItem value="timestamp">07/19/23</MenuItem>
@@ -82,19 +109,28 @@ export default function SelectSmall() {
 
       {/* Sort By Select */}
       <FormControl className="see-dropdown">
-        <InputLabel className="label-dropdown">Sort By</InputLabel>
+        {/* <InputLabel className="label-dropdown">Sort By</InputLabel> */}
         <Select
           labelId="sort-by-select-label"
           id="sort-by-select"
           className="custom-selectAll"
           value={sortBy}
-          label="Sort By"
           onChange={(e) => setSortBy(e.target.value)}
           IconComponent={(props) => (
             <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
           )}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                borderRadius: "10px",
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+              },
+            },
+          }}
         >
-          <MenuItem value="">None</MenuItem>
+          <MenuItem value="">Sort by</MenuItem>
           <MenuItem value="dateModified">Date Modified</MenuItem>
           <MenuItem value="dateCreated">Date Created</MenuItem>
           <MenuItem value="name">Name</MenuItem>
@@ -104,19 +140,28 @@ export default function SelectSmall() {
 
       {/* Order Select */}
       <FormControl className="see-dropdown">
-        <InputLabel className="label-dropdown">Order</InputLabel>
+        {/* <InputLabel className="label-dropdown">Order</InputLabel> */}
         <Select
           labelId="order-select-label"
           id="order-select"
           className="custom-selectAll"
           value={order}
-          label="Order"
           onChange={(e) => setOrder(e.target.value)}
           IconComponent={(props) => (
             <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
           )}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                borderRadius: "10px",
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+              },
+            },
+          }}
         >
-          <MenuItem value="">None</MenuItem>
+          <MenuItem value="">Order</MenuItem>
           <MenuItem value="ascending">Ascending</MenuItem>
           <MenuItem value="descending">Descending</MenuItem>
         </Select>

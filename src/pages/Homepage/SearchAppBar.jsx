@@ -2,7 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
-import { stringAvatar, stringToColor } from "../../functions/utils.js";
+import { stringAvatarColor, stringAvatarInitials } from "../../functions/utils.js";
 import DelayedTooltip from "../../components/DelayedTooltip.jsx";
 import NotifTab from "./NotifTab";
 
@@ -149,7 +149,6 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
                 setOpen={setAccountTooltipOpen}
               >
                 <Avatar
-                  {...(userDoc?.username && stringAvatar(userDoc?.username))}
                   src={userDoc?.profilePic ? userDoc?.profilePic : ""}
                   sx={{
                     height: 40,
@@ -157,10 +156,12 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
                     borderRadius: "50%",
                     marginLeft: "auto",
                     marginRight: "12px",
-                    background: "var(--gradientButton)",
+                    // background: "var(--gradientButton)",
                     border: "2px solid var(--brightFont)",
-                    color: "white", // Optional: to set the text color inside the avatar
+                    // color: "white", // Optional: to set the text color inside the avatar
+                    ...stringAvatarColor(userDoc?.username),
                   }}
+                  children={stringAvatarInitials(userDoc?.username)}
                 />
               </DelayedTooltip>
             </IconButton>

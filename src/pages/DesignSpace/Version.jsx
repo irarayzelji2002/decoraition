@@ -1,117 +1,932 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@mui/material";
-import { Drawer } from "@mui/material";
+import {
+  Button,
+  Drawer,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Link,
+} from "@mui/material";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { formatDateDetailComma } from "../Homepage/backend/HomepageActions";
+import { fetchVersionDetails } from "./backend/DesignActions";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { showToast } from "../../functions/utils";
+import { handleRestoreDesignVersion } from "./backend/DesignActions";
+import "../../css/design.css";
+import TwoFrames from "./svg/TwoFrames";
+import FourFrames from "./svg/FourFrames";
 
-const Version = ({ isDrawerOpen, onClose }) => {
-  // State to handle dark mode
-  const [darkMode, setDarkMode] = useState(true);
+const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(0);
-  const [selectedImage, setSelectedImage] = useState(null); // Start with no image selected
+  const designLinkRef = useRef(null);
+  const { user, designs, designVersions } = useSharedProps();
+  const [selectedDesignVersionId, setSelectedDesignVersionId] = useState("");
+  const [selectedDesignVersionDetails, setSelectedVersionDetails] = useState({});
+  const [versionDetails, setVersionDetails] = useState([]);
+  const [copiedVersionDetails, setCopiedVersionDetails] = useState([]);
+  const [isCopySelected, setIsCopySelected] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [viewingImage, setViewingImage] = useState(0);
+  const [openConfirmRestoreModal, setOpenConfirmRestoreModal] = useState(false);
 
-  const images = [
-    { src: "../img/Logo-WhiteonColor.png", version: "Version 1" },
-    { src: "../img/Logo-WhiteonColor.png", version: "Version 2" },
-    { src: "../img/Logo-WhiteonColor.png", version: "Version 3" },
-    { src: "../img/Logo-WhiteonColor.png", version: "Version 4" },
-  ];
-
-  const handleImageSelect = (image) => {
-    setSelectedImage(image);
+  const handleSelectVersion = (versionId) => {
+    console.log("Selected version:", versionId);
+    setSelectedDesignVersionId(versionId);
+    // Find the matching version and set its formatted date
+    if (versionId) {
+      const selectedVersion = versionDetails.find((v) => v.id === versionId);
+      const selectedVersionCopy = copiedVersionDetails.find((v) => v.id === versionId);
+      if (selectedVersion || selectedVersionCopy) {
+        setSelectedDesignVersionId(versionId);
+        if (selectedVersion) {
+          setSelectedVersionDetails(selectedVersion);
+          setIsCopySelected(false);
+        } else {
+          setSelectedVersionDetails(selectedVersionCopy);
+          setIsCopySelected(true);
+        }
+      }
+    } else {
+      setSelectedVersionDetails({});
+    }
   };
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
+  const handleClose = () => {
+    onClose();
+    if (isHistory) {
+      setSelectedDesignVersionId("");
+      setSelectedVersionDetails({});
+    }
   };
+
+  const handleRestore = async (selectedDesignVersionId) => {
+    if (!selectedDesignVersionId) {
+      showToast("error", "Select a version to restore");
+    }
+    try {
+      const result = await handleRestoreDesignVersion(design, selectedDesignVersionId, user);
+      if (result.success) {
+        handleClose();
+        showToast(
+          "success",
+          `Design restored${
+            selectedDesignVersionDetails.displayDate
+              ? ` to version on ${selectedDesignVersionDetails.displayDate}`
+              : ""
+          }`
+        );
+      } else {
+        showToast("error", "Failed to restore design");
+      }
+    } catch (error) {
+      console.error("Error restoring design:", error);
+      showToast("error", "Failed to restore design");
+    }
+  };
+
+  useEffect(() => {
+    const getVersionDetails = async () => {
+      if (design?.history && design.history.length > 0) {
+        // Get version details
+        const result = await fetchVersionDetails(design, user);
+        if (!result.success) {
+          console.error("Error:", result.message);
+          setSelectedDesignVersionId("");
+          setSelectedVersionDetails({});
+          setVersionDetails([]);
+          return;
+        }
+        let versionDetails = result.versionDetails;
+        versionDetails.forEach((version) => {
+          const displayDate = formatDateDetailComma(version.createdAt);
+          let restoredFromCreatedAt, restoredFromDisplayDate;
+          if (version.isRestored && version.isRestoredFrom.versionId) {
+            const isRestoredFrom = versionDetails.find(
+              (v) => v.id === version.isRestoredFrom.versionId
+            );
+            restoredFromCreatedAt = isRestoredFrom.createdAt;
+            restoredFromDisplayDate = formatDateDetailComma(restoredFromCreatedAt);
+          }
+          version = {
+            ...version,
+            displayDate,
+            isRestoredFrom: {
+              designId: version.isRestoredFrom?.designId,
+              versionId: version.isRestoredFrom?.versionId,
+              createdAt: restoredFromCreatedAt,
+              displayDate: restoredFromDisplayDate,
+            },
+            imagesLink: version.images?.map((img) => img.link) || [],
+          };
+        });
+        setVersionDetails(versionDetails);
+
+        // Reverse the version details to show the latest version at the top
+        versionDetails = versionDetails.reverse();
+        setVersionDetails(versionDetails);
+
+        // Set the latest version as the selected version
+        const latestVersion = versionDetails[0];
+        if (latestVersion) {
+          setSelectedDesignVersionId(latestVersion.id);
+          setSelectedVersionDetails(latestVersion);
+        }
+
+        // Get copied versions
+        const copiedVersionDetails = await Promise.all(
+          versionDetails.flatMap(async (version) => {
+            if (!version.copiedDesigns || version.copiedDesigns.length === 0) {
+              return [];
+            }
+
+            return Promise.all(
+              version.copiedDesigns.map(async (copiedDesignId) => {
+                const copiedDesign = designs.find((d) => d.id === copiedDesignId);
+                if (!copiedDesign) return null;
+
+                const latestVersionId = copiedDesign.history[copiedDesign.history.length - 1];
+                const copiedVersion = designVersions.find((v) => v.id === latestVersionId);
+
+                if (!copiedVersion) return null;
+
+                return {
+                  id: copiedVersion.id,
+                  description: copiedVersion.description,
+                  images: copiedVersion.images,
+                  createdAt: copiedVersion.createdAt,
+                  copiedDesigns: copiedVersion.copiedDesigns,
+                  isRestored: copiedVersion.isRestored,
+                  design: {
+                    id: copiedDesign.id,
+                    designName: copiedDesign.designName,
+                    owner: copiedDesign.owner,
+                  },
+                  copiedFrom: version.id,
+                  imagesLink: copiedVersion.images?.map((img) => img.link) || [],
+                  displayDate: formatDateDetailComma(copiedVersion.createdAt),
+                };
+              })
+            );
+          })
+        ).then((results) => results.flat().filter(Boolean));
+        setCopiedVersionDetails(copiedVersionDetails.reverse());
+      }
+    };
+
+    // if (dummyVersionDetails && dummyCopiedVersionDetails) {
+    //   setVersionDetails(dummyVersionDetails.reverse());
+    //   setCopiedVersionDetails(dummyCopiedVersionDetails.reverse());
+    //   const latestVersion = dummyVersionDetails[0];
+    //   if (latestVersion) {
+    //     setSelectedDesignVersionId(latestVersion.id);
+    //     setSelectedVersionDetails(latestVersion);
+    //   }
+    //   return;
+    // }
+    getVersionDetails();
+  }, [isDrawerOpen, design, designVersions, designs, user]);
 
   return (
-    <Drawer
-      anchor="left"
-      open={isDrawerOpen}
-      onClose={onClose}
-      sx={{
-        "& .MuiDrawer-paper": {
-          width: { xs: "83%", sm: "38%" },
-          minWidth: "300px",
-          backgroundColor: darkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
-          color: darkMode ? "white" : "black",
-          padding: "16px",
-          display: "flex",
-          flexDirection: "column",
-        },
-        "& .MuiDrawer-paper::-webkit-scrollbar": {
-          display: "none",
-        },
-      }}
-    >
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
+    <>
+      <Drawer
+        anchor="left"
+        open={isDrawerOpen}
+        onClose={onClose}
+        sx={{
+          zIndex: "13001",
+          "& .MuiDrawer-paper": {
+            width: { xs: "100%", sm: "85%", md: "50%", xl: "40%" },
+            minWidth: "300px",
+            backgroundColor: "var(--bgMain)",
+            color: "var(--color-white)",
+            padding: "0px",
+            display: "flex",
+            flexDirection: "column",
+          },
+          "& .MuiDrawer-paper::-webkit-scrollbar": {
+            display: "none",
+          },
         }}
       >
-        {images.map((image) => (
-          <div
-            key={image.version}
-            onClick={() => handleImageSelect(image)}
-            style={{ marginTop: "20px" }}
-          >
-            <div
-              style={{
-                display: "inline-block",
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: "2px solid var(--color-primary)",
-              }}
+        <AppBar
+          position="sticky"
+          sx={{
+            zIndex: 1200,
+            backgroundColor: "var(--color-tertiary)",
+            boxShadow: "none",
+            padding: "10px 20px",
+          }}
+        >
+          <Toolbar sx={{ backgroundColor: "transparent", padding: "0 !important" }}>
+            <IconButton
+              size="large"
+              edge="start"
+              color="var(--color-white)"
+              aria-label="open drawer"
+              sx={{ mr: 0.2, backgroundColor: "transparent" }}
+              onClick={handleClose}
             >
-              <img
-                src={image.src}
-                alt={image.version}
-                width={100}
-                style={{ borderRadius: "50%" }}
-              />
-            </div>
-            <p>{image.version}</p>
-          </div>
-        ))}
+              <ArrowBackIosNewRoundedIcon sx={{ color: "var(--color-white)" }} />
+            </IconButton>
+            <Typography variant="body1" sx={{ fontSize: "1.3em", fontWeight: "bold" }}>
+              {title}
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <div className="historyContainer">
+          {versionDetails.map((version) => (
+            <div key={version.id}>
+              <div
+                className="versionItem"
+                style={{ marginLeft: copiedVersionDetails.length > 0 ? "-220px" : "0px" }}
+              >
+                {/* Original Version */}
+                <div className="origDesign">
+                  <div
+                    onClick={() => handleSelectVersion(version.id)}
+                    style={{ marginBottom: "11px" }}
+                  >
+                    <div
+                      className="selectVersionImgContainer"
+                      style={{
+                        background:
+                          selectedDesignVersionId === version.id
+                            ? "var(--gradientButton)"
+                            : "transparent",
+                      }}
+                    >
+                      <img src={version.imagesLink[0]} alt="" />
+                    </div>
+                    <div className="versionTitle">{version.displayDate}</div>
+                    {version.isRestored && (
+                      <div className="copyByTitle">
+                        <span>Restored from version at</span>
+                        <span>{version.isRestoredFrom.displayDate}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-        <div style={{}}>
-          {" "}
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{
-              mt: 3,
-              mb: 2,
-              backgroundImage: "var(--gradientButton)",
+                {/* Copied Versions */}
+                {version.copiedDesigns.length > 0 && (
+                  <div
+                    className={`${
+                      versionDetails.indexOf(version) === versionDetails.length - 1
+                        ? "conditionalPadding"
+                        : ""
+                    } copiedDesigns`}
+                  >
+                    {/* Horizontal line */}
+                    <div className="versionLine horizontal"></div>
+
+                    {copiedVersionDetails
+                      .filter((cv) => cv.copiedFrom === version.id)
+                      .map((copiedVersion, index, array) => (
+                        <React.Fragment key={copiedVersion.id}>
+                          <div key={copiedVersion.id} className="copiedVersionItem">
+                            <div onClick={() => handleSelectVersion(copiedVersion.id)}>
+                              <div
+                                className="selectVersionImgContainer"
+                                style={{
+                                  background:
+                                    selectedDesignVersionId === copiedVersion.id
+                                      ? "var(--gradientButton)"
+                                      : "transparent",
+                                }}
+                              >
+                                <img src={copiedVersion.imagesLink[0]} alt="" />
+                              </div>
+                              <div className="versionTitle">{copiedVersion.displayDate}</div>
+                              <div className="copiedDesignTitle">
+                                {copiedVersion.design.designName}
+                              </div>
+                              <div className="copyByTitle">
+                                Copied by {copiedVersion.design.owner}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Show vertical line except for the last copiedVersion item */}
+                          {index < array.length - 1 && (
+                            <>
+                              <div className="versionLine vertical copy"></div>
+                              <div className="versionLine horizontal copy"></div>
+                            </>
+                          )}
+                        </React.Fragment>
+                      ))}
+                  </div>
+                )}
+
+                {/* Vertical lines for Original Version */}
+                {versionDetails.indexOf(version) !== versionDetails.length - 1 && (
+                  <div style={{ marginTop: version.isRestored ? "0px" : "-43px" }}>
+                    {(version.copiedDesigns.length > 0 ||
+                      versionDetails.indexOf(version) !== versionDetails.length - 1) &&
+                      version.copiedDesigns.map((copiedDesign, index) => (
+                        <div
+                          key={copiedDesign.id}
+                          className="versionLine vertical orig"
+                          style={{
+                            height:
+                              index > 0 && version.isRestored
+                                ? "204px"
+                                : index > 0 && !version.isRestored
+                                ? "220.5px"
+                                : version.isRestored
+                                ? "0px"
+                                : "10px",
+                          }}
+                        ></div>
+                      ))}
+                    {version.copiedDesigns.length > 0 && (
+                      <div className="origDesignExtraVertLine"></div>
+                    )}
+                    {(version.copiedDesigns.length > 0 ||
+                      versionDetails.indexOf(version) !== versionDetails.length - 1) && (
+                      <div className="versionLine vertical orig1"></div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Buttons */}
+        <Toolbar
+          sx={{
+            backgroundColor: "var(--bgMain)",
+            padding: "0px !important",
+            position: "fixed",
+            bottom: 0,
+            width: "inherit",
+          }}
+        >
+          <div className="versionButtonsDiv">
+            {isHistory && !isCopySelected ? (
+              <>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setOpenViewModal(true);
+                    handleSelectVersion(selectedDesignVersionId);
+                    setViewingImage(0);
+                  }}
+                  sx={{
+                    background: "var(--gradientButton)", // Gradient background
+                    borderRadius: "20px", // Button border radius
+                    color: "var(--color-white)", // Button text color
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    minWidth: "200px",
+                    "&:hover": {
+                      background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                    },
+                  }}
+                >
+                  View
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setOpenConfirmRestoreModal(true);
+                    handleSelectVersion(selectedDesignVersionId);
+                  }}
+                  sx={{
+                    background: "var(--gradientButton)", // Gradient background
+                    borderRadius: "20px", // Button border radius
+                    color: "var(--color-white)", // Button text color
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    minWidth: "200px",
+                    "&:hover": {
+                      background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                    },
+                  }}
+                >
+                  Restore
+                </Button>
+              </>
+            ) : isHistory && isCopySelected ? (
+              <>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setOpenViewModal(true);
+                    handleSelectVersion(selectedDesignVersionId);
+                    setViewingImage(0);
+                  }}
+                  sx={{
+                    background: "var(--gradientButton)", // Gradient background
+                    borderRadius: "20px", // Button border radius
+                    color: "var(--color-white)", // Button text color
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    minWidth: "200px",
+                    "&:hover": {
+                      background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                    },
+                  }}
+                >
+                  View
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={(e) => {
+                    if (designLinkRef.current && !designLinkRef.current.contains(e.target)) {
+                      designLinkRef.current.click();
+                    }
+                  }}
+                  sx={{
+                    background: "var(--gradientButton)", // Gradient background
+                    borderRadius: "20px", // Button border radius
+                    color: "var(--color-white)", // Button text color
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    minWidth: "200px",
+                    "&:hover": {
+                      background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                    },
+                  }}
+                >
+                  Go to design
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={`/design/${selectedDesignVersionDetails.design?.id}`}
+                    ref={designLinkRef}
+                    style={{ display: "none" }}
+                  >
+                    Hidden Link
+                  </a>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    handleSelect(selectedDesignVersionId);
+                    handleClose();
+                  }}
+                  sx={{
+                    background: "var(--gradientButton)", // Gradient background
+                    borderRadius: "20px", // Button border radius
+                    color: "var(--color-white)", // Button text color
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    minWidth: "200px",
+                    "&:hover": {
+                      background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                    },
+                  }}
+                >
+                  Select
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleClose}
+                  sx={{
+                    color: "var(--color-white)",
+                    background: "transparent",
+                    border: "2px solid transparent",
+                    borderRadius: "20px",
+                    backgroundImage: "var(--lightGradient), var(--gradientButton)",
+                    backgroundOrigin: "border-box",
+                    backgroundClip: "padding-box, border-box",
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    minWidth: "200px",
+                  }}
+                  onMouseOver={(e) =>
+                    (e.target.style.backgroundImage =
+                      "var(--lightGradient), var(--gradientButtonHover)")
+                  }
+                  onMouseOut={(e) =>
+                    (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+                  }
+                >
+                  Cancel
+                </Button>
+              </>
+            )}
+          </div>
+        </Toolbar>
+      </Drawer>
+      {openViewModal && (
+        <Dialog
+          open={openViewModal}
+          onClose={() => setOpenViewModal(false)}
+          sx={{
+            zIndex: "13002",
+            "& .MuiDialog-paper": {
+              backgroundColor: "var(--nav-card-modal)",
               borderRadius: "20px",
-              textTransform: "none",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              backgroundColor: "var(--nav-card-modal)",
+              color: "var(--color-white)",
+              display: "flex",
+              alignItems: "center",
+              borderBottom: "1px solid var(--inputBg)",
               fontWeight: "bold",
-              "&:hover": {
-                backgroundImage: "var(--gradientButtonHover)",
-              },
+              width: "80vw",
             }}
           >
-            Select image version
-          </Button>
-        </div>
-      </div>
-      <Button
-        onClick={onClose}
-        sx={{
-          color: darkMode ? "white" : "black",
-          mt: 2,
-          marginBottom: "36px",
-        }}
-      >
-        Close
-      </Button>
-    </Drawer>
+            <IconButton
+              onClick={() => setOpenViewModal(false)}
+              sx={{
+                color: "var(--color-white)",
+                position: "absolute",
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+            <Typography variant="inherit">
+              {`Version at ${selectedDesignVersionDetails.displayDate}`}
+            </Typography>
+          </DialogTitle>
+          <DialogContent
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+              marginTop: "20px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+              {selectedDesignVersionDetails.imagesLink.map((img, index) => {
+                return (
+                  <div style={{ border: index !== viewingImage && "1px solid transparent" }}>
+                    <div
+                      key={index}
+                      className="select-image-preview"
+                      style={{ border: index === viewingImage && "2px solid var(--brightFont)" }}
+                      onClick={() => setViewingImage(index)}
+                    >
+                      <img src={img} alt="" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+              <div className="historyImageFrame" key={viewingImage}>
+                <img
+                  src={selectedDesignVersionDetails.imagesLink[viewingImage]}
+                  alt=""
+                  className="historyImagePreview"
+                />
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+      {openConfirmRestoreModal && (
+        <Dialog
+          open={openConfirmRestoreModal}
+          onClose={() => setOpenConfirmRestoreModal(false)}
+          sx={{
+            zIndex: "13002",
+            "& .MuiDialog-paper": {
+              backgroundColor: "var(--nav-card-modal)",
+              borderRadius: "20px",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              backgroundColor: "var(--nav-card-modal)",
+              color: "var(--color-white)",
+              display: "flex",
+              alignItems: "center",
+              borderBottom: "1px solid var(--inputBg)",
+              fontWeight: "bold",
+            }}
+          >
+            <IconButton
+              onClick={() => setOpenConfirmRestoreModal(false)}
+              sx={{
+                color: "var(--color-white)",
+                position: "absolute",
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+            <Typography variant="inherit">Confirm Restore</Typography>
+          </DialogTitle>
+          <DialogContent
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              color: "var(--color-white)",
+              marginTop: "20px",
+            }}
+          >
+            <Typography variant="body1" sx={{ textAlign: "center", maxWidth: "500px" }}>
+              Are you sure you want to restore the design to the version at{" "}
+              {selectedDesignVersionDetails.displayDate}?
+            </Typography>
+          </DialogContent>
+          <DialogActions
+            sx={{
+              backgroundColor: "var(  --nav-card-modal)",
+              margin: "10px",
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "20px",
+            }}
+          >
+            {/* Yes Button */}
+            <Button
+              variant="contained"
+              onClick={() => handleRestore(selectedDesignVersionId)}
+              sx={{
+                background: "var(--gradientButton )", // Gradient background
+                borderRadius: "20px", // Button border radius
+                color: "var(--color-white)", // Button text color
+                fontWeight: "bold",
+                textTransform: "none",
+                minWidth: "150px",
+                "&:hover": {
+                  background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                },
+              }}
+            >
+              Yes
+            </Button>
+
+            {/* No Button */}
+            <Button
+              variant="contained"
+              onClick={() => setOpenConfirmRestoreModal(false)}
+              sx={{
+                background: "transparent",
+                border: "2px solid transparent",
+                borderRadius: "20px",
+                backgroundImage: "var(--lightGradient), var(--gradientButton)",
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+                fontWeight: "bold",
+                textTransform: "none",
+                color: "var(--color-white)",
+                minWidth: "150px",
+              }}
+              onMouseOver={(e) =>
+                (e.target.style.backgroundImage =
+                  "var(--lightGradient), var(--gradientButtonHover)")
+              }
+              onMouseOut={(e) =>
+                (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+              }
+            >
+              No
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </>
   );
 };
 
 export default Version;
+
+// Dummy Data for Testing
+const dummyVersionDetails = [
+  {
+    id: "version1",
+    description: "Initial design version",
+    images: [
+      {
+        id: "img1",
+        link: "../test-img/1.png",
+        comments: ["comment1", "comment2"],
+      },
+    ],
+    createdAt: new Date("2024-01-01T10:00:00"),
+    copiedDesigns: ["copiedDesign1", "copiedVersion2", "copiedVersion3"],
+    isRestored: false,
+    isRestoredFrom: null,
+    imagesLink: [
+      "../test-img/1.png",
+      "../test-img/4.png",
+      "../test-img/5.png",
+      "../test-img/6.png",
+    ],
+    displayDate: "Jan 1, 2024, 10:00 AM",
+  },
+  {
+    id: "version2",
+    description: "Updated color scheme",
+    images: [
+      {
+        id: "img2",
+        link: "../test-img/2.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-02T15:30:00"),
+    copiedDesigns: ["copiedDesign4"],
+    isRestored: true,
+    isRestoredFrom: {
+      designId: "originalDesign1",
+      versionId: "version1",
+      createdAt: new Date("2024-01-01T10:00:00"),
+      displayDate: "Jan 1, 2024, 10:00 AM",
+    },
+    imagesLink: ["../test-img/2.png"],
+    displayDate: "Jan 2, 2024, 3:30 PM",
+  },
+  {
+    id: "version3",
+    description: "Updated color scheme",
+    images: [
+      {
+        id: "img2",
+        link: "../test-img/2.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-02T15:30:00"),
+    copiedDesigns: ["copiedDesign5", "copiedDesign6"],
+    isRestored: true,
+    isRestoredFrom: {
+      designId: "originalDesign1",
+      versionId: "version1",
+      createdAt: new Date("2024-01-01T10:00:00"),
+      displayDate: "Jan 1, 2024, 10:00 AM",
+    },
+    imagesLink: ["../test-img/2.png"],
+    displayDate: "Jan 2, 2024, 3:30 PM",
+  },
+  {
+    id: "version4",
+    description: "Updated color scheme",
+    images: [
+      {
+        id: "img2",
+        link: "../test-img/2.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-02T15:30:00"),
+    copiedDesigns: [],
+    isRestored: true,
+    isRestoredFrom: {
+      designId: "originalDesign1",
+      versionId: "version1",
+      createdAt: new Date("2024-01-01T10:00:00"),
+      displayDate: "Jan 1, 2024, 10:00 AM",
+    },
+    imagesLink: ["../test-img/2.png"],
+    displayDate: "Jan 2, 2024, 3:30 PM",
+  },
+];
+
+const dummyCopiedVersionDetails = [
+  {
+    id: "copiedVersion1",
+    description: "Copied from original design",
+    images: [
+      {
+        id: "imgCopy1",
+        link: "../test-img/3.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-03T09:15:00"),
+    copiedDesigns: [],
+    isRestored: false,
+    design: {
+      id: "copiedDesign1",
+      designName: "Copy of Living Room",
+      owner: "John Doe",
+    },
+    copiedFrom: "version1",
+    imagesLink: ["../test-img/3.png"],
+    displayDate: "Jan 3, 2024, 9:15 AM",
+  },
+  {
+    id: "copiedVersion2",
+    description: "Copied from original design",
+    images: [
+      {
+        id: "imgCopy1",
+        link: "../test-img/3.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-03T09:15:00"),
+    copiedDesigns: [],
+    isRestored: false,
+    design: {
+      id: "copiedDesign1",
+      designName: "Copy of Living Room",
+      owner: "John Doe",
+    },
+    copiedFrom: "version1",
+    imagesLink: ["../test-img/3.png"],
+    displayDate: "Jan 3, 2024, 9:15 AM",
+  },
+  {
+    id: "copiedVersion3",
+    description: "Copied from original design",
+    images: [
+      {
+        id: "imgCopy1",
+        link: "../test-img/3.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-03T09:15:00"),
+    copiedDesigns: [],
+    isRestored: false,
+    design: {
+      id: "copiedDesign1",
+      designName: "Copy of Living Room",
+      owner: "John Doe",
+    },
+    copiedFrom: "version1",
+    imagesLink: ["../test-img/3.png"],
+    displayDate: "Jan 3, 2024, 9:15 AM",
+  },
+  {
+    id: "copiedVersion4",
+    description: "Copied from original design",
+    images: [
+      {
+        id: "imgCopy1",
+        link: "../test-img/7.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-03T09:15:00"),
+    copiedDesigns: [],
+    isRestored: false,
+    design: {
+      id: "copiedDesign1",
+      designName: "Copy of Living Room",
+      owner: "John Doe",
+    },
+    copiedFrom: "version2",
+    imagesLink: ["../test-img/3.png"],
+    displayDate: "Jan 3, 2024, 9:15 AM",
+  },
+  {
+    id: "copiedVersion5",
+    description: "Copied from original design",
+    images: [
+      {
+        id: "imgCopy1",
+        link: "../test-img/7.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-03T09:15:00"),
+    copiedDesigns: [],
+    isRestored: false,
+    design: {
+      id: "copiedDesign1",
+      designName: "Copy of Living Room",
+      owner: "John Doe",
+    },
+    copiedFrom: "version3",
+    imagesLink: ["../test-img/3.png"],
+    displayDate: "Jan 3, 2024, 9:15 AM",
+  },
+  {
+    id: "copiedVersion6",
+    description: "Copied from original design",
+    images: [
+      {
+        id: "imgCopy1",
+        link: "../test-img/7.png",
+        comments: [],
+      },
+    ],
+    createdAt: new Date("2024-01-03T09:15:00"),
+    copiedDesigns: [],
+    isRestored: false,
+    design: {
+      id: "copiedDesign1",
+      designName: "Copy of Living Room",
+      owner: "John Doe",
+    },
+    copiedFrom: "version3",
+    imagesLink: ["../test-img/3.png"],
+    displayDate: "Jan 3, 2024, 9:15 AM",
+  },
+];

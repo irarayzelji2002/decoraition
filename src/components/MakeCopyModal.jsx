@@ -13,10 +13,12 @@ import {
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { Menu, styled } from "@mui/material";
+import OpenInFullRoundedIcon from "@mui/icons-material/OpenInFullRounded";
 import { formatDateDetailComma } from "../pages/Homepage/backend/HomepageActions";
 import { fetchVersionDetails } from "../pages/DesignSpace/backend/DesignActions";
 import { useSharedProps } from "../contexts/SharedPropsContext";
 import { showToast } from "../functions/utils";
+import Version from "../pages/DesignSpace/Version";
 
 const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
   const { user } = useSharedProps();
@@ -25,6 +27,7 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
   const [shareWithCollaborators, setShareWithCollaborators] = useState(false);
   const [versionDetails, setVersionDetails] = useState([]);
   const [error, setError] = useState("");
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const handleClose = () => {
     onClose();
@@ -50,9 +53,22 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
     handleClose();
   };
 
+  const handleSelect = (selectedId) => {
+    setSelectedDesignVersionId(selectedId);
+    // Find the matching version and set its formatted date
+    if (selectedId) {
+      const selectedVersion = versionDetails.find((version) => version.id === selectedId);
+      if (selectedVersion) {
+        setSelectedDesignVersionDate(formatDateDetailComma(selectedVersion.createdAt));
+      }
+    } else {
+      setSelectedDesignVersionDate("");
+    }
+  };
+
   useEffect(() => {
     const getVersionDetails = async () => {
-      if (design?.history && design.history.length > 1) {
+      if (design?.history && design.history.length > 0) {
         const result = await fetchVersionDetails(design, user);
         if (!result.success) {
           console.error("Error:", result.message);
@@ -60,8 +76,10 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
           setVersionDetails([]);
           return;
         }
-        setVersionDetails(result.versionDetails);
-        const latestVersion = result.versionDetails[result.versionDetails.length - 1];
+        let versionDetails = result.versionDetails;
+        versionDetails = versionDetails.reverse();
+        setVersionDetails(versionDetails);
+        const latestVersion = versionDetails[0];
         if (latestVersion) {
           setSelectedDesignVersionId(latestVersion.id);
           setSelectedDesignVersionDate(formatDateDetailComma(latestVersion.createdAt));
@@ -73,117 +91,87 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
   }, [design, user]);
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      sx={{
-        "& .MuiDialog-paper": {
-          backgroundColor: "var(--nav-card-modal)",
-          borderRadius: "20px",
-        },
-      }}
-    >
-      <DialogTitle
+    <>
+      <Version
+        isDrawerOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        design={design}
+        isHistory={false}
+        handleSelect={handleSelect}
+        title="Select a version to copy"
+      />
+      <Dialog
+        open={isOpen}
+        onClose={handleClose}
         sx={{
-          backgroundColor: "var(--nav-card-modal)",
-          color: "var(--color-white)",
-          display: "flex",
-          alignItems: "center",
-          borderBottom: "1px solid var(--color-grey)",
-          fontWeight: "bold",
+          "& .MuiDialog-paper": {
+            backgroundColor: "var(--nav-card-modal)",
+            borderRadius: "20px",
+          },
         }}
       >
-        {/* Wrapping ArrowBackIcon inside IconButton for clickability */}
-        <IconButton
-          onClick={handleClose}
+        <DialogTitle
           sx={{
+            backgroundColor: "var(--nav-card-modal)",
             color: "var(--color-white)",
-            position: "absolute",
-            right: 8,
-            top: 8,
+            display: "flex",
+            alignItems: "center",
+            borderBottom: "1px solid var(--inputBg)",
+            fontWeight: "bold",
           }}
         >
-          <CloseRoundedIcon />
-        </IconButton>
-        Make a Copy
-      </DialogTitle>
-      <DialogContent
-        sx={{
-          backgroundColor: "var(  --nav-card-modal)",
-          color: "var(--color-white)",
-        }}
-      >
-        <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-          Select a version to copy
-        </Typography>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <FormControl sx={formControlStyles}>
-            <InputLabel
-              id="date-modified-select-label"
-              sx={{
-                color: "var(--color-white)",
-                "&.Mui-focused": {
-                  color: "var(--color-white)", // Ensure label color remains white when focused
-                },
-                "&.MuiInputLabel-shrink": {
-                  color: "var(--color-white)", // Ensure label color remains white when shrunk
-                },
-                "&.Mui-focused.MuiInputLabel-shrink": {
-                  color: "var(--color-white)", // Ensure label color remains white when focused and shrunk
-                },
-              }}
-            >
-              Version
-            </InputLabel>
-            <Select
-              labelId="date-modified-select-label"
-              id="date-modified-select"
-              value={selectedDesignVersionId}
-              label="Version"
-              onChange={(e) => {
-                const selectedId = e.target.value;
-                setSelectedDesignVersionId(selectedId);
-                // Find the matching version and set its formatted date
-                if (selectedId) {
-                  const selectedVersion = versionDetails.find(
-                    (version) => version.id === selectedId
-                  );
-                  if (selectedVersion) {
-                    setSelectedDesignVersionDate(formatDateDetailComma(selectedVersion.createdAt));
-                  }
-                } else {
-                  setSelectedDesignVersionDate("");
-                }
-              }}
-              MenuComponent={StyledMenu}
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    "& .MuiMenu-list": {
-                      padding: 0, // Remove padding from the ul element
+          {/* Wrapping ArrowBackIcon inside IconButton for clickability */}
+          <IconButton
+            onClick={handleClose}
+            sx={{
+              color: "var(--color-white)",
+              position: "absolute",
+              right: 8,
+              top: 8,
+            }}
+          >
+            <CloseRoundedIcon />
+          </IconButton>
+          Make a Copy
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            backgroundColor: "var(  --nav-card-modal)",
+            color: "var(--color-white)",
+          }}
+        >
+          <Typography variant="body1" sx={{ marginBottom: "10px" }}>
+            Select a version to copy
+            <IconButton onClick={() => setIsHistoryOpen(true)}>
+              <OpenInFullRoundedIcon
+                sx={{ color: "var(--color-white)", fontSize: "1.2rem", marginLeft: "20px" }}
+              />
+            </IconButton>
+          </Typography>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <FormControl sx={formControlStyles}>
+              <Select
+                labelId="date-modified-select-label"
+                id="date-modified-select"
+                value={selectedDesignVersionId}
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  handleSelect(selectedId);
+                }}
+                MenuComponent={StyledMenu}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      borderRadius: "10px",
+                      "& .MuiMenu-list": {
+                        padding: 0,
+                      },
                     },
                   },
-                },
-              }}
-              sx={{
-                color: "var(--color-white)",
-                backgroundColor: "var(--nav-card-modal)",
-                borderBottom: "1px solid #4a4a4d",
-                borderRadius: "8px",
-                transition: "background-color 0.3s ease",
-                "&.Mui-focused": {
-                  borderBottom: "1px solid var(--focusBorderColor)",
-                  outline: "none",
-                  boxShadow: "none",
-                  color: "var(--color-grey)",
-                },
-
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--color-white)",
-                },
-              }}
-            >
-              {/* <MenuItem value="" sx={menuItemStyles}>
+                }}
+                sx={selectStyles}
+              >
+                {/* <MenuItem value="" sx={menuItemStyles}>
                 <em>None</em>
               </MenuItem>
               <MenuItem sx={menuItemStyles} value="versionId">
@@ -194,87 +182,88 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
                 </ListItemIcon>
                 <Typography variant="inherit">December 25, 2021, 12:00 PM</Typography>
               </MenuItem> */}
-              {versionDetails.map((version) => (
-                <MenuItem key={version.id} sx={menuItemStyles} value={version.id}>
-                  <div className="select-image-preview">
-                    <img src={version.firstImage} alt="" />
-                  </div>
-                  <Typography variant="inherit">
-                    {formatDateDetailComma(version.createdAt)}
-                  </Typography>
-                </MenuItem>
-              ))}
-            </Select>
-            {error && <div className="error-text">{error}</div>}
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={shareWithCollaborators}
-                  onChange={(e) => setShareWithCollaborators(e.target.checked)}
-                  sx={{
-                    color: "var(--color-white)",
-                    "&.Mui-checked": {
-                      color: "var(--brightFont)",
-                    },
-                    borderRadius: "4px",
-                    "& .MuiSvgIcon-root": {
-                      fontSize: 28,
-                    },
-                  }}
-                />
-              }
-              label="Share with collaborators"
-            />
-          </FormControl>
-        </div>
-      </DialogContent>
-      <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
-        {/* Make Copy Button */}
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={onSubmit}
-          sx={{
-            background: "var(--gradientButton)", // Gradient background
-            borderRadius: "20px", // Button border radius
-            color: "var(--color-white)", // Button text color
-            fontWeight: "bold",
-            textTransform: "none",
-            "&:hover": {
-              background: "var(--gradientButtonHover)", // Reverse gradient on hover
-            },
-          }}
-        >
-          Make a copy
-        </Button>
+                {versionDetails.map((version) => (
+                  <MenuItem key={version.id} sx={menuItemStyles} value={version.id}>
+                    <div className="select-image-preview">
+                      <img src={version.imagesLink[0]} alt="" />
+                    </div>
+                    <Typography variant="inherit">
+                      {formatDateDetailComma(version.createdAt)}
+                    </Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+              {error && <div className="error-text">{error}</div>}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={shareWithCollaborators}
+                    onChange={(e) => setShareWithCollaborators(e.target.checked)}
+                    sx={{
+                      color: "var(--color-white)",
+                      "&.Mui-checked": {
+                        color: "var(--brightFont)",
+                      },
+                      borderRadius: "4px",
+                      "& .MuiSvgIcon-root": {
+                        fontSize: 28,
+                      },
+                    }}
+                  />
+                }
+                label="Share with collaborators"
+              />
+            </FormControl>
+          </div>
+        </DialogContent>
+        <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
+          {/* Make Copy Button */}
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={onSubmit}
+            sx={{
+              background: "var(--gradientButton)", // Gradient background
+              borderRadius: "20px", // Button border radius
+              color: "var(--color-white)", // Button text color
+              fontWeight: "bold",
+              textTransform: "none",
+              "&:hover": {
+                background: "var(--gradientButtonHover)", // Reverse gradient on hover
+              },
+            }}
+          >
+            Make a copy
+          </Button>
 
-        {/* Cancel Button */}
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={handleClose}
-          sx={{
-            color: "var(--color-white)",
-            background: "transparent",
-            border: "2px solid transparent",
-            borderRadius: "20px",
-            backgroundImage: "var(--lightGradient), var(--gradientButton)",
-            backgroundOrigin: "border-box",
-            backgroundClip: "padding-box, border-box",
-            fontWeight: "bold",
-            textTransform: "none",
-          }}
-          onMouseOver={(e) =>
-            (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
-          }
-          onMouseOut={(e) =>
-            (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
-          }
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+          {/* Cancel Button */}
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleClose}
+            sx={{
+              color: "var(--color-white)",
+              background: "transparent",
+              border: "2px solid transparent",
+              borderRadius: "20px",
+              backgroundImage: "var(--lightGradient), var(--gradientButton)",
+              backgroundOrigin: "border-box",
+              backgroundClip: "padding-box, border-box",
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+            onMouseOver={(e) =>
+              (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
+            }
+            onMouseOut={(e) =>
+              (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+            }
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
@@ -308,8 +297,7 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
 }));
 
 const formControlStyles = {
-  m: 1,
-  width: "80%",
+  width: "100%",
   backgroundColor: "var(--nav-card-modal)",
   color: "var(--color-white)",
   borderRadius: "8px",
@@ -328,15 +316,85 @@ const menuItemStyles = {
   color: "var(--color-white)",
   backgroundColor: "var(--dropdown)",
   transition: "all 0.3s ease",
+  display: "block",
+  minHeight: "auto",
   "&:hover": {
-    backgroundColor: "var(--dropdownHover)",
+    backgroundColor: "var(--dropdownHover) !important",
   },
   "&.Mui-selected": {
-    backgroundColor: "var(--dropdownSelected)",
-    color: "var(--nav-card-modal)",
+    backgroundColor: "var(--dropdownSelected) !important",
+    color: "var(--color-white)",
     fontWeight: "bold",
   },
   "&.Mui-selected:hover": {
-    backgroundColor: "var(--dropdownHover)",
+    backgroundColor: "var(--dropdownSelectedHover) !important",
+  },
+};
+
+// Styles for Select
+const selectStyles = {
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--borderInput)",
+    borderWidth: 2,
+    borderRadius: "10px",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--borderInput)",
+  },
+  "& .MuiSelect-select": {
+    color: "var(--color-white)",
+    WebkitTextFillColor: "var(--color-white)",
+  },
+  "& .MuiSelect-select.MuiInputBase-input": {
+    padding: "12px 40px 12px 20px",
+  },
+  "& .MuiSelect-icon": {
+    color: "var(--color-white)",
+    WebkitTextFillColor: "var(--color-white)",
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--borderInput)",
+  },
+};
+
+const selectStylesDisabled = {
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "transparent",
+    borderWidth: 2,
+    borderRadius: "10px",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "transparent",
+  },
+  "& .MuiSelect-select": {
+    color: "var(--color-white) !important",
+    WebkitTextFillColor: "var(--color-white)",
+    "&:focus": {
+      color: "var(--color-white)",
+    },
+  },
+  "& .MuiSelect-select.MuiInputBase-input": {
+    padding: "12px 40px 12px 20px",
+  },
+  "& .MuiSelect-icon": {
+    color: "var(--color-white)",
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "transparent",
+  },
+  "&.Mui-disabled": {
+    backgroundColor: "transparent",
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "transparent",
+    },
+    "& .MuiSelect-icon": {
+      color: "transparent",
+    },
+    "& .MuiSelect-select": {
+      color: "var(--color-white)",
+      WebkitTextFillColor: "var(--color-white)",
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
   },
 };

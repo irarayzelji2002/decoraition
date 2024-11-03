@@ -14,6 +14,7 @@ import InfoModal from "../../components/InfoModal.jsx";
 import RenameModal from "../../components/RenameModal.jsx";
 import RestoreModal from "../../components/RestoreModal.jsx";
 import ShareModal from "../../components/ShareModal.jsx";
+import ManageAccessModal from "../../components/ManageAccessModal.jsx";
 import ShareMenu from "../../components/ShareMenu.jsx";
 import MakeCopyModal from "../../components/MakeCopyModal.jsx";
 import ShareConfirmationModal from "../../components/ShareConfirmationModal.jsx";
@@ -37,6 +38,9 @@ function ProjectHead({ project }) {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isManageAccessModalOpen, setIsManageAccessModalOpen] = useState(false);
+  const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
+  const [isViewCollab, setIsViewCollab] = useState(true);
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
   const [isCopyLinkModalOpen, setIsCopyLinkModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -50,9 +54,6 @@ function ProjectHead({ project }) {
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [newCollaborator, setNewCollaborator] = useState("");
-  const [isSecondPage, setIsSecondPage] = useState(false);
-  const [role, setRole] = useState("Editor");
-  const [notifyPeople, setNotifyPeople] = useState(true);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -67,18 +68,29 @@ function ProjectHead({ project }) {
 
   useProjectDetails(projectId, setUserId, setProjectData, setNewName);
 
+  useEffect(() => {
+    // Find access level of the user (to display Manage Access/View Collaborators in ShareMenu)
+    if (!project || !user || !userDoc) return;
+
+    // Check if user is manager or content manager (manage access), then contributor and viewers (view only)
+    if (project.managers?.includes(userDoc.id)) {
+      setIsViewCollab(false);
+      return;
+    }
+    if (project.contentManagers?.includes(userDoc.id)) {
+      setIsViewCollab(false);
+      return;
+    }
+    if (project.contributors?.includes(userDoc.id) || project.viewers?.includes(userDoc.id)) {
+      setIsViewCollab(true);
+      return;
+    }
+    setIsViewCollab(true);
+  }, [project, user, userDoc]);
+
   const handleEditNameToggle = () => {
     setIsEditingName((prev) => !prev);
   };
-
-  useEffect(() => {
-    if (user) {
-      const userRef = doc(db, "users", user.uid);
-      onSnapshot(userRef, (doc) => {
-        setUsername(doc.data().username);
-      });
-    }
-  }, [user]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -110,7 +122,24 @@ function ProjectHead({ project }) {
 
   const handleCloseShareModal = () => {
     setIsShareModalOpen(false);
-    setIsSecondPage(false);
+  };
+
+  const handleOpenManageAccessModal = () => {
+    setIsManageAccessModalOpen(true);
+    handleClose();
+  };
+
+  const handleCloseManageAccessModal = () => {
+    setIsManageAccessModalOpen(false);
+  };
+
+  const handleOpenViewCollabModal = () => {
+    setIsViewCollabModalOpen(true);
+    handleClose();
+  };
+
+  const handleCloseViewCollabModal = () => {
+    setIsViewCollabModalOpen(false);
   };
 
   const handleAddCollaborator = () => {
@@ -118,10 +147,6 @@ function ProjectHead({ project }) {
       setCollaborators([...collaborators, newCollaborator]);
       setNewCollaborator("");
     }
-  };
-
-  const handleNext = () => {
-    setIsSecondPage(true);
   };
 
   const handleShareProject = () => {
@@ -135,25 +160,18 @@ function ProjectHead({ project }) {
     setIsShareConfirmationModalOpen(false);
   };
 
-  const handleCloseCopyLinkModal = () => {
-    setIsCopyLinkModalOpen(false);
-  };
-
   const handleOpenDeleteModal = () => {
     setIsDeleteModalOpen(true);
+    handleClose();
   };
 
   const handleCloseDeleteModal = () => {
     setIsDeleteModalOpen(false);
   };
 
-  const handleDelete = () => {
-    console.log("Item deleted");
-    handleCloseDeleteModal();
-  };
-
   const handleOpenDownloadModal = () => {
     setIsDownloadModalOpen(true);
+    handleClose();
   };
 
   const handleCloseDownloadModal = () => {
@@ -162,17 +180,15 @@ function ProjectHead({ project }) {
 
   const handleOpenRenameModal = () => {
     setIsRenameModalOpen(true);
+    handleClose();
   };
 
   const handleCloseRenameModal = () => {
     setIsRenameModalOpen(false);
   };
 
-  const handleCloseRestoreModal = () => {
-    setIsRestoreModalOpen(false);
-  };
-
   const handleOpenInfoModal = () => {
+    handleClose();
     navigate(`/details/project/${projectId}`);
   };
 
@@ -288,6 +304,9 @@ function ProjectHead({ project }) {
               onClose={handleClose}
               onBackToMenu={handleBackToMenu}
               onOpenShareModal={handleOpenShareModal}
+              onOpenManageAccessModal={handleOpenManageAccessModal}
+              onOpenManageAccessModalView={handleOpenViewCollabModal}
+              isViewCollab={isViewCollab}
             />
           ) : isChangeModeMenuOpen ? (
             <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
@@ -306,17 +325,37 @@ function ProjectHead({ project }) {
         </Menu>
       </div>
       {/* Share */}
-      <ShareModal
+      {/* <ShareModal
         isOpen={isShareModalOpen}
         onClose={handleCloseShareModal}
         onAddCollaborator={handleAddCollaborator}
-        onNext={handleNext}
         onShareProject={handleShareProject}
         collaborators={collaborators}
         newCollaborator={newCollaborator}
-        isSecondPage={isSecondPage}
-        role={role}
-        notifyPeople={notifyPeople}
+        isDesign={false}
+      /> */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={handleCloseShareModal}
+        handleShare={() => {}}
+        isDesign={false}
+        object={project}
+      />
+      <ManageAccessModal
+        isOpen={isManageAccessModalOpen}
+        onClose={handleCloseManageAccessModal}
+        handleSave={() => {}}
+        isDesign={false}
+        object={project}
+        isViewCollab={false}
+      />
+      <ManageAccessModal
+        isOpen={isViewCollabModalOpen}
+        onClose={handleCloseViewCollabModal}
+        handleAccessChange={() => {}}
+        isDesign={true}
+        object={project}
+        isViewCollab={true}
       />
       <ShareConfirmationModal
         isOpen={isShareConfirmationModalOpen}

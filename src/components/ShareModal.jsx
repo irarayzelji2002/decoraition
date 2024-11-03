@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -14,25 +14,73 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import EmailInput from "./EmailInput";
 import { Avatar } from "@mui/material";
+import { showToast } from "../functions/utils";
 
-const ShareModal = ({ isOpen, onClose, onNext, onShareProject, isSecondPage }) => {
-  const [role, setRole] = useState("Viewer");
+const ShareModal = ({ isOpen, onClose, handleShare, isDesign, object }) => {
+  // object is design if isDesign is true, else it is project
+  const [roles, setRoles] = useState([]);
+  // Design: 0 for viewer, 1 for editor (default), 2 for commenter, 3 for owner
+  // Project: 0 for viewer, 1 for contributor (default), 2 for content manager, 3 for manager
+
+  const [emails, setEmails] = useState([]);
+  const [role, setRole] = useState(1);
+  const [message, setMessage] = useState("");
+  const [messageCharCount, setMessageCharCount] = useState(0);
+  const maxChars = 1000;
   const [notifyPeople, setNotifyPeople] = useState(false);
-  const [isViewer, setIsViewer] = useState(false);
-  const [genAccess, setGenAccess] = useState("Restrict");
-  const [genRole, setGenRole] = useState("Viewer");
-  const users = [
-    { name: "Guest 1", email: "email1@gmail.com" },
-    { name: "Guest 2", email: "email2@gmail.com" },
-    { name: "Guest 3", email: "email3@gmail.com" },
-  ];
+
+  const [error, setError] = useState("");
+
+  const handleInputChange = (event) => {
+    const value = event.target.value;
+    setMessage(value);
+    setMessageCharCount(value.length);
+  };
 
   const handleClose = () => {
+    setEmails([]);
+    setRole(1);
+    setMessage("");
+    setMessageCharCount(0);
+    setNotifyPeople(false);
+    setError("");
     onClose();
-    //resett values
   };
+
+  const onSubmit = async () => {
+    if (emails.length === 0) {
+      setError("No email addresses added");
+      return;
+    }
+    const result = await handleShare(object, emails, role, message, notifyPeople);
+    if (!result.success) {
+      if (result.message === "No email addresses added" || result.message === "Select a role")
+        setError(result.message);
+      else showToast("error", result.message);
+      return;
+    }
+    showToast("success", result.message);
+    handleClose();
+  };
+
+  useEffect(() => {
+    if (isDesign)
+      setRoles([
+        { value: 1, label: "Editor" },
+        { value: 2, label: "Commenter" },
+        { value: 0, label: "Viewer" },
+      ]);
+    else
+      setRoles([
+        { value: 1, label: "Contributor" },
+        { value: 2, label: "Content Manager" },
+        { value: 3, label: "Manager" },
+        { value: 0, label: "Viewer" },
+      ]);
+  }, []);
 
   return (
     <Dialog
@@ -43,6 +91,9 @@ const ShareModal = ({ isOpen, onClose, onNext, onShareProject, isSecondPage }) =
           backgroundColor: "#2E2E32",
           borderRadius: "20px",
           width: "90%",
+          minHeight: "100px",
+          maxHeight: "80vh",
+          overflowY: "auto",
         },
       }}
     >
@@ -52,7 +103,7 @@ const ShareModal = ({ isOpen, onClose, onNext, onShareProject, isSecondPage }) =
           color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
-          borderBottom: "1px solid var(--color-grey)",
+          borderBottom: "1px solid var(--inputBg)",
           fontWeight: "bold",
         }}
       >
@@ -67,7 +118,7 @@ const ShareModal = ({ isOpen, onClose, onNext, onShareProject, isSecondPage }) =
         >
           <CloseRoundedIcon />
         </IconButton>
-        {isSecondPage ? "Manage Access" : "Add Collaborators"}
+        Add Collaborators
       </DialogTitle>
 
       <DialogContent
@@ -76,240 +127,224 @@ const ShareModal = ({ isOpen, onClose, onNext, onShareProject, isSecondPage }) =
           color: "var(--color-white)", // Text color in the content
           width: "auto",
           padding: "0px",
-
+          minHeight: "50px",
+          maxHeight: "60vh",
+          overflowY: "auto",
           "& .MuiDialog-paper": {
             width: "100%",
           },
         }}
       >
-        {!isSecondPage ? (
-          <div style={{ width: "auto" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <EmailInput />
-            </div>
-            <Divider sx={{ backgroundColor: "grey" }} />
+        <div style={{ width: "auto" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <EmailInput emails={emails} setEmails={setEmails} error={error} setError={setError} />
+          </div>
+          <Divider sx={{ backgroundColor: "grey" }} />
 
+          <div
+            style={{
+              display: "flex",
+            }}
+          >
+            <Select
+              value={role}
+              onChange={(e) => setRole(parseInt(e.target.value, 10))}
+              sx={selectStyles}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    borderRadius: "0px",
+                    "& .MuiMenu-list": {
+                      padding: 0,
+                    },
+                  },
+                },
+              }}
+            >
+              {roles.map((roleOption) => (
+                <MenuItem key={roleOption.value} value={roleOption.value} sx={menuItemStyles}>
+                  {roleOption.label}
+                </MenuItem>
+              ))}
+            </Select>
             <div
               style={{
                 display: "flex",
-                justifyContent: "space-between",
-                marginLeft: "8px",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "flex-start",
               }}
             >
-              <Select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                sx={{
-                  width: "50%",
-                  backgroundColor: "transparent", // Select background color
-                  "& .MuiSelect-select": { color: "var(--color-white)" }, // Select text color
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "transparent", // Border color
-                  },
-                  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "transparent", // Hover border color
-                  },
-                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "transparent", // Focused border color
-                  },
-                }}
-              >
-                <MenuItem value="Editor">Editor</MenuItem>
-                <MenuItem value="Commenter">Commenter</MenuItem>
-                <MenuItem value="Viewer">Viewer</MenuItem>
-              </Select>
-              <p
-                style={{
-                  color: "var(--color-white)",
-                  marginLeft: "auto",
-                }}
-              >
-                Notify People
-              </p>
               <Checkbox
                 checked={notifyPeople}
                 onChange={(e) => setNotifyPeople(e.target.checked)}
                 sx={{
-                  marginRight: "16px",
+                  margin: "0px 10px",
                   color: "var(--color-white)",
                   "&.Mui-checked": {
                     color: "var(--brightFont)",
                   },
+                  "&:hover": {
+                    backgroundColor: "var(--dropdownHover)",
+                  },
                 }}
               />
-            </div>
-
-            <Divider sx={{ backgroundColor: "grey", marginBottom: "16px" }} />
-
-            <TextField
-              multiline
-              minRows={1}
-              variant="standard"
-              placeholder="Optional message"
-              sx={{
-                padding: "20px",
-                width: "93%",
-                backgroundColor: "transparent",
-                "& .MuiInput-root": {
+              <p
+                style={{
                   color: "var(--color-white)",
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              onClick={onNext}
-              sx={{
-                width: "95%",
-                background: "var(--gradientButton)",
-                borderRadius: "20px",
-                color: "var(--color-white)",
-                margin: "10px",
-                fontWeight: "bold",
-                textTransform: "none",
-                "&:hover": {
-                  background: "var(--gradientButtonHover)",
-                },
-              }}
-            >
-              Next
-            </Button>
-          </div>
-        ) : (
-          <div>
-            <Typography variant="body1" sx={{ marginBottom: "16px", padding: "12px" }}>
-              People with access
-            </Typography>
-            {users.map((user, index) => (
-              <div className="drawerUser" key={index}>
-                <Avatar
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    marginBottom: "10px",
-                  }}
-                  src={""}
-                >
-                  {user.name.charAt(0)}
-                </Avatar>
-                <div>
-                  <Typography variant="body1" style={{ fontWeight: "bold" }}>
-                    {user.name}
-                  </Typography>
-                  <Typography variant="caption">{user.email}</Typography>
-                </div>
-                <Select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  sx={{
-                    marginRight: "16px",
-                    backgroundColor: "#3E3E42",
-                    color: "var(--color-white)",
-                    marginLeft: "auto",
-                  }}
-                >
-                  <MenuItem value="Editor">Editor</MenuItem>
-                  <MenuItem value="Commenter">Commenter</MenuItem>
-                  <MenuItem value="Viewer">Viewer</MenuItem>
-                </Select>
-              </div>
-            ))}
-            <Typography variant="body1" sx={{ marginBottom: "16px", padding: "12px" }}>
-              General Access
-            </Typography>
-
-            <div className="drawerUser" style={{ gap: "0px" }}>
-              <Avatar
-                sx={{
-                  width: 56,
-                  height: 56,
-                  marginBottom: "10px",
-                  marginRight: "16px",
                 }}
-                src={""}
               >
-                W
-              </Avatar>
-              {isViewer ? (
-                <div>
-                  <Typography variant="body1" style={{ fontWeight: "bold" }}>
-                    Anyone with link
-                  </Typography>
-                  <Typography variant="caption">
-                    Anyone on the Internet can access as an Editor
-                  </Typography>
-                </div>
-              ) : (
-                <>
-                  <Select
-                    value={genAccess}
-                    onChange={(e) => setGenAccess(e.target.value)}
-                    sx={{
-                      backgroundColor: "#3E3E42",
-                      color: "var(--color-white)",
-                      width: "60%",
-                    }}
-                  >
-                    <MenuItem value="Public">
-                      <Typography variant="body1" style={{ fontWeight: "bold" }}>
-                        Anyone with link&nbsp;
-                      </Typography>
-                      <Typography variant="caption">
-                        Anyone on the Internet can access as an Editor
-                      </Typography>
-                    </MenuItem>
-                    <MenuItem value="Restrict">
-                      <Typography variant="body1" style={{ fontWeight: "bold" }}>
-                        Restricted&nbsp;
-                      </Typography>
-                      <Typography variant="caption">Only collaborators have access</Typography>
-                    </MenuItem>
-                  </Select>
-                  <Select
-                    value={genRole}
-                    onChange={(e) => setGenRole(e.target.value)}
-                    sx={{
-                      backgroundColor: "#3E3E42",
-                      color: "var(--color-white)",
-                      width: "15%",
-                    }}
-                  >
-                    <MenuItem value="Editor">Editor</MenuItem>
-                    <MenuItem value="Commenter">Commenter</MenuItem>
-                    <MenuItem value="Viewer">Viewer</MenuItem>
-                  </Select>
-                </>
-              )}
+                Notify People
+              </p>
             </div>
-
-            <Button
-              fullWidth
-              variant="contained"
-              onClick={onShareProject}
-              sx={{
-                width: "92%",
-                background: "var(--gradientButton)",
-                borderRadius: "20px",
-                color: "var(--color-white)",
-                margin: "16px",
-                fontWeight: "bold",
-                textTransform: "none",
-                "&:hover": {
-                  background: "var(--gradientButtonHover)",
-                },
-              }}
-            >
-              Share
-            </Button>
           </div>
-        )}
+
+          <Divider sx={{ backgroundColor: "grey" }} />
+
+          <TextField
+            multiline
+            minRows={1}
+            variant="standard"
+            placeholder="Add a message"
+            inputProps={{ maxLength: maxChars }}
+            value={message}
+            onChange={handleInputChange}
+            sx={{
+              padding: "20px",
+              display: "flex",
+              backgroundColor: "transparent",
+              "& .MuiInput-root": {
+                color: "var(--color-white)",
+              },
+              "& .MuiInput-underline:before": {
+                borderBottom: "none",
+              },
+              "& .MuiInput-underline:after": {
+                borderBottom: "none",
+              },
+              "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                borderBottom: "none",
+              },
+            }}
+          />
+          <Typography
+            variant="caption"
+            sx={{
+              color: "var(--color-white)",
+              margin: "0px 20px 0px 0px",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            {messageCharCount}/{maxChars}
+          </Typography>
+        </div>
       </DialogContent>
+      <DialogActions
+        sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "0px", padding: "18px" }}
+      >
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={onSubmit}
+          sx={{
+            background: "var(--gradientButton)",
+            borderRadius: "20px",
+            color: "var(--color-white)",
+            fontWeight: "bold",
+            textTransform: "none",
+            "&:hover": {
+              background: "var(--gradientButtonHover)",
+            },
+          }}
+        >
+          Share
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={handleClose}
+          sx={{
+            color: "var(--color-white)",
+            background: "transparent",
+            border: "2px solid transparent",
+            borderRadius: "20px",
+            backgroundImage: "var(--lightGradient), var(--gradientButton)",
+            backgroundOrigin: "border-box",
+            backgroundClip: "padding-box, border-box",
+            fontWeight: "bold",
+            textTransform: "none",
+          }}
+          onMouseOver={(e) =>
+            (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
+          }
+          onMouseOut={(e) =>
+            (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+          }
+        >
+          Cancel
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };
 
 export default ShareModal;
+
+const selectStyles = {
+  width: "50%",
+  backgroundColor: "transparent",
+  borderRadius: "0px",
+  paddingBottom: "0px",
+  borderRight: "1px solid var(--borderInput)",
+  "& .MuiSelect-select": { color: "var(--color-white)" },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "transparent !important",
+  },
+  "& .MuiOutlinedInput-root": {
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      borderColor: "transparent !important",
+    },
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      borderColor: "transparent !important",
+    },
+  },
+  "& .MuiSelect-root": {
+    "&:focus": {
+      backgroundColor: "transparent",
+      outline: "none",
+      boxShadow: "none !important",
+    },
+  },
+  "&.Mui-focused .MuiSelect-select": {
+    backgroundColor: "transparent",
+    boxShadow: "none",
+  },
+  "& .MuiSvgIcon-root": {
+    color: "var(--color-white)",
+  },
+};
+
+const menuItemStyles = {
+  color: "var(--color-white)",
+  backgroundColor: "var(--dropdown)",
+  transition: "all 0.3s ease",
+  display: "block",
+  minHeight: "auto",
+  "&:hover": {
+    backgroundColor: "var(--dropdownHover) !important",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "var(--dropdownSelected) !important",
+    color: "var(--color-white)",
+    fontWeight: "bold",
+  },
+  "&.Mui-selected:hover": {
+    backgroundColor: "var(--dropdownSelectedHover) !important",
+  },
+};

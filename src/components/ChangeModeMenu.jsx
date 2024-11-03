@@ -1,30 +1,53 @@
-import React from "react";
-import { MenuItem, ListItemIcon, ListItemText } from "@mui/material";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { MenuItem, ListItemIcon, ListItemText, styled } from "@mui/material";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 
-const ChangeModeMenu = ({ onClose, onBackToMenu }) => {
-  const handleClose = () => {
+const CustomMenuItem = styled(MenuItem)({
+  minHeight: "2.6rem !important",
+});
+
+const ChangeModeMenu = ({
+  onClose,
+  onBackToMenu,
+  role = 0,
+  changeMode,
+  setChangeMode = () => {},
+}) => {
+  const location = useLocation();
+  const isDesignPath = location.pathname.startsWith("/design");
+
+  const handleClose = (mode) => {
+    if (changeMode !== mode) setChangeMode(mode);
     onClose();
-    //resett values
   };
   return (
     <>
-      <MenuItem onClick={onBackToMenu}>
+      <CustomMenuItem
+        onClick={onBackToMenu}
+        sx={{ borderBottom: "1px solid var(--inputBg)", fontWeight: "bold" }}
+      >
         <ListItemIcon>
           <ArrowBackIosNewRoundedIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Change Mode" />
-      </MenuItem>
-      <MenuItem onClick={handleClose}>
-        <ListItemText primary="Editing" />
-      </MenuItem>
-      <MenuItem onClick={handleClose}>
-        <ListItemText primary="Commenting" />
-      </MenuItem>
-      <MenuItem onClick={handleClose}>
-        <ListItemText primary="Viewing" />
-      </MenuItem>
+      </CustomMenuItem>
+      {(role === 1 || role === 3) && ( // editor/owner
+        <CustomMenuItem onClick={() => handleClose("Editing")}>
+          <ListItemText primary="Editing" />
+        </CustomMenuItem>
+      )}
+      {(role === 1 || role === 2 || role === 3) && isDesignPath && (
+        // editor/commenter/owner
+        <CustomMenuItem onClick={() => handleClose("Commenting")}>
+          <ListItemText primary="Commenting" />
+        </CustomMenuItem>
+      )}
+      {(role === 0 || role === 1 || role === 2 || role === 3) && ( // viewer/editor/commenter/owner
+        <CustomMenuItem onClick={() => handleClose("Viewing")}>
+          <ListItemText primary="Viewing" />
+        </CustomMenuItem>
+      )}
     </>
   );
 };

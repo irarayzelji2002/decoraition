@@ -23,7 +23,7 @@ function CommentTabs({ activeTab, handleTabChange, status, handleStatusChange })
         />
       </Tabs>
 
-      <Select value={status} onChange={handleStatusChange} displayEmpty className="status-select">
+      <Select value={status} onChange={handleStatusChange} className="status-select">
         <MenuItem value="Open">Open</MenuItem>
         <MenuItem value="Resolved">Resolved</MenuItem>
       </Select>

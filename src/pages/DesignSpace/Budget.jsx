@@ -12,7 +12,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
-import DesignHead from "../../components/DesignHead";
+import DesignSpace from "./DesignSpace";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { Divider } from "@mui/material";
@@ -24,7 +24,6 @@ import { ToastContainer, toast } from "react-toastify";
 import { collection, updateDoc, doc, deleteDoc, getDoc } from "firebase/firestore";
 import Loading from "../../components/Loading";
 import { getAuth, prodErrorMap } from "firebase/auth";
-import BottomBar from "./BottomBar";
 import { query, where } from "firebase/firestore";
 import CommentTabs from "./CommentTabs";
 import { AddBudget, AddItem, BlankImage } from "./svg/AddImage";
@@ -44,7 +43,7 @@ const style = {
 function Budget() {
   const { user, designs, userDesigns, userDesignVersions, budgets, userBudgets, items, userItems } =
     useSharedProps();
-  const { designId, projectId } = useParams();
+  const { designId } = useParams();
   const navigate = useNavigate();
   const [design, setDesign] = useState({});
   const [budget, setBudget] = useState({});
@@ -346,153 +345,153 @@ function Budget() {
 
   return (
     <div className={`budget-page ${menuOpen ? "" : ""}`}>
-      <DesignHead design={design} />
-      {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
-      <div className="cutoff">
-        <div className="budgetSpaceImg">
-          <span
-            className="priceSum"
-            style={{
-              backgroundColor: getBudgetColor(budgetAmount, totalCost),
-            }}
-          >
-            {(() => {
-              if (formattedTotalCost === "0.00" && budgetAmount === 0) {
-                return <>No cost and added budget</>;
-              } else if (formattedTotalCost === "0.00") {
-                return (
-                  <>
-                    No cost, Budget:{" "}
-                    <strong>
-                      {budgetCurrency} {formatNumber(budgetAmount)}
-                    </strong>
-                  </>
-                );
-              } else if (budgetAmount === 0) {
-                return (
-                  <>
-                    Total Cost: <strong>{formattedTotalCost}</strong>, No added budget
-                  </>
-                );
-              } else {
-                return (
-                  <>
-                    Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
-                    <strong>
-                      {budgetCurrency} {formatNumber(budgetAmount)}
-                    </strong>
-                  </>
-                );
-              }
-            })()}
-          </span>
-
-          {budgetAmount > 0 ? (
-            <>
-              <IconButton
-                onClick={() => toggleBudgetModal(true, true)}
-                sx={{ color: "var(--color-white)" }}
-              >
-                <GradientEditIcon />
-              </IconButton>
-              <IconButton
-                onClick={() => {
-                  setIsRemoveBudgetModalOpen(true);
-                  setMenuOpen(false);
-                }}
-                sx={{ color: "var(--color-white)" }}
-              >
-                <GradientDeleteIcon />
-              </IconButton>
-            </>
-          ) : (
-            <IconButton
-              onClick={() => toggleBudgetModal(true, false)}
-              sx={{ color: "var(--gradientIcon)" }}
+      <DesignSpace design={design} isDesign={false} designId={designId}>
+        {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
+        <div className="cutoff">
+          <div className="budgetSpaceImg">
+            <span
+              className="priceSum"
+              style={{
+                backgroundColor: getBudgetColor(budgetAmount, totalCost),
+              }}
             >
-              <GradientAddIcon />
-            </IconButton>
-          )}
-          <div className="image-frame">
-            <div className="image-frame-icon">
-              <BlankImage />
-              <span>No design yet</span>
-            </div>
-            <img
-              src={getDesignImage(design.id, userDesigns, userDesignVersions, 0)}
-              alt=""
-              className="image-preview"
-            />
-          </div>
-        </div>
-        <div className="budgetSpaceImg" style={{ marginBottom: "10%" }}>
-          {designItems.length > 0 ? (
-            designItems.map((item, index) => (
-              <Item
-                key={index}
-                item={item}
-                onEdit={() => navigate(`/editItem/${budget.id}/${item.id}`)}
-                setDesignItems={setDesignItems}
-                budgetId={budget.id}
-              />
-            ))
-          ) : (
-            <div>
-              <img
-                src={"../../img/project-placeholder.png"}
-                style={{ width: "100px" }}
-                alt="project placeholder"
-              />
-              <p className="grey-text">No items yet</p>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="circle-button-container">
-        {menuOpen && (
-          <div className="small-buttons">
-            {budgetAmount > 0 && (
-              <div
-                className="small-button-container"
-                onClick={() => {
-                  setIsRemoveBudgetModalOpen(true);
-                  setMenuOpen(false);
-                }}
+              {(() => {
+                if (formattedTotalCost === "0.00" && budgetAmount === 0) {
+                  return <>No cost and added budget</>;
+                } else if (formattedTotalCost === "0.00") {
+                  return (
+                    <>
+                      No cost, Budget:{" "}
+                      <strong>
+                        {budgetCurrency} {formatNumber(budgetAmount)}
+                      </strong>
+                    </>
+                  );
+                } else if (budgetAmount === 0) {
+                  return (
+                    <>
+                      Total Cost: <strong>{formattedTotalCost}</strong>, No added budget
+                    </>
+                  );
+                } else {
+                  return (
+                    <>
+                      Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
+                      <strong>
+                        {budgetCurrency} {formatNumber(budgetAmount)}
+                      </strong>
+                    </>
+                  );
+                }
+              })()}
+            </span>
+
+            {budgetAmount > 0 ? (
+              <>
+                <IconButton
+                  onClick={() => toggleBudgetModal(true, true)}
+                  sx={{ color: "var(--color-white)" }}
+                >
+                  <GradientEditIcon />
+                </IconButton>
+                <IconButton
+                  onClick={() => {
+                    setIsRemoveBudgetModalOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  sx={{ color: "var(--color-white)" }}
+                >
+                  <GradientDeleteIcon />
+                </IconButton>
+              </>
+            ) : (
+              <IconButton
+                onClick={() => toggleBudgetModal(true, false)}
+                sx={{ color: "var(--gradientIcon)" }}
               >
-                <span className="small-button-text">Delete Budget</span>
-                <div className="small-circle-button">
-                  <DeleteIcon />
-                </div>
+                <GradientAddIcon />
+              </IconButton>
+            )}
+            <div className="image-frame">
+              <div className="image-frame-icon">
+                <BlankImage />
+                <span>No design yet</span>
+              </div>
+              <img
+                src={getDesignImage(design.id, userDesigns, userDesignVersions, 0)}
+                alt=""
+                className="image-preview"
+              />
+            </div>
+          </div>
+          <div className="budgetSpaceImg" style={{ marginBottom: "10%" }}>
+            {designItems.length > 0 ? (
+              designItems.map((item, index) => (
+                <Item
+                  key={index}
+                  item={item}
+                  onEdit={() => navigate(`/editItem/${budget.id}/${item.id}`)}
+                  setDesignItems={setDesignItems}
+                  budgetId={budget.id}
+                />
+              ))
+            ) : (
+              <div>
+                <img
+                  src={"../../img/project-placeholder.png"}
+                  style={{ width: "100px" }}
+                  alt="project placeholder"
+                />
+                <p className="grey-text">No items yet</p>
               </div>
             )}
-            <div
-              className="small-button-container"
-              onClick={() => toggleBudgetModal(true, budgetAmount > 0)}
-            >
-              <span className="small-button-text">
-                {budgetAmount > 0 ? "Edit the budget" : "Add a Budget"}
-              </span>
-              <div className="small-circle-button">
-                {budgetAmount > 0 ? <EditIcon /> : <AddBudget />}
-              </div>
-            </div>
-            <div
-              className="small-button-container"
-              onClick={() => navigate(`/addItem/${budget.id}`)}
-            >
-              <span className="small-button-text">Add an Item</span>
-              <div className="small-circle-button">
-                <AddItem />
-              </div>
-            </div>
           </div>
-        )}
-        <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
-          {menuOpen ? <CloseIcon /> : <AddIcon />}
         </div>
-      </div>
+        <div className="circle-button-container">
+          {menuOpen && (
+            <div className="small-buttons">
+              {budgetAmount > 0 && (
+                <div
+                  className="small-button-container"
+                  onClick={() => {
+                    setIsRemoveBudgetModalOpen(true);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <span className="small-button-text">Delete Budget</span>
+                  <div className="small-circle-button">
+                    <DeleteIcon />
+                  </div>
+                </div>
+              )}
+              <div
+                className="small-button-container"
+                onClick={() => toggleBudgetModal(true, budgetAmount > 0)}
+              >
+                <span className="small-button-text">
+                  {budgetAmount > 0 ? "Edit the budget" : "Add a Budget"}
+                </span>
+                <div className="small-circle-button">
+                  {budgetAmount > 0 ? <EditIcon /> : <AddBudget />}
+                </div>
+              </div>
+              <div
+                className="small-button-container"
+                onClick={() => navigate(`/addItem/${budget.id}`)}
+              >
+                <span className="small-button-text">Add an Item</span>
+                <div className="small-circle-button">
+                  <AddItem />
+                </div>
+              </div>
+            </div>
+          )}
+          <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
+            {menuOpen ? <CloseIcon /> : <AddIcon />}
+          </div>
+        </div>
 
-      {/* {isBudgetModalOpen && (
+        {/* {isBudgetModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
@@ -531,161 +530,164 @@ function Budget() {
           </div>
         </div>
       )} */}
-      {isBudgetModalOpen && (
-        <Modal
-          open={isBudgetModalOpen}
-          onClose={() => toggleBudgetModal(false, isEditingBudget)}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
-                <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
-                  {isEditingBudget ? "Edit the budget" : "Add a Budget"}
-                </span>{" "}
-                <CloseIcon
-                  sx={{ marginLeft: "auto" }}
-                  onClick={() => toggleBudgetModal(false, isEditingBudget)}
-                  cursor={"pointer"}
-                />
-              </div>
-              <Divider sx={{ borderColor: "var(--color-grey)" }} />
-              <div className="input-group" style={{ marginTop: "12px", margin: "18px" }}>
-                <div className="price-quantity-section">
-                  <select
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      WebkitAppearance: "none",
-                      MozAppearance: "none",
-                      appearance: "none",
-                      outline: "none",
-                    }}
-                    value={budgetCurrencyForInput}
-                    onChange={(e) => setBudgetCurrencyForInput(e.target.value)}
-                  >
-                    <option value="PHP">PHP</option>
-                    <option value="USD">USD</option>
-                  </select>
-                  <KeyboardArrowDownIcon
-                    sx={{
-                      color: "var(--color-grey)",
-                      marginLeft: "-50px",
-                      marginTop: "18px",
-                    }}
+        {isBudgetModalOpen && (
+          <Modal
+            open={isBudgetModalOpen}
+            onClose={() => toggleBudgetModal(false, isEditingBudget)}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
+                  <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
+                    {isEditingBudget ? "Edit the budget" : "Add a Budget"}
+                  </span>{" "}
+                  <CloseIcon
+                    sx={{ marginLeft: "auto" }}
+                    onClick={() => toggleBudgetModal(false, isEditingBudget)}
+                    cursor={"pointer"}
                   />
-                  <input
-                    id="item-price"
-                    type="text"
-                    placeholder="Enter item price"
-                    value={budgetAmountForInput}
-                    onChange={(e) => {
-                      let value = e.target.value;
-                      // Allow digits and a single decimal point, up to two decimal places
-                      if (/^\d*\.?\d{0,2}$/.test(value)) {
-                        // Remove leading zeros unless it’s a decimal number
-                        if (/^\d+$/.test(value)) {
-                          value = value.replace(/^0+/, "");
+                </div>
+                <Divider sx={{ borderColor: "var(--color-grey)" }} />
+                <div className="input-group" style={{ marginTop: "12px", margin: "18px" }}>
+                  <div className="price-quantity-section">
+                    <select
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        WebkitAppearance: "none",
+                        MozAppearance: "none",
+                        appearance: "none",
+                        outline: "none",
+                      }}
+                      value={budgetCurrencyForInput}
+                      onChange={(e) => setBudgetCurrencyForInput(e.target.value)}
+                    >
+                      <option value="PHP">PHP</option>
+                      <option value="USD">USD</option>
+                    </select>
+                    <KeyboardArrowDownIcon
+                      sx={{
+                        color: "var(--color-grey)",
+                        marginLeft: "-50px",
+                        marginTop: "18px",
+                      }}
+                    />
+                    <input
+                      id="item-price"
+                      type="text"
+                      placeholder="Enter item price"
+                      value={budgetAmountForInput}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        // Allow digits and a single decimal point, up to two decimal places
+                        if (/^\d*\.?\d{0,2}$/.test(value)) {
+                          // Remove leading zeros unless it’s a decimal number
+                          if (/^\d+$/.test(value)) {
+                            value = value.replace(/^0+/, "");
+                          }
+                          setBudgetAmountForInput(value);
                         }
-                        setBudgetAmountForInput(value);
-                      }
-                    }}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      WebkitAppearance: "none",
-                      MozAppearance: "none",
-                      appearance: "none",
-                      outline: "none",
-                    }}
-                  />
+                      }}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        WebkitAppearance: "none",
+                        MozAppearance: "none",
+                        appearance: "none",
+                        outline: "none",
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              {error !== "" && (
-                <div className="error-text" style={{ marginLeft: "20px" }}>
-                  {error}
-                </div>
-              )}
-              <button
-                className="add-item-btn"
-                style={{ margin: "18px" }}
-                onClick={() => handleUpdateBudget(budgetAmountForInput, budgetCurrencyForInput)}
-              >
-                {isEditingBudget ? "Edit budget" : "Add Budget"}
-              </button>
-              <div
-                onClick={() => toggleBudgetModal(false, isEditingBudget)}
-                style={{ cursor: "pointer" }}
-              >
-                Cancel
-              </div>
-            </div>
-          </Box>
-        </Modal>
-      )}
-      {isRemoveBudgetModalOpen && (
-        <Modal
-          open={isRemoveBudgetModalOpen}
-          onClose={() => setIsRemoveBudgetModalOpen(false)}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
-                <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
-                  Confirm budget removal
-                </span>
-                <CloseIcon
-                  sx={{ marginLeft: "auto" }}
-                  onClick={() => setIsRemoveBudgetModalOpen(false)}
-                  cursor={"pointer"}
-                />
-              </div>
-              <Divider sx={{ borderColor: "var(--color-grey)" }} />
-              <span style={{ textAlign: "center", margin: "18px" }}>
-                Are you sure you want to remove the budget?
-              </span>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "12px",
-                  margin: "18px",
-                  marginTop: "-24px",
-                  justifyContent: "center",
-                }}
-              >
+                {error !== "" && (
+                  <div className="error-text" style={{ marginLeft: "20px" }}>
+                    {error}
+                  </div>
+                )}
                 <button
                   className="add-item-btn"
-                  style={{
-                    background: "transparent",
-                    border: "2px solid transparent",
-                    backgroundImage: " var(--lightGradient), var(--gradientButton)",
-                    backgroundOrigin: "border-box",
-                    backgroundClip: " padding-box, border-box",
-                  }}
-                  onMouseOver={(e) =>
-                    (e.target.style.backgroundImage =
-                      " var(--lightGradient), var(--gradientButtonHover)")
-                  }
-                  onMouseOut={(e) =>
-                    (e.target.style.backgroundImage =
-                      " var(--lightGradient), var(--gradientButton)")
-                  }
-                  onClick={() => setIsRemoveBudgetModalOpen(false)}
+                  style={{ margin: "18px" }}
+                  onClick={() => handleUpdateBudget(budgetAmountForInput, budgetCurrencyForInput)}
+                >
+                  {isEditingBudget ? "Edit budget" : "Add Budget"}
+                </button>
+                <div
+                  onClick={() => toggleBudgetModal(false, isEditingBudget)}
+                  style={{ cursor: "pointer" }}
                 >
                   Cancel
-                </button>
-                <button className="add-item-btn" onClick={() => handleRemoveBudget(budgetCurrency)}>
-                  Confirm
-                </button>
+                </div>
               </div>
-            </div>
-          </Box>
-        </Modal>
-      )}
-      <BottomBar designId={designId} design={false} projectId={projectId} />
+            </Box>
+          </Modal>
+        )}
+        {isRemoveBudgetModalOpen && (
+          <Modal
+            open={isRemoveBudgetModalOpen}
+            onClose={() => setIsRemoveBudgetModalOpen(false)}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
+                  <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
+                    Confirm budget removal
+                  </span>
+                  <CloseIcon
+                    sx={{ marginLeft: "auto" }}
+                    onClick={() => setIsRemoveBudgetModalOpen(false)}
+                    cursor={"pointer"}
+                  />
+                </div>
+                <Divider sx={{ borderColor: "var(--color-grey)" }} />
+                <span style={{ textAlign: "center", margin: "18px" }}>
+                  Are you sure you want to remove the budget?
+                </span>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    margin: "18px",
+                    marginTop: "-24px",
+                    justifyContent: "center",
+                  }}
+                >
+                  <button
+                    className="add-item-btn"
+                    style={{
+                      background: "transparent",
+                      border: "2px solid transparent",
+                      backgroundImage: " var(--lightGradient), var(--gradientButton)",
+                      backgroundOrigin: "border-box",
+                      backgroundClip: " padding-box, border-box",
+                    }}
+                    onMouseOver={(e) =>
+                      (e.target.style.backgroundImage =
+                        " var(--lightGradient), var(--gradientButtonHover)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.target.style.backgroundImage =
+                        " var(--lightGradient), var(--gradientButton)")
+                    }
+                    onClick={() => setIsRemoveBudgetModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="add-item-btn"
+                    onClick={() => handleRemoveBudget(budgetCurrency)}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
+            </Box>
+          </Modal>
+        )}
+      </DesignSpace>
     </div>
   );
 }

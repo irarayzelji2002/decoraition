@@ -23,65 +23,7 @@ const AddPin = ({ EditMode }) => {
   const handleChange = (color) => {
     setValue(color.hex);
   };
-  const StyledMenu = styled(Menu)(({ theme }) => ({
-    "& .MuiPaper-root": {
-      backgroundColor: "#2c2c2e",
-      color: "var(--color-white)",
-      borderRadius: "12px",
-      padding: 0,
-      margin: 0,
-      border: "none",
-      overflow: "hidden",
-    },
-    "& .MuiList-root": {
-      padding: 0,
-    },
-    "& .MuiMenuItem-root": {
-      "&.Mui-selected": {
-        backgroundColor: "transparent", // Custom background color for selected item
-        "&:hover": {
-          backgroundColor: "transparent", // Custom hover color for selected item
-        },
-      },
-      "&:focus": {
-        outline: "none",
-        boxShadow: "none", // Remove blue outline effect
-      },
-    },
-  }));
-  const formControlStyles = {
-    m: 1,
-    minWidth: 200,
-    backgroundColor: "#2c2c2e",
-    color: "var(--color-white)",
-    width: "100%",
-    borderRadius: "8px",
-    "& .MuiOutlinedInput-notchedOutline": {
-      borderColor: "var( --borderInput)",
-    },
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "var(--bright-grey) !important",
-    },
-    "& .MuiSvgIcon-root": {
-      color: "var(--color-white)", // Set the arrow color to white
-    },
-  };
-  const menuItemStyles = {
-    color: "var(--color-white)",
-    backgroundColor: "var(--dropdown)",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      backgroundColor: "var(--dropdownHover)",
-    },
-    "&.Mui-selected": {
-      backgroundColor: "var(--dropdownSelected)",
-      color: "#d1d1d1",
-      fontWeight: "bold",
-    },
-    "&.Mui-selected:hover": {
-      backgroundColor: "var(--dropdownHover)",
-    },
-  };
+
   const [modalOpen, setModalOpen] = React.useState(false);
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -112,7 +54,7 @@ const AddPin = ({ EditMode }) => {
             <br />
             <label style={{ marginLeft: "12px" }}>Associated Design</label>
             <FormControl sx={formControlStyles}>
-              <InputLabel
+              {/* <InputLabel
                 id="owner-select-label"
                 sx={{
                   color: "var(--color-white)",
@@ -128,41 +70,26 @@ const AddPin = ({ EditMode }) => {
                 }}
               >
                 Select
-              </InputLabel>
+              </InputLabel> */}
               <Select
                 labelId="owner-select-label"
                 fullWidth
                 id="owner-select"
-                label="Owner"
                 value={owner}
                 onChange={(e) => setOwner(e.target.value)}
                 MenuComponent={StyledMenu}
                 MenuProps={{
                   PaperProps: {
                     sx: {
+                      borderRadius: "10px",
                       "& .MuiMenu-list": {
-                        padding: 0, // Remove padding from the ul element
+                        padding: 0,
                       },
                     },
                   },
                 }}
                 IconComponent={ArrowDropDownIcon}
-                sx={{
-                  color: "var(--color-white)",
-                  backgroundColor: "var(--bgMain)",
-                  borderBottom: "1px solid #4a4a4d",
-                  borderRadius: "8px",
-                  transition: "background-color 0.3s ease",
-                  "&.Mui-focused": {
-                    borderBottom: "1px solid var(--focusBorderColor)", // Change border color when focused
-                    outline: "none",
-                    boxShadow: "none", // Remove blue outline effect
-                    color: "var(--color-grey)", // Ensure text color remains white
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "var(--color-white)",
-                  },
-                }}
+                sx={selectStyles}
               >
                 <MenuItem value="" sx={menuItemStyles}>
                   <em>&nbsp;</em>
@@ -259,3 +186,130 @@ const AddPin = ({ EditMode }) => {
 };
 
 export default AddPin;
+
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  "& .MuiPaper-root": {
+    backgroundColor: "#2c2c2e",
+    color: "var(--color-white)",
+    borderRadius: "12px",
+    padding: 0,
+    margin: 0,
+    border: "none",
+    overflow: "hidden",
+  },
+  "& .MuiList-root": {
+    padding: 0,
+  },
+  "& .MuiMenuItem-root": {
+    "&.Mui-selected": {
+      backgroundColor: "transparent", // Custom background color for selected item
+      "&:hover": {
+        backgroundColor: "transparent", // Custom hover color for selected item
+      },
+    },
+    "&:focus": {
+      outline: "none",
+      boxShadow: "none", // Remove blue outline effect
+    },
+  },
+}));
+const formControlStyles = {
+  width: "100%",
+  backgroundColor: "#2c2c2e",
+  color: "var(--color-white)",
+  borderRadius: "8px",
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var( --borderInput)",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--bright-grey) !important",
+  },
+  "& .MuiSvgIcon-root": {
+    color: "var(--color-white)", // Set the arrow color to white
+  },
+};
+const menuItemStyles = {
+  color: "var(--color-white)",
+  backgroundColor: "var(--dropdown)",
+  transition: "all 0.3s ease",
+  display: "block",
+  minHeight: "auto",
+  "&:hover": {
+    backgroundColor: "var(--dropdownHover) !important",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "var(--dropdownSelected) !important",
+    color: "var(--color-white)",
+    fontWeight: "bold",
+  },
+  "&.Mui-selected:hover": {
+    backgroundColor: "var(--dropdownSelectedHover) !important",
+  },
+};
+// Styles for Select
+const selectStyles = {
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--borderInput)",
+    borderWidth: 2,
+    borderRadius: "10px",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--borderInput)",
+  },
+  "& .MuiSelect-select": {
+    color: "var(--color-white)",
+    WebkitTextFillColor: "var(--color-white)",
+  },
+  "& .MuiSelect-select.MuiInputBase-input": {
+    padding: "12px 40px 12px 20px",
+  },
+  "& .MuiSelect-icon": {
+    color: "var(--color-white)",
+    WebkitTextFillColor: "var(--color-white)",
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--borderInput)",
+  },
+};
+
+const selectStylesDisabled = {
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "transparent",
+    borderWidth: 2,
+    borderRadius: "10px",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "transparent",
+  },
+  "& .MuiSelect-select": {
+    color: "var(--color-white) !important",
+    WebkitTextFillColor: "var(--color-white)",
+    "&:focus": {
+      color: "var(--color-white)",
+    },
+  },
+  "& .MuiSelect-select.MuiInputBase-input": {
+    padding: "12px 40px 12px 20px",
+  },
+  "& .MuiSelect-icon": {
+    color: "var(--color-white)",
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "transparent",
+  },
+  "&.Mui-disabled": {
+    backgroundColor: "transparent",
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "transparent",
+    },
+    "& .MuiSelect-icon": {
+      color: "transparent",
+    },
+    "& .MuiSelect-select": {
+      color: "var(--color-white)",
+      WebkitTextFillColor: "var(--color-white)",
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
+  },
+};

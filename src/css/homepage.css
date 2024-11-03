@@ -147,13 +147,14 @@ h2 {
 }
 
 .no-content p {
-  color: #aaa;
+  color: var(--noContent);
+  font-weight: 500;
 }
 
 .no-content {
   width: 100%;
   display: flex;
-  color: #aaa;
+  color: var(--noContent);
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -190,7 +191,7 @@ h2 {
   display: flex;
   gap: 10px;
   flex-direction: row;
-  margin-left: 12px;
+  margin: 10px 20px;
 }
 .layout {
   display: grid;

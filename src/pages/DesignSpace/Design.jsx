@@ -7,6 +7,7 @@ import { showToast } from "../../functions/utils";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase"; // Assuming you have firebase setup
+import DesignSpace from "./DesignSpace";
 import DesignHead from "../../components/DesignHead";
 import { getAuth } from "firebase/auth";
 import PromptBar from "./PromptBar";
@@ -30,7 +31,7 @@ import {
 
 function Design() {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
-  const { designId, projectId } = useParams(); // Get designId from the URL
+  const { designId } = useParams(); // Get designId from the URL
   const [design, setDesign] = useState({});
 
   // const [designData, setDesignData] = useState(null);
@@ -104,56 +105,55 @@ function Design() {
 
   return (
     <div className="whole">
-      <DesignHead
+      <DesignSpace
         design={design}
-        toggleComments={() => toggleComments(setShowComments)}
-        setIsSidebarOpen={handleNotifClick}
-      />
+        isDesign={true}
+        designId={designId}
+        setShowComments={setShowComments}
+      >
+        <>
+          <div className="create-design">
+            <div className="workspace">
+              {showPromptBar && <PromptBar />}
+              <div
+                className="fixed-arrow-button"
+                onClick={() => togglePromptBar(setShowPromptBar)}
+              ></div>
 
-      <>
-        <div className="create-design">
-          <div className="workspace">
-            {showPromptBar && <PromptBar />}
-            <div
-              className="fixed-arrow-button"
-              onClick={() => togglePromptBar(setShowPromptBar)}
-            ></div>
-
-            <Version isDrawerOpen={isNotifOpen} onClose={handleNotifClose} />
-            <div className="working-area">
-              <div className="frame-buttons">
-                <button onClick={() => setNumImageFrames(2)}>
-                  <TwoFrames />
-                </button>
-                <button onClick={() => setNumImageFrames(4)}>
-                  <FourFrames />
-                </button>
+              <Version isDrawerOpen={isNotifOpen} onClose={handleNotifClose} />
+              <div className="working-area">
+                <div className="frame-buttons">
+                  <button onClick={() => setNumImageFrames(2)}>
+                    <TwoFrames />
+                  </button>
+                  <button onClick={() => setNumImageFrames(4)}>
+                    <FourFrames />
+                  </button>
+                </div>
+                <div className={numImageFrames === 4 ? "image-grid-design" : "image-drop"}>
+                  {Array.from({ length: numImageFrames }).map((_, index) => (
+                    <div className="image-frame" key={index}>
+                      <img
+                        src="../../img/Room1.png"
+                        alt={`design preview ${index + 1}`}
+                        className="image-preview"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className={numImageFrames === 4 ? "image-grid-design" : "image-drop"}>
-                {Array.from({ length: numImageFrames }).map((_, index) => (
-                  <div className="image-frame" key={index}>
-                    <img
-                      src="../../img/Room1.png"
-                      alt={`design preview ${index + 1}`}
-                      className="image-preview"
-                    />
-                  </div>
-                ))}
-              </div>
+              {showComments && (
+                <CommentTabs
+                  activeTab={activeTab}
+                  handleTabChange={handleTabChange}
+                  status={status}
+                  handleStatusChange={handleStatusChange}
+                />
+              )}
             </div>
-            {showComments && (
-              <CommentTabs
-                activeTab={activeTab}
-                handleTabChange={handleTabChange}
-                status={status}
-                handleStatusChange={handleStatusChange}
-              />
-            )}
           </div>
-        </div>
-      </>
-
-      <BottomBar design={true} designId={designId} projectId={projectId} />
+        </>
+      </DesignSpace>
     </div>
   );
 }

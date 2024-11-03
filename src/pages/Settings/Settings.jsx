@@ -7,8 +7,8 @@ import {
   handleSetError,
   getHasError,
   getErrMessage,
-  stringAvatar,
-  stringToColor,
+  stringAvatarColor,
+  stringAvatarInitials,
   showToast,
   capitalizeFieldName,
 } from "../../functions/utils";
@@ -825,7 +825,6 @@ function Settings() {
           <Box mt={4} className="tab-content" sx={{ minWidth: "100%" }}>
             <div className="avatar-container" style={{ display: "flex", alignItems: "center" }}>
               <Avatar
-                {...(userDoc.username && stringAvatar(userDoc.username))}
                 alt="User Avatar"
                 src={profilePic ?? ""}
                 sx={{
@@ -833,10 +832,12 @@ function Settings() {
                   height: 150,
                   fontSize: "4rem",
                   marginLeft: "20px",
-                  background: "var(--gradientButton)",
-                  color: "white",
+                  // background: "var(--gradientButton)",
+                  // color: "white",
                   border: "5px solid var(--brightFont)", // Avatar border
+                  ...stringAvatarColor(userDoc?.username),
                 }}
+                children={stringAvatarInitials(userDoc?.username)}
               />
 
               {/* Button Container */}
@@ -983,7 +984,7 @@ function Settings() {
               color: "var(--color-white)",
               display: "flex",
               alignItems: "center",
-              borderBottom: "1px solid var(--color-grey)",
+              borderBottom: "1px solid var(--inputBg)",
               fontWeight: "bold",
             }}
           >
@@ -1084,7 +1085,7 @@ function Settings() {
               color: "var(--color-white)",
               display: "flex",
               alignItems: "center",
-              borderBottom: "1px solid var(--color-grey)",
+              borderBottom: "1px solid var(--inputBg)",
               fontWeight: "bold",
             }}
           >
@@ -1188,7 +1189,7 @@ function Settings() {
               color: "var(--color-white)",
               display: "flex",
               alignItems: "center",
-              borderBottom: "1px solid var(--color-grey)",
+              borderBottom: "1px solid var(--inputBg)",
               fontWeight: "bold",
             }}
           >
@@ -1212,7 +1213,6 @@ function Settings() {
             }}
           >
             <Avatar
-              {...(userDoc.username && stringAvatar(userDoc.username))}
               alt="User Avatar"
               src={profilePicPreview || ""}
               sx={{
@@ -1220,10 +1220,12 @@ function Settings() {
                 height: 150,
                 fontSize: "4rem",
                 marginLeft: "20px",
-                background: "var(--gradientButton)",
-                color: "white",
+                // background: "var(--gradientButton)",
+                // color: "white",
                 border: "5px solid var(--brightFont)", // Avatar border
+                ...stringAvatarColor(userDoc?.username),
               }}
+              children={stringAvatarInitials(userDoc?.username)}
             />
             {/* Hidden File Input */}
             <input
@@ -1309,7 +1311,7 @@ function Settings() {
               color: "var(--color-white)",
               display: "flex",
               alignItems: "center",
-              borderBottom: "1px solid var(--color-grey)",
+              borderBottom: "1px solid var(--inputBg)",
               fontWeight: "bold",
             }}
           >

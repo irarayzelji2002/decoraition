@@ -14,7 +14,7 @@ const ShareConfirmationModal = ({ isOpen, onClose, collaborators }) => {
         sx={{
           backgroundColor: "var(--nav-card-modal)",
           color: "var(--color-white)",
-          borderBottom: "1px solid var(--color-grey)",
+          borderBottom: "1px solid var(--inputBg)",
           fontWeight: "bold",
         }}
       >

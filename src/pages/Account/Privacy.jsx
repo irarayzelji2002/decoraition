@@ -13,9 +13,13 @@ function Privacy() {
         <div className="center-me" style={{ margin: "24px" }}>
           <h1 className="navName">Privacy Policy</h1>
           <p style={{ maxWidth: "800px" }}>
-            Our Privacy Policy explains how we collect, use, and protect your
-            data. By using DecorAItion, you consent to our data practices as
-            outlined in the Privacy Policy.
+            Our Privacy Policy explains how we collect, use, and protect your data. By using
+            DecorAItion, you consent to our data practices as outlined in the Privacy Policy. <br />
+            <br />
+            DecorAItion (“DecorAItion,” “Company,” “we,” or “us”) is committed to respecting and
+            protecting your privacy. This Privacy Policy outlines our data processing practices for
+            visitors to our websites that link to this Privacy Policy (“Website”) and for customers
+            using our Services (“Customer”).
           </p>
         </div>
         <div
@@ -28,53 +32,52 @@ function Privacy() {
             borderRadius: "8px",
           }}
         >
-          <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using DecorAItion, you agree to be bound by these
-            Terms and Conditions, as well as our Privacy Policy. If you do not
-            agree with any part of these terms, you are prohibited from using
-            the app.
+            For clarity, “Service(s)” refers to any software, resources, tools, applications,
+            downloadable items, or features provided by DecorAItion, updates, and other enhancements
+            to our offerings.
           </p>
 
-          <h2>2. Service Description</h2>
+          <h2>1. Changes to the Policy</h2>
           <p>
-            DecorAItion provides tools for generating decoration ideas, managing
-            project timelines, tracking budgets, and facilitating collaboration.
-            Our services include access to AI-generated design suggestions,
-            project management features, and collaborative options.
+            We reserve the right to update this Privacy Policy at any time. Changes take effect
+            immediately upon posting the revised Privacy Policy. Your continued use of our Services
+            signifies acceptance of these changes. If significant updates are made, we will notify
+            you here, by email, or via a notice on our Website.
           </p>
 
-          <h2>3. Account Creation and Security</h2>
+          <h2>2. Information Collection</h2>
           <p>
-            <strong>Account Requirements:</strong> You must be at least 18 years
-            old or have parental consent to create an account.
+            Depending on your interactions with us, we may collect the following types of
+            information:
           </p>
           <p>
-            <strong>Account Security:</strong> You are responsible for
-            maintaining the confidentiality of your account information.
-            DecorAItion will not be liable for any loss or damage from
-            unauthorized account use.
-          </p>
-
-          <h2>4. User Content and Responsibility</h2>
-          <p>
-            <strong>Content Ownership:</strong> You retain ownership of any
-            designs, project data, or other content you upload. By uploading
-            content, you grant DecorAItion permission to store, display, and
-            process it as necessary to provide our services.
+            <strong>Non-Personal Information:</strong>This is non-identifiable information that may
+            include your device's operating system, browser type, language, access date and time,
+            usage data (e.g., pages viewed), Internet service provider, and approximate location.
+            This data helps us enhance your experience and improve our Services.
           </p>
           <p>
-            <strong>User Responsibility:</strong> You agree not to use
-            DecorAItion for unlawful activities, to upload harmful content, or
-            to infringe on third-party intellectual property rights.
+            <strong>Personal Information:</strong> This is identifiable information you voluntarily
+            provide, such as your name, email, contact information, IP address, and other online
+            identifiers. Personal Information may be collected when you register for our Services,
+            use our Website, or contact us for support.
           </p>
 
-          <h2>5. AI-Generated Content Disclaimer</h2>
+          <p>We collect and process your data under various legal bases:</p>
           <p>
-            DecorAItion offers AI-generated design suggestions. While we strive
-            for quality, these suggestions are for guidance only and may not be
-            suitable for all purposes. DecorAItion does not guarantee the
-            accuracy or safety of AI-generated content.
+            <strong>Contractual Necessity:</strong> To provide our services to you.
+          </p>
+          <p>
+            <strong>Legitimate Interest:</strong> For online tracking and marketing. you.
+          </p>
+          <p>
+            <strong>Consent:</strong> Where you have opted in to specific uses for your data.
+          </p>
+
+          <p>
+            You are not obligated to provide us with Personal Information, though certain features
+            may not be available without it.
           </p>
         </div>
       </div>

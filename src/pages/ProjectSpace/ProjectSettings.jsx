@@ -17,6 +17,7 @@ import {
   Select,
   Avatar,
 } from "@mui/material";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import "../../css/projSettings.css";
 import { ThemeProvider } from "@emotion/react";
 import { createTheme } from "@mui/material/styles";
@@ -672,6 +673,9 @@ const GeneralAccessSelect = ({
             },
           },
         }}
+        IconComponent={(props) => (
+          <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+        )}
       >
         <MenuItem value={0} sx={menuItemStyles}>
           <Typography variant="body1" sx={{ fontWeight: "bold", display: "block" }}>
@@ -719,6 +723,9 @@ const GeneralAccessSelect = ({
             },
           },
         }}
+        IconComponent={(props) => (
+          <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+        )}
       >
         {generalAccessRoles.map((roleOption) => (
           <MenuItem key={roleOption.value} value={roleOption.value} sx={menuItemStyles}>
@@ -784,6 +791,9 @@ const InactivitySetting = ({ label, value, onChange, options, disabled }) => (
           },
         },
       }}
+      IconComponent={(props) => (
+        <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+      )}
       disabled={disabled}
     >
       {options.map((option) => (

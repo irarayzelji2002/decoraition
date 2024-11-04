@@ -329,13 +329,18 @@ tr:hover td {
 }
 
 .mark-read {
-  background: var(--gradientFont);
+  background: var(--color-white);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-size: 0.875em;
   font-weight: 400;
   cursor: pointer;
   margin-left: auto;
+}
+
+.mark-read:hover {
+  background-image: var(--gradientFont);
 }
 
 .notif-box {

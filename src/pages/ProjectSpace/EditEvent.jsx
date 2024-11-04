@@ -8,6 +8,13 @@ import AddIcon from "@mui/icons-material/Add";
 import { saveData, updateTask } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
+import { CustomSwitch } from "../Settings/ProjSetting";
+import { Box, Modal, TextField, Button } from "@mui/material";
+import RepeatSelector from "./RepeatSelector";
+import { ThemeProvider } from "@mui/system";
+import { theme } from "../Settings/ProjSetting";
+import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
 function EditEvent() {
   const { projectId } = useParams();
@@ -16,6 +23,9 @@ function EditEvent() {
   const queryParams = new URLSearchParams(location.search);
   const selectedDate = queryParams.get("date");
   const taskDetails = queryParams.get("task");
+  const [allowRepeat, setAllowRepeat] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedReminder, setSelectedReminder] = useState(null);
 
   const initialFormData = taskDetails
     ? JSON.parse(decodeURIComponent(taskDetails))
@@ -28,10 +38,7 @@ function EditEvent() {
           frequency: "",
           unit: "day",
         },
-        reminders: [
-          { id: 1, time: "" },
-          { id: 2, time: "" },
-        ],
+        reminders: [],
         repeatEnabled: true,
       };
 
@@ -66,11 +73,16 @@ function EditEvent() {
   };
 
   const addReminder = () => {
-    const newReminder = { id: Date.now(), time: "" }; // Generate a unique ID
+    setSelectedReminder({ id: Date.now(), time: new Date() });
+    setOpenModal(true);
+  };
+
+  const saveReminder = () => {
     setFormData((prevData) => ({
       ...prevData,
-      reminders: [...prevData.reminders, newReminder],
+      reminders: [...prevData.reminders, selectedReminder],
     }));
+    setOpenModal(false);
   };
 
   const deleteReminder = (id) => {
@@ -97,111 +109,135 @@ function EditEvent() {
   };
 
   return (
-    <div style={{ overflowX: "hidden" }}>
-      <TopBar state={"Edit Event"} />
-      <div className="edit-event">
-        <div className="form-container">
-          <div className="form-group">
-            <label htmlFor="taskName">Task / Event name</label>
-            <input
-              type="text"
-              id="taskName"
-              name="taskName"
-              value={formData.taskName}
-              onChange={(e) => handleInputChange(e, "taskName")}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="startDate">Start date</label>
-            <input
-              type="date"
-              id="startDate"
-              name="startDate"
-              value={formData.startDate}
-              onChange={(e) => handleInputChange(e, "startDate")}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="endDate">End date</label>
-            <input
-              type="date"
-              id="endDate"
-              name="endDate"
-              value={formData.endDate}
-              onChange={(e) => handleInputChange(e, "endDate")}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange(e, "description")}
-            />
-          </div>
-          <div className="form-group repeat">
-            <label>Repeat</label>
-            <div className="repeat-inputs">
+    <ThemeProvider theme={theme}>
+      <div style={{ overflowX: "hidden" }}>
+        <ToastContainer />
+        <TopBar state={"Edit Event"} />
+        <div className="edit-event">
+          <div className="form-container">
+            <div className="form-group">
+              <label htmlFor="taskName">Task / Event name</label>
               <input
-                type="number"
-                name="frequency"
-                value={formData.repeat.frequency}
-                onChange={(e) => handleInputChange(e, "frequency", "repeat")}
+                type="text"
+                id="taskName"
+                name="taskName"
+                value={formData.taskName}
+                onChange={(e) => handleInputChange(e, "taskName")}
               />
-              <select
-                name="unit"
-                value={formData.repeat.unit}
-                onChange={(e) => handleInputChange(e, "unit", "repeat")}
-              >
-                <option value="day">Day</option>
-                <option value="week">Week</option>
-                <option value="month">Month</option>
-              </select>
             </div>
-          </div>
-          <div className="reminders">
-            <div className="reminders-header">
-              <span>Reminders</span>
-              <button className="icon-button add-button" onClick={addReminder}>
-                <AddIcon />
-              </button>
+            <div className="form-group">
+              <label htmlFor="startDate">Start date</label>
+              <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                value={formData.startDate}
+                onChange={(e) => handleInputChange(e, "startDate")}
+              />
             </div>
-            {formData.reminders.map((reminder) => (
-              <div key={reminder.id} className="reminder-item">
-                <input
-                  type="text"
-                  value={reminder.time}
-                  onChange={(e) =>
-                    handleReminderChange(
-                      formData.reminders.findIndex((r) => r.id === reminder.id),
-                      e.target.value
-                    )
-                  }
-                />
-                <div className="reminder-actions">
-                  <button className="icon-button" onClick={() => deleteReminder(reminder.id)}>
-                    <DeleteIcon />
-                  </button>
-                  <button
-                    className="icon-button"
-                    onClick={() => {
-                      /* Handle edit */
-                    }}
-                  >
-                    <EditIcon />
-                  </button>
-                </div>
+            <div className="form-group">
+              <label htmlFor="endDate">End date</label>
+              <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                value={formData.endDate}
+                onChange={(e) => handleInputChange(e, "endDate")}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="description">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange(e, "description")}
+              />
+            </div>
+            <div className="form-group repeat">
+              <CustomSwitch label="Repeat" checked={allowRepeat} onChange={setAllowRepeat} />
+              {allowRepeat && <RepeatSelector />}
+            </div>
+            <div className="reminders">
+              <div className="reminders-header">
+                <span>Reminders</span>
+                <button className="icon-button add-button" onClick={addReminder}>
+                  <AddIcon />
+                </button>
               </div>
-            ))}
-          </div>
+              {formData.reminders.map((reminder) => (
+                <div key={reminder.id} className="reminder-item">
+                  <div className="reminder-display">
+                    <span>{new Date(reminder.time).toLocaleString()}</span>
 
-          <button className="edit-event-button" onClick={handleSave}>
-            Save event
-          </button>
+                    <div className="reminder-actions">
+                      <button
+                        className="icon-button"
+                        onClick={() => {
+                          setSelectedReminder(reminder);
+                          setOpenModal(true);
+                        }}
+                      >
+                        <EditIcon
+                          sx={{
+                            color: "var(--brightFont)",
+                            marginRight: "12px",
+                          }}
+                        />
+                      </button>{" "}
+                      <button className="icon-button" onClick={() => deleteReminder(reminder.id)}>
+                        <DeleteIcon
+                          sx={{
+                            color: "var(--brightFont)",
+                          }}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button className="edit-event-button" onClick={handleSave}>
+              Save event
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "30%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "auto",
+            bgcolor: "var(--nav-card-modal)",
+            boxShadow: 24,
+            borderRadius: "12px",
+            margin: "12px",
+            p: 4,
+          }}
+        >
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DateTimePicker
+              label="Select Date & Time"
+              value={selectedReminder?.time || new Date()}
+              onChange={(newValue) => setSelectedReminder((prev) => ({ ...prev, time: newValue }))}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </LocalizationProvider>
+          <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
+            <Button onClick={() => setOpenModal(false)} className="cancel-button">
+              Cancel
+            </Button>
+            <Button onClick={saveReminder} className="confirm-button">
+              Save
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+    </ThemeProvider>
   );
 }
 

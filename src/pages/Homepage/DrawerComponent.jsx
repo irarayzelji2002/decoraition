@@ -14,6 +14,7 @@ import {
   formatDate,
 } from "./backend/HomepageActions";
 import { stringAvatarColor, stringAvatarInitials } from "../../functions/utils.js";
+import HomepageOptions from "./HomepageOptions";
 
 import {
   Drawer,
@@ -35,6 +36,9 @@ import NotifTab from "./NotifTab";
 import { auth } from "../../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { ArrowBackIos } from "@mui/icons-material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import DeleteIcon from "@mui/icons-material/Delete";
+import LinkIcon from "@mui/icons-material/Link";
 import { fetchUserData, fetchDesigns, fetchProjects } from "./backend/HomepageFunctions.jsx";
 import { DesignIcn, FAQ, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/DesignSvg.jsx";
 
@@ -55,9 +59,6 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
   const [userDesignsLatest, setUserDesignsLatest] = useState([]);
   const [userProjectsLatest, setUserProjectsLatest] = useState([]);
   const [darkMode, setDarkMode] = useState(initDarkMode);
-  const [activeItem, setActiveItem] = useState(null);
-  const [activeGroup, setActiveGroup] = useState(null);
-  const optionsRef = useRef(null);
 
   // Sorting designs by latest modifiedAt
   useEffect(() => {
@@ -74,20 +75,6 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
     });
     setUserProjectsLatest(projectsByLatest);
   }, [projects, userProjects]);
-
-  const handleClickOutside = (event) => {
-    if (optionsRef.current && !optionsRef.current.contains(event.target)) {
-      setActiveItem(null);
-      setActiveGroup(null);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const getDesignImage = (designId) => {
     // Get the design
@@ -136,6 +123,41 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
   const handleNotifClose = () => {
     setIsNotifOpen(false);
   };
+
+  const [clickedId, setClickedId] = useState("");
+  const [optionsState, setOptionsState] = useState({
+    showOptions: false,
+    selectedId: null,
+  });
+
+  const toggleOptions = (id) => {
+    setOptionsState((prev) => {
+      if (prev.selectedId === id) {
+        // If the same ID is clicked, close the options menu
+        return { showOptions: false, selectedId: null };
+      } else {
+        // Open options for the new ID
+        return { showOptions: true, selectedId: id };
+      }
+    });
+  };
+
+  useEffect(() => {
+    toggleOptions(clickedId);
+  }, [clickedId]);
+
+  const handleOptionsClick = (id, event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    setClickedId(id);
+    if (clickedId === id) {
+      setClickedId(null);
+    }
+  };
+
+  useEffect(() => {
+    console.log("showOptions:", optionsState.showOptions, "; selectedId:", optionsState.selectedId);
+  }, [optionsState]);
 
   return (
     <Drawer
@@ -191,8 +213,8 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           <IconButton onClick={handleNotifClick} sx={{ color: "white" }}>
             <NotificationsIcon sx={{ color: "var(--color-white)" }} />
           </IconButton>
-          <div onClick={onClose}>
-            <NotifTab isDrawerOpen={isNotifOpen} onClose={handleNotifClose} />
+          <div>
+            <NotifTab isNotifOpen={isNotifOpen} onClose={handleNotifClose} />
           </div>
         </div>
       </div>
@@ -269,45 +291,25 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               <IconButton
                 edge="end"
                 aria-label="more"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent the ListItem onClick from firing
-                  setActiveItem(index);
-                  setActiveGroup("design");
-                }}
+                onClick={() => handleOptionsClick(design.id)}
+                sx={{ color: "var(--color-white)" }}
               >
                 <MoreHorizIcon sx={{ color: darkMode ? "white" : "black" }} />
               </IconButton>
-              {activeItem === index && activeGroup === "design" && (
-                <div ref={optionsRef} className="dropdown-menu">
-                  <div
-                    className="dropdown-item"
-                    onClick={() =>
-                      navigate(`/design/${design.id}`, {
-                        state: { designId: design.id },
-                      })
-                    }
-                  >
-                    <span className="icon"></span> Open
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Share
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Copy Link
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Make a copy
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Rename
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Delete
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Details
-                  </div>
-                </div>
+              {optionsState.showOptions && optionsState.selectedId === clickedId && (
+                <HomepageOptions
+                  isDesign={true}
+                  isTable={true}
+                  id={design.id}
+                  onOpen={() =>
+                    navigate(`/design/${design.id}`, {
+                      state: { designId: design.id },
+                    })
+                  }
+                  optionsState={optionsState}
+                  setOptionsState={setOptionsState}
+                  object={design}
+                />
               )}
             </ListItem>
           ))
@@ -348,42 +350,24 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               <IconButton
                 edge="end"
                 aria-label="more"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent the ListItem onClick from firing
-                  setActiveItem(index);
-                  setActiveGroup("project");
-                }}
+                onClick={() => handleOptionsClick(project.id)}
               >
                 <MoreHorizIcon sx={{ color: darkMode ? "white" : "black" }} />
               </IconButton>
-              {activeItem === index && activeGroup === "project" && (
-                <div ref={optionsRef} className="dropdown-menu">
-                  <div
-                    className="dropdown-item"
-                    onClick={() =>
-                      navigate(`/project/${project.id}`, {
-                        state: { projectId: project.id },
-                      })
-                    }
-                  >
-                    <span className="icon"></span> Open
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Share
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Copy Link
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Rename
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Delete
-                  </div>
-                  <div className="dropdown-item">
-                    <span className="icon"></span> Details
-                  </div>
-                </div>
+              {optionsState.showOptions && optionsState.selectedId === clickedId && (
+                <HomepageOptions
+                  isDesign={false}
+                  isTable={true}
+                  id={project.id}
+                  onOpen={() =>
+                    navigate(`/project/${project.id}`, {
+                      state: { projectId: project.id },
+                    })
+                  }
+                  optionsState={optionsState}
+                  setOptionsState={setOptionsState}
+                  object={project}
+                />
               )}
             </ListItem>
           ))

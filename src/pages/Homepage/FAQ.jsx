@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import "../../css/landing.css";
+import IconButton from "@mui/material/IconButton";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
@@ -52,7 +54,24 @@ const FAQ = () => {
       }}
     >
       <div className="center-me" style={{ margin: "24px" }}>
-        <h1 className="navName">Frequently Asked Questions</h1>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "24px",
+          }}
+        >
+          <IconButton
+            onClick={() => window.history.back()}
+            style={{ color: "var(--color-white)", fontSize: "2.5rem" }}
+          >
+            <ArrowBackIosNewIcon />
+          </IconButton>
+          <h1 className="navName" style={{ fontSize: "40px" }}>
+            Frequently Asked Questions
+          </h1>
+        </div>
         <p>You have questions, we have answers.</p>
       </div>
       <div className="faq-box">

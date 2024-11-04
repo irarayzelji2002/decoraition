@@ -704,7 +704,117 @@ textarea {
   font-weight: bold; /* Optional: make text bold to stand out */
 }
 
-.css-4445e4 {
+.cancel-button {
+  background: transparent !important;
+  border: 2px solid transparent !important;
+  border-radius: 20px !important;
+  background-image: var(--lightGradient), var(--gradientButton) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  font-weight: bold !important;
+  text-transform: none !important;
+  color: var(--color-white) !important;
+}
+
+.cancel-button:hover {
+  background-image: var(--lightGradient), var(--gradientButtonHover) !important;
+}
+
+.dialog .MuiDialog-paper {
+  background-color: var(--nav-card-modal) !important;
+  border-radius: 20px !important;
+}
+
+.dialog-title {
+  background-color: var(--nav-card-modal) !important;
+  color: var(--color-white) !important;
+  display: flex !important;
+  align-items: center !important;
+  border-bottom: 1px solid var(--color-grey) !important;
+  font-weight: bold !important;
+}
+
+.dialog-icon-button {
+  color: var(--color-white) !important;
+  margin-right: 1rem !important;
+}
+
+.dialog-content {
+  background-color: var(--nav-card-modal) !important;
+  color: var(--color-white) !important;
+  margin-top: 20px !important;
+  margin-bottom: -20px !important;
+}
+
+.form-control {
+  padding: 16px !important;
+  padding-bottom: 6px !important;
+}
+
+.form-control label {
+  color: var(--color-white) !important;
+  font-weight: bold !important;
+  margin-bottom: 6px;
+}
+
+.select-icon {
+  color: var(--color-white) !important;
+}
+
+.dialog-actions {
+  background-color: var(--nav-card-modal) !important;
+  margin: 10px !important;
+}
+
+.confirm-button {
+  background: var(--gradientButton) !important;
+  border-radius: 20px !important;
+  color: var(--color-white) !important;
+  font-weight: bold !important;
+  text-transform: none !important;
+}
+
+.confirm-button:hover {
+  background: var(--gradientButtonHover) !important;
+}
+
+.cancel-button {
+  background: transparent !important;
+  border: 2px solid transparent !important;
+  border-radius: 20px !important;
+  background-image: var(--lightGradient), var(--gradientButton) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  font-weight: bold !important;
+  text-transform: none !important;
+  color: var(--color-white) !important;
+}
+
+.cancel-button:hover {
+  background-image: var(--lightGradient), var(--gradientButtonHover) !important;
+}
+
+.confirm-dialog .MuiDialog-paper {
+  background-color: var(--nav-card-modal) !important;
+  border-radius: 20px !important;
+}
+
+.confirm-dialog-title {
+  background-color: var(--nav-card-modal) !important;
+  color: var(--color-white) !important;
+  font-weight: bold !important;
+}
+
+.confirm-dialog-content {
+  background-color: var(--nav-card-modal) !important;
+  color: var(--color-white) !important;
+  margin-top: 20px !important;
+  margin-bottom: -20px !important;
+}
+
+.confirm-dialog-actions {
+  background-color: var(--nav-card-modal) !important;
+  margin: 10px !important;
 }
 
 .select-image-preview {
@@ -729,6 +839,12 @@ textarea {
 .error-text {
   color: var(--errorText);
   font-size: 0.875em;
+}
+
+.comment-tabs-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin-bottom: 20px !important;
 }
 
 @media (max-width: 600px) {

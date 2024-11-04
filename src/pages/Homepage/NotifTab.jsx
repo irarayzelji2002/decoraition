@@ -5,7 +5,7 @@ import { Tabs, Tab } from "@mui/material";
 import { ArrowBackIos } from "@mui/icons-material";
 import Notif from "./Notif";
 
-const DrawerComponent = ({ isDrawerOpen, onClose }) => {
+const NotifTab = ({ isNotifOpen, onClose }) => {
   // State to handle dark mode
   const [darkMode, setDarkMode] = useState(true);
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
   return (
     <Drawer
       anchor="left"
-      open={isDrawerOpen}
+      open={isNotifOpen}
       onClose={onClose}
       sx={{
         zIndex: "13001",
@@ -133,4 +133,4 @@ const DrawerComponent = ({ isDrawerOpen, onClose }) => {
   );
 };
 
-export default DrawerComponent;
+export default NotifTab;

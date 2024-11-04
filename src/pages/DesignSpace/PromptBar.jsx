@@ -3,7 +3,7 @@ import "../../css/design.css";
 import Slider from "@mui/joy/Slider";
 import Button from "@mui/joy/Button";
 import { FormControl, Select, Option } from "@mui/joy";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { Modal, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Textarea from "@mui/joy/Textarea";
@@ -18,7 +18,7 @@ const theme = extendTheme({
   components: {
     JoySelect: {
       defaultProps: {
-        indicator: <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />,
+        indicator: <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />,
       },
     },
   },
@@ -203,6 +203,9 @@ function PromptBar() {
                 },
               },
             }}
+            IconComponent={(props) => (
+              <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+            )}
           >
             <Option value="">None</Option>
             <Option value="Red-Green">

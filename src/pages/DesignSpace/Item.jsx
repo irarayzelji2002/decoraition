@@ -8,7 +8,7 @@ import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
 import Modal from "@mui/material/Modal";
 import { Divider } from "@mui/material";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import EditPen from "./svg/EditPen";
 import Trash from "./svg/Trash";
 import { ToastContainer, toast } from "react-toastify";
@@ -167,7 +167,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
                 >
                   <option value="PHP">PHP</option>
                 </select>
-                <KeyboardArrowDownIcon
+                <KeyboardArrowDownRoundedIcon
                   sx={{
                     color: "var(--color-grey)",
                     marginLeft: "-50px",

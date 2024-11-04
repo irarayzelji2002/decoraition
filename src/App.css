@@ -138,6 +138,27 @@ select:-webkit-autofill {
   font-size: 0.875em;
 }
 
+.element {
+  margin-bottom: 16px !important;
+  background-color: var(--nav-card-modal) !important;
+}
+
+.element input {
+  color: var(--color-white) !important;
+}
+
+.element .MuiOutlinedInput-root fieldset {
+  border-color: var(--borderInput) !important;
+}
+
+.element .MuiOutlinedInput-root:hover fieldset {
+  border-color: var(--borderInput) !important;
+}
+
+.element .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: var(--brightFont) !important;
+}
+
 :root {
   --bg-header: url("../public/img/bg-login.png");
   --bg-image: #1f1e22;

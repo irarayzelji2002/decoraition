@@ -16,7 +16,7 @@ import DesignSpace from "./DesignSpace";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { Divider } from "@mui/material";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { onSnapshot } from "firebase/firestore";
 import "../../css/budget.css";
 import { db } from "../../firebase"; // Assuming you have firebase setup
@@ -567,7 +567,7 @@ function Budget() {
                       <option value="PHP">PHP</option>
                       <option value="USD">USD</option>
                     </select>
-                    <KeyboardArrowDownIcon
+                    <KeyboardArrowDownRoundedIcon
                       sx={{
                         color: "var(--color-grey)",
                         marginLeft: "-50px",

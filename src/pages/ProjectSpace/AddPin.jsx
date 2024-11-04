@@ -15,6 +15,7 @@ import { Modal } from "@mui/material";
 import { ChromePicker } from "react-color";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { useState } from "react";
 
 const AddPin = ({ EditMode }) => {
@@ -88,7 +89,9 @@ const AddPin = ({ EditMode }) => {
                     },
                   },
                 }}
-                IconComponent={ArrowDropDownIcon}
+                IconComponent={(props) => (
+                  <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+                )}
                 sx={selectStyles}
               >
                 <MenuItem value="" sx={menuItemStyles}>

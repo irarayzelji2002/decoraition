@@ -14,7 +14,7 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import EmailInput from "./EmailInput";
 import { Avatar } from "@mui/material";
 import { showToast } from "../functions/utils";
@@ -165,6 +165,9 @@ const ShareModal = ({ isOpen, onClose, handleShare, isDesign, object }) => {
                   },
                 },
               }}
+              IconComponent={(props) => (
+                <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+              )}
             >
               {roles.map((roleOption) => (
                 <MenuItem key={roleOption.value} value={roleOption.value} sx={menuItemStyles}>

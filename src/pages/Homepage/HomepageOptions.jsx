@@ -44,7 +44,7 @@ function HomepageOptions({
   isTable = false,
   optionsState = {},
   setOptionsState = () => {},
-  clickedId,
+  clickedId = "",
   setClickedId = () => {},
   toggleOptions = (id) => {
     setOptionsState((prev) => {

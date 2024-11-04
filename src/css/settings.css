@@ -115,3 +115,65 @@
 .notification-settings {
   color: var(--color-white);
 }
+
+/* Tab Navigation */
+.tabNavigation {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin-bottom: 4rem !important;
+}
+
+.tabItem {
+  font-size: 18px !important;
+  font-weight: bold !important;
+  text-transform: none !important;
+  cursor: pointer !important;
+  padding-bottom: 1rem !important;
+}
+
+.tabItem.active {
+  background-image: var(--gradientFont) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+  border-bottom: 2px solid transparent !important;
+  border-image: var(--gradientFont) 1 !important;
+  border-image-slice: 1 !important;
+}
+
+.tabItem:focus,
+.tabItem:active {
+  outline: none !important;
+  background-color: transparent !important;
+}
+
+/* General Access */
+.accessIcon {
+  color: var(--color-white) !important;
+}
+
+.accessSelect {
+  /* Add any additional styles if needed */
+}
+
+/* Viewer Settings */
+.customSwitchContainer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  margin-bottom: 1rem !important;
+}
+
+.switchLabel {
+  /* Add any additional styles if needed */
+}
+
+/* Inactivity Settings */
+.inactivitySettings {
+  /* Add any additional styles if needed */
+}
+
+.inactivityTextField {
+  /* Add any additional styles if needed */
+}

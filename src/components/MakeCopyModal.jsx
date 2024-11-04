@@ -11,6 +11,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { Menu, styled } from "@mui/material";
 import OpenInFullRoundedIcon from "@mui/icons-material/OpenInFullRounded";
@@ -169,6 +170,9 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
                     },
                   },
                 }}
+                IconComponent={(props) => (
+                  <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+                )}
                 sx={selectStyles}
               >
                 {/* <MenuItem value="" sx={menuItemStyles}>

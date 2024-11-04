@@ -3,7 +3,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 
 export default function SelectSmall() {
   const [owner, setOwner] = React.useState("");
@@ -24,7 +24,7 @@ export default function SelectSmall() {
           value={owner}
           onChange={(e) => setOwner(e.target.value)}
           IconComponent={(props) => (
-            <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
+            <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
           )}
           MenuProps={{
             PaperProps: {
@@ -55,7 +55,7 @@ export default function SelectSmall() {
           value={dateModified}
           onChange={(e) => setDateModified(e.target.value)}
           IconComponent={(props) => (
-            <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
+            <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
           )}
           MenuProps={{
             PaperProps: {
@@ -86,7 +86,7 @@ export default function SelectSmall() {
           value={dateCreated}
           onChange={(e) => setDateCreated(e.target.value)}
           IconComponent={(props) => (
-            <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
+            <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
           )}
           MenuProps={{
             PaperProps: {
@@ -117,7 +117,7 @@ export default function SelectSmall() {
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           IconComponent={(props) => (
-            <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
+            <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
           )}
           MenuProps={{
             PaperProps: {
@@ -148,7 +148,7 @@ export default function SelectSmall() {
           value={order}
           onChange={(e) => setOrder(e.target.value)}
           IconComponent={(props) => (
-            <ArrowDropDownIcon sx={{ color: "var(--color-white) !important" }} />
+            <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
           )}
           MenuProps={{
             PaperProps: {

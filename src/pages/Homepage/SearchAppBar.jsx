@@ -129,6 +129,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
                 <NotificationsIcon sx={{ color: "var(--color-white)" }} />
               </Badge>
             </Box>
+            <NotifTab isNotifOpen={isNotifOpen} onClose={handleNotifClose} />
             <Box
               sx={{
                 color: "var(--color-white)",

@@ -312,7 +312,7 @@ function EnhancedTable({
                             onOpen={(event) => handleClick(event, row.id, isDesign, navigate)}
                             optionsState={optionsState}
                             setOptionsState={setOptionsState}
-                            object={rows}
+                            object={row}
                           />
                         </div>
                       )}

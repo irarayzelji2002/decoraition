@@ -30,7 +30,7 @@ const CommentContainer = () => {
           <FaEllipsisV className="options-dots" />
         </div>
       </div>
-
+      <p> I like the room design! Could we add some more table sheets?</p>
       <div className="reply-input">
         <FaAt className="at-symbol" />
         <input type="text" placeholder="Add a Reply" />

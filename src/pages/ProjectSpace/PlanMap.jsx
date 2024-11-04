@@ -76,7 +76,7 @@ function PlanMap() {
   };
 
   const navigateToAddPin = () => {
-    navigate("/addPin" + projectId);
+    navigate("/addPin/" + projectId);
   };
   const navigateToPinLayout = () => {
     navigate("/pinOrder/" + projectId);

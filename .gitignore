@@ -38,3 +38,6 @@ ai-api/*.pt
 ai-api/*.safetensors
 ai-api/__pycache__
 ai-api/venv
+
+# test files
+public/test-img/*.png

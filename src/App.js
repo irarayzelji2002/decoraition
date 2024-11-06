@@ -42,21 +42,24 @@ import GenerateImgLoadingPage from "./components/GenerateImgLoadingPage.jsx";
 function ProtectedRoute({ children }) {
   const { user, userDoc, userDocFetched } = useAuth();
   if (!userDocFetched) return <Loading />;
-  if (!user || !userDoc) return <Navigate to="/login" replace />;
+  if (!user || !userDoc || userDoc?.username === undefined) return <Navigate to="/login" replace />;
   return children;
 }
 
 function AuthPublicRoute({ children }) {
   const { user, userDoc, userDocFetched } = useAuth();
+  console.log("AuthPublicRoute:");
+  console.log("user", user);
+  console.log("userDoc", userDoc);
   if (!userDocFetched) return <Loading />;
-  if (user && userDoc) return <Navigate to="/homepage" replace />;
+  if (user && userDoc?.username !== undefined) return <Navigate to="/homepage" replace />;
   return children;
 }
 
 function StartElement() {
   const { user, userDoc, userDocFetched } = useAuth();
   if (!userDocFetched) return <Loading />;
-  if (user && userDoc) return <Navigate to="/homepage" replace />;
+  if (user && userDoc?.username !== undefined) return <Navigate to="/homepage" replace />;
   else return <Landing />;
 }
 

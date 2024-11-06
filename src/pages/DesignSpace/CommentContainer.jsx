@@ -1,23 +1,45 @@
 import React from "react";
-import Avatar from "@mui/material/Avatar";
+import { Avatar, Box } from "@mui/material";
 import { FaCheckCircle, FaEllipsisV, FaAt } from "react-icons/fa";
+import { stringAvatarColor, stringAvatarInitials } from "../../functions/utils.js";
+import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 
 const CommentContainer = () => {
+  const { user, userDoc } = useSharedProps();
+
   return (
     <div className="comment-container">
       <div className="profile-section">
         <div className="profile-info">
-          <Avatar
+          <Box
             sx={{
-              height: 30,
-              width: 30,
-              borderRadius: "50%",
-              marginRight: "10px",
+              width: 42,
+              height: 42,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               background: "var(--gradientButton)",
-              border: "2px solid var(--brightFont)",
-              color: "white", // Optional: to set the text color inside the avatar
+              borderRadius: "50%",
+              padding: "2.5px",
+              marginRight: "10px",
             }}
-          ></Avatar>
+          >
+            <Avatar
+              src={""}
+              sx={{
+                height: 39,
+                width: 39,
+                borderRadius: "50%",
+                border: "2.5px solid transparent",
+                boxShadow: "0 0 0 2.5px var(--gradientButton)",
+                "& .MuiAvatar-img": {
+                  borderRadius: "50%",
+                },
+                ...stringAvatarColor(userDoc?.username),
+              }}
+              children={stringAvatarInitials(userDoc?.username)}
+            />
+          </Box>
           <div className="user-details">
             <span className="username">Juan Dela Cruz</span>
             <span style={{ fontSize: "0.7rem" }} className="date">

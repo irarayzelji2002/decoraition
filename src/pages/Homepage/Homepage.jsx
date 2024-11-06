@@ -35,6 +35,7 @@ import DesignSvg from "./svg/DesignSvg.jsx";
 import Loading from "../../components/Loading.jsx";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage.jsx";
 import { set } from "lodash";
+import { handleLogout } from "./backend/HomepageFunctions.jsx";
 
 function Homepage() {
   const navigate = useNavigate();
@@ -46,10 +47,8 @@ function Homepage() {
   const [filteredDesignsForTable, setFilteredDesignsForTable] = useState([]);
   const [filteredProjectsForTable, setFilteredProjectsForTable] = useState([]);
 
-  const [viewForDesigns, setViewForDesigns] = useState(userDoc.layoutSettings.designsListHome ?? 0); //0 for tiled view, 1 for list view
-  const [viewForProjects, setViewForProjects] = useState(
-    userDoc.layoutSettings.projectsListHome ?? 0
-  );
+  const [viewForDesigns, setViewForDesigns] = useState(0); //0 for tiled view, 1 for list view
+  const [viewForProjects, setViewForProjects] = useState(0);
   const [loadingDesigns, setLoadingDesigns] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
 
@@ -179,11 +178,6 @@ function Homepage() {
   };
 
   useEffect(() => {
-    loadDesignDataForView();
-    loadProjectDataForView();
-  }, []);
-
-  useEffect(() => {
     setThresholdAfterViewChange("designs");
     setThresholdAfterViewChange("projects");
   }, [filteredDesigns, filteredProjects]);
@@ -197,8 +191,12 @@ function Homepage() {
   }, [projects, userProjects, searchQuery]);
 
   useEffect(() => {
-    setViewForDesigns(userDoc.layoutSettings.designsListHome ?? 0);
-    setViewForProjects(userDoc.layoutSettings.projectsListHome ?? 0);
+    if (userDoc) {
+      setViewForDesigns(userDoc.layoutSettings.designsListHome ?? 0);
+      setViewForProjects(userDoc.layoutSettings.projectsListHome ?? 0);
+    } else {
+      handleLogout(navigate);
+    }
   }, [userDoc]);
 
   useEffect(() => {

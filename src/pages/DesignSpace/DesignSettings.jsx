@@ -29,7 +29,7 @@ import {
   AnyoneWithLinkIcon,
 } from "./svg/DesignAccessIcons";
 
-const theme = createTheme({
+export const theme = createTheme({
   components: {
     MuiSwitch: {
       styleOverrides: {
@@ -547,7 +547,7 @@ const GeneralAccessSelect = ({
 };
 
 // Custom Switch Component for reusability
-const CustomSwitch = ({ label, checked, onChange, disabled }) => (
+export const CustomSwitch = ({ label, checked, onChange, disabled }) => (
   <Box
     className="customSwitchContainer"
     sx={{
@@ -571,7 +571,7 @@ const CustomSwitch = ({ label, checked, onChange, disabled }) => (
 );
 
 // Inactivity Setting Component for input fields
-const InactivitySetting = ({ label, value, onChange, options, disabled }) => (
+export const InactivitySetting = ({ label, value, onChange, options, disabled }) => (
   <Box className="inactivitySettings">
     <Typography sx={{ fontSize: "0.95rem" }}>{label}</Typography>
     {/* <TextField
@@ -621,7 +621,7 @@ const InactivitySetting = ({ label, value, onChange, options, disabled }) => (
 );
 
 // Reusable styles for MenuItem
-const menuItemStyles = {
+export const menuItemStyles = {
   color: "var(--color-white)",
   backgroundColor: "var(--dropdown)",
   transition: "all 0.3s ease",
@@ -640,7 +640,7 @@ const menuItemStyles = {
 };
 
 // Styles for Switch
-const switchStyles = {
+export const switchStyles = {
   "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
     backgroundColor: "var(--inputBg)",
   },
@@ -693,7 +693,7 @@ const switchStyles = {
 };
 
 // Styles for Select
-const selectStyles = {
+export const selectStyles = {
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: "var(--borderInput)",
     borderWidth: 2,
@@ -718,7 +718,7 @@ const selectStyles = {
   },
 };
 
-const selectStylesDisabled = {
+export const selectStylesDisabled = {
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: "transparent",
     borderWidth: 2,
@@ -761,7 +761,7 @@ const selectStylesDisabled = {
 };
 
 // Styles for TextField
-const textFieldStyles = {
+export const textFieldStyles = {
   "& .MuiOutlinedInput-notchedOutline": {
     borderWidth: 2, // border thickness
   },
@@ -783,6 +783,6 @@ const textFieldStyles = {
   },
 };
 
-const textFieldInputProps = {
+export const textFieldInputProps = {
   style: { color: "var(--color-white)" }, // Input text color
 };

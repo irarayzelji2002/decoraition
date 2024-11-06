@@ -149,21 +149,34 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
                 open={accountTooltipOpen}
                 setOpen={setAccountTooltipOpen}
               >
-                <Avatar
-                  src={userDoc?.profilePic ? userDoc?.profilePic : ""}
+                <Box
                   sx={{
-                    height: 40,
-                    width: 40,
+                    width: 42,
+                    height: 42,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "var(--gradientButton)",
                     borderRadius: "50%",
-                    marginLeft: "auto",
-                    marginRight: "12px",
-                    // background: "var(--gradientButton)",
-                    border: "2px solid var(--brightFont)",
-                    // color: "white", // Optional: to set the text color inside the avatar
-                    ...stringAvatarColor(userDoc?.username),
+                    padding: "2.5px",
                   }}
-                  children={stringAvatarInitials(userDoc?.username)}
-                />
+                >
+                  <Avatar
+                    src={userDoc?.profilePic ? userDoc?.profilePic : ""}
+                    sx={{
+                      height: 39,
+                      width: 39,
+                      borderRadius: "50%",
+                      border: "2.5px solid transparent",
+                      boxShadow: "0 0 0 2.5px var(--gradientButton)",
+                      "& .MuiAvatar-img": {
+                        borderRadius: "50%",
+                      },
+                      ...stringAvatarColor(userDoc?.username),
+                    }}
+                    children={stringAvatarInitials(userDoc?.username)}
+                  />
+                </Box>
               </DelayedTooltip>
             </IconButton>
           </div>

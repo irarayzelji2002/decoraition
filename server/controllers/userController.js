@@ -33,7 +33,7 @@ exports.createUser = async (req, res) => {
 
     // Create user in Firebase Authentication
     // 0 for Google, 1 for Facebook
-    if (connectedAccount === 0) {
+    if (connectedAccount === 0 || connectedAccount === 1) {
       // For Google OAuth
       firebaseUserId = userId;
     } else {
@@ -49,7 +49,7 @@ exports.createUser = async (req, res) => {
       firstName,
       lastName,
       username,
-      email,
+      email: email.toLowerCase(),
       theme: 0, //0 for dark mode (default), 1 for light mode
       connectedAccount, //0 for Google, 1 for Facebook, null
       profilePic,
@@ -89,32 +89,43 @@ exports.createUser = async (req, res) => {
       projects: [],
       designs: [],
       createdAt: new Date(),
-      updatedAt: new Date(),
+      modifiedAt: new Date(),
     };
-    createdUserDoc = await db.collection("users").doc(firebaseUserId).set(userData);
+    await db.collection("users").doc(firebaseUserId).set(userData);
+    createdUserDoc = true;
+
     res.status(200).json({ message: "User created successfully", userId });
   } catch (error) {
     console.error("Error creating user:", error);
-
-    // Rollback: Delete user from Authentication if it was created
-    if (firebaseUserId) {
-      try {
-        await auth.deleteUser(firebaseUserId);
-      } catch (deleteAuthError) {
-        console.error("Error deleting user from Authentication:", deleteAuthError);
-      }
+    const { userId } = req.body;
+    let { connectedAccount } = req.body;
+    if (connectedAccount === 0 || connectedAccount === 1) {
+      firebaseUserId = userId;
     }
 
-    // Rollback: Delete user document from Firestore if it was created
+    // Implement rollback in reverse order
     if (createdUserDoc) {
       try {
         await db.collection("users").doc(firebaseUserId).delete();
+        console.log("Rolled back: Deleted Firestore document");
       } catch (deleteFirestoreError) {
-        console.error("Error deleting user document from Firestore:", deleteFirestoreError);
+        console.error("Error during Firestore rollback:", deleteFirestoreError);
       }
     }
 
-    res.status(500).json({ error: "Failed to create user", message: error.message });
+    if (firebaseUserId) {
+      try {
+        await auth.deleteUser(firebaseUserId);
+        console.log("Rolled back: Deleted Firebase Auth user");
+      } catch (deleteAuthError) {
+        console.error("Error during Auth rollback:", deleteAuthError);
+      }
+    }
+
+    res.status(500).json({
+      error: "Failed to create user",
+      message: error.message,
+    });
   }
 };
 
@@ -558,7 +569,7 @@ exports.checkExistingEmailForReg = async (req, res) => {
   try {
     try {
       const existingUser = await db.collection("users").where("email", "==", email).get();
-      if (existingUser) {
+      if (existingUser.size > 0) {
         return res.status(400).json({ error: "Email already exists" });
       } else {
         return res.status(200).json({ success: true, message: "Email is available" });
@@ -650,7 +661,7 @@ exports.checkExistingUsernameForReg = async (req, res) => {
   try {
     try {
       const usernameExists = await db.collection("users").where("username", "==", username).get();
-      if (usernameExists) {
+      if (usernameExists.size > 0) {
         return res.status(400).json({ error: "Username already exists" });
       } else {
         return res.status(200).json({ success: true, message: "Username is available" });

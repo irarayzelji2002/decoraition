@@ -91,13 +91,62 @@
 }
 
 .promptBar {
-  min-height: 100vh;
+  min-height: calc(100vh - 214px);
   width: 500px;
   background-color: var(--nav-card-modal);
-  padding: 40px;
-  padding-bottom: 20%;
+  padding: 30px;
+  padding-right: 50px;
   box-shadow: 2px 0px 4px rgba(0, 0, 0, 0.2);
   position: relative;
+}
+
+.promptBarIconButton,
+.commentSectionIconButton {
+  display: block !important;
+}
+
+.promptBarIconButtonInside,
+.commentSectionIconButtonInside,
+.promptBarHiddenHeader,
+.commentSectionHiddenHeader {
+  display: none !important;
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 100%;
+  cursor: ew-resize;
+  background-color: var(--nav-card-modal);
+  border-left: 2px solid var(--bgcolor);
+  width: 17px;
+}
+
+.resizeHandleChildDiv {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.resizeHandle.left {
+  border-right: 2px solid var(--bgcolor);
+  border-left: 0;
+  right: auto;
+  left: 0;
+}
+
+.sliderIndicator {
+  height: 500px;
+  background-color: var(--slider);
+  width: 2.5px;
+  border-radius: 5px;
+  margin: auto;
+}
+
+.transitionMinHeight {
+  transition: min-height 100ms ease-in-out;
 }
 
 /* .bump {
@@ -122,6 +171,8 @@
   display: flex;
   height: 100%;
   width: 100%;
+  /* min-height: calc(100vh - 154px); */
+  padding-bottom: 80px;
 }
 .whole {
   min-height: 100%;
@@ -136,15 +187,23 @@ h6 {
 }
 
 .image-frame {
-  width: 80%;
+  width: 56.25%;
   max-width: 1200px;
   max-height: 300px !important;
   padding-bottom: 56.25%;
   position: relative;
   border: var(--nav-card-modal) 3px solid;
   border-radius: 15px;
-  margin: 2%;
   background-color: var(--lighterDarkBg);
+}
+
+.fit-view {
+  /* max-height: calc(100vh - 232px); */
+}
+
+.fit-view .image-frame {
+  width: 41%;
+  padding-bottom: 41%;
 }
 
 .image-frame-icon {
@@ -181,14 +240,26 @@ h6 {
   position: absolute;
 }
 .image-grid-design {
-  justify-items: center;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  display: grid;
-  grid-template-columns: repeat(2, 2fr);
-  grid-template-rows: repeat(1, 5fr);
-
+  flex-wrap: wrap;
+  gap: 10px;
   width: 100%;
-  height: max-content;
+}
+.imagesWorkSpace {
+  margin-top: 19px;
+  margin-bottom: 19px;
+  flex-grow: 1;
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+.imagesWorkSpaceChild {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
 }
 .arrow-button {
   background-color: var(--nav-card-modal);
@@ -226,7 +297,6 @@ h6 {
   justify-content: start;
   align-items: center;
   width: 100%;
-  height: 100%;
 }
 .stickyMenu {
   position: -webkit-sticky;
@@ -252,15 +322,13 @@ h6 {
 }
 
 .comment-section {
-  display: flex;
-  height: 100vh;
-  width: 30%;
+  min-height: calc(100vh - 175px);
+  width: 500px;
   background-color: var(--nav-card-modal);
   padding: 10px;
-  border-radius: 8px;
-  align-items: center;
-  flex-direction: column;
-  padding: 24px;
+  padding-left: 29px;
+  box-shadow: 2px 0px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
 textarea {
@@ -282,6 +350,21 @@ textarea {
   border-radius: 4px;
 }
 
+.commentTabsContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2px;
+  min-height: 40px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.pairTabs {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
 .add-comment-button {
   margin-top: 10px;
   background-image: var(--gradientButton);
@@ -300,7 +383,7 @@ textarea {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin: 20px 0;
+  margin: 20px 50px 0px 50px;
 }
 
 .frame-buttons button {
@@ -539,7 +622,6 @@ textarea {
 .comment-container {
   background-color: var(--inputBg);
   border-radius: 15px;
-  width: 90%;
   padding: 20px;
   margin-bottom: 20px;
   margin-top: 16px;
@@ -841,43 +923,59 @@ textarea {
   font-size: 0.875em;
 }
 
-.comment-tabs-header {
-  display: flex !important;
-  justify-content: space-between !important;
-  margin-bottom: 20px !important;
-}
-
 @media (max-width: 600px) {
   .workspace {
     flex-direction: column-reverse;
   }
-  .promptBar {
+  .promptBar,
+  .comment-section {
     width: auto;
+    margin-bottom: 0;
+    min-height: 0;
+    border-top: 1px solid var(--inputBg);
+  }
+  .promptBar {
+    padding: 20px;
+  }
+  .comment-section {
+    padding-left: 10px;
+  }
+  .promptBarIconButton,
+  .commentSectionIconButton {
+    display: none !important;
+  }
+  .promptBarIconButtonInside,
+  .commentSectionIconButtonInside {
+    display: block !important;
+  }
+  .promptBarHiddenHeader,
+  .commentSectionHiddenHeader {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: var(--nav-card-modal);
+    border-top: 1px solid var(--inputBg);
   }
   .fixed-arrow-button {
     display: none;
   }
-  .promptBar {
-    padding-bottom: 20%;
-    margin-bottom: 0;
-    min-height: 0;
-  }
 
-  .comment-section {
-    position: fixed; /* Make the div fixed */
-    top: 53%; /* Center vertically */
-    right: 10px; /* Align to the right with space for the scrollbar */
-    transform: translateY(-50%); /* Adjust for vertical centering */
-    width: calc(80% - 32px); /* Adjust width to account for the right margin and scrollbar */
+  /* .comment-section {
+    position: fixed; 
+    top: 53%;
+    right: 10px;
+    transform: translateY(-50%); 
+    width: calc(80% - 32px); 
     background-color: var(--nav-card-modal);
-    padding: 24px; /* Ensure padding is consistent */
+    padding: 24px; 
     border-radius: 8px;
-    height: 85vh; /* Set a fixed height */
+    height: 85vh;
     align-items: center;
     flex-direction: column;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for better visibility */
-    z-index: 1; /* Ensure it is above other elements */
-  }
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    z-index: 1; 
+  } */
 }
 
 /* History/Version */

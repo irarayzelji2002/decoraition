@@ -8,11 +8,10 @@ import AddIcon from "@mui/icons-material/Add";
 import { saveData, updateTask } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
-import { CustomSwitch } from "../Settings/ProjSetting";
 import { Box, Modal, TextField, Button } from "@mui/material";
 import RepeatSelector from "./RepeatSelector";
 import { ThemeProvider } from "@mui/system";
-import { theme } from "../Settings/ProjSetting";
+import { theme, CustomSwitch } from "../DesignSpace/DesignSettings";
 import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 

@@ -27,6 +27,7 @@ import Container from "@mui/material/Container";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
+import { handleLogout } from "../Homepage/backend/HomepageFunctions";
 
 export default function LoginModal() {
   const navigate = useNavigate();
@@ -61,6 +62,11 @@ export default function LoginModal() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        console.error("No user document found!");
+        handleLogout(navigate);
+        return;
+      }
       const userDataNoId = userDoc.data();
       const userData = {
         ...userDataNoId,
@@ -132,12 +138,18 @@ export default function LoginModal() {
 
       // Check if email and username exist
       const emailExists = await checkExistingEmail(user.email);
-      const usernameExists = await checkExistingUsername(user.email);
       if (emailExists) {
-        showToast(`Email \\"${user.email}\\" already in use by another account.`);
+        showToast("error", `Email "${user.email}" already in use by another account.`);
+        cleanupUnusedAuthUsers(user);
         return;
-      } else if (usernameExists) {
-        showToast(`Username \\"${user.email.split("@")[0]}\\" already in use by another account`);
+      }
+      const usernameExists = await checkExistingUsername(user.email);
+      if (usernameExists) {
+        showToast(
+          "error",
+          `Username "${user.email.split("@")[0]}" already in use by another account`
+        );
+        cleanupUnusedAuthUsers(user);
         return;
       }
 
@@ -153,6 +165,19 @@ export default function LoginModal() {
     } catch (error) {
       console.error("Google login/signup error:", error);
       showToast("error", "Google login/signup failed. Please try again.");
+    }
+  };
+
+  const cleanupUnusedAuthUsers = async (user) => {
+    try {
+      const response = await axios.delete("/api/cleanup-unused-auth-users", {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      });
+      console.log(response.data.message);
+    } catch (error) {
+      console.error("Error cleaning up unused auth users:", error);
     }
   };
 

@@ -27,6 +27,7 @@ import {
   ListItemIcon,
   ListItemText,
   Button,
+  Box,
 } from "@mui/material";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
@@ -220,19 +221,35 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
       </div>
 
       <div className="drawerUser">
-        <Avatar
+        <Box
           sx={{
-            width: 56,
-            height: 56,
+            width: 60,
+            height: 60,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "var(--gradientButton)",
+            borderRadius: "50%",
+            padding: "3px",
             marginBottom: "10px",
-            border: "3px solid var(--brightFont)",
-            ...stringAvatarColor(userDoc?.username),
           }}
-          src={userDoc?.profilePic || ""}
-          children={stringAvatarInitials(userDoc?.username)}
         >
-          {userDoc?.username ? userDoc?.username.charAt(0).toUpperCase() : ""}
-        </Avatar>
+          <Avatar
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              border: "3px solid transparent",
+              boxShadow: "0 0 0 3px var(--gradientButton)",
+              "& .MuiAvatar-img": {
+                borderRadius: "50%",
+              },
+              ...stringAvatarColor(userDoc?.username),
+            }}
+            src={userDoc?.profilePic || ""}
+            children={stringAvatarInitials(userDoc?.username)}
+          />
+        </Box>
         <div>
           <Typography variant="body1" style={{ fontWeight: "bold" }}>
             {userDoc?.username || "Guest"}

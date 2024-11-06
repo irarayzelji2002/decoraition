@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../../css/design.css";
-import Slider from "@mui/joy/Slider";
-import Button from "@mui/joy/Button";
-import { FormControl, Select, Option } from "@mui/joy";
-import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import { FormControl, Select, Option, Slider, Button, IconButton } from "@mui/joy";
+import {
+  ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
+  ArrowBackIosRounded as ArrowBackIosRoundedIcon,
+  KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
+} from "@mui/icons-material";
 import { Modal, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Textarea from "@mui/joy/Textarea";
@@ -13,6 +15,7 @@ import AddColor from "./svg/AddColor";
 import CreatePallete from "./CreatePallete";
 import { extendTheme, CssVarsProvider } from "@mui/joy/styles";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { togglePromptBar } from "./backend/DesignActions";
 
 const theme = extendTheme({
   components: {
@@ -24,7 +27,7 @@ const theme = extendTheme({
   },
 });
 
-function PromptBar() {
+function PromptBar({ workingAreaRef, numImageFrames, showPromptBar, setShowPromptBar }) {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -52,227 +55,348 @@ function PromptBar() {
     setColorOpen(false);
   };
 
+  const [width, setWidth] = useState(500);
+  const [applyMinHeight, setApplyMinHeight] = useState(true);
+  const resizeFactor = 3;
+  const promptBarRef = useRef(null);
+  const resizeHandleRef = useRef(null);
+
+  useEffect(() => {
+    const promptBar = promptBarRef.current;
+    const resizeHandle = resizeHandleRef.current;
+    if (!promptBar || !resizeHandle) return;
+
+    promptBar.style.width = `${width}px`;
+
+    const handleMouseDown = (e) => {
+      e.preventDefault();
+      if (window.innerWidth <= 600) {
+        promptBar.style.width = "auto";
+        return;
+      }
+
+      const initialX = e.clientX;
+      const handleMouseMove = (e) => {
+        const newWidth = width + resizeFactor * (e.clientX - initialX);
+        if (newWidth > 0) {
+          setWidth(newWidth);
+        }
+      };
+
+      const handleMouseUp = () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    };
+
+    resizeHandleRef.current.addEventListener("mousedown", handleMouseDown);
+
+    const handleResize = () => {
+      if (window.innerWidth <= 600) {
+        promptBar.style.width = "auto";
+      } else {
+        promptBar.style.width = `${width}px`;
+      }
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      if (resizeHandle.current) {
+        resizeHandleRef.current.removeEventListener("mousedown", handleMouseDown);
+      }
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [width]);
+
+  useEffect(() => {
+    const promptBar = promptBarRef.current;
+    if (!promptBar) return;
+
+    if (window.innerWidth <= 600) {
+      promptBar.style.width = "auto";
+    } else {
+      promptBar.style.width = `${width}px`;
+    }
+  }, [showPromptBar]);
+
+  // Check height on component mount and on numImageFrames change
+  useEffect(() => {
+    const checkWorkingAreaHeight = () => {
+      if (workingAreaRef.current) {
+        const workingAreaHeight = workingAreaRef.current.offsetHeight;
+        if (workingAreaHeight + 154 > window.innerHeight) {
+          setApplyMinHeight(false);
+        } else {
+          setApplyMinHeight(true);
+        }
+      }
+    };
+
+    checkWorkingAreaHeight();
+  }, [numImageFrames]);
+
+  useEffect(() => {
+    console.log("applyMinHeight", applyMinHeight);
+  }, [applyMinHeight]);
+
   return (
     <CssVarsProvider theme={theme}>
-      <div className="promptBar">
-        <h3>
-          Describe your Idea
-          <span style={{ color: "var(--color-quaternary)" }}> *</span>
-        </h3>
-        <Textarea
-          placeholder="Type in here…"
-          maxRows={2}
+      <div className="promptBar" ref={promptBarRef}>
+        <div className={window.innerWidth > 600 ? "resizeHandle" : ""} ref={resizeHandleRef}>
+          <div className={window.innerWidth > 600 ? "resizeHandleChildDiv" : ""}>
+            <div className={window.innerWidth > 600 ? "sliderIndicator" : ""}></div>
+          </div>
+        </div>
+        <IconButton
           sx={{
             color: "var(--color-white)",
-            border: "2px solid var(--borderInput)",
-            backgroundColor: "transparent",
-            "&::before": {
-              display: "none",
-            },
-            "&:focus-within": {
-              borderColor: "var(--brightFont)",
-            },
-          }}
-        />
-
-        <h3>
-          Number of images to generate
-          <span style={{ color: "var(--color-quaternary)" }}> *</span>
-        </h3>
-        <Slider
-          defaultValue={1}
-          valueLabelDisplay="on"
-          max={4}
-          sx={{
-            marginTop: "10px",
-            color: "var(--slider)", // Slider color
-            "& .MuiSlider-thumb": {
-              background: "var(--gradientCircle)", // Gradient thumb
-            },
-            "& .MuiSlider-track": {
-              backgroundColor: "var(--slider)", // Track color
-            },
-            "& .MuiSlider-rail": {
-              backgroundColor: "var(--slider)", // Rail color
+            position: "absolute",
+            borderRadius: "50%",
+            right: "8px",
+            top: "8px",
+            marginTop: "20px",
+            marginRight: "20px",
+            zIndex: "49",
+            "&:hover": {
+              backgroundColor: "rgba(60, 59, 66, 0.3)",
             },
           }}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: "20px",
-          }}
+          onClick={() => togglePromptBar(setShowPromptBar)}
+          className="promptBarIconButtonInside"
         >
-          <div>
-            <h3>Upload an image of the space</h3>
-            <h6>optional</h6>
-          </div>
-
-          <Button
-            size="md"
+          <ArrowBackIosRoundedIcon
             sx={{
-              borderRadius: "100%",
-              marginLeft: "auto",
-              padding: "12px",
-              backgroundImage: "var(--gradientCircle)",
-              "&:hover": {
-                backgroundImage: "var(--gradientCircleHover)",
+              color: "var(--color-white) !important",
+              transform: !showPromptBar ? "rotate(270deg)" : "rotate(90deg)",
+            }}
+          />
+        </IconButton>
+        <div
+          style={{ minHeight: applyMinHeight ? "calc(100% - 73px)" : "662.8px" }}
+          className="transitionMinHeight"
+        >
+          <h3>
+            Describe your Idea
+            <span style={{ color: "var(--color-quaternary)" }}> *</span>
+          </h3>
+          <Textarea
+            placeholder="Type in here…"
+            maxRows={2}
+            sx={{
+              color: "var(--color-white)",
+              border: "2px solid var(--borderInput)",
+              backgroundColor: "transparent",
+              "&::before": {
+                display: "none",
+              },
+              "&:focus-within": {
+                borderColor: "var(--brightFont)",
               },
             }}
-            onClick={() => handleOpenModal("Upload an image of the space")}
-          >
-            <AddImage />
-          </Button>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <h3>Upload an image for style reference</h3>
-            <h6>optional</h6>
-          </div>
+          />
 
-          <Button
-            size="md"
+          <h3>
+            Number of images to generate
+            <span style={{ color: "var(--color-quaternary)" }}> *</span>
+          </h3>
+          <Slider
+            defaultValue={1}
+            valueLabelDisplay="on"
+            max={4}
             sx={{
-              borderRadius: "100%",
-              marginLeft: "auto",
-              padding: "12px",
-              backgroundImage: "var(--gradientCircle)",
-              "&:hover": {
-                backgroundImage: "var(--gradientCircleHover)",
+              marginTop: "10px",
+              color: "var(--slider)", // Slider color
+              "& .MuiSlider-thumb": {
+                background: "var(--gradientCircle)", // Gradient thumb
+              },
+              "& .MuiSlider-track": {
+                backgroundColor: "var(--slider)", // Track color
+              },
+              "& .MuiSlider-rail": {
+                backgroundColor: "var(--slider)", // Rail color
               },
             }}
-            onClick={() => handleOpenModal("Upload an image for style reference")}
-          >
-            <AddImage />
-          </Button>
-        </div>
+          />
 
-        <br />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <h3>Use a Color Palette</h3>
-            <h6>optional</h6>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: "20px",
+            }}
+          >
+            <div>
+              <h3>Upload an image of the space</h3>
+              <h6>optional</h6>
+            </div>
+
+            <Button
+              size="md"
+              sx={{
+                borderRadius: "100%",
+                marginLeft: "auto",
+                padding: "12px",
+                backgroundImage: "var(--gradientCircle)",
+                "&:hover": {
+                  backgroundImage: "var(--gradientCircleHover)",
+                },
+              }}
+              onClick={() => handleOpenModal("Upload an image of the space")}
+            >
+              <AddImage />
+            </Button>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <h3>Upload an image for style reference</h3>
+              <h6>optional</h6>
+            </div>
+
+            <Button
+              size="md"
+              sx={{
+                borderRadius: "100%",
+                marginLeft: "auto",
+                padding: "12px",
+                backgroundImage: "var(--gradientCircle)",
+                "&:hover": {
+                  backgroundImage: "var(--gradientCircleHover)",
+                },
+              }}
+              onClick={() => handleOpenModal("Upload an image for style reference")}
+            >
+              <AddImage />
+            </Button>
           </div>
 
-          <Button
-            size="md"
-            sx={{
-              borderRadius: "100%",
-              marginLeft: "auto",
-              padding: "12px",
-              backgroundImage: "var(--gradientCircle)",
-              "&:hover": {
-                backgroundImage: "var(--gradientCircleHover)",
-              },
+          <br />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
             }}
-            onClick={() => handleOpenColor("Add a color palette")}
           >
-            <AddColor />
-          </Button>
-        </div>
-        {/* <h6 style={{ margin: "8px" }}>Select your color pallete</h6> */}
-        <FormControl sx={{ width: "100%" }}>
-          <Select
-            id="date-modified-select"
-            className="custom-select"
-            value={dateModified}
-            placeholder="Select a color pallete"
-            onChange={(e) => setDateModified(e.target.value)}
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  borderRadius: "10px",
-                  "& .MuiMenu-list": {
-                    padding: 0,
+            <div>
+              <h3>Use a Color Palette</h3>
+              <h6>optional</h6>
+            </div>
+
+            <Button
+              size="md"
+              sx={{
+                borderRadius: "100%",
+                marginLeft: "auto",
+                padding: "12px",
+                backgroundImage: "var(--gradientCircle)",
+                "&:hover": {
+                  backgroundImage: "var(--gradientCircleHover)",
+                },
+              }}
+              onClick={() => handleOpenColor("Add a color palette")}
+            >
+              <AddColor />
+            </Button>
+          </div>
+          {/* <h6 style={{ margin: "8px" }}>Select your color pallete</h6> */}
+          <FormControl sx={{ width: "100%" }}>
+            <Select
+              id="date-modified-select"
+              className="custom-select"
+              value={dateModified}
+              placeholder="Select a color pallete"
+              onChange={(e) => setDateModified(e.target.value)}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    borderRadius: "10px",
+                    "& .MuiMenu-list": {
+                      padding: 0,
+                    },
                   },
                 },
-              },
-            }}
-            IconComponent={(props) => (
-              <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
-            )}
-          >
-            <Option value="">None</Option>
-            <Option value="Red-Green">
-              <div style={{ display: "flex", gap: "2px" }}>
-                Red-Green &nbsp;
-                <div style={{ display: "flex", marginLeft: "auto" }}>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#efefef", marginLeft: "-10px" }}
-                  ></div>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#ef4f56", marginLeft: "-10px" }}
-                  ></div>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#397438", marginLeft: "-10px" }}
-                  ></div>
+              }}
+              IconComponent={(props) => (
+                <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+              )}
+            >
+              <Option value="">None</Option>
+              <Option value="Red-Green">
+                <div style={{ display: "flex", gap: "2px" }}>
+                  Red-Green &nbsp;
+                  <div style={{ display: "flex", marginLeft: "auto" }}>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#efefef", marginLeft: "-10px" }}
+                    ></div>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#ef4f56", marginLeft: "-10px" }}
+                    ></div>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#397438", marginLeft: "-10px" }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            </Option>
-            <Option value="Pink-Yellow">
-              <div style={{ display: "flex", gap: "2px" }}>
-                Pink-Yellow &nbsp;
-                <div style={{ display: "flex", marginLeft: "auto" }}>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#ff8344", marginLeft: "-10px" }}
-                  ></div>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#ec2073", marginLeft: "-10px" }}
-                  ></div>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#3e3c47", marginLeft: "-10px" }}
-                  ></div>
+              </Option>
+              <Option value="Pink-Yellow">
+                <div style={{ display: "flex", gap: "2px" }}>
+                  Pink-Yellow &nbsp;
+                  <div style={{ display: "flex", marginLeft: "auto" }}>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#ff8344", marginLeft: "-10px" }}
+                    ></div>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#ec2073", marginLeft: "-10px" }}
+                    ></div>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#3e3c47", marginLeft: "-10px" }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            </Option>
-            <Option value="Among Us">
-              <div style={{ display: "flex", gap: "2px" }}>
-                Among Us &nbsp;
-                <div style={{ display: "flex", marginLeft: "auto" }}>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#3e3c47", marginLeft: "-10px" }}
-                  ></div>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#faa653", marginLeft: "-10px" }}
-                  ></div>
-                  <div
-                    className="circle-small"
-                    style={{ backgroundColor: "#ff4500", marginLeft: "-10px" }}
-                  ></div>
+              </Option>
+              <Option value="Among Us">
+                <div style={{ display: "flex", gap: "2px" }}>
+                  Among Us &nbsp;
+                  <div style={{ display: "flex", marginLeft: "auto" }}>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#3e3c47", marginLeft: "-10px" }}
+                    ></div>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#faa653", marginLeft: "-10px" }}
+                    ></div>
+                    <div
+                      className="circle-small"
+                      style={{ backgroundColor: "#ff4500", marginLeft: "-10px" }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            </Option>
-          </Select>
-        </FormControl>
+              </Option>
+            </Select>
+          </FormControl>
+        </div>
+        {/* Generate Image button */}
         <Button
           type="submit"
           fullWidth
           variant="contained"
           sx={{
-            marginBottom: "40%",
             color: "white",
             mt: 3,
             mb: 2,

@@ -59,7 +59,7 @@ export const stringAvatarColor = (passedname) => {
 export const stringAvatarInitials = (passedname) => {
   let name = "";
   let initials = "";
-  if (passedname === "undefined" || passedname === "null") {
+  if (passedname === undefined || passedname === null) {
     name = "";
   } else if (passedname === "Deleted User") {
     name = "";
@@ -77,6 +77,9 @@ export const stringToColor = (string) => {
   let i;
 
   /* eslint-disable no-bitwise */
+  if (string === undefined || string === null) {
+    return "#ff6262";
+  }
   for (i = 0; i < string.length; i += 1) {
     hash = string.charCodeAt(i) + ((hash << 5) - hash);
   }

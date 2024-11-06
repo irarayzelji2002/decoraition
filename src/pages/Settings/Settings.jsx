@@ -826,21 +826,36 @@ function Settings() {
         {selectedTab === 0 && (
           <Box mt={4} className="tab-content" sx={{ minWidth: "100%" }}>
             <div className="avatar-container" style={{ display: "flex", alignItems: "center" }}>
-              <Avatar
-                alt="User Avatar"
-                src={profilePic ?? ""}
+              <Box
                 sx={{
-                  width: 150,
-                  height: 150,
-                  fontSize: "4rem",
+                  width: 155,
+                  height: 155,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "var(--gradientButton)",
+                  borderRadius: "50%",
+                  padding: "5px",
                   marginLeft: "20px",
-                  // background: "var(--gradientButton)",
-                  // color: "white",
-                  border: "5px solid var(--brightFont)", // Avatar border
-                  ...stringAvatarColor(userDoc?.username),
                 }}
-                children={stringAvatarInitials(userDoc?.username)}
-              />
+              >
+                <Avatar
+                  alt=""
+                  src={profilePic ?? ""}
+                  sx={{
+                    width: 149,
+                    height: 149,
+                    fontSize: "4rem",
+                    border: "5px solid transparent",
+                    boxShadow: "0 0 0 5px var(--gradientButton)",
+                    "& .MuiAvatar-img": {
+                      borderRadius: "50%",
+                    },
+                    ...stringAvatarColor(userDoc?.username),
+                  }}
+                  children={stringAvatarInitials(userDoc?.username)}
+                />
+              </Box>
 
               {/* Button Container */}
               <div
@@ -1214,21 +1229,33 @@ function Settings() {
               color: "var(--color-white)",
             }}
           >
-            <Avatar
-              alt="User Avatar"
-              src={profilePicPreview || ""}
+            <Box
               sx={{
-                width: 150,
-                height: 150,
-                fontSize: "4rem",
+                width: 155,
+                height: 155,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "var(--gradientButton)",
+                borderRadius: "50%",
+                padding: "5px",
                 marginLeft: "20px",
-                // background: "var(--gradientButton)",
-                // color: "white",
-                border: "5px solid var(--brightFont)", // Avatar border
-                ...stringAvatarColor(userDoc?.username),
               }}
-              children={stringAvatarInitials(userDoc?.username)}
-            />
+            >
+              <Avatar
+                alt=""
+                src={profilePicPreview || ""}
+                sx={{
+                  width: 149,
+                  height: 149,
+                  fontSize: "4rem",
+                  border: "5px solid transparent",
+                  boxShadow: "0 0 0 5px var(--gradientButton)",
+                  ...stringAvatarColor(userDoc?.username),
+                }}
+                children={stringAvatarInitials(userDoc?.username)}
+              />
+            </Box>
             {/* Hidden File Input */}
             <input
               type="file"

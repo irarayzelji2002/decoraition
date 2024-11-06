@@ -12,6 +12,7 @@ import {
   Checkbox,
   Divider,
   IconButton,
+  Box,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
@@ -399,21 +400,36 @@ const ManageAcessModal = ({
 
               return (
                 <div className="drawerUser" key={user.userId}>
-                  <Avatar
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      marginRight: "6px",
-                      marginTop: "auto",
-                      marginBottom: "auto",
-                      border: "3px solid var(--brightFont)",
-                      ...stringAvatarColor(user.username),
-                    }}
-                    children={stringAvatarInitials(user.username)}
-                    src={""}
-                  >
-                    {user.username.charAt(0)}
-                  </Avatar>
+                  <div style={{ marginRight: "6px", marginTop: "auto", marginBottom: "auto" }}>
+                    <Box
+                      sx={{
+                        width: 53,
+                        height: 53,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "var(--gradientButton)",
+                        borderRadius: "50%",
+                        padding: "3px",
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          width: 49,
+                          height: 49,
+                          borderRadius: "50%",
+                          border: "3px solid transparent",
+                          boxShadow: "0 0 0 3px var(--gradientButton)",
+                          "& .MuiAvatar-img": {
+                            borderRadius: "50%",
+                          },
+                          ...stringAvatarColor(user.username),
+                        }}
+                        children={stringAvatarInitials(user.username)}
+                        src={""}
+                      />
+                    </Box>
+                  </div>
                   <div
                     style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
                   >

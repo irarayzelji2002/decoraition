@@ -437,12 +437,9 @@ function Budget() {
               ))
             ) : (
               <div>
-                <img
-                  src={"../../img/project-placeholder.png"}
-                  style={{ width: "100px" }}
-                  alt="project placeholder"
-                />
-                <p className="grey-text">No items yet</p>
+                <img src={"../../img/design-placeholder.png"} style={{ width: "100px" }} alt="" />
+                <p className="grey-text">No items added yet.</p>
+                <p className="grey-text">Start adding.</p>
               </div>
             )}
           </div>

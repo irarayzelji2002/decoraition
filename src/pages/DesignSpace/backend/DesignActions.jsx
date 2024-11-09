@@ -234,3 +234,115 @@ export const handleAccessChange = async (design, initEmailsWithRole, emailsWithR
     };
   }
 };
+
+export const handleEditDescription = async (
+  designId,
+  designVersionId,
+  imageId,
+  description,
+  user
+) => {
+  try {
+    const response = await axios.put(
+      `/api/design/${designId}/design-version/${designVersionId}/update-desc`,
+      { description, imageId },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: `Image ${imageId} description updated successfully` };
+    }
+  } catch (error) {
+    console.error(
+      `Error updating design version ${designVersionId} image ${imageId} description:`,
+      error
+    );
+    return { success: false, message: `Failed to update image ${imageId} description` };
+  }
+};
+
+export const handleAddColorPalette = async (colorPalette, user, userDoc) => {
+  if (!colorPalette) {
+    console.error("Color palette is empty");
+    return { success: false, message: "No color palette passed" };
+  } else {
+    if (!colorPalette.paletteName) {
+      console.error("Color palette name is required");
+      return { success: false, message: "Color palette name is required" };
+    } else if (!colorPalette.colors || colorPalette.colors.length === 0) {
+      console.error("Color palette colors are required");
+      return { success: false, message: "Color palette must have at least one color" };
+    }
+  }
+  try {
+    const response = await axios.post(
+      `/api/user/add-color-palette`,
+      { userId: userDoc.id, colorPalette: colorPalette },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Color palette added successfully" };
+    }
+  } catch (error) {
+    console.error("Error adding color palette:", error);
+    return { success: false, message: "Failed to add color palette" };
+  }
+};
+
+export const handleEditColorPalette = async (colorPalette, colorPaletteToEdit, user, userDoc) => {
+  if (!colorPalette || !colorPalette.colorPaletteId) {
+    console.error("Color palette is empty");
+    return { success: false, message: "No color palette passed" };
+  } else {
+    if (!colorPalette.paletteName) {
+      console.error("Color palette name is required");
+      return { success: false, message: "Color palette name is required" };
+    } else if (colorPalette.paletteName === colorPaletteToEdit.paletteName) {
+      console.error("Color palette name is the same as the current name");
+      return { success: false, message: "Name is the same as the current name" };
+    } else if (!colorPalette.colors || colorPalette.colors.length === 0) {
+      console.error("Color palette colors are required");
+      return { success: false, message: "Color palette must have at least one color" };
+    }
+  }
+  try {
+    const response = await axios.put(
+      `/api/user/update-color-palette`,
+      { userId: userDoc.id, colorPalette: colorPalette },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Color palette updated successfully" };
+    }
+  } catch (error) {
+    console.error("Error updating color palette:", error);
+    return { success: false, message: "Failed to update color palette" };
+  }
+};
+
+export const handleDeleteColorPalette = async (colorPalette, user, userDoc) => {
+  if (!colorPalette || !colorPalette.colorPaletteId) {
+    console.error("Color palette is empty");
+    return { success: false, message: "No color palette to delete" };
+  }
+  try {
+    const response = await axios.put(
+      `/api/user/delete-color-palette`,
+      { userId: userDoc.id, colorPalette: colorPalette },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Color palette deleted successfully" };
+    }
+  } catch (error) {
+    console.error("Error deleting color palette:", error);
+    return { success: false, message: "Failed to delete color palette" };
+  }
+};

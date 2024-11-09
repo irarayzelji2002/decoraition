@@ -7,17 +7,17 @@ import {
 } from "@mui/icons-material";
 import CommentContainer from "./CommentContainer";
 import { toggleComments } from "./backend/DesignActions";
+import { set } from "lodash";
 
 function CommentTabs({
-  activeTab,
-  handleTabChange,
-  status,
-  handleStatusChange,
-  handleCloseComments,
   workingAreaRef,
   numImageFrames,
   showComments,
   setShowComments,
+  prevWidth,
+  setPrevWidth,
+  prevHeight,
+  setPrevHeight,
 }) {
   const [commentForTab, setCommentForTab] = useState(true); // true for All Comments, false for For You
   const [commentTypeTab, setCommentTypeTab] = useState(true); // true for Open, false for Resolved
@@ -32,12 +32,15 @@ function CommentTabs({
   };
 
   const [width, setWidth] = useState(500);
+  const [height, setHeight] = useState("100%");
   const [applyMinHeight, setApplyMinHeight] = useState(true);
-  const resizeFactor = 3;
+  const resizeFactor = 2;
   const commentSectionRef = useRef(null);
   const resizeHandleRef = useRef(null);
+  const resizeHandleHeightRef = useRef(null);
   const commentSectionIconButtonRef = useRef(null);
 
+  // Effect for adjusting the promptBar width on drag
   useEffect(() => {
     const promptBar = commentSectionRef.current;
     const resizeHandle = resizeHandleRef.current;
@@ -89,14 +92,90 @@ function CommentTabs({
     };
   }, [width]);
 
+  // Effect for adjusting the promptBar height on drag
+  useEffect(() => {
+    const promptBar = commentSectionRef.current;
+    const resizeHandleHeight = resizeHandleHeightRef.current;
+    if (!promptBar || !resizeHandleHeight) return;
+
+    promptBar.style.height = `${height}px`;
+
+    // Handle resizing on mousedown and drag
+    const handleMouseDownHeight = (e) => {
+      e.preventDefault();
+      // console.log("Mouse down detected on resize handle");
+      const startY = e.clientY;
+      const startHeight = promptBar.getBoundingClientRect().height;
+
+      const handleMouseMoveHeight = (e) => {
+        const deltaY = startY - e.clientY;
+        let newHeight = startHeight + deltaY;
+        // console.log(
+        //   `Mouse move detected. StartY: ${startY}, CurrentY: ${e.clientY}, deltaY: ${deltaY}, newHeight: ${newHeight}`
+        // );
+
+        // Adjust height
+        if (window.innerWidth <= 600) {
+          const initHeight = window.innerHeight - 154;
+          if (newHeight >= initHeight) {
+            newHeight = initHeight;
+            // console.log("Max height reached, setting height to 100%");
+          } else if (newHeight < 0) {
+            newHeight = 0;
+            // console.log("Min height reached, setting height to 0");
+          }
+          setHeight(`${newHeight}px`);
+          promptBar.style.height = `${newHeight}px`;
+        } else {
+          setHeight("auto");
+          promptBar.style.height = "auto";
+        }
+      };
+
+      const handleMouseUpHeight = () => {
+        // console.log("Mouse up detected, removing mousemove and mouseup listeners");
+        window.removeEventListener("mousemove", handleMouseMoveHeight);
+        window.removeEventListener("mouseup", handleMouseUpHeight);
+      };
+
+      window.addEventListener("mousemove", handleMouseMoveHeight);
+      window.addEventListener("mouseup", handleMouseUpHeight);
+    };
+
+    resizeHandleHeight.addEventListener("mousedown", handleMouseDownHeight);
+
+    // Handle screen resize adjustments
+    const handleResizeHeight = () => {
+      if (window.innerWidth <= 600) {
+        promptBar.style.height = `${height}px`;
+      } else {
+        promptBar.style.height = "100%";
+      }
+    };
+    window.addEventListener("resize", handleResizeHeight);
+
+    return () => {
+      resizeHandleHeight.removeEventListener("mousedown", handleMouseDownHeight);
+      window.removeEventListener("resize", handleResizeHeight);
+    };
+  }, [height]);
+
   useEffect(() => {
     const promptBar = commentSectionRef.current;
     if (!promptBar) return;
+    setWidth(prevWidth ?? width);
+    setHeight(prevHeight ?? height);
 
     if (window.innerWidth <= 600) {
       promptBar.style.width = "auto";
     } else {
-      promptBar.style.width = `${width}px`;
+      promptBar.style.width = `${prevWidth ?? width}`;
+    }
+
+    if (window.innerWidth <= 600) {
+      promptBar.style.height = `${prevHeight ?? height}`;
+    } else {
+      promptBar.style.height = "100%";
     }
   }, [showComments]);
 
@@ -116,11 +195,33 @@ function CommentTabs({
     checkWorkingAreaHeight();
   }, [numImageFrames]);
 
+  const [isWrapped, setIsWrapped] = useState(false);
+  const adjustPillStyle = () => {
+    const commentTabsHeader = document.querySelector(".pairTabs");
+    setIsWrapped(commentTabsHeader?.offsetWidth < 220);
+  };
+
+  useEffect(() => {
+    adjustPillStyle();
+    window.addEventListener("resize", adjustPillStyle);
+    return () => {
+      window.removeEventListener("resize", adjustPillStyle);
+    };
+  }, [width]);
+
   return (
     <div className="comment-section" ref={commentSectionRef}>
       <div className={window.innerWidth > 600 ? "resizeHandle left" : ""} ref={resizeHandleRef}>
         <div className={window.innerWidth > 600 ? "resizeHandleChildDiv" : ""}>
           <div className={window.innerWidth > 600 ? "sliderIndicator" : ""}></div>
+        </div>
+      </div>
+      <div
+        className={window.innerWidth <= 600 ? "resizeHandle height" : ""}
+        ref={resizeHandleHeightRef}
+      >
+        <div className={window.innerWidth <= 600 ? "resizeHandleChildDiv" : ""}>
+          <div className={window.innerWidth <= 600 ? "sliderIndicator" : ""}></div>
         </div>
       </div>
       <IconButton
@@ -134,16 +235,23 @@ function CommentTabs({
           marginRight: "20px",
           zIndex: "1200",
           "&:hover": {
-            backgroundColor: "rgba(60, 59, 66, 0.3)",
+            backgroundColor: "var(--iconButtonHover)",
+          },
+          "& .MuiTouchRipple-root span": {
+            backgroundColor: "var(--iconButtonActive)",
           },
         }}
-        onClick={() => toggleComments(setShowComments)}
+        onClick={() => {
+          setPrevWidth(width);
+          setPrevHeight(height);
+          toggleComments(setShowComments);
+        }}
         className="commentSectionIconButtonInside"
       >
         <ArrowBackIosRoundedIcon
           sx={{
             color: "var(--color-white) !important",
-            transform: !showComments ? "rotate(270deg)" : "rotate(90deg)",
+            transform: showComments ? "rotate(270deg)" : "rotate(90deg)",
           }}
         />
       </IconButton>
@@ -163,14 +271,17 @@ function CommentTabs({
                 value={commentForTab ? 0 : 1}
                 onChange={handleCommentForTabChange}
                 sx={{
+                  minHeight: "40px",
                   "& .MuiTabs-flexContainer": {
                     gap: 0,
+                    flexWrap: "wrap",
+                    justifyContent: "center",
                   },
                 }}
                 TabIndicatorProps={{ style: { display: "none" } }} // Hide default indicator
               >
-                <Tab label="All Comments" sx={getPillTabStyle(commentForTab, 0)} />
-                <Tab label="For You" sx={getPillTabStyle(commentForTab, 1)} />
+                <Tab label="All Comments" sx={getPillTabStyle(isWrapped, commentForTab, 0)} />
+                <Tab label="For You" sx={getPillTabStyle(isWrapped, commentForTab, 1)} />
               </Tabs>
             </div>
             <div className="pairTabs">
@@ -178,14 +289,17 @@ function CommentTabs({
                 value={commentTypeTab ? 0 : 1}
                 onChange={handleCommentTypeTabChange}
                 sx={{
+                  minHeight: "40px",
                   "& .MuiTabs-flexContainer": {
                     gap: 0,
+                    flexWrap: "wrap",
+                    justifyContent: "center",
                   },
                 }}
                 TabIndicatorProps={{ style: { display: "none" } }} // Hide default indicator
               >
-                <Tab label="Open" sx={getPillTabStyle(commentTypeTab, 0)} />
-                <Tab label="Resolved" sx={getPillTabStyle(commentTypeTab, 1)} />
+                <Tab label="Open" sx={getPillTabStyle(isWrapped, commentTypeTab, 0)} />
+                <Tab label="Resolved" sx={getPillTabStyle(isWrapped, commentTypeTab, 1)} />
               </Tabs>
             </div>
           </div>
@@ -223,7 +337,7 @@ function CommentTabs({
 
 export default CommentTabs;
 
-const getPillTabStyle = (selectedTab, index) => {
+const getPillTabStyle = (isWrapped, selectedTab, index) => {
   const isSelected = (selectedTab && index === 0) || (!selectedTab && index === 1);
   return {
     px: "5px", // Padding for the pill shape
@@ -231,7 +345,13 @@ const getPillTabStyle = (selectedTab, index) => {
     paddingRight: index === 0 ? "5px" : "10px",
     py: 0,
     textTransform: "none",
-    borderRadius: index === 0 ? "20px 0 0 20px" : "0 20px 20px 0", // Left or Right rounded
+    borderRadius: !isWrapped
+      ? index === 0
+        ? "20px 0px 0px 20px"
+        : "0px 20px 20px 0px" // Left or Right rounded
+      : index === 0
+      ? "20px 20px 0 0"
+      : "0 0 20px 20px", // Top or Bottom rounded
     fontWeight: "bold",
     transition: "background-color 0.3s, color 0.3s",
     backgroundColor: isSelected ? "var(--brightFont)" : "transparent",
@@ -245,6 +365,5 @@ const getPillTabStyle = (selectedTab, index) => {
     },
     minHeight: "40px",
     width: "110px", // Ensures tabs are the same size
-    marginBottom: "10px",
   };
 };

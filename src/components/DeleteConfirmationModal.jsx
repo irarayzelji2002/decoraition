@@ -11,6 +11,14 @@ import {
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { showToast } from "../functions/utils";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, object }) => {
   // if isDesign is true, object is a design object, else it is a project object
@@ -41,48 +49,32 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      sx={{
-        "& .MuiDialog-paper": {
-          backgroundColor: "var(--nav-card-modal)",
-          borderRadius: "20px",
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          backgroundColor: "var(--nav-card-modal)",
-          color: "var(--color-white)",
-          display: "flex",
-          alignItems: "center",
-          borderBottom: "1px solid var(--inputBg)",
-          fontWeight: "bold",
-        }}
-      >
+    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+      <DialogTitle sx={dialogTitleStyles}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: "bold",
+            fontSize: "1.15rem",
+            flexGrow: 1,
+            maxWidth: "80%",
+            whiteSpace: "normal",
+          }}
+        >
+          Delete
+        </Typography>
         <IconButton
           onClick={handleClose}
           sx={{
-            color: "var(--color-white)",
-            position: "absolute",
-            right: 8,
-            top: 8,
+            ...iconButtonStyles,
+            flexShrink: 0,
+            marginLeft: "auto",
           }}
         >
           <CloseRoundedIcon />
         </IconButton>
-        <Typography variant="h6" sx={{ color: "var(--color-white)" }}>
-          Delete
-        </Typography>
       </DialogTitle>
-      <DialogContent
-        sx={{
-          backgroundColor: "var(  --nav-card-modal)", // Content background color
-          color: "var(--color-white)", // Text color in the content
-          marginTop: "20px",
-        }}
-      >
+      <DialogContent sx={dialogContentStyles}>
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
           Enter "{initConfirmText}" to confirm deletion
         </Typography>
@@ -104,47 +96,21 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
                 borderColor: "var( --borderInput)",
               },
               "&.Mui-focused fieldset": {
-                borderColor: "var(--brightFont)",
+                borderColor: "var(--borderInputBrighter)",
               },
             },
           }}
         />
       </DialogContent>
-      <DialogActions
-        sx={{ backgroundColor: "var(--nav-card-modal)", margin: "10px" }} // Actions background color
-      >
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={onSubmit}
-          sx={{
-            background: "var(--gradientButton)",
-            borderRadius: "20px",
-            color: "var(--color-white)", // Button text color
-            fontWeight: "bold",
-            textTransform: "none",
-            "&:hover": {
-              background: "var(--gradientButtonHover)",
-            },
-          }}
-        >
+      <DialogActions sx={dialogActionsStyles}>
+        <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
           Delete
         </Button>
         <Button
           fullWidth
           variant="contained"
           onClick={handleClose}
-          sx={{
-            color: "var(--color-white)",
-            background: "transparent",
-            border: "2px solid transparent",
-            borderRadius: "20px",
-            backgroundImage: "var(--lightGradient), var(--gradientButton)",
-            backgroundOrigin: "border-box",
-            backgroundClip: "padding-box, border-box",
-            fontWeight: "bold",
-            textTransform: "none",
-          }}
+          sx={outlinedButtonStyles}
           onMouseOver={(e) =>
             (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
           }

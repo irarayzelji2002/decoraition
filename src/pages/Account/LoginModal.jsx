@@ -261,7 +261,7 @@ export default function LoginModal() {
                   borderWidth: "2px", // Maintain the thickness on hover
                 },
                 "&.Mui-focused fieldset": {
-                  borderColor: "var(--brightFont)", // Border color when focused
+                  borderColor: "var(--borderInputBrighter)", // Border color when focused
                   borderWidth: "2px", // Maintain the thickness on focus
                 },
               },
@@ -316,7 +316,7 @@ export default function LoginModal() {
                   borderWidth: "2px", // Maintain the thickness on hover
                 },
                 "&.Mui-focused fieldset": {
-                  borderColor: "var(--brightFont)", // Border color when focused
+                  borderColor: "var(--borderInputBrighter)", // Border color when focused
                   borderWidth: "2px", // Maintain the thickness on focus
                 },
               },

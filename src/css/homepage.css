@@ -8,6 +8,11 @@
   font-weight: 800;
   letter-spacing: -1px;
 }
+.navName.drawer {
+  font-size: 1.8em;
+  margin: -2px 10px 0px 10px;
+  width: auto;
+}
 .headerPlace {
   position: relative;
   background-image: var(--bg-header);
@@ -182,10 +187,10 @@ h2 {
 .miniThumbnail {
   width: 30px;
   height: 30px;
-  background-color: var(--budgetCard);
+  background-color: var(--thumbnailFill);
   margin-right: 16px;
-  border-radius: 8px;
-  border: var(--color-grey) 1px solid;
+  border-radius: 5px;
+  border: 1px solid var(--thumbnailBorder);
 }
 .drawerUser {
   display: flex;
@@ -432,5 +437,10 @@ tr:hover td {
 
   .navName {
     font-size: 2.75em;
+  }
+}
+@media only screen and (max-width: 366px) {
+  .navName.drawer {
+    font-size: 1.6em;
   }
 }

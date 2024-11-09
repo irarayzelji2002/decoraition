@@ -20,6 +20,14 @@ import { fetchVersionDetails } from "../pages/DesignSpace/backend/DesignActions"
 import { useSharedProps } from "../contexts/SharedPropsContext";
 import { showToast } from "../functions/utils";
 import Version from "../pages/DesignSpace/Version";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
   const { user } = useSharedProps();
@@ -101,46 +109,32 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
         handleSelect={handleSelect}
         title="Select a version to copy"
       />
-      <Dialog
-        open={isOpen}
-        onClose={handleClose}
-        sx={{
-          "& .MuiDialog-paper": {
-            backgroundColor: "var(--nav-card-modal)",
-            borderRadius: "20px",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            backgroundColor: "var(--nav-card-modal)",
-            color: "var(--color-white)",
-            display: "flex",
-            alignItems: "center",
-            borderBottom: "1px solid var(--inputBg)",
-            fontWeight: "bold",
-          }}
-        >
-          {/* Wrapping ArrowBackIcon inside IconButton for clickability */}
+      <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+        <DialogTitle sx={dialogTitleStyles}>
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "1.15rem",
+              flexGrow: 1,
+              maxWidth: "80%",
+              whiteSpace: "normal",
+            }}
+          >
+            Make a copy
+          </Typography>
           <IconButton
             onClick={handleClose}
             sx={{
-              color: "var(--color-white)",
-              position: "absolute",
-              right: 8,
-              top: 8,
+              ...iconButtonStyles,
+              flexShrink: 0,
+              marginLeft: "auto",
             }}
           >
             <CloseRoundedIcon />
           </IconButton>
-          Make a Copy
         </DialogTitle>
-        <DialogContent
-          sx={{
-            backgroundColor: "var(  --nav-card-modal)",
-            color: "var(--color-white)",
-          }}
-        >
+        <DialogContent sx={dialogContentStyles}>
           <Typography variant="body1" sx={{ marginBottom: "10px" }}>
             Select a version to copy
             <IconButton onClick={() => setIsHistoryOpen(true)}>
@@ -159,7 +153,6 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
                   const selectedId = e.target.value;
                   handleSelect(selectedId);
                 }}
-                MenuComponent={StyledMenu}
                 MenuProps={{
                   PaperProps: {
                     sx: {
@@ -220,23 +213,9 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
             </FormControl>
           </div>
         </DialogContent>
-        <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
+        <DialogActions sx={dialogActionsStyles}>
           {/* Make Copy Button */}
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={onSubmit}
-            sx={{
-              background: "var(--gradientButton)", // Gradient background
-              borderRadius: "20px", // Button border radius
-              color: "var(--color-white)", // Button text color
-              fontWeight: "bold",
-              textTransform: "none",
-              "&:hover": {
-                background: "var(--gradientButtonHover)", // Reverse gradient on hover
-              },
-            }}
-          >
+          <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
             Make a copy
           </Button>
 
@@ -245,17 +224,7 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
             fullWidth
             variant="contained"
             onClick={handleClose}
-            sx={{
-              color: "var(--color-white)",
-              background: "transparent",
-              border: "2px solid transparent",
-              borderRadius: "20px",
-              backgroundImage: "var(--lightGradient), var(--gradientButton)",
-              backgroundOrigin: "border-box",
-              backgroundClip: "padding-box, border-box",
-              fontWeight: "bold",
-              textTransform: "none",
-            }}
+            sx={outlinedButtonStyles}
             onMouseOver={(e) =>
               (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
             }
@@ -399,6 +368,9 @@ const selectStylesDisabled = {
       WebkitTextFillColor: "var(--color-white)",
       paddingLeft: 0,
       paddingRight: 0,
+    },
+    "& .MuiSvgIcon-root": {
+      color: "transparent !important",
     },
   },
 };

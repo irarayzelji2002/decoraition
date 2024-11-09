@@ -1,197 +1,437 @@
-import React, { useState } from "react";
-import { Box } from "@mui/material";
-import Button from "@mui/material/Button";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import IconButton from "@mui/material/IconButton";
-import { ArrowBackIos } from "@mui/icons-material";
-import { ChromePicker } from "react-color";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button as ButtonMUI,
+  IconButton as IconButtonMUI,
+  Typography as TypographyMUI,
+  Box as BoxMUI,
+  TextField as TextFieldMUI,
+} from "@mui/material";
+import {
+  ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
+  ArrowBackIosRounded as ArrowBackIosRoundedIcon,
+  KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
+  CloseRounded as CloseRoundedIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
+import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
+import { SaveIconSmall } from "./svg/AddImage";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+  dialogActionsVertButtonsStyles,
+} from "../../components/RenameModal";
+import { ChromePicker, SketchPicker, PhotoshopPicker } from "react-color";
+import { huePickerEncodedSvg } from "./svg/AddColor";
+import {
+  handleAddColorPalette as handleAddColorPaletteBackend,
+  handleEditColorPalette as handleEditColorPaletteBackend,
+  handleDeleteColorPalette as handleDeleteColorPaletteBackend,
+} from "./backend/DesignActions";
+import { showToast } from "../../functions/utils";
+import { useFetcher } from "react-router-dom";
+import { set } from "lodash";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
-const CreatePallete = ({ handleCloseModal, modalTitle }) => {
-  const [showColorInput, setShowColorInput] = useState(false);
-  const [value, setValue] = useState("#ffffff");
+const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) => {
+  const { user, userDoc } = useSharedProps();
+  const [colorPalette, setColorPalette] = useState({ paletteName: "", colors: [] });
+  const defaultColor = "#000000";
+  const [colorToEdit, setColorToEdit] = useState("");
+  const [pickedColor, setPickedColor] = useState("");
+  const [pickColorModalOpen, setPickColorModalOpen] = useState(false);
+  const [errors, setErrors] = useState({ paletteName: "", colors: "" });
 
-  const handlePlusClick = () => {
-    setShowColorInput(!showColorInput); // Toggle the state
+  const handleClose = () => {
+    onClose();
+    setTimeout(() => {
+      setColorPalette({ paletteName: "", colors: [] });
+    }, 500);
   };
 
-  const handleChange = (color) => {
-    setValue(color.hex);
+  // Color palette functions
+  const handleAddColorPalette = async () => {
+    let formErrors = { paletteName: "", colors: "" };
+    const result = await handleAddColorPaletteBackend(colorPalette, user, userDoc);
+    if (!result.success) {
+      if (result.message === "Color palette name is required")
+        formErrors.paletteName = result.message;
+      else if (result.message === "Color palette must have at least one color")
+        formErrors.colors = result.message;
+      else showToast("error", result.message);
+      setErrors(formErrors);
+      return;
+    }
+    showToast("success", result.message);
+    handleClose();
   };
+
+  const handleEditColorPalette = async () => {
+    let formErrors = { paletteName: "", colors: "" };
+    const result = await handleEditColorPaletteBackend(
+      colorPalette,
+      colorPaletteToEdit,
+      user,
+      userDoc
+    );
+    if (!result.success) {
+      if (
+        result.message === "Name is the same as the current name" ||
+        result.message === "Color palette name is required"
+      )
+        formErrors.paletteName = result.message;
+      else if (result.message === "Color palette must have at least one color")
+        formErrors.colors = result.message;
+      else showToast("error", result.message);
+      setErrors(formErrors);
+      return;
+    }
+    showToast("success", result.message);
+    handleClose();
+  };
+
+  const handleDeleteColorPalette = async () => {
+    const result = await handleDeleteColorPaletteBackend(colorPalette, user, userDoc);
+    if (!result.success) {
+      showToast("error", result.message);
+      return;
+    }
+    showToast("success", result.message);
+    handleClose();
+  };
+
+  // Picking color
+  const handleColorChange = (color) => {
+    setPickedColor(color.hex);
+  };
+
+  const handlePickColorModalClose = () => {
+    setPickColorModalOpen(false);
+    setTimeout(() => {
+      setColorToEdit("");
+      setPickedColor("");
+    }, 500);
+  };
+
+  useEffect(() => {
+    if (colorPaletteToEdit) {
+      setColorPalette(colorPaletteToEdit);
+    }
+  }, [colorPaletteToEdit]);
+
+  const colorPickerContRef = useCallback(
+    (node) => {
+      if (node !== null) {
+        const huePicker = node.querySelector(
+          ".color-picker-cont  > :nth-child(2)  > :nth-child(1)  > :nth-child(2)  > :nth-child(1)  > :nth-child(1)  > :nth-child(1)  > :nth-child(2)  > :nth-child(1)"
+        );
+        console.log("HuePicker", huePicker);
+        if (huePicker) {
+          huePicker.style.backgroundImage = `${huePickerEncodedSvg(true)}`;
+        }
+
+        const colorTextInput = node.querySelector(
+          ".color-picker-cont > :nth-child(2) > :nth-child(2) > :nth-child(1) > :nth-child(1) > :nth-child(1) input"
+        );
+        console.log("ColorTextInput", colorTextInput);
+        console.log("ColorToEdit", colorToEdit);
+        if (colorTextInput && colorToEdit) {
+          colorTextInput.style.width = "calc(100% - 155px)";
+        } else {
+          colorTextInput.style.width = "calc(100% - 113px)";
+        }
+      }
+    },
+    [colorToEdit]
+  );
+
   return (
-    <Box
-      sx={{
-        backgroundColor: "var(--color-tertiary)",
-        color: "var(--color-white)",
-        width: "500px",
-        maxWidth: "83%",
-        borderRadius: "20px",
-        p: 3,
-        position: "relative",
-        margin: "auto",
-        top: "20%",
-      }}
-    >
-      {!showColorInput ? (
-        <>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h2 id="modal-title" style={{ color: "var(--color-white)", margin: 0 }}>
-              {modalTitle}
-            </h2>
-            <Button
-              onClick={handleCloseModal}
-              sx={{
-                backgroundColor: "transparent",
-                color: "var(--color-white)",
-                minWidth: "auto",
-                padding: "0",
-                "&:hover": { backgroundColor: "transparent" },
-              }}
-            >
-              <CloseIcon />
-            </Button>
-          </div>
+    <>
+      <Dialog open={open} onClose={handleClose} sx={dialogStyles}>
+        <DialogTitle sx={dialogTitleStyles}>
+          <TypographyMUI
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "1.15rem",
+              flexGrow: 1,
+              maxWidth: "70%",
+              whiteSpace: "normal",
+            }}
+          >
+            {`${!isEditingPalette ? "Add" : "Edit"} a color palette`}
+          </TypographyMUI>
+          <IconButtonMUI onClick={handleClose} sx={iconButtonStyles}>
+            <CloseRoundedIcon />
+          </IconButtonMUI>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            ...dialogContentStyles,
+            alignItems: "center",
+            padding: "20px",
+            paddingBottom: 0,
+          }}
+        >
           <div className="rightBeside">
-            <div className="input-group">
-              <input placeholder="Name of the color pallete" style={{ border: "none" }} />
-            </div>{" "}
-            <IconButton
-              aria-label="delete"
+            <TextFieldMUI
+              placeholder="Name of color palette"
+              value={colorPalette.paletteName}
+              onChange={(e) => {
+                const newPaletteName = e.target.value;
+                setColorPalette({ ...colorPalette, paletteName: newPaletteName.trim() });
+              }}
+              helperText={errors?.paletteName}
+              variant="outlined"
+              fullWidth
+              sx={{
+                marginBottom: "16px",
+                backgroundColor: "var(  --nav-card-modal)",
+                input: { color: "var(--color-white)" },
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px",
+                  "& fieldset": {
+                    borderColor: "var( --borderInput)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "var( --borderInput)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "var(--borderInputBrighter)",
+                  },
+                },
+              }}
+            />
+          </div>
+
+          <div className="circle-container">
+            {/* Display color of the palette */}
+            {colorPalette.colors.length > 0 &&
+              colorPalette.colors.map((color, index) => (
+                <IconButtonMUI
+                  key={index}
+                  size="lg"
+                  className="circle"
+                  style={{
+                    color: "var(--color-white)",
+                    borderRadius: "50%",
+                    border: "2px solid var(--borderInput)",
+                    backgroundColor: color,
+                    "&:hover": {
+                      border: "2px solid var(--borderInputBrighter)",
+                      backgroundColor: color,
+                    },
+                    "& .MuiTouchRippleRoot span": {
+                      backgroundColor: "var(--iconButtonActive)",
+                    },
+                  }}
+                  onClick={() => {
+                    setColorToEdit(color);
+                    setPickedColor(color);
+                    setPickColorModalOpen(true);
+                  }}
+                ></IconButtonMUI>
+              ))}
+            {/* Add color button */}
+            <IconButtonMUI
+              size="lg"
+              className="circle plus-circle"
+              onClick={() => setPickColorModalOpen(true)}
               style={{
-                height: "12px",
-              }}
-            >
-              <DeleteIcon
-                style={{
-                  color: "var(--color-white)",
-                }}
-              />
-            </IconButton>
-          </div>
-
-          <div style={{ marginTop: "10px" }}>
-            <div className="circle-container">
-              <div className="circle" style={{ backgroundColor: "#efefef" }}></div>
-              <div className="circle" style={{ backgroundColor: "#ef4f56" }}></div>
-              <div className="circle" style={{ backgroundColor: "#2c8b2a" }}></div>
-              <div className="circle" style={{ backgroundColor: "#8f5e5e" }}></div>
-              <div className="circle plus-circle" onClick={handlePlusClick}>
-                +
-              </div>{" "}
-              {/* Circle with plus sign */}
-            </div>
-            <Button
-              fullWidth
-              variant="contained"
-              sx={{
-                background: "var(--gradientButton)",
-                borderRadius: "20px",
                 color: "var(--color-white)",
-                fontWeight: "bold",
-                textTransform: "none",
-                "&:hover": {
-                  background: "var(--gradientButtonHover)", // Reverse gradient on hover
-                },
-              }}
-            >
-              Add color pallete
-            </Button>
-          </div>
-        </>
-      ) : (
-        <>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h2 id="modal-title" style={{ color: "var(--color-white)", margin: 0 }}>
-              <ArrowBackIos onClick={handlePlusClick} /> Pick A Color
-            </h2>
-            <Button
-              onClick={handleCloseModal}
-              sx={{
+                borderRadius: "50%",
+                border: "2px solid var(--borderInput)",
                 backgroundColor: "transparent",
-                color: "var(--color-white)",
-                minWidth: "auto",
-                padding: "0",
-                "&:hover": { backgroundColor: "transparent" },
-              }}
-            >
-              <CloseIcon />
-            </Button>
-          </div>
-
-          <div
-            style={{
-              marginTop: "20px !important",
-              height: "5px",
-              padding: "10px",
-              width: "auto",
-              margin: "auto",
-              backgroundColor: value,
-              borderRadius: "10px",
-              border: "1px solid var(--color-grey)",
-            }}
-          ></div>
-
-          <ChromePicker
-            disableAlpha
-            color={value}
-            onChangeComplete={handleChange}
-            styles={{
-              default: {
-                picker: {
-                  background: "transparent",
-                  borderRadius: "10px",
-                  boxShadow: "0 0 10px rgba(0, 0, 0, 0)",
-                  padding: "20px",
-                  width: "auto",
-                  fontFamily: "Inter, sans-serif",
-                  fontWeight: "500",
-                },
-                saturation: {
-                  borderRadius: "10px",
-                },
-                hue: {
-                  borderRadius: "10px",
-                },
-                input: {
-                  backgroundImage: "var(--gradientButton)",
-                },
-                swatch: {
-                  borderRadius: "10px",
-                },
-                active: {
-                  borderRadius: "10px",
-                },
-              },
-            }}
-          />
-          <div className="rightBeside">
-            <Button
-              fullWidth
-              variant="contained"
-              sx={{
-                background: "var(--gradientButton)",
-                borderRadius: "20px",
-                color: "var(--color-white)",
-                fontWeight: "bold",
-                textTransform: "none",
                 "&:hover": {
-                  background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                  border: "2px solid var(--borderInputBrighter)",
+                  backgroundColor: "var(--iconButtonHover)",
+                },
+                "& .MuiTouchRipple-root span": {
+                  backgroundColor: "var(--iconButtonActive)",
                 },
               }}
             >
-              Save Color
-            </Button>
-            <IconButton aria-label="delete">
-              <DeleteIcon
-                style={{
-                  color: "var(--color-white)",
+              <AddIcon
+                sx={{
+                  color: "var(--borderInput)",
+                  "&:hover": { color: "var(--borderInputBrighter)" },
                 }}
               />
-            </IconButton>
+            </IconButtonMUI>
           </div>
-        </>
-      )}
-    </Box>
+
+          <DialogActions sx={dialogActionsVertButtonsStyles}>
+            <ButtonMUI
+              fullWidth
+              variant="contained"
+              sx={gradientButtonStyles}
+              onClick={() => (!isEditingPalette ? handleAddColorPalette : handleEditColorPalette)}
+            >
+              {`${!isEditingPalette ? "Add" : "Edit"} color palette`}
+            </ButtonMUI>
+            {isEditingPalette && (
+              <ButtonMUI
+                fullWidth
+                variant="contained"
+                sx={outlinedButtonStyles}
+                onClick={handleDeleteColorPalette}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundImage =
+                    "var(--lightGradient), var(--gradientButtonHover)")
+                }
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+                }
+              >
+                Delete color palette
+              </ButtonMUI>
+            )}
+            <ButtonMUI
+              fullWidth
+              variant="contained"
+              sx={outlinedButtonStyles}
+              onClick={handleClose}
+              onMouseOver={(e) =>
+                (e.target.style.backgroundImage =
+                  "var(--lightGradient), var(--gradientButtonHover)")
+              }
+              onMouseOut={(e) =>
+                (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+              }
+            >
+              Cancel
+            </ButtonMUI>
+          </DialogActions>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal for picking color */}
+      <Dialog open={pickColorModalOpen} onClose={handlePickColorModalClose} sx={dialogStyles}>
+        <DialogTitle sx={{ ...dialogTitleStyles, padding: "10px 12px 10px 6px" }}>
+          <IconButtonMUI
+            onClick={handlePickColorModalClose}
+            sx={{ ...iconButtonStyles, marginRight: "5px" }}
+          >
+            <ArrowBackIosRoundedIcon />
+          </IconButtonMUI>
+          <TypographyMUI
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "1.15rem",
+              flexGrow: 1,
+              maxWidth: "100%",
+              whiteSpace: "normal",
+            }}
+          >
+            {`Pick a color ${colorToEdit ? "to edit" : "to add"}`}
+          </TypographyMUI>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            ...dialogContentStyles,
+            alignItems: "center",
+            padding: "20px",
+            paddingBottom: 0,
+            marginTop: 0,
+          }}
+        >
+          <div
+            ref={colorPickerContRef}
+            style={{
+              width: "min(50vw, 50vh)",
+              height: "auto",
+              maxWidth: "500px",
+              maxHeight: "500px",
+              padding: "20px 0",
+            }}
+          >
+            <ChromePicker
+              disableAlpha
+              color={pickedColor ?? defaultColor}
+              onChangeComplete={handleColorChange}
+              className="color-picker-cont"
+              styles={{
+                default: {
+                  picker: {
+                    background: "transparent",
+                    borderRadius: "10px",
+                    boxShadow: "0 0 10px rgba(0, 0, 0, 0)",
+                    width: "auto",
+                    fontFamily: "Inter, sans-serif",
+                    fontWeight: "500",
+                    padding: "0",
+                  },
+                  input: {
+                    input: {
+                      backgroundColor: "transparent",
+                      borderRadius: "10px",
+                      border: "1px solid var(--borderInput)",
+                      color: "var(--color-white)",
+                      boxShadow: "none",
+                      padding: "4px 10px",
+                    },
+                    label: {
+                      color: "var(--color-white)",
+                    },
+                  },
+                  // Hide the toggle buttons
+                  toggles: {
+                    borderRadius: "10px",
+                  },
+                },
+              }}
+            />
+            <div className="save-button-icon">
+              {colorToEdit && (
+                <IconButtonMUI
+                  onClick={() => {
+                    const newColors = colorPalette.colors.filter((color) => color !== colorToEdit);
+                    setColorPalette({ ...colorPalette, colors: newColors });
+                    setColorToEdit("");
+                    handlePickColorModalClose();
+                  }}
+                  sx={{
+                    ...iconButtonStyles,
+                    flexShrink: 0,
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButtonMUI>
+              )}
+              <IconButtonMUI
+                onClick={() => {
+                  if (colorToEdit) {
+                    const newColors = colorPalette.colors.map((color) =>
+                      color === colorToEdit ? pickedColor : color
+                    );
+                    setColorPalette({ ...colorPalette, colors: newColors });
+                    setColorToEdit("");
+                  } else {
+                    const newColors = [...colorPalette.colors, pickedColor];
+                    setColorPalette({ ...colorPalette, colors: newColors });
+                  }
+                  handlePickColorModalClose();
+                }}
+                sx={{
+                  ...iconButtonStyles,
+                  flexShrink: 0,
+                }}
+              >
+                <SaveIconSmall />
+              </IconButtonMUI>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

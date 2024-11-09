@@ -225,7 +225,7 @@ const AddItem = () => {
                   border: "var(--borderInput) 2px solid",
                 },
                 "&.Mui-focused fieldset": {
-                  border: "var(--brightFont) 2px solid",
+                  border: "var(--borderInputBrighter) 2px solid",
                 },
                 "& input": {
                   color: "var(--color-white)", // Change the text color

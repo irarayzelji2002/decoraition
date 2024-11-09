@@ -78,7 +78,6 @@ const AddPin = ({ EditMode }) => {
                 id="owner-select"
                 value={owner}
                 onChange={(e) => setOwner(e.target.value)}
-                MenuComponent={StyledMenu}
                 MenuProps={{
                   PaperProps: {
                     sx: {
@@ -313,6 +312,9 @@ const selectStylesDisabled = {
       WebkitTextFillColor: "var(--color-white)",
       paddingLeft: 0,
       paddingRight: 0,
+    },
+    "& .MuiSvgIcon-root": {
+      color: "transparent !important",
     },
   },
 };

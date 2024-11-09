@@ -1,6 +1,14 @@
 import React from "react";
 import { Dialog, DialogTitle, DialogContent, Typography, Button, IconButton } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const ShareConfirmationModal = ({ isOpen, onClose, collaborators }) => {
   const handleClose = () => {
@@ -9,34 +17,32 @@ const ShareConfirmationModal = ({ isOpen, onClose, collaborators }) => {
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose}>
-      <DialogTitle
-        sx={{
-          backgroundColor: "var(--nav-card-modal)",
-          color: "var(--color-white)",
-          borderBottom: "1px solid var(--inputBg)",
-          fontWeight: "bold",
-        }}
-      >
+    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+      <DialogTitle sx={dialogTitleStyles}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: "bold",
+            fontSize: "1.15rem",
+            flexGrow: 1,
+            maxWidth: "80%",
+            whiteSpace: "normal",
+          }}
+        >
+          Share Success
+        </Typography>
         <IconButton
           onClick={handleClose}
           sx={{
-            color: "var(--color-white)",
-            position: "absolute",
-            right: 8,
-            top: 8,
+            ...iconButtonStyles,
+            flexShrink: 0,
+            marginLeft: "auto",
           }}
         >
           <CloseRoundedIcon />
         </IconButton>
-        Share Success
       </DialogTitle>
-      <DialogContent
-        sx={{
-          backgroundColor: "var(--nav-card-modal)",
-          color: "var(--color-white)",
-        }}
-      >
+      <DialogContent sx={dialogContentStyles}>
         <Typography variant="body1" sx={{ marginBottom: "16px" }}>
           The following people have been added as collaborators:
         </Typography>

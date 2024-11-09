@@ -867,3 +867,206 @@ exports.getUsernames = async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch usernames" });
   }
 };
+
+exports.addColorPalette = async (req, res) => {
+  const updatedDocuments = [];
+  try {
+    const { userId, colorPalette } = req.body;
+    if (!userId || !colorPalette || !colorPalette.paletteName || !colorPalette.colors) {
+      return res.status(400).json({ message: "Missing required color palette data" });
+    }
+
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const previousColorPalettes = userDoc.data().colorPalettes || [];
+
+    // Create new color palette with ID, add to colorPalettes array
+    const newPalette = {
+      colorPaletteId: db.collection("_").doc().id,
+      paletteName: colorPalette.paletteName,
+      colors: colorPalette.colors,
+    };
+    const updatedColorPalettes = [...previousColorPalettes, newPalette];
+    await userRef.update({
+      colorPalettes: updatedColorPalettes,
+    });
+
+    updatedDocuments.push({
+      collection: "users",
+      id: userId,
+      field: "colorPalettes",
+      previousValue: previousColorPalettes,
+    });
+
+    res.status(200).json({
+      message: "Color palette added successfully",
+      colorPalette: newPalette,
+    });
+  } catch (error) {
+    console.error("Error adding color palette:", error);
+
+    // Rollback updates to existing documents
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    res.status(500).json({ message: "Error adding color palette", error: error.toString() });
+  }
+};
+
+exports.updateColorPalette = async (req, res) => {
+  const updatedDocuments = [];
+  try {
+    const { userId, colorPalette } = req.body;
+
+    if (
+      !userId ||
+      !colorPalette ||
+      !colorPalette.colorPaletteId ||
+      !colorPalette.paletteName ||
+      !colorPalette.colors
+    ) {
+      return res.status(400).json({ message: "Missing required color palette data" });
+    }
+
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const previousColorPalettes = userDoc.data().colorPalettes || [];
+
+    // Find index of palette to update
+    const paletteIndex = previousColorPalettes.findIndex(
+      (p) => p.colorPaletteId === colorPalette.colorPaletteId
+    );
+
+    if (paletteIndex === -1) {
+      return res.status(404).json({ message: "Color palette not found" });
+    }
+
+    // Create updated color palettes array and update user document
+    const updatedColorPalettes = [...previousColorPalettes];
+    updatedColorPalettes[paletteIndex] = {
+      colorPaletteId: colorPalette.colorPaletteId,
+      paletteName: colorPalette.paletteName,
+      colors: colorPalette.colors,
+    };
+    await userRef.update({
+      colorPalettes: updatedColorPalettes,
+    });
+
+    updatedDocuments.push({
+      collection: "users",
+      id: userId,
+      field: "colorPalettes",
+      previousValue: previousColorPalettes,
+    });
+
+    res.status(200).json({
+      message: "Color palette updated successfully",
+      colorPalette: updatedColorPalettes[paletteIndex],
+    });
+  } catch (error) {
+    console.error("Error updating color palette:", error);
+
+    // Rollback updates to existing documents
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    res.status(500).json({ message: "Error updating color palette", error: error.toString() });
+  }
+};
+
+exports.deleteColorPalette = async (req, res) => {
+  const updatedDocuments = [];
+  try {
+    const { userId, colorPalette } = req.body;
+
+    if (!userId || !colorPalette || !colorPalette.colorPaletteId) {
+      return res.status(400).json({ message: "Missing required data" });
+    }
+
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const previousColorPalettes = userDoc.data().colorPalettes || [];
+
+    // Filter out the palette to delete
+    const updatedColorPalettes = previousColorPalettes.filter(
+      (p) => p.colorPaletteId !== colorPalette.colorPaletteId
+    );
+
+    // If no palette was removed, it didn't exist
+    if (updatedColorPalettes.length === previousColorPalettes.length) {
+      return res.status(404).json({ message: "Color palette not found" });
+    }
+
+    // Update user document
+    await userRef.update({
+      colorPalettes: updatedColorPalettes,
+    });
+
+    updatedDocuments.push({
+      collection: "users",
+      id: userId,
+      field: "colorPalettes",
+      previousValue: previousColorPalettes,
+    });
+
+    res.status(200).json({
+      message: "Color palette deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting color palette:", error);
+
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    res.status(500).json({ message: "Error deleting color palette", error: error.toString() });
+  }
+};

@@ -28,11 +28,29 @@ export function useAuthProvider() {
   const [loading, setLoading] = useState(true);
   const [userDocFetched, setUserDocFetched] = useState(false);
 
+  // Effect to sync auth state across tabs
+  useEffect(() => {
+    const syncAuthState = (event) => {
+      if (event.key === "authState") {
+        const authState = JSON.parse(event.newValue);
+        if (authState) {
+          setUser(authState.user);
+          setUserDoc(authState.userDoc);
+        } else {
+          setUser(null);
+          setUserDoc(null);
+        }
+      }
+    };
+    window.addEventListener("storage", syncAuthState);
+    return () => window.removeEventListener("storage", syncAuthState);
+  }, []);
+
   useEffect(() => {
     console.log("Setting up auth state listener");
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed. User:", user);
-      setUser(user);
+
       if (user) {
         console.log("User authenticated, updating state");
         const fetchUserDoc = async (retryCount = 0) => {
@@ -45,6 +63,7 @@ export function useAuthProvider() {
             });
             if (response.data) {
               setUserDoc(response.data);
+              localStorage.setItem("authState", JSON.stringify({ user, userDoc: response.data }));
               console.log("User updated: ", response.data);
             } else if (retryCount < 3) {
               // If user document doesn't exist, wait and retry
@@ -62,16 +81,26 @@ export function useAuthProvider() {
           }
           setLoading(false);
         };
+        setUser(user);
         fetchUserDoc();
         setUserDocFetched(true);
       } else {
         console.log("User not authenticated, clearing state");
         setUser(null);
         setUserDoc(null);
+        localStorage.removeItem("authState");
         setLoading(false);
         setUserDocFetched(true);
       }
     });
+
+    // Check for existing auth state on load
+    const existingAuthState = localStorage.getItem("authState");
+    if (existingAuthState) {
+      const { user, userDoc } = JSON.parse(existingAuthState);
+      setUser(user);
+      setUserDoc(userDoc);
+    }
 
     return () => unsubscribe();
   }, []);
@@ -81,6 +110,7 @@ export function useAuthProvider() {
       await auth.signOut();
       setUser(null);
       setUserDoc(null);
+      localStorage.removeItem("authState");
       navigate("/login");
       window.location.reload();
     } catch (error) {

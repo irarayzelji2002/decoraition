@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { IconButton, Menu } from "@mui/material";
+import { IconButton, Menu, TextField } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { CommentIcon, ShareIcon } from "./svg/DefaultMenuIcons";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -456,25 +456,60 @@ function DesignHead({ design, changeMode, setChangeMode, setShowComments = () =>
           color="var(--color-white)"
           aria-label="open drawer"
           onClick={setDrawerOpen}
-          sx={{ backgroundColor: "transparent", marginTop: "6px" }}
+          sx={{
+            backgroundColor: "transparent",
+            margin: "3px 5px 3px -5px",
+            "&:hover": {
+              backgroundColor: "var(--iconButtonHover)",
+            },
+            "& .MuiTouchRipple-root span": {
+              backgroundColor: "var(--iconButtonActive)",
+            },
+          }}
         >
           <MenuIcon sx={{ color: "var(--color-white)" }} />
         </IconButton>
         <div className="design-name-section">
           {isEditingName ? (
-            <input
-              type="text"
+            <TextField
+              placeholder="Design Name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.target.blur();
                   handleBlur();
+                  e.target.blur();
                 }
               }}
+              autoFocus
               onBlur={handleBlur}
-              autoFocus // Automatically focus on the input when in edit mode
+              variant="outlined"
               className="headTitleInput"
+              fullWidth
+              sx={{
+                backgroundColor: "transparent",
+                input: { color: "var(--color-white)" },
+                padding: "0px",
+                marginTop: "3px",
+                "& .MuiOutlinedInput-root": {
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  padding: "8px 15px",
+                  borderRadius: "8px",
+                  "& fieldset": {
+                    borderColor: "var( --borderInput)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "var( --borderInput)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "var(--borderInputBrighter)",
+                  },
+                  "& input": {
+                    padding: 0,
+                  },
+                },
+              }}
             />
           ) : (
             <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
@@ -485,15 +520,49 @@ function DesignHead({ design, changeMode, setChangeMode, setShowComments = () =>
       </div>
       <div className="right">
         {isDesignPath && (role === 1 || role === 2 || role === 3) && (
-          <IconButton onClick={() => toggleComments(setShowComments)}>
-            <CommentIcon sx={{ color: "var(--color-white)" }} />
+          <IconButton
+            sx={{
+              color: "var(--color-white)",
+              "&:hover": {
+                backgroundColor: "var(--iconButtonHover)",
+              },
+              "& .MuiTouchRipple-root span": {
+                backgroundColor: "var(--iconButtonActive)",
+              },
+            }}
+            onClick={() => toggleComments(setShowComments)}
+          >
+            <CommentIcon />
           </IconButton>
         )}
-        <IconButton onClick={handleShareClick}>
-          <ShareIcon sx={{ color: "var(--color-white)" }} />
+        <IconButton
+          sx={{
+            color: "var(--color-white)",
+            "&:hover": {
+              backgroundColor: "var(--iconButtonHover)",
+            },
+            "& .MuiTouchRipple-root span": {
+              backgroundColor: "var(--iconButtonActive)",
+            },
+          }}
+          onClick={handleShareClick}
+        >
+          <ShareIcon />
         </IconButton>
-        <IconButton onClick={handleClick} sx={{ padding: "5px" }}>
-          <MoreVertIcon sx={{ color: "var(--color-white)", fontSize: "1.9rem" }} />
+        <IconButton
+          sx={{
+            padding: "4px",
+            color: "var(--color-white)",
+            "&:hover": {
+              backgroundColor: "var(--iconButtonHover)",
+            },
+            "& .MuiTouchRipple-root span": {
+              backgroundColor: "var(--iconButtonActive)",
+            },
+          }}
+          onClick={handleClick}
+        >
+          <MoreVertIcon sx={{ fontSize: "1.9rem" }} />
         </IconButton>
         {anchorEl === null && isShareMenuOpen && (
           <Menu

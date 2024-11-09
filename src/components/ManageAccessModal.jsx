@@ -33,6 +33,14 @@ import {
 } from "../pages/ProjectSpace/svg/ProjectAccessIcons";
 import { showToast, stringAvatarColor, stringAvatarInitials } from "../functions/utils";
 import { useSharedProps } from "../contexts/SharedPropsContext";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
 
 const ManageAcessModal = ({
   isOpen,
@@ -332,49 +340,39 @@ const ManageAcessModal = ({
   }, [isOpen, generalAccessRole, emailsWithRole]);
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      sx={{
-        "& .MuiDialog-paper": {
-          backgroundColor: "#2E2E32",
-          borderRadius: "20px",
-          width: "90%",
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          backgroundColor: "var(--nav-card-modal)",
-          color: "var(--color-white)",
-          display: "flex",
-          alignItems: "center",
-          borderBottom: "1px solid var(--inputBg)",
-          fontWeight: "bold",
-        }}
-      >
+    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+      <DialogTitle sx={dialogTitleStyles}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: "bold",
+            fontSize: "1.15rem",
+            flexGrow: 1,
+            maxWidth: "80%",
+            whiteSpace: "normal",
+          }}
+        >
+          {isViewCollab ? "View collaborators" : "Manage Access"}
+        </Typography>
         <IconButton
           onClick={handleClose}
           sx={{
-            color: "var(--color-white)",
-            position: "absolute",
-            right: 8,
-            top: 8,
+            ...iconButtonStyles,
+            flexShrink: 0,
+            marginLeft: "auto",
           }}
         >
           <CloseRoundedIcon />
         </IconButton>
-        {isViewCollab ? "View collaborators" : "Manage Access"}
       </DialogTitle>
 
       <DialogContent
         ref={contentRef}
         sx={{
-          backgroundColor: "var(--nav-card-modal)", // Content background color
-          color: "var(--color-white)", // Text color in the content
+          ...dialogContentStyles,
           width: "auto",
           padding: "0px",
-
+          marginTop: 0,
           "& .MuiDialog-paper": {
             width: "100%",
           },
@@ -657,40 +655,16 @@ const ManageAcessModal = ({
         <div style={{ height: "18px", backgroundColor: "var(--nav-card-modal)" }}></div>
       ) : (
         <DialogActions
-          sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "0px", padding: "18px" }}
+          sx={{ ...dialogActionsStyles, margin: "0px", marginBottom: 0, padding: "18px" }}
         >
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={onSubmit}
-            sx={{
-              background: "var(--gradientButton)",
-              borderRadius: "20px",
-              color: "var(--color-white)",
-              fontWeight: "bold",
-              textTransform: "none",
-              "&:hover": {
-                background: "var(--gradientButtonHover)",
-              },
-            }}
-          >
+          <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
             Save
           </Button>
           <Button
             fullWidth
             variant="contained"
             onClick={handleClose}
-            sx={{
-              color: "var(--color-white)",
-              background: "transparent",
-              border: "2px solid transparent",
-              borderRadius: "20px",
-              backgroundImage: "var(--lightGradient), var(--gradientButton)",
-              backgroundOrigin: "border-box",
-              backgroundClip: "padding-box, border-box",
-              fontWeight: "bold",
-              textTransform: "none",
-            }}
+            sx={outlinedButtonStyles}
             onMouseOver={(e) =>
               (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
             }
@@ -762,6 +736,9 @@ const selectStylesDisabled = {
     },
     "& .MuiSelect-select": {
       color: "transparent",
+    },
+    "& .MuiSvgIcon-root": {
+      color: "transparent !important",
     },
   },
 };

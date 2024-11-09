@@ -43,16 +43,18 @@ select:-webkit-autofill {
 
 ::-webkit-scrollbar {
   width: 10px; /* Width of the scrollbar */
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-tertiary); /* Background color of the scrollbar track */
+  background: transparent; /* Background color of the scrollbar track */
+  box-shadow: none;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gradientCircle); /* Color of the scrollbar thumb */
+  background: var(--dropdownSelectedHover); /* Color of the scrollbar thumb */
   border-radius: 6px; /* Rounded corners of the scrollbar thumb */
-  border: 2px solid var(--color-tertiary); /* Space around the thumb */
+  border: 2px solid transparent; /* Space around the thumb */
 }
 
 .rightBeside {
@@ -159,6 +161,10 @@ select:-webkit-autofill {
   border-color: var(--brightFont) !important;
 }
 
+.MuiTypography-root {
+  font-family: "Inter", sans-serif !important;
+}
+
 :root {
   --bg-header: url("../public/img/bg-login.png");
   --bg-image: #1f1e22;
@@ -167,6 +173,7 @@ select:-webkit-autofill {
   --color-tertiary: #27262c;
   --borders: #5e5e5e;
   --color-grey: #9d9ca6;
+  --color-grey2: #c1c0ce;
   --bright-grey: #6c6c6c;
   --color-quaternary: #ef4f56;
   --errorText: #ef4f56;
@@ -181,10 +188,12 @@ select:-webkit-autofill {
   --comment-capsule: #f68950;
   --budget-capsule: #397438;
   --inputBg: #3e3c47;
+  --inputBgBrighter: #4a4853;
   --iconBg: #302f37;
   --brightFont: #ff8344;
   --brightFontHover: #ff9058;
   --borderInput: #515151;
+  --borderInputBrighter: #646464;
   --gradientCircle: linear-gradient(20deg, #ec2073, #ff894d);
   --gradientCircleDisabled: linear-gradient(20deg, #db3074, #e78655);
   --gradientCircleHover: linear-gradient(20deg, #ff894d, #ec2073);
@@ -197,10 +206,15 @@ select:-webkit-autofill {
   --budgetCard: #32313a;
   --bgMain: #1e1d21;
   --slider: #3c3b42;
+  --sliderHighlight: #707070;
   --dropdown: #25232a;
   --dropdownHover: #32313a;
   --dropdownSelected: #3e3c47;
   --dropdownSelectedHover: #4a4853;
+  --dropdown2: #32313a;
+  --dropdownHover2: #3e3c47;
+  --dropdownSelected2: #4a4853;
+  --dropdownSelectedHover2: #54525e;
   --borderLanding: #f15f3e;
   --landingGradientEven: linear-gradient(270deg, #f89a47cc, #f15f3e99, #ec207300);
   --landingGradientOdd: linear-gradient(90deg, #f89a47cc, #f15f3e99, #ec207300);
@@ -213,8 +227,23 @@ select:-webkit-autofill {
   --greyText: #b2b2b4;
   --greyTextDarker: #848385;
   --disabledButton: #626168;
+  --disabledInput: #3b3a42;
   --selectImagePreview: #4b4955;
   --noContent: #4b4a4d;
+  --thumbnailBorder: #5f5c6c;
+  --thumbnailFill: #323139;
+  --iconButtonHover: rgba(60, 59, 66, 0.3);
+  --iconButtonActive: rgba(60, 59, 66, 0.5);
+  --iconButtonHover2: rgba(112, 111, 119, 0.3);
+  --iconButtonActive2: rgba(112, 111, 119, 0.5);
+  --topInfoGradient: linear-gradient(
+    to top,
+    rgba(39, 38, 44, 0),
+    rgba(39, 38, 44, 0.3),
+    rgba(39, 38, 44, 0.9)
+  );
+  --yellow: #fec269;
+  --optional: #88888b;
 }
 
 .light-mode {

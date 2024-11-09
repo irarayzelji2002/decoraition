@@ -757,6 +757,9 @@ export const selectStylesDisabled = {
       paddingLeft: 0,
       paddingRight: 0,
     },
+    "& .MuiSvgIcon-root": {
+      color: "transparent !important",
+    },
   },
 };
 
@@ -772,10 +775,10 @@ export const textFieldStyles = {
       borderColor: "var(--borderInput)",
     },
     "&:hover fieldset": {
-      borderColor: "var(--bright-grey)",
+      borderColor: "var(--borderInput)",
     },
     "&.Mui-focused fieldset": {
-      borderColor: "var(--bright-grey)",
+      borderColor: "var(--borderInputBrighter)",
     },
   },
   "& input": {

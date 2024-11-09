@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { stringAvatarColor, stringAvatarInitials } from "../../functions/utils.js";
 import DelayedTooltip from "../../components/DelayedTooltip.jsx";
@@ -23,10 +23,24 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
   const { userDoc } = useSharedProps();
   const navigate = useNavigate();
-  const [isFocused, setIsFocused] = React.useState(false);
+  const location = useLocation();
+  const [searchPlaceholder, setSearchPlaceholder] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [accountTooltipOpen, setAccountTooltipOpen] = useState(false);
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/homepage")) {
+      setSearchPlaceholder("Search your designs or projects");
+    } else if (location.pathname.startsWith("/seeAllDesigns")) {
+      setSearchPlaceholder("Search your designs");
+    } else if (location.pathname.startsWith("/seeAllProjects")) {
+      setSearchPlaceholder("Search your projects");
+    } else {
+      setSearchPlaceholder("Search...");
+    }
+  }, []);
 
   const handleSearch = (event) => {
     onSearchChange(event.target.value); // Pass the search value to the parent
@@ -69,6 +83,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
           backgroundColor: "transparent",
           boxShadow: "none",
           paddingTop: "10px",
+          paddingBottom: "10px",
         }}
       >
         <Toolbar sx={{ backgroundColor: "transparent" }}>
@@ -104,17 +119,24 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
               <SearchIcon sx={{ color: "var(--color-white)" }} />
             </IconButton>
             <InputBase
-              placeholder="Search..."
+              placeholder={searchPlaceholder}
               onChange={(e) => onSearchChange(e.target.value)}
               value={searchQuery}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              sx={{ ml: 1, flex: 1, color: "var(--color-white)" }}
+              sx={{ ml: 1, flex: 1, color: "var(--color-white)", padding: "5px 10px 5px 0px" }}
               inputProps={{ "aria-label": "search google maps" }}
             />
           </Paper>
           <div style={{ display: "flex", alignItems: "center" }}>
-            <Box sx={{ marginRight: 2 }}>
+            <Box
+              sx={{
+                marginRight: 2,
+                "@media (max-width: 380px)": {
+                  display: "none",
+                },
+              }}
+            >
               <Badge
                 onClick={handleNotifClick}
                 sx={{
@@ -138,6 +160,10 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
                 overflow: "hidden",
                 whiteSpace: "nowrap",
                 textOverflow: "ellipsis",
+                maxWidth: "150px",
+                "@media (max-width: 600px)": {
+                  display: "none",
+                },
               }}
             >
               {userDoc?.username || "Guest"}

@@ -70,6 +70,9 @@ router.delete(
 );
 router.get("/user/get-username/:userId", userController.getUsername);
 router.post("/user/get-usernames", userController.getUsernames);
+router.post("/user/add-color-palette", authenticateUser, userController.addColorPalette);
+router.put("/user/update-color-palette", authenticateUser, userController.updateColorPalette);
+router.put("/user/delete-color-palette", authenticateUser, userController.deleteColorPalette);
 
 // Design routes
 router.get("/design/:userId", authenticateUser, designController.fetchUserDesigns);
@@ -120,6 +123,11 @@ router.post(
   "/design/:designId/change-access",
   authenticateUser,
   designController.changeAccessDesign
+);
+router.put(
+  "/design/:designId/design-version/:designVersionId/update-desc",
+  authenticateUser,
+  designController.updateDesignVersionImageDescription
 );
 
 // Project routes

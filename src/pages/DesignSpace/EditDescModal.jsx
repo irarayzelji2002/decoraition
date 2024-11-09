@@ -11,40 +11,39 @@ import {
   Link,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { showToast } from "../functions/utils";
-import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
-import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import { showToast } from "../../functions/utils";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
 
-const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
-  // if isDesign is true, object is a design object, else it is a project object
-  const [newName, setNewName] = useState(
-    isDesign ? object?.designName ?? "Untitled Design" : object?.projectName ?? "Untitled Project"
-  );
+const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) => {
+  const [description, setDescription] = useState("");
   const [error, setError] = useState("");
 
   const onSubmit = async () => {
-    const result = await handleRename(newName);
+    const result = await handleEdit(imageId, description);
     if (!result.success) {
-      if (result.message === "Name is the same as the current name") setError(result.message);
+      if (result.message === "Description is the same as the current description")
+        setError(result.message);
       else showToast("error", result.message);
       return;
     }
-    showToast("success", "Design name updated successfully");
+    showToast("success", `Image ${imageId} description updated successfully`);
     handleClose();
   };
 
   const handleClose = () => {
     setError("");
-    setNewName(
-      isDesign ? object?.designName ?? "Untitled Design" : object?.projectName ?? "Untitled Project"
-    );
+    setDescription("");
     onClose();
   };
 
   useEffect(() => {
-    console.log("isDesign", isDesign);
-    console.log("object", object);
-  }, []);
+    console.log("imageId", imageId);
+    console.log("designVersion", designVersion);
+    const designVersionImages = designVersion?.images;
+    const image = designVersionImages.find((image) => image.id === imageId);
+    setDescription(image?.description ?? "");
+  }, [designVersion, imageId]);
 
   return (
     <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
@@ -59,7 +58,7 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
             whiteSpace: "normal",
           }}
         >
-          Rename
+          {`Image ${imageId} Description`}
         </Typography>
         <IconButton
           onClick={handleClose}
@@ -74,12 +73,12 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
       </DialogTitle>
       <DialogContent sx={dialogContentStyles}>
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-          {isDesign ? "Design" : "Project"} Name
+          Description
         </Typography>
         <TextField
-          placeholder="New Name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           helperText={error}
           variant="outlined"
           fullWidth
@@ -103,7 +102,7 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
         <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
-          Rename
+          {`${designVersion?.images[imageId]?.description ? "Edit" : "Add"} description`}
         </Button>
         <Button
           fullWidth
@@ -124,14 +123,12 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
   );
 };
 
-export default RenameModal;
+export default EditDescModal;
 
 export const dialogStyles = {
   "& .MuiDialog-paper": {
     backgroundColor: "var(--nav-card-modal)",
     borderRadius: "20px",
-    maxWidth: "90vw",
-    maxHeight: "90vh",
   },
 };
 
@@ -157,9 +154,6 @@ export const dialogContentStyles = {
   paddingBottom: 0,
   overflow: "auto",
   width: "min(50vw, 50vh)",
-  "@media (max-width: 600px)": {
-    width: "auto",
-  },
 };
 
 export const dialogActionsStyles = {
@@ -170,23 +164,4 @@ export const dialogActionsStyles = {
   gap: "15px",
   marginBottom: "20px",
   padding: 0,
-  flexWrap: "nowrap",
-  "@media (max-width: 600px)": {
-    flexWrap: "wrap",
-  },
-};
-
-export const dialogActionsVertButtonsStyles = {
-  backgroundColor: "var(--nav-card-modal)",
-  paddingBottom: "5px",
-  flexDirection: "column",
-  display: "flex",
-  gap: "15px",
-  width: "70%",
-  margin: "auto",
-  marginBottom: "20px",
-  padding: 0,
-  "@media (max-width: 600px)": {
-    width: "100%",
-  },
 };

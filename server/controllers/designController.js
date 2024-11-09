@@ -889,6 +889,59 @@ exports.changeAccessDesign = async (req, res) => {
   }
 };
 
+exports.updateDesignVersionImageDescription = async (req, res) => {
+  const updatedDocuments = [];
+  try {
+    const { designId, designVersionId } = req.params;
+    const { description, imageId } = req.body;
+    const designVersionRef = db.collection("designVersions").doc(designVersionId);
+
+    // Store previous name for potential rollback
+    const designVersionDoc = await designVersionRef.get();
+    if (!designVersionDoc.exists) {
+      return res.status(404).json({ error: "Design version not found" });
+    }
+    // store rollback data
+    const previousImages = designVersionDoc.data().images;
+    const updatedImages = previousImages.map((img) =>
+      img.id === imageId ? { ...img, description } : img
+    );
+    updatedDocuments.push({
+      collection: "designVersions",
+      id: designVersionId,
+      field: "images",
+      previousValue: previousImages,
+    });
+
+    // Perform update
+    await designVersionRef.update({ images: updatedImages, modifiedAt: new Date() });
+    res.status(200).json({
+      success: true,
+      message: "Design name updated successfully",
+      images: updatedImages,
+    });
+  } catch (error) {
+    console.error("Error updating design name:", error);
+
+    // Rollback updates to existing documents
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    res.status(500).json({ error: "Failed to update design name" });
+  }
+};
+
 // Update
 exports.updateDesign = async (req, res) => {
   try {

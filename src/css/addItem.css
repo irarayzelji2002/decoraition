@@ -58,8 +58,9 @@
 
   background-color: var(--nav-card-modal);
   border-radius: 8px;
-  color: var(--color-white);
+  color: var(--noContent);
   font-size: 1.125em;
+  font-weight: 500;
 }
 
 .image-placeholder-container {

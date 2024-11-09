@@ -15,14 +15,19 @@ import {
   Box,
 } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import {
-  LocalizationProvider,
-  DatePicker,
-  TimePicker,
-} from "@mui/x-date-pickers";
+import { LocalizationProvider, DatePicker, TimePicker } from "@mui/x-date-pickers";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const RemindTime = () => {
   const [open, setOpen] = useState(false);
@@ -71,10 +76,7 @@ const RemindTime = () => {
         <Typography variant="h6">Reminders</Typography>
         <List>
           {reminders.map((reminder, index) => (
-            <ListItem
-              key={index}
-              sx={{ backgroundColor: "#333", borderRadius: 1, mb: 1 }}
-            >
+            <ListItem key={index} sx={{ backgroundColor: "#333", borderRadius: 1, mb: 1 }}>
               <ListItemText
                 primary={`${reminder.date.toLocaleDateString()} ${reminder.time.toLocaleTimeString()}`}
               />
@@ -94,32 +96,68 @@ const RemindTime = () => {
         </IconButton>
       </Box>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>
-          {editingIndex !== null ? "Edit Reminder" : "Add Reminder"}
+      <Dialog open={open} onClose={handleClose} sx={dialogStyles}>
+        <DialogTitle sx={dialogTitleStyles}>
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "1.15rem",
+              flexGrow: 1,
+              maxWidth: "80%",
+              whiteSpace: "normal",
+            }}
+          >
+            {editingIndex !== null ? "Edit Reminder" : "Add Reminder"}
+          </Typography>
+          <IconButton
+            onClick={handleClose}
+            sx={{
+              ...iconButtonStyles,
+              flexShrink: 0,
+              marginLeft: "auto",
+            }}
+          >
+            <CloseRoundedIcon />
+          </IconButton>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={dialogContentStyles}>
           <DatePicker
             label="Choose a date"
             value={selectedDate}
             onChange={(newDate) => setSelectedDate(newDate)}
-            renderInput={(props) => (
-              <TextField {...props} fullWidth margin="normal" />
-            )}
+            renderInput={(props) => <TextField {...props} fullWidth margin="normal" />}
           />
           <TimePicker
             label="Select time"
             value={selectedTime}
             onChange={(newTime) => setSelectedTime(newTime)}
-            renderInput={(props) => (
-              <TextField {...props} fullWidth margin="normal" />
-            )}
+            renderInput={(props) => <TextField {...props} fullWidth margin="normal" />}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSave} color="primary">
+        <DialogActions sx={dialogActionsStyles}>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleSave}
+            color="primary"
+            sx={gradientButtonStyles}
+          >
             Save
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleClose}
+            sx={outlinedButtonStyles}
+            onMouseOver={(e) =>
+              (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
+            }
+            onMouseOut={(e) =>
+              (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+            }
+          >
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>

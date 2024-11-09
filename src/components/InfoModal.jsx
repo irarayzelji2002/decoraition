@@ -9,6 +9,14 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const InfoModal = ({ isOpen, onClose }) => {
   const handleClose = () => {
@@ -16,72 +24,39 @@ const InfoModal = ({ isOpen, onClose }) => {
     //resett values
   };
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      sx={{
-        "& .MuiDialog-paper": {
-          backgroundColor: "var(--nav-card-modal)",
-          borderRadius: "20px",
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          backgroundColor: "var(--nav-card-modal)",
-          color: "var(--color-white)",
-          display: "flex",
-          alignItems: "center",
-          borderBottom: "1px solid var(--inputBg)",
-          fontWeight: "bold",
-        }}
-      >
+    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+      <DialogTitle sx={dialogTitleStyles}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: "bold",
+            fontSize: "1.15rem",
+            flexGrow: 1,
+            maxWidth: "80%",
+            whiteSpace: "normal",
+          }}
+        >
+          Info
+        </Typography>
         <IconButton
           onClick={handleClose}
           sx={{
-            color: "var(--color-white)",
-            position: "absolute",
-            right: 8,
-            top: 8,
+            ...iconButtonStyles,
+            flexShrink: 0,
+            marginLeft: "auto",
           }}
         >
           <CloseRoundedIcon />
         </IconButton>
-        <Typography variant="h6" sx={{ color: "whitesmoke" }}>
-          {" "}
-          {/* Set info text color to white */}
-          Info
-        </Typography>
       </DialogTitle>
-      <DialogContent
-        sx={{
-          backgroundColor: "var(  --nav-card-modal)", // Content background color
-          color: "var(--color-white)", // Text color in the content
-        }}
-      >
+      <DialogContent sx={dialogContentStyles}>
         <div className="image-frame">
           <img src={"../../img/logoWhitebg.png"} alt="design preview" className="image-preview" />
         </div>
         <Typography variant="body1">Here is some information about the item.</Typography>
       </DialogContent>
-      <DialogActions
-        sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }} // Actions background color
-      >
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={handleClose}
-          sx={{
-            background: "var(--gradientButton)",
-            borderRadius: "20px",
-            color: "var(--color-white)", // Button text color
-            fontWeight: "bold",
-            textTransform: "none",
-            "&:hover": {
-              background: "var(--gradientButtonHover)",
-            },
-          }}
-        >
+      <DialogActions sx={dialogActionsStyles}>
+        <Button fullWidth variant="contained" onClick={handleClose} sx={outlinedButtonStyles}>
           Close
         </Button>
       </DialogActions>

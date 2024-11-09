@@ -18,6 +18,14 @@ import { fetchVersionDetails } from "../pages/DesignSpace/backend/DesignActions"
 import { useSharedProps } from "../contexts/SharedPropsContext";
 import { showToast } from "../functions/utils";
 import Version from "../pages/DesignSpace/Version";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const RestoreModal = ({ isOpen, onClose, handleRestore, design }) => {
   const { user } = useSharedProps();
@@ -99,46 +107,32 @@ const RestoreModal = ({ isOpen, onClose, handleRestore, design }) => {
         handleSelect={handleSelect}
         title="Select a version to restore"
       />
-      <Dialog
-        open={isOpen}
-        onClose={handleClose}
-        sx={{
-          "& .MuiDialog-paper": {
-            backgroundColor: "var(--nav-card-modal)",
-            borderRadius: "20px",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            backgroundColor: "var(--nav-card-modal)",
-            color: "var(--color-white)",
-            display: "flex",
-            alignItems: "center",
-            borderBottom: "1px solid var(--inputBg)",
-            fontWeight: "bold",
-          }}
-        >
+      <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+        <DialogTitle sx={dialogTitleStyles}>
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "1.15rem",
+              flexGrow: 1,
+              maxWidth: "80%",
+              whiteSpace: "normal",
+            }}
+          >
+            Restore
+          </Typography>
           <IconButton
             onClick={handleClose}
             sx={{
-              color: "var(--color-white)",
-              position: "absolute",
-              right: 8,
-              top: 8,
+              ...iconButtonStyles,
+              flexShrink: 0,
+              marginLeft: "auto",
             }}
           >
             <CloseRoundedIcon />
           </IconButton>
-          Restore
         </DialogTitle>
-        <DialogContent
-          sx={{
-            backgroundColor: "var(  --nav-card-modal)",
-            color: "var(--color-white)",
-            marginTop: "20px",
-          }}
-        >
+        <DialogContent sx={dialogContentStyles}>
           <Typography variant="body1" sx={{ marginBottom: "10px" }}>
             Select a version to restore
             <IconButton onClick={() => setIsHistoryOpen(true)}>
@@ -157,7 +151,6 @@ const RestoreModal = ({ isOpen, onClose, handleRestore, design }) => {
                   const selectedId = e.target.value;
                   handleSelect(selectedId);
                 }}
-                MenuComponent={StyledMenu}
                 MenuProps={{
                   PaperProps: {
                     sx: {
@@ -199,23 +192,9 @@ const RestoreModal = ({ isOpen, onClose, handleRestore, design }) => {
             </FormControl>
           </div>
         </DialogContent>
-        <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
+        <DialogActions sx={dialogActionsStyles}>
           {/* Restore Button */}
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={onSubmit}
-            sx={{
-              background: "var(--gradientButton )", // Gradient background
-              borderRadius: "20px", // Button border radius
-              color: "var(--color-white)", // Button text color
-              fontWeight: "bold",
-              textTransform: "none",
-              "&:hover": {
-                background: "var(--gradientButtonHover)", // Reverse gradient on hover
-              },
-            }}
-          >
+          <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
             Restore
           </Button>
 
@@ -224,17 +203,7 @@ const RestoreModal = ({ isOpen, onClose, handleRestore, design }) => {
             fullWidth
             variant="contained"
             onClick={handleClose}
-            sx={{
-              background: "transparent",
-              border: "2px solid transparent",
-              borderRadius: "20px",
-              backgroundImage: "var(--lightGradient), var(--gradientButton)",
-              backgroundOrigin: "border-box",
-              backgroundClip: "padding-box, border-box",
-              fontWeight: "bold",
-              textTransform: "none",
-              color: "var(--color-white)",
-            }}
+            sx={outlinedButtonStyles}
             onMouseOver={(e) =>
               (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
             }
@@ -378,6 +347,9 @@ const selectStylesDisabled = {
       WebkitTextFillColor: "var(--color-white)",
       paddingLeft: 0,
       paddingRight: 0,
+    },
+    "& .MuiSvgIcon-root": {
+      color: "transparent !important",
     },
   },
 };

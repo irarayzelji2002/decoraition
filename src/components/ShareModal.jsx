@@ -18,6 +18,14 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 import EmailInput from "./EmailInput";
 import { Avatar } from "@mui/material";
 import { showToast } from "../functions/utils";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const ShareModal = ({ isOpen, onClose, handleShare, isDesign, object }) => {
   // object is design if isDesign is true, else it is project
@@ -97,36 +105,37 @@ const ShareModal = ({ isOpen, onClose, handleShare, isDesign, object }) => {
         },
       }}
     >
-      <DialogTitle
-        sx={{
-          backgroundColor: "var(--nav-card-modal)",
-          color: "var(--color-white)",
-          display: "flex",
-          alignItems: "center",
-          borderBottom: "1px solid var(--inputBg)",
-          fontWeight: "bold",
-        }}
-      >
+      <DialogTitle sx={dialogTitleStyles}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: "bold",
+            fontSize: "1.15rem",
+            flexGrow: 1,
+            maxWidth: "80%",
+            whiteSpace: "normal",
+          }}
+        >
+          Add Collaborators
+        </Typography>
         <IconButton
           onClick={handleClose}
           sx={{
-            color: "var(--color-white)",
-            position: "absolute",
-            right: 8,
-            top: 8,
+            ...iconButtonStyles,
+            flexShrink: 0,
+            marginLeft: "auto",
           }}
         >
           <CloseRoundedIcon />
         </IconButton>
-        Add Collaborators
       </DialogTitle>
 
       <DialogContent
         sx={{
-          backgroundColor: "var(--nav-card-modal)", // Content background color
-          color: "var(--color-white)", // Text color in the content
+          ...dialogContentStyles,
           width: "auto",
-          padding: "0px",
+          padding: 0,
+          marginTop: 0,
           minHeight: "50px",
           maxHeight: "60vh",
           overflowY: "auto",
@@ -249,40 +258,16 @@ const ShareModal = ({ isOpen, onClose, handleShare, isDesign, object }) => {
         </div>
       </DialogContent>
       <DialogActions
-        sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "0px", padding: "18px" }}
+        sx={{ ...dialogActionsStyles, margin: "0px", marginBottom: 0, padding: "18px" }}
       >
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={onSubmit}
-          sx={{
-            background: "var(--gradientButton)",
-            borderRadius: "20px",
-            color: "var(--color-white)",
-            fontWeight: "bold",
-            textTransform: "none",
-            "&:hover": {
-              background: "var(--gradientButtonHover)",
-            },
-          }}
-        >
+        <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
           Share
         </Button>
         <Button
           fullWidth
           variant="contained"
           onClick={handleClose}
-          sx={{
-            color: "var(--color-white)",
-            background: "transparent",
-            border: "2px solid transparent",
-            borderRadius: "20px",
-            backgroundImage: "var(--lightGradient), var(--gradientButton)",
-            backgroundOrigin: "border-box",
-            backgroundClip: "padding-box, border-box",
-            fontWeight: "bold",
-            textTransform: "none",
-          }}
+          sx={outlinedButtonStyles}
           onMouseOver={(e) =>
             (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
           }

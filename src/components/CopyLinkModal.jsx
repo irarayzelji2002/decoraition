@@ -9,6 +9,14 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const CopyLinkModal = ({ isOpen, onClose }) => {
   const handleClose = () => {
@@ -16,58 +24,36 @@ const CopyLinkModal = ({ isOpen, onClose }) => {
     //resett values
   };
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      sx={{
-        "& .MuiDialog-paper": {
-          backgroundColor: "var(--nav-card-modal)",
-          borderRadius: "20px",
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          backgroundColor: "var(--nav-card-modal)",
-          color: "var(--color-white)",
-          display: "flex",
-          alignItems: "center",
-          borderBottom: "1px solid var(--inputBg)",
-          fontWeight: "bold",
-        }}
-      >
+    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+      <DialogTitle sx={dialogTitleStyles}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: "bold",
+            fontSize: "1.15rem",
+            flexGrow: 1,
+            maxWidth: "80%",
+            whiteSpace: "normal",
+          }}
+        >
+          Link Copied
+        </Typography>
         <IconButton
           onClick={handleClose}
           sx={{
-            color: "var(--color-white)",
-            position: "absolute",
-            right: 8,
-            top: 8,
+            ...iconButtonStyles,
+            flexShrink: 0,
+            marginLeft: "auto",
           }}
         >
           <CloseRoundedIcon />
         </IconButton>
-        Link Copied
       </DialogTitle>
-      <DialogContent sx={{ backgroundColor: "var(--nav-card-modal)", color: "var(--color-white)" }}>
+      <DialogContent sx={dialogContentStyles}>
         <Typography variant="body1">The link has been copied to your clipboard.</Typography>
       </DialogContent>
-      <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={handleClose}
-          sx={{
-            background: "var(--gradientButton)",
-            borderRadius: "20px",
-            color: "var(--color-white)",
-            fontWeight: "bold",
-            textTransform: "none",
-            "&:hover": {
-              background: "var(--gradientButtonHover)",
-            },
-          }}
-        >
+      <DialogActions sx={dialogActionsStyles}>
+        <Button fullWidth variant="contained" onClick={handleClose} sx={outlinedButtonStyles}>
           Close
         </Button>
       </DialogActions>

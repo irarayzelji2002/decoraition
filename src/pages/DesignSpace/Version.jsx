@@ -23,6 +23,14 @@ import { handleRestoreDesignVersion } from "./backend/DesignActions";
 import "../../css/design.css";
 import TwoFrames from "./svg/TwoFrames";
 import FourFrames from "./svg/FourFrames";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "../../components/RenameModal";
 
 const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title }) => {
   const navigate = useNavigate();
@@ -525,44 +533,38 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
           open={openViewModal}
           onClose={() => setOpenViewModal(false)}
           sx={{
+            ...dialogStyles,
             zIndex: "13002",
-            "& .MuiDialog-paper": {
-              backgroundColor: "var(--nav-card-modal)",
-              borderRadius: "20px",
-            },
           }}
         >
-          <DialogTitle
-            sx={{
-              backgroundColor: "var(--nav-card-modal)",
-              color: "var(--color-white)",
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid var(--inputBg)",
-              fontWeight: "bold",
-              width: "80vw",
-            }}
-          >
+          <DialogTitle sx={dialogTitleStyles}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: "bold",
+                fontSize: "1.15rem",
+                flexGrow: 1,
+                maxWidth: "80%",
+                whiteSpace: "normal",
+              }}
+            >
+              {`Version at ${selectedDesignVersionDetails.displayDate}`}
+            </Typography>
             <IconButton
               onClick={() => setOpenViewModal(false)}
               sx={{
-                color: "var(--color-white)",
-                position: "absolute",
-                right: 8,
-                top: 8,
+                ...iconButtonStyles,
+                flexShrink: 0,
+                marginLeft: "auto",
               }}
             >
               <CloseRoundedIcon />
             </IconButton>
-            <Typography variant="inherit">
-              {`Version at ${selectedDesignVersionDetails.displayDate}`}
-            </Typography>
           </DialogTitle>
           <DialogContent
             sx={{
-              backgroundColor: "var(  --nav-card-modal)",
-              color: "var(--color-white)",
-              marginTop: "20px",
+              ...dialogContentStyles,
+              paddingBottom: "20px",
             }}
           >
             <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
@@ -598,73 +600,46 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
           open={openConfirmRestoreModal}
           onClose={() => setOpenConfirmRestoreModal(false)}
           sx={{
+            ...dialogStyles,
             zIndex: "13002",
-            "& .MuiDialog-paper": {
-              backgroundColor: "var(--nav-card-modal)",
-              borderRadius: "20px",
-            },
           }}
         >
-          <DialogTitle
-            sx={{
-              backgroundColor: "var(--nav-card-modal)",
-              color: "var(--color-white)",
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid var(--inputBg)",
-              fontWeight: "bold",
-            }}
-          >
+          <DialogTitle sx={dialogTitleStyles}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: "bold",
+                fontSize: "1.15rem",
+                flexGrow: 1,
+                maxWidth: "80%",
+                whiteSpace: "normal",
+              }}
+            >
+              Confirm Restore
+            </Typography>
             <IconButton
               onClick={() => setOpenConfirmRestoreModal(false)}
               sx={{
-                color: "var(--color-white)",
-                position: "absolute",
-                right: 8,
-                top: 8,
+                ...iconButtonStyles,
+                flexShrink: 0,
+                marginLeft: "auto",
               }}
             >
               <CloseRoundedIcon />
             </IconButton>
-            <Typography variant="inherit">Confirm Restore</Typography>
           </DialogTitle>
-          <DialogContent
-            sx={{
-              backgroundColor: "var(  --nav-card-modal)",
-              color: "var(--color-white)",
-              marginTop: "20px",
-            }}
-          >
+          <DialogContent sx={dialogContentStyles}>
             <Typography variant="body1" sx={{ textAlign: "center", maxWidth: "500px" }}>
               Are you sure you want to restore the design to the version at{" "}
               {selectedDesignVersionDetails.displayDate}?
             </Typography>
           </DialogContent>
-          <DialogActions
-            sx={{
-              backgroundColor: "var(  --nav-card-modal)",
-              margin: "10px",
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: "20px",
-            }}
-          >
+          <DialogActions sx={dialogActionsStyles}>
             {/* Yes Button */}
             <Button
               variant="contained"
               onClick={() => handleRestore(selectedDesignVersionId)}
-              sx={{
-                background: "var(--gradientButton )", // Gradient background
-                borderRadius: "20px", // Button border radius
-                color: "var(--color-white)", // Button text color
-                fontWeight: "bold",
-                textTransform: "none",
-                minWidth: "150px",
-                "&:hover": {
-                  background: "var(--gradientButtonHover)", // Reverse gradient on hover
-                },
-              }}
+              sx={gradientButtonStyles}
             >
               Yes
             </Button>
@@ -673,18 +648,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
             <Button
               variant="contained"
               onClick={() => setOpenConfirmRestoreModal(false)}
-              sx={{
-                background: "transparent",
-                border: "2px solid transparent",
-                borderRadius: "20px",
-                backgroundImage: "var(--lightGradient), var(--gradientButton)",
-                backgroundOrigin: "border-box",
-                backgroundClip: "padding-box, border-box",
-                fontWeight: "bold",
-                textTransform: "none",
-                color: "var(--color-white)",
-                minWidth: "150px",
-              }}
+              sx={outlinedButtonStyles}
               onMouseOver={(e) =>
                 (e.target.style.backgroundImage =
                   "var(--lightGradient), var(--gradientButtonHover)")

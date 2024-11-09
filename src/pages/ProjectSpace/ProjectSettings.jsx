@@ -943,5 +943,8 @@ const selectStylesDisabled = {
       paddingLeft: 0,
       paddingRight: 0,
     },
+    "& .MuiSvgIcon-root": {
+      color: "transparent !important",
+    },
   },
 };

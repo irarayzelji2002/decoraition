@@ -19,6 +19,14 @@ import { useSharedProps } from "../contexts/SharedPropsContext";
 import { showToast } from "../functions/utils";
 import { handleDownload } from "../functions/downloadHelpers";
 import Version from "../pages/DesignSpace/Version";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "./RenameModal";
 
 const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
   // object is a design if isDesign is true else its a project object
@@ -355,46 +363,32 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
         handleSelect={handleSelect}
         title="Select a version to download"
       />
-      <Dialog
-        open={isOpen}
-        onClose={handleClose}
-        sx={{
-          "& .MuiDialog-paper": {
-            backgroundColor: "var(--nav-card-modal)",
-            borderRadius: "20px",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            backgroundColor: "var(--nav-card-modal)",
-            color: "var(--color-white)",
-            display: "flex",
-            alignItems: "center",
-            borderBottom: "1px solid var(--inputBg)",
-            fontWeight: "bold",
-          }}
-        >
+      <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+        <DialogTitle sx={dialogTitleStyles}>
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "1.15rem",
+              flexGrow: 1,
+              maxWidth: "80%",
+              whiteSpace: "normal",
+            }}
+          >
+            Download
+          </Typography>
           <IconButton
             onClick={handleClose}
             sx={{
-              color: "var(--color-white)",
-              position: "absolute",
-              right: 8,
-              top: 8,
+              ...iconButtonStyles,
+              flexShrink: 0,
+              marginLeft: "auto",
             }}
           >
             <CloseRoundedIcon />
           </IconButton>
-          Download
         </DialogTitle>
-        <DialogContent
-          sx={{
-            backgroundColor: "var(--nav-card-modal)",
-            color: "var(--color-white)",
-            marginTop: "20px",
-          }}
-        >
+        <DialogContent sx={dialogContentStyles}>
           {downloadOptions.length > 0 ? (
             <>
               <Typography variant="body1" sx={{ marginBottom: "10px" }}>
@@ -411,7 +405,6 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
                         ? setSelectedDesignCategory(e.target.value)
                         : setSelectedProjectCategory(e.target.value)
                     }
-                    MenuComponent={StyledMenu}
                     MenuProps={{
                       PaperProps: {
                         sx: {
@@ -458,7 +451,6 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
                           const selectedId = e.target.value;
                           handleSelect(selectedId);
                         }}
-                        MenuComponent={StyledMenu}
                         MenuProps={{
                           PaperProps: {
                             sx: {
@@ -523,7 +515,6 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
                             ? setDesignFileType(e.target.value)
                             : setProjectFileType(e.target.value)
                         }
-                        MenuComponent={StyledMenu}
                         MenuProps={{
                           PaperProps: {
                             sx: {
@@ -582,25 +573,11 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
             </div>
           )}
         </DialogContent>
-        <DialogActions sx={{ backgroundColor: "var(--nav-card-modal)", margin: "10px" }}>
+        <DialogActions sx={dialogActionsStyles}>
           {downloadOptions.length > 0 && (
             <>
               {/* Download Button */}
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={onSubmit}
-                sx={{
-                  background: "var(--gradientButton)", // Gradient background
-                  borderRadius: "20px", // Button border radius
-                  color: "var(--color-white)", // Button text color
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  "&:hover": {
-                    background: "var(--gradientButtonHover)", // Reverse gradient on hover
-                  },
-                }}
-              >
+              <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
                 Download
               </Button>
             </>
@@ -610,16 +587,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
             fullWidth
             variant="contained"
             onClick={handleClose}
-            sx={{
-              color: "var(--color-white)",
-              border: "2px solid transparent",
-              borderRadius: "20px",
-              backgroundImage: "var(--lightGradient), var(--gradientButton)",
-              backgroundOrigin: "border-box",
-              backgroundClip: "padding-box, border-box",
-              fontWeight: "bold",
-              textTransform: "none",
-            }}
+            sx={outlinedButtonStyles}
             onMouseOver={(e) =>
               (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
             }
@@ -763,6 +731,9 @@ const selectStylesDisabled = {
       WebkitTextFillColor: "var(--color-white)",
       paddingLeft: 0,
       paddingRight: 0,
+    },
+    "& .MuiSvgIcon-root": {
+      color: "transparent !important",
     },
   },
 };

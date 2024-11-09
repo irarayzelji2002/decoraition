@@ -17,16 +17,17 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
   return (
     <Drawer
       anchor="left"
-      open={isNotifOpen}
+      open={Boolean(isNotifOpen)}
       onClose={onClose}
       sx={{
         zIndex: "13001",
         "& .MuiDrawer-paper": {
-          width: { xs: "83%", sm: "38%" },
+          width: { xs: "90%", sm: "50%", md: "35%", lg: "25%" },
           minWidth: "300px",
           backgroundColor: darkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
           color: darkMode ? "white" : "black",
-          padding: "16px",
+          padding: "20px 0px 20px 0px",
+          height: "calc(100% - 40px)",
           display: "flex",
           flexDirection: "column",
         },

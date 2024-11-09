@@ -23,7 +23,7 @@ import {
   Avatar,
   Divider,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Button,
@@ -36,7 +36,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import NotifTab from "./NotifTab";
 import { auth } from "../../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { ArrowBackIos } from "@mui/icons-material";
+import { ArrowBackIosRounded as ArrowBackIosRoundedIcon } from "@mui/icons-material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LinkIcon from "@mui/icons-material/Link";
@@ -168,11 +168,12 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
       sx={{
         zIndex: "13001",
         "& .MuiDrawer-paper": {
-          width: { xs: "80%", sm: "25%" },
+          width: { xs: "90%", sm: "50%", md: "35%", lg: "25%" },
           minWidth: "300px",
           backgroundColor: darkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
           color: darkMode ? "white" : "black",
-          padding: "20px",
+          padding: "20px 0px 20px 0px",
+          height: "calc(100% - 40px)",
           display: "flex",
           flexDirection: "column",
         },
@@ -181,38 +182,32 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
         },
       }}
     >
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            marginBottom: "20px",
+            marginBottom: "10px",
             spaceBetween: "space-between",
           }}
         >
-          <ArrowBackIos onClick={onClose} />
-          <h2
-            className="navName"
-            style={{
-              fontSize: "1.5em",
-              marginTop: "-16px",
-              width: "auto",
+          <IconButton
+            sx={{
+              ...iconButtonStyles,
+              marginLeft: "5px",
             }}
           >
-            DecorAItion
-          </h2>
+            <ArrowBackIosRoundedIcon onClick={onClose} />
+          </IconButton>
+          <h2 className="navName drawer">DecorAItion</h2>
           <IconButton
-            sx={{ color: "white", marginLeft: "auto" }}
+            sx={{ ...iconButtonStyles, marginLeft: "auto" }}
             onClick={() => toggleDarkMode(user, userDoc?.id, darkMode, setDarkMode)}
           >
-            {darkMode ? (
-              <DarkModeIcon sx={{ color: "var(--color-white)" }} />
-            ) : (
-              <LightModeIcon sx={{ color: "var(--color-black)" }} />
-            )}
+            {darkMode ? <DarkModeIcon /> : <LightModeIcon />}
           </IconButton>
-          <IconButton onClick={handleNotifClick} sx={{ color: "white" }}>
-            <NotificationsIcon sx={{ color: "var(--color-white)" }} />
+          <IconButton onClick={handleNotifClick} sx={{ ...iconButtonStyles, marginRight: "15px" }}>
+            <NotificationsIcon />
           </IconButton>
           <div>
             <NotifTab isNotifOpen={isNotifOpen} onClose={handleNotifClose} />
@@ -230,17 +225,17 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
             justifyContent: "center",
             background: "var(--gradientButton)",
             borderRadius: "50%",
-            padding: "3px",
-            marginBottom: "10px",
+            padding: "4px",
           }}
         >
           <Avatar
             sx={{
-              width: 56,
-              height: 56,
+              width: 54,
+              height: 54,
               borderRadius: "50%",
-              border: "3px solid transparent",
-              boxShadow: "0 0 0 3px var(--gradientButton)",
+              border: "4px solid transparent",
+              boxShadow: "0 0 0 4px var(--gradientButton)",
+              fontSize: "1.5rem",
               "& .MuiAvatar-img": {
                 borderRadius: "50%",
               },
@@ -250,40 +245,51 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
             children={stringAvatarInitials(userDoc?.username)}
           />
         </Box>
-        <div>
-          <Typography variant="body1" style={{ fontWeight: "bold" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            flexGrow: 1,
+            margin: "-6px 0px 0px 5px",
+          }}
+        >
+          <Typography variant="body1" style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+            {`${userDoc?.firstName || ""} ${userDoc?.lastName || ""}`.toUpperCase() || "GUEST"}
+          </Typography>
+          <Typography variant="caption" sx={{ fontSize: "0.8rem", fontWeight: "300" }}>
             {userDoc?.username || "Guest"}
           </Typography>
-          <Typography variant="caption">{userDoc?.email || "No email"}</Typography>
         </div>
       </div>
       <List>
-        <ListItem onClick={() => navigate("/homepage")} sx={{ cursor: "pointer" }}>
-          <ListItemIcon>
+        <ListItemButton onClick={() => navigate("/homepage")} sx={listItemStyles}>
+          <ListItemIcon sx={listItemIconStyles}>
             <Home />
           </ListItemIcon>
           <ListItemText primary="Home" />
-        </ListItem>
+        </ListItemButton>
 
-        <ListItem onClick={() => navigate("/seeAllDesigns")} sx={{ cursor: "pointer" }}>
-          <ListItemIcon>
+        <ListItemButton onClick={() => navigate("/seeAllDesigns")} sx={listItemStyles}>
+          <ListItemIcon sx={listItemIconStyles}>
             <DesignIcn />
           </ListItemIcon>
           <ListItemText primary="Design" />
-        </ListItem>
-        <ListItem onClick={() => navigate("/seeAllProjects")} sx={{ cursor: "pointer" }}>
-          <ListItemIcon>
+        </ListItemButton>
+        <ListItemButton onClick={() => navigate("/seeAllProjects")} sx={listItemStyles}>
+          <ListItemIcon sx={listItemIconStyles}>
             <ProjectIcn />
           </ListItemIcon>
           <ListItemText primary="Projects" />
-        </ListItem>
-        <Divider sx={{ backgroundColor: "gray", my: 2 }} />
+        </ListItemButton>
+        <Divider sx={{ backgroundColor: "var(--inputBg)", my: 2 }} />
         <Typography
           variant="body2"
           sx={{
             paddingLeft: 2,
-            marginBottom: 1,
+            margin: "23px 0px 8px 0px",
             fontWeight: "bold",
+            fontSize: "0.9em",
             opacity: 0.8,
           }}
         >
@@ -292,7 +298,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
 
         {userDesignsLatest.length > 0 ? (
           userDesignsLatest.slice(0, 3).map((design, index) => (
-            <ListItem
+            <ListItemButton
               key={design.id}
               button
               onClick={() =>
@@ -300,6 +306,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
                   state: { designId: design.id },
                 })
               }
+              sx={listItemStyles}
             >
               <div className="miniThumbnail">
                 <img src={getDesignImage(design.id)} alt="" />
@@ -308,41 +315,44 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               <IconButton
                 edge="end"
                 aria-label="more"
-                onClick={() => handleOptionsClick(design.id)}
-                sx={{ color: "var(--color-white)" }}
+                onClick={(e) => handleOptionsClick(design.id, e)}
+                sx={iconButtonStyles}
               >
-                <MoreHorizIcon sx={{ color: darkMode ? "white" : "black" }} />
+                <MoreHorizIcon />
               </IconButton>
               {optionsState.showOptions && optionsState.selectedId === clickedId && (
-                <HomepageOptions
-                  isDesign={true}
-                  isTable={true}
-                  id={design.id}
-                  onOpen={() =>
-                    navigate(`/design/${design.id}`, {
-                      state: { designId: design.id },
-                    })
-                  }
-                  optionsState={optionsState}
-                  setOptionsState={setOptionsState}
-                  object={design}
-                />
+                <div style={{ marginTop: "39px" }}>
+                  <HomepageOptions
+                    isDesign={true}
+                    isTable={true}
+                    id={design.id}
+                    onOpen={() =>
+                      navigate(`/design/${design.id}`, {
+                        state: { designId: design.id },
+                      })
+                    }
+                    optionsState={optionsState}
+                    setOptionsState={setOptionsState}
+                    object={design}
+                  />
+                </div>
               )}
-            </ListItem>
+            </ListItemButton>
           ))
         ) : (
-          <ListItem>
+          <ListItemButton>
             <ListItemText primary="No recent designs" />
-          </ListItem>
+          </ListItemButton>
         )}
 
-        <Divider sx={{ backgroundColor: "gray", my: 2 }} />
+        <Divider sx={{ backgroundColor: "var(--inputBg)", my: 2 }} />
         <Typography
           variant="body2"
           sx={{
             paddingLeft: 2,
-            marginBottom: 1,
+            margin: "23px 0px 8px 0px",
             fontWeight: "bold",
+            fontSize: "0.9em",
             opacity: 0.8,
           }}
         >
@@ -351,7 +361,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
 
         {userProjectsLatest.length > 0 ? (
           userProjectsLatest.slice(0, 3).map((project, index) => (
-            <ListItem
+            <ListItemButton
               key={project.id}
               button
               onClick={() =>
@@ -359,6 +369,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
                   state: { projectId: project.id },
                 })
               }
+              sx={listItemStyles}
             >
               <div className="miniThumbnail">
                 <img src={getProjectImage(project.id)} alt="" />
@@ -367,69 +378,89 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               <IconButton
                 edge="end"
                 aria-label="more"
-                onClick={() => handleOptionsClick(project.id)}
+                sx={iconButtonStyles}
+                onClick={(e) => handleOptionsClick(project.id, e)}
               >
-                <MoreHorizIcon sx={{ color: darkMode ? "white" : "black" }} />
+                <MoreHorizIcon />
               </IconButton>
               {optionsState.showOptions && optionsState.selectedId === clickedId && (
-                <HomepageOptions
-                  isDesign={false}
-                  isTable={true}
-                  id={project.id}
-                  onOpen={() =>
-                    navigate(`/project/${project.id}`, {
-                      state: { projectId: project.id },
-                    })
-                  }
-                  optionsState={optionsState}
-                  setOptionsState={setOptionsState}
-                  object={project}
-                />
+                <div style={{ marginTop: "39px" }}>
+                  <HomepageOptions
+                    isDesign={false}
+                    isTable={true}
+                    id={project.id}
+                    onOpen={() =>
+                      navigate(`/project/${project.id}`, {
+                        state: { projectId: project.id },
+                      })
+                    }
+                    optionsState={optionsState}
+                    setOptionsState={setOptionsState}
+                    object={project}
+                  />
+                </div>
               )}
-            </ListItem>
+            </ListItemButton>
           ))
         ) : (
-          <ListItem>
+          <ListItemButton>
             <ListItemText primary="No recent designs" />
-          </ListItem>
+          </ListItemButton>
         )}
 
-        <Divider sx={{ backgroundColor: "gray", my: 2 }} />
+        <Divider sx={{ backgroundColor: "var(--inputBg)", my: 2 }} />
 
         {/* Settings Menu Item */}
         {/* path to change? */}
-        <ListItem onClick={() => navigate("/faq")} style={{ cursor: "pointer" }}>
-          <ListItemIcon>
+        <ListItemButton onClick={() => navigate("/faq")} sx={listItemStyles}>
+          <ListItemIcon sx={listItemIconStyles}>
             <FAQ />
           </ListItemIcon>
           <ListItemText primary="FAQ" />
-        </ListItem>
-        <ListItem onClick={() => navigate("/settings")} style={{ cursor: "pointer" }}>
-          <ListItemIcon>
+        </ListItemButton>
+        <ListItemButton onClick={() => navigate("/settings")} sx={listItemStyles}>
+          <ListItemIcon sx={listItemIconStyles}>
             <SettingsIcn />
           </ListItemIcon>
           <ListItemText primary="Settings" />
-        </ListItem>
-        <ListItem onClick={() => handleLogout(navigate)} style={{ cursor: "pointer" }}>
-          <ListItemIcon>
+        </ListItemButton>
+        <ListItemButton onClick={() => handleLogout(navigate)} sx={listItemStyles}>
+          <ListItemIcon sx={listItemIconStyles}>
             <LogoutIcn />
           </ListItemIcon>
           <ListItemText primary="Sign Out" />
-        </ListItem>
+        </ListItemButton>
       </List>
-
-      <Button
-        onClick={onClose}
-        sx={{
-          color: darkMode ? "white" : "black",
-          mt: 2,
-          marginBottom: "36px",
-        }}
-      >
-        Close
-      </Button>
     </Drawer>
   );
 };
 
 export default DrawerComponent;
+
+export const iconButtonStyles = {
+  color: "var(--color-white)",
+  borderRadius: "50%",
+  "&:hover": {
+    backgroundColor: "var(--iconButtonHover) !important",
+  },
+  "& .MuiTouchRipple-root span": {
+    backgroundColor: "var(--iconButtonActive) !important",
+  },
+};
+
+const listItemStyles = {
+  cursor: "pointer",
+  padding: "6.5px 20px",
+  "&:hover": {
+    backgroundColor: "var(--iconButtonHover)",
+  },
+  "& .MuiTouchRipple-root span": {
+    backgroundColor: "var(--iconButtonActive)",
+  },
+};
+
+const listItemIconStyles = {
+  minWidth: "0px",
+  marginRight: "20px",
+  marginLeft: "5px",
+};

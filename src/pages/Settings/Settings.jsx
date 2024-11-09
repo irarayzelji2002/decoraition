@@ -49,6 +49,14 @@ import {
   Link as LinkIcon,
 } from "@mui/icons-material";
 import Link from "@mui/material/Link";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { gradientButtonStyles, outlinedButtonStyles } from "../DesignSpace/PromptBar";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "../../components/RenameModal";
 
 import { GoogleIcon, FacebookIconWhite } from "../../components/CustomIcons";
 import Notifications from "./Notifications";
@@ -388,6 +396,22 @@ function Settings() {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Image validation
+      let message = "";
+      const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+      if (!acceptedTypes.includes(file.type)) {
+        message = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
+        showToast("error", message);
+      } else {
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+          message = "Image size must be less than 5MB";
+          showToast("error", message);
+        }
+      }
+
+      if (message !== "") return;
+
       setSelectedFile(file); // Set the selected file
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -988,42 +1012,33 @@ function Settings() {
         <Dialog
           open={isLinkAccountModalOpen}
           onClose={() => setIsLinkAccountModalOpen(false)}
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: "var(--nav-card-modal)",
-              borderRadius: "20px",
-            },
-          }}
+          sx={dialogStyles}
         >
-          <DialogTitle
-            sx={{
-              backgroundColor: "var(--nav-card-modal)",
-              color: "var(--color-white)",
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid var(--inputBg)",
-              fontWeight: "bold",
-            }}
-          >
+          <DialogTitle sx={dialogTitleStyles}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: "bold",
+                fontSize: "1.15rem",
+                flexGrow: 1,
+                maxWidth: "80%",
+                whiteSpace: "normal",
+              }}
+            >
+              Link account
+            </Typography>
             <IconButton
               onClick={() => setIsLinkAccountModalOpen(false)}
               sx={{
-                color: "var(--color-white)",
-                position: "absolute",
-                right: 8,
-                top: 8,
+                ...iconButtonStyles,
+                flexShrink: 0,
+                marginLeft: "auto",
               }}
             >
               <CloseRoundedIcon />
             </IconButton>
-            Link account
           </DialogTitle>
-          <DialogContent
-            sx={{
-              backgroundColor: "var(  --nav-card-modal)",
-              color: "var(--color-white)",
-            }}
-          >
+          <DialogContent sx={dialogContentStyles}>
             <Button
               variant="contained"
               className="change-photo-btn"
@@ -1089,42 +1104,33 @@ function Settings() {
         <Dialog
           open={isUnlinkAccountModalOpen}
           onClose={() => setIsUnlinkAccountModalOpen(false)}
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: "var(--nav-card-modal)",
-              borderRadius: "20px",
-            },
-          }}
+          sx={dialogStyles}
         >
-          <DialogTitle
-            sx={{
-              backgroundColor: "var(--nav-card-modal)",
-              color: "var(--color-white)",
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid var(--inputBg)",
-              fontWeight: "bold",
-            }}
-          >
+          <DialogTitle sx={dialogTitleStyles}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: "bold",
+                fontSize: "1.15rem",
+                flexGrow: 1,
+                maxWidth: "80%",
+                whiteSpace: "normal",
+              }}
+            >
+              Unlink Connected Account
+            </Typography>
             <IconButton
               onClick={() => setIsUnlinkAccountModalOpen(false)}
               sx={{
-                color: "var(--color-white)",
-                position: "absolute",
-                right: 8,
-                top: 8,
+                ...iconButtonStyles,
+                flexShrink: 0,
+                marginLeft: "auto",
               }}
             >
               <CloseRoundedIcon />
             </IconButton>
-            Unlink Connected Account
           </DialogTitle>
-          <DialogContent
-            sx={{
-              backgroundColor: "var(  --nav-card-modal)",
-              color: "var(--color-white)",
-            }}
-          >
+          <DialogContent sx={dialogContentStyles}>
             <Typography variant="body1">Enter your new password to unlink your account.</Typography>
             <div>Enter new password</div>
             <label htmlFor="unlinkPassword">Password:</label>
@@ -1148,22 +1154,12 @@ function Settings() {
             <span style={{ color: "#ff0000" }}>{getErrMessage("confirmPassword", unlinkErr)}</span>
             <br />
           </DialogContent>
-          <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
+          <DialogActions sx={dialogActionsStyles}>
             <Button
               variant="contained"
               className="change-photo-btn"
               onClick={() => handleUnlink(true, connectedAccount === 0 ? "Google" : "Facebook")}
-              sx={{
-                marginBottom: "10px",
-                borderRadius: "20px",
-                textTransform: "none",
-                fontWeight: "bold",
-                width: "150px",
-                display: "flex",
-                "&:hover": {
-                  background: "var(--gradientButtonHover)",
-                },
-              }}
+              sx={gradientButtonStyles}
             >
               Unlink {connectedAccount === 0 ? "Google" : "Facebook"} Account
             </Button>
@@ -1172,17 +1168,7 @@ function Settings() {
               color="primary"
               className="save-photo-btn"
               onClick={() => setIsUnlinkAccountModalOpen(false)}
-              sx={{
-                background: "transparent",
-                border: "2px solid transparent",
-                borderRadius: "20px",
-                backgroundImage: "var(--lightGradient), var(--gradientButton)",
-                backgroundOrigin: "border-box",
-                backgroundClip: "padding-box, border-box",
-                fontWeight: "bold",
-                textTransform: "none",
-                width: "150px",
-              }}
+              sx={outlinedButtonStyles}
             >
               Cancel
             </Button>
@@ -1193,42 +1179,33 @@ function Settings() {
         <Dialog
           open={isChangeProfileModalOpen}
           onClose={handleChangeProfileModalClose}
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: "var(--nav-card-modal)",
-              borderRadius: "20px",
-            },
-          }}
+          sx={dialogStyles}
         >
-          <DialogTitle
-            sx={{
-              backgroundColor: "var(--nav-card-modal)",
-              color: "var(--color-white)",
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid var(--inputBg)",
-              fontWeight: "bold",
-            }}
-          >
+          <DialogTitle sx={dialogTitleStyles}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: "bold",
+                fontSize: "1.15rem",
+                flexGrow: 1,
+                maxWidth: "80%",
+                whiteSpace: "normal",
+              }}
+            >
+              Change Profile
+            </Typography>
             <IconButton
               onClick={handleChangeProfileModalClose}
               sx={{
-                color: "var(--color-white)",
-                position: "absolute",
-                right: 8,
-                top: 8,
+                ...iconButtonStyles,
+                flexShrink: 0,
+                marginLeft: "auto",
               }}
             >
               <CloseRoundedIcon />
             </IconButton>
-            Change Profile
           </DialogTitle>
-          <DialogContent
-            sx={{
-              backgroundColor: "var(  --nav-card-modal)",
-              color: "var(--color-white)",
-            }}
-          >
+          <DialogContent sx={dialogContentStyles}>
             <Box
               sx={{
                 width: 155,
@@ -1265,22 +1242,21 @@ function Settings() {
               onChange={handleFileChange}
             />
           </DialogContent>
-          <DialogActions sx={{ backgroundColor: "var(  --nav-card-modal)", margin: "10px" }}>
+          <DialogActions
+            sx={{
+              ...dialogActionsStyles,
+              paddingBottom: "5px",
+              flexDirection: "column",
+              width: "70%",
+              margin: "auto",
+              marginBottom: "20px",
+            }}
+          >
             <Button
               variant="contained"
               className="change-photo-btn"
               onClick={handleUploadPhotoClick}
-              sx={{
-                marginBottom: "10px",
-                borderRadius: "20px",
-                textTransform: "none",
-                fontWeight: "bold",
-                width: "150px",
-                display: "flex",
-                "&:hover": {
-                  background: "var(--gradientButtonHover)",
-                },
-              }}
+              sx={gradientButtonStyles}
             >
               {profilePic ? "Change photo" : "Upload photo"}
             </Button>
@@ -1289,18 +1265,14 @@ function Settings() {
               color="primary"
               className="save-photo-btn"
               onClick={handleSavePhoto}
-              sx={{
-                marginBottom: "10px",
-                background: "transparent",
-                border: "2px solid transparent",
-                borderRadius: "20px",
-                backgroundImage: "var(--lightGradient), var(--gradientButton)",
-                backgroundOrigin: "border-box",
-                backgroundClip: "padding-box, border-box",
-                fontWeight: "bold",
-                textTransform: "none",
-                width: "150px",
-              }}
+              sx={outlinedButtonStyles}
+              onMouseOver={(e) =>
+                (e.target.style.backgroundImage =
+                  "var(--lightGradient), var(--gradientButtonHover)")
+              }
+              onMouseOut={(e) =>
+                (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+              }
             >
               Save photo
             </Button>
@@ -1327,76 +1299,56 @@ function Settings() {
         <Dialog
           open={isRemoveProfileModalOpen}
           onClose={() => setIsRemoveProfileModalOpen(false)}
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: "var(--nav-card-modal)",
-              borderRadius: "20px",
-            },
-          }}
+          sx={dialogStyles}
         >
-          <DialogTitle
-            sx={{
-              backgroundColor: "var(--nav-card-modal)",
-              color: "var(--color-white)",
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid var(--inputBg)",
-              fontWeight: "bold",
-            }}
-          >
+          <DialogTitle sx={dialogTitleStyles}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: "bold",
+                fontSize: "1.15rem",
+                flexGrow: 1,
+                maxWidth: "80%",
+                whiteSpace: "normal",
+              }}
+            >
+              Remove profile picture
+            </Typography>
             <IconButton
               onClick={() => setIsRemoveProfileModalOpen(false)}
               sx={{
-                color: "var(--color-white)",
-                position: "absolute",
-                right: 8,
-                top: 8,
+                ...iconButtonStyles,
+                flexShrink: 0,
+                marginLeft: "auto",
               }}
             >
               <CloseRoundedIcon />
             </IconButton>
-            Remove profile picture
           </DialogTitle>
-          <Typography variant="body1" sx={{ color: "var(--color-white)" }}>
-            Are you sure you want to remove your profile picture?
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            className="save-photo-btn"
-            onClick={() => setIsRemoveProfileModalOpen(false)}
-            sx={{
-              background: "transparent",
-              border: "2px solid transparent",
-              borderRadius: "20px",
-              backgroundImage: "var(--lightGradient), var(--gradientButton)",
-              backgroundOrigin: "border-box",
-              backgroundClip: "padding-box, border-box",
-              fontWeight: "bold",
-              textTransform: "none",
-              width: "150px",
-            }}
-          >
-            No
-          </Button>
-          <Button
-            variant="contained"
-            className="change-photo-btn"
-            onClick={handleRemovePhoto}
-            sx={{
-              marginBottom: "10px",
-              borderRadius: "20px",
-              textTransform: "none",
-              fontWeight: "bold",
-              width: "150px",
-              display: "flex",
-              "&:hover": {
-                background: "var(--gradientButtonHover)",
-              },
-            }}
-          >
-            Yes
-          </Button>
+          <DialogContent sx={dialogContentStyles}>
+            <Typography variant="body1" sx={{ color: "var(--color-white)" }}>
+              Are you sure you want to remove your profile picture?
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={dialogActionsStyles}>
+            <Button
+              variant="contained"
+              className="change-photo-btn"
+              onClick={handleRemovePhoto}
+              sx={gradientButtonStyles}
+            >
+              Yes
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              className="save-photo-btn"
+              onClick={() => setIsRemoveProfileModalOpen(false)}
+              sx={outlinedButtonStyles}
+            >
+              No
+            </Button>
+          </DialogActions>
         </Dialog>
       )}
     </>

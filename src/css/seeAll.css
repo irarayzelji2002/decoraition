@@ -209,7 +209,7 @@
   color: var(--color-white) !important;
   margin-left: 12px;
   margin-top: -4px;
-  font-size: 12px !important;
+  font-size: var(--font-size-tiny) !important;
 }
 
 @media (max-width: 600px) {

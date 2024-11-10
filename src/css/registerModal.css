@@ -76,7 +76,7 @@ h5 {
   display: flex;
   align-items: center;
   color: #fff; /* Adjust color as needed */
-  font-size: 16px;
+  font-size: var(--font-size-h6) !important;
 }
 
 .terms-checkbox input[type="checkbox"] {
@@ -87,7 +87,7 @@ h5 {
 }
 
 .terms-checkbox label {
-  font-size: 16px;
+  font-size: var(--font-size-h6) !important;
   color: #d3d3d3;
 }
 

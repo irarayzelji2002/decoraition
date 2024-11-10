@@ -1543,3 +1543,43 @@ textarea {
     top: -50px;
   }
 }
+
+/* Select Mask */
+.select-mask-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  height: 100%;
+}
+
+.controls-section {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.canvas-stack {
+  aspect-ratio: 1/1;
+  width: 100%;
+  max-width: 80vh;
+  margin: 0 auto;
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .select-mask-container {
+    padding: 10px;
+  }
+
+  .controls-section {
+    justify-content: center;
+  }
+}

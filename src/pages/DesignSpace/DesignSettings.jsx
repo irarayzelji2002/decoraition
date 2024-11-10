@@ -765,6 +765,8 @@ export const selectStylesDisabled = {
 
 // Styles for TextField
 export const textFieldStyles = {
+  input: { color: "var(--color-white)" },
+  backgroundColor: "var(  --nav-card-modal)",
   "& .MuiOutlinedInput-notchedOutline": {
     borderWidth: 2, // border thickness
   },

@@ -230,6 +230,15 @@ tr:hover td {
   width: 100%;
   max-height: 200px;
   border-radius: 8px;
+  border: 2px solid transparent !important;
+}
+.pic:hover {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
+  background: transparent !important;
+  border: 2px solid transparent !important;
+  background-image: var(--lightGradient), var(--gradientButton) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
 }
 .options {
   height: 34px;

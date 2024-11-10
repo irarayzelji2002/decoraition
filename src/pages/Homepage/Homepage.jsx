@@ -36,6 +36,7 @@ import Loading from "../../components/Loading.jsx";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage.jsx";
 import { set } from "lodash";
 import { handleLogout } from "./backend/HomepageFunctions.jsx";
+import { HorizontalIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
 
 function Homepage() {
   const navigate = useNavigate();
@@ -256,21 +257,21 @@ function Homepage() {
               <h2>Recent Designs</h2>
               <div style={{ marginLeft: "auto", display: "inline-flex" }}>
                 {filteredDesigns.length > 0 && (
-                  <div>
-                    <button
-                      onClick={() =>
-                        handleViewChange(
-                          user,
-                          userDoc.id,
-                          userDoc.layoutSettings,
-                          "designsListHome",
-                          setViewForDesigns
-                        )
-                      }
-                    >
-                      {viewForDesigns === 0 ? "Tiled View" : "List View"}
-                    </button>
-                  </div>
+                  <Button
+                    className="gradient-from-none"
+                    onClick={() => {
+                      setViewForDesigns(viewForDesigns === 0 ? 1 : 0); // Immediately update the state
+                      handleViewChange(
+                        user,
+                        userDoc.id,
+                        userDoc.layoutSettings,
+                        "designsListHome",
+                        setViewForDesigns
+                      );
+                    }}
+                  >
+                    {viewForDesigns === 0 ? <ListIcon /> : <HorizontalIcon />}
+                  </Button>
                 )}
                 <Link to="/seeAllDesigns" className="seeAll">
                   See All
@@ -355,21 +356,21 @@ function Homepage() {
               <h2>Recent Projects</h2>
               <div style={{ marginLeft: "auto", display: "inline-flex" }}>
                 {filteredProjects.length > 0 && (
-                  <div>
-                    <button
-                      onClick={() =>
-                        handleViewChange(
-                          user,
-                          userDoc.id,
-                          userDoc.layoutSettings,
-                          "projectsListHome",
-                          setViewForProjects
-                        )
-                      }
-                    >
-                      {viewForProjects === 0 ? "Tiled View" : "List View"}
-                    </button>
-                  </div>
+                  <Button
+                    className="gradient-from-none"
+                    onClick={() => {
+                      setViewForProjects(viewForProjects === 0 ? 1 : 0); // Immediately update the state
+                      handleViewChange(
+                        user,
+                        userDoc.id,
+                        userDoc.layoutSettings,
+                        "projectsListHome",
+                        setViewForProjects
+                      );
+                    }}
+                  >
+                    {viewForProjects === 0 ? <ListIcon /> : <HorizontalIcon />}
+                  </Button>
                 )}
                 <Link to="/seeAllProjects" className="seeAll">
                   See All

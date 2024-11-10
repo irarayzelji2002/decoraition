@@ -169,7 +169,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
         zIndex: "13001",
         "& .MuiDrawer-paper": {
           width: { xs: "90%", sm: "50%", md: "35%", lg: "25%" },
-          minWidth: "300px",
+          minWidth: "400px",
           backgroundColor: darkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
           color: darkMode ? "white" : "black",
           padding: "20px 0px 20px 0px",

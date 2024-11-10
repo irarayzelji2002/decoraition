@@ -204,7 +204,6 @@ function Project() {
                 className="SubtitlePrice"
                 style={{
                   backgroundColor: "transparent",
-                  fontSize: "1.5rem",
                 }}
               >
                 Designs
@@ -313,5 +312,5 @@ function Project() {
     </>
   );
 }
-
+//
 export default Project;

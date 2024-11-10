@@ -202,7 +202,7 @@ const InputElement = styled("input")(
   ({ theme }) => `
   width: 40px;
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--font-size-small);
   font-weight: 400;
   line-height: 1.5;
   padding: 8px 0px;

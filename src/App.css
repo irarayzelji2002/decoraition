@@ -244,6 +244,56 @@ select:-webkit-autofill {
   );
   --yellow: #fec269;
   --optional: #88888b;
+
+  --font-size-h1: 2.5em;
+  --font-size-h2: 2em;
+  --font-size-h3: 1.75em;
+  --font-size-h4: 1.5em;
+  --font-size-h5: 1.25em;
+  --font-size-h6: 1em;
+
+  /* random font size h7-h15*/
+  --font-size-h7: 1.125em;
+  --font-size-h8: 3.125em;
+  --font-size-h9: 2.25em;
+  --font-size-h10: 1.8em;
+  --font-size-h11: 2.75em;
+  --font-size-h12: 3.5em;
+  --font-size-h13: 3em;
+  --font-size-h14: 4em;
+  --font-size-h15: 10em;
+
+  --font-size-body: 1em;
+  --font-size-small: 0.875em;
+  --font-size-tiny: 0.75em;
+
+  @media (max-width: 720px) {
+    --font-size-h1: 1.65em;
+    --font-size-h2: 1.4em;
+    --font-size-h3: 1.275em;
+    --font-size-h4: 1.15em;
+    --font-size-h5: 1.025em;
+    --font-size-h6: 0.9em;
+
+    /* new font size h7-h15*/
+    --font-size-h7: 1em;
+    --font-size-h8: 2.5em;
+    --font-size-h9: 2em;
+    --font-size-h10: 1.6em;
+    --font-size-h11: 2.25em;
+    --font-size-h12: 2.75em;
+    --font-size-h13: 2.4em;
+    --font-size-h14: 3em;
+    --font-size-h15: 5em;
+
+    --font-size-body: 0.875em;
+    --font-size-small: 0.75em;
+    --font-size-tiny: 0.625em;
+  }
+
+  @media (max-width: 480px) {
+    --font-size: 12px;
+  }
 }
 
 .light-mode {

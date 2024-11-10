@@ -5,7 +5,7 @@ html,
   width: 100vw;
 }
 .h1-register {
-  font-size: 3.125em;
+  font-size: var(--font-size-h8);
   background: var(--gradientFont);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -14,7 +14,7 @@ html,
 }
 
 .h1-otp {
-  font-size: 3.125em;
+  font-size: var(--font-size-h8);
   background: var(--gradientFont);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

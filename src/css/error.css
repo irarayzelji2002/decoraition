@@ -10,7 +10,7 @@
   color: white;
 }
 .error-title {
-  font-size: 10rem;
+  font-size: var(--font-size-h15);
   background-image: var(--gradientFont);
   background-clip: text;
   -webkit-background-clip: text;
@@ -19,7 +19,7 @@
   letter-spacing: -1px;
 }
 .error-message {
-  font-size: 2rem;
+  font-size: var(--font-size-h2);
   background-image: var(--gradientFont);
   background-clip: text;
   -webkit-background-clip: text;

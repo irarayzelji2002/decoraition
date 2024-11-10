@@ -142,12 +142,12 @@
 
 .icon-container svg {
   color: white;
-  font-size: 1em;
+  font-size: var(--font-size-h6);
 }
 
 .svg-icon {
   color: var(--gradientButton);
-  font-size: 1.5em;
+  font-size: var(--font-size-h4);
   transition: color 0.3s ease;
 }
 

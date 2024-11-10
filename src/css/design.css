@@ -91,7 +91,7 @@
 
 .headTitleInput {
   background-color: transparent !important;
-  font-size: 1.5em !important;
+  font-size: var(--font-size-h4) !important;
   font-weight: bold !important;
   font-family: "Inter", sans-serif !important;
   color: var(--color-white) !important;
@@ -706,7 +706,7 @@ textarea {
 
 /* Icons inside small circular buttons */
 .icon {
-  font-size: 1.875em;
+  font-size: var(--font-size-h10) !important;
 }
 
 /* Text to the left of the circular buttons */

@@ -1,6 +1,6 @@
 .navName {
   font-family: "Open Sans", sans-serif !important;
-  font-size: 3.6em;
+  font-size: var(--font-size-h12) !important;
   background: var(--gradientFont);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -9,7 +9,7 @@
   letter-spacing: -1px;
 }
 .navName.drawer {
-  font-size: 1.8em;
+  font-size: var(--font-size-h10) !important;
   margin: -2px 10px 0px 10px;
   width: auto;
 }
@@ -391,7 +391,7 @@ tr:hover td {
   background: var(--nav-card-modal);
   color: var(--color-white);
   border: none;
-  font-size: 16px;
+  font-size: var(--font-size-h6) !important;
   text-align: left;
   cursor: pointer;
   display: flex;
@@ -403,7 +403,7 @@ tr:hover td {
 .faq-answer {
   display: none;
   padding: 15px;
-  font-size: 14px;
+  font-size: var(--font-size-small) !important;
 }
 
 .arrow {
@@ -450,6 +450,6 @@ tr:hover td {
 }
 @media only screen and (max-width: 366px) {
   .navName.drawer {
-    font-size: 1.6em;
+    font-size: var(--font-size-h4) !important;
   }
 }

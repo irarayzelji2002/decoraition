@@ -25,7 +25,7 @@
   background-color: var(--brightFont);
   cursor: pointer;
   font-weight: bold;
-  font-size: 28px;
+  font-size: var(--font-size-h3) !important;
   height: 40px;
   margin-top: 24px;
   height: 52px;

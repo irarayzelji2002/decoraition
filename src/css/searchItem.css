@@ -25,12 +25,12 @@
   border: none;
   background-color: var(--nav-card-modal);
   color: var(--color-white);
-  font-size: 1em;
+  font-size: var(--font-size-h6);
 }
 
 .search-icon {
   color: var(--color-white);
-  font-size: 1.5em;
+  font-size: var(--font-size-h4);
 }
 
 .grid-container {
@@ -59,7 +59,7 @@
 }
 
 .item-details {
-  font-size: 0.875em;
+  font-size: var(--font-size-small);
 }
 
 .item-name {
@@ -92,7 +92,7 @@
   border: none;
   width: 20%;
   border-radius: 25px;
-  font-size: 1em;
+  font-size: var(--font-size-h6);
   cursor: pointer;
   font-weight: bold;
 }
@@ -110,7 +110,7 @@
 
   .search-icon {
     left: 20px;
-    font-size: 1.25em;
+    font-size: var(--font-size-h5);
   }
 
   .grid-container {
@@ -120,7 +120,7 @@
 
   .select-button {
     width: 80%;
-    font-size: 0.875em;
+    font-size: var(--font-size-small);
   }
 }
 
@@ -132,7 +132,7 @@
 
   .search-icon {
     left: 10px;
-    font-size: 1.125em;
+    font-size: var(--font-size-h7);
   }
 
   .search-input {
@@ -146,6 +146,6 @@
 
   .select-button {
     width: 100%;
-    font-size: 0.75em;
+    font-size: var(--font-size-tiny);
   }
 }

@@ -19,7 +19,7 @@ html {
 }
 
 .loading-title {
-  font-size: 4rem;
+  font-size: var(--font-size-h14);
   background-image: var(--gradientFont);
   background-clip: text;
   -webkit-background-clip: text;
@@ -29,7 +29,7 @@ html {
 }
 
 .loading-subtitle {
-  font-size: 3.5rem;
+  font-size: var(--font-size-h12);
   background-image: var(--gradientFont);
   background-clip: text;
   -webkit-background-clip: text;
@@ -39,7 +39,7 @@ html {
 }
 
 .loading-status {
-  font-size: 1.125em;
+  font-size: var(--font-size-h7);
 }
 
 .position {
@@ -69,5 +69,5 @@ html {
   justify-content: center;
   font-weight: bold;
   border: 3px solid transparent;
-  font-size: 1.5rem;
+  font-size: var(--font-size-h4);
 }

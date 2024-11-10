@@ -12,7 +12,7 @@
 }
 
 .pinName {
-  font-size: 1em;
+  font-size: var(--font-size-h6);
   font-weight: bold;
   margin-left: 12px;
   text-overflow: ellipsis;

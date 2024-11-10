@@ -160,11 +160,11 @@
   .generalAccessTitle,
   .viewerSettingsTitle,
   .inactivityTitle {
-    font-size: 1.2em;
+    font-size: var(--font-size-h5);
   }
 
   .saveButton.MuiButton-root {
     padding: 8px 20px;
-    font-size: 0.7em;
+    font-size: var(--font-size-tiny);
   }
 }

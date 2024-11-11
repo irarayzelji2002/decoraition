@@ -329,8 +329,8 @@ function HomepageOptions({
               className="dropdown-menu"
               style={{
                 position: "absolute",
-                left: isTable ? "-150px" : "0",
-                top: isTable ? "0" : "100%",
+
+                top: isTable ? "0" : "0",
                 marginTop: isTable ? "0" : "10px",
               }}
             >

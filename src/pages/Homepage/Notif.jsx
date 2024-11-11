@@ -3,6 +3,8 @@ import { Avatar, Box } from "@mui/material";
 import { FaCheckCircle, FaEllipsisH, FaCircle } from "react-icons/fa";
 import { stringAvatarColor, stringAvatarInitials } from "../../functions/utils.js";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 function Notif() {
   const { user, userDoc } = useSharedProps();
@@ -105,8 +107,14 @@ function Notif() {
                 style={{ top: menuPosition.top, left: menuPosition.left - 200 }}
                 ref={dropdownRef}
               >
-                <div className="dropdown-item">Open</div>
-                <div className="dropdown-item">Resolve</div>
+                <div className="dropdown-item">
+                  <OpenInNewIcon style={{ fontSize: 20 }} className="icon" />
+                  Open
+                </div>
+                <div className="dropdown-item">
+                  <CheckCircleOutlineOutlinedIcon style={{ fontSize: 20 }} className="icon" />
+                  Resolve
+                </div>
               </div>
             )}
           </div>

@@ -42,7 +42,7 @@
 }
 
 .room-info h1 {
-  font-size: 28px;
+  font-size: var(--font-size-h3) !important;
   margin-bottom: 30px;
   margin-top: 20px;
 }
@@ -63,11 +63,11 @@
 
 .access-portion h3 {
   margin-left: 20px;
-  font-size: 18px;
+  font-size: var(--font-size-h7) !important;
 }
 
 .category {
   color: var(--greyText);
   margin-top: 15px !important;
-  font-size: 0.98rem;
+  font-size: var(--font-size-h6) !important;
 }

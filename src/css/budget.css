@@ -80,7 +80,7 @@
 .itemPrice {
   margin-top: 10px;
   font-weight: 500;
-  font-size: 0.9em;
+  font-size: var(--font-size-h6) !important;
   opacity: 0.6;
   color: var(--corlor-white);
 }

@@ -79,7 +79,7 @@
 }
 
 .inactivitySettings {
-  font-size: 1.1rem !important;
+  font-size: var(--font-size-h6) !important;
   font-weight: bold !important;
   margin-bottom: 1.5rem !important;
   margin-top: 1rem !important;
@@ -105,7 +105,7 @@
   border: none;
   width: auto;
   border-radius: 30px;
-  font-size: 0.9em;
+  font-size: var(--font-size-h6) !important;
   margin-top: 10px;
   margin-bottom: 10px;
   cursor: pointer;
@@ -148,7 +148,7 @@
 
   .saveButton.MuiButton-root {
     padding: 10px 30px;
-    font-size: 0.8em;
+    font-size: var(--font-size-small) !important;
   }
 }
 

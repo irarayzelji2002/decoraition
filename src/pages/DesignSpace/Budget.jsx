@@ -265,11 +265,11 @@ function Budget() {
 
   const getBudgetColor = (budgetAmount, totalCost) => {
     if (budgetAmount === 0) {
-      return "var(--inputBg)"; // Default background color when no budget is set
+      return "var(--inputBg)"; // no budget
     } else if (totalCost <= budgetAmount) {
-      return "#397438"; // Green if within budget
+      return "var(--green)"; // within budget
     } else {
-      return "#EF4F56"; // Red if over budget
+      return "var(--red)"; // over budget
     }
   };
 

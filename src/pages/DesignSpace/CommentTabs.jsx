@@ -14,6 +14,8 @@ function CommentTabs({
   numImageFrames,
   showComments,
   setShowComments,
+  width,
+  setWidth,
   prevWidth,
   setPrevWidth,
   prevHeight,
@@ -31,7 +33,6 @@ function CommentTabs({
     setCommentTypeTab(!commentTypeTab);
   };
 
-  const [width, setWidth] = useState(500);
   const [height, setHeight] = useState("100%");
   const [applyMinHeight, setApplyMinHeight] = useState(true);
   const resizeFactor = 2;

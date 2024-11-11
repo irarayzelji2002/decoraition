@@ -767,14 +767,18 @@ export const selectStylesDisabled = {
 export const textFieldStyles = {
   input: { color: "var(--color-white)" },
   backgroundColor: "var(  --nav-card-modal)",
+  height: "fit-content",
+  borderRadius: "10px",
   "& .MuiOutlinedInput-notchedOutline": {
     borderWidth: 2, // border thickness
   },
   "& .MuiOutlinedInput-root": {
     borderColor: "var(--borderInput)",
+    borderRadius: "10px",
 
     "& fieldset": {
       borderColor: "var(--borderInput)",
+      borderRadius: "10px",
     },
     "&:hover fieldset": {
       borderColor: "var(--borderInput)",
@@ -784,7 +788,8 @@ export const textFieldStyles = {
     },
   },
   "& input": {
-    color: "var(--color-white)", // input text color
+    color: "var(--color-white)",
+    padding: 0,
   },
 };
 

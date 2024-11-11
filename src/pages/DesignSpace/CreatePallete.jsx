@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -28,7 +28,7 @@ import {
   dialogActionsStyles,
   dialogActionsVertButtonsStyles,
 } from "../../components/RenameModal";
-import { ChromePicker, SketchPicker, PhotoshopPicker } from "react-color";
+import { ChromePicker } from "react-color";
 import { huePickerEncodedSvg } from "./svg/AddColor";
 import {
   handleAddColorPalette as handleAddColorPaletteBackend,
@@ -39,6 +39,7 @@ import { showToast } from "../../functions/utils";
 import { useFetcher } from "react-router-dom";
 import { set } from "lodash";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { debounce } from "lodash";
 
 const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) => {
   const { user, userDoc } = useSharedProps();
@@ -108,9 +109,23 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
   };
 
   // Picking color
-  const handleColorChange = (color) => {
-    setPickedColor(color.hex);
-  };
+  const debouncedColorChange = useMemo(
+    () =>
+      debounce((color) => {
+        setPickedColor(color.hex);
+      }, 16), // Roughly matches 60fps
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedColorChange.cancel();
+    };
+  }, [debouncedColorChange]);
+
+  const handleColorChange = useCallback((color) => {
+    debouncedColorChange(color);
+  }, []);
 
   const handlePickColorModalClose = () => {
     setPickColorModalOpen(false);
@@ -357,6 +372,7 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
               disableAlpha
               color={pickedColor ?? defaultColor}
               onChangeComplete={handleColorChange}
+              onChange={debouncedColorChange}
               className="color-picker-cont"
               styles={{
                 default: {
@@ -401,6 +417,8 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                   sx={{
                     ...iconButtonStyles,
                     flexShrink: 0,
+                    height: "40px",
+                    width: "40px",
                   }}
                 >
                   <DeleteIcon />
@@ -423,6 +441,8 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                 sx={{
                   ...iconButtonStyles,
                   flexShrink: 0,
+                  height: "40px",
+                  width: "40px",
                 }}
               >
                 <SaveIconSmall />

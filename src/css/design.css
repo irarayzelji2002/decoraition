@@ -1199,6 +1199,7 @@ textarea {
     padding: 10px 20px;
     background-color: var(--nav-card-modal);
     border-top: 1px solid var(--inputBg);
+    cursor: pointer;
   }
   .imagesWorkSpace {
     padding-bottom: 122px;
@@ -1545,41 +1546,312 @@ textarea {
 }
 
 /* Select Mask */
-.select-mask-container {
+.toggleButtonContent {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-  height: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
-.controls-section {
+.toggleButtonText {
   display: flex;
-  gap: 15px;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-right: 10px;
+  line-height: 1.2;
+  flex-grow: 1;
+  flex-shrink: 1;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  text-align: left;
   flex-wrap: wrap;
 }
 
-.canvas-stack {
-  aspect-ratio: 1/1;
-  width: 100%;
-  max-width: 80vh;
-  margin: 0 auto;
+.toggleButtonTextLabel {
+  display: flex;
+  font-weight: 400;
+  font-size: 0.775rem;
+  margin-bottom: 3px;
 }
 
-.preview-section {
+.toggleButtonTextValue {
   display: flex;
-  flex-direction: column;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.toggleButtonIcon {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.toggleButton {
+  /* width: 100% !important; */
+}
+
+.maskPromptCont {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   gap: 10px;
+  flex-grow: 1;
+}
+
+.topMaskActionsCont {
+}
+
+.topMaskActions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 60px 0px 60px;
+  width: 100%;
+}
+
+.showPreviewButton {
+  /* margin-left: 30px; */
+  margin-left: 19px;
+  min-width: 164px;
+}
+
+.maskTypeAndControls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0px 10px 5px 10px;
+}
+
+.canvasControlsCont {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+.maskTypeOptions {
+  padding: 9.6px 20px;
+  position: relative;
+  background-color: var(--nav-card-modal);
+  border-radius: 20px;
+  margin: 0px 10px;
+}
+
+.maskTypeOptionsButtons {
+  display: flex;
+  width: auto;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 8px;
+}
+
+.optionsHeader {
+  width: 100%;
+  display: flex;
+  position: relative;
+  cursor: pointer;
+}
+
+.optionsHeader.generalOptions.open {
+  margin-top: -6px;
+  height: 26px;
+}
+
+.optionsHeader.hiddenHeader {
+  padding: 0px 5px 0px 8px;
+  border: 1px solid var(--inputBg);
+  min-width: 293px;
+  flex: 1 1 30%;
+}
+
+.optionsHeader.hiddenHeader p {
+  display: flex;
+  justify-content: center;
   align-items: center;
 }
 
-@media (max-width: 600px) {
-  .select-mask-container {
-    padding: 10px;
-  }
+.selectingMaskHiddenHeaders {
+  display: flex;
+  width: 100%;
+  background-color: var(--nav-card-modal);
+  flex-direction: row;
+}
 
-  .controls-section {
-    justify-content: center;
-  }
+.hideShowIconButton {
+  position: absolute;
+  top: -8px;
+  right: -7px;
+}
+
+.canvasControls {
+  background-color: var(--nav-card-modal);
+  border-radius: 20px;
+  padding: 15px;
+  margin: 0px 10px;
+  width: 100%;
+  flex-grow: 1;
+  position: relative;
+}
+
+.canvasControls.sam {
+  width: auto;
+}
+
+.canvasModeAndVisibility {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  gap: 15px;
+}
+
+.canvasSliders {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  gap: 15px;
+}
+
+.canvasSliders.sam {
+  min-width: 250px;
+}
+
+.canvasSliders .sliderCont {
+  width: 100%;
+  margin-top: 17px;
+}
+
+.sliderLabel {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  justify-content: center;
+  margin-top: -5px;
+}
+
+/* 1287px width */
+.maskTypeAndControls.width-1307 {
+  flex-direction: column;
+  gap: 20px;
+}
+.maskTypeOptions.width-1307 {
+  /* width: calc(100% - 22px);
+  padding: 3px 0px 9px 0px; */
+  width: calc(100% - 50px);
+  padding: 15px;
+  margin-top: -13px;
+}
+.maskTypeOptionsButtons.width-1307 {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+.optionsHeader.generalOptions.open.width-1307 {
+  margin-bottom: 5px;
+}
+
+/* 1038px width */
+.canvasControls.width-1038 {
+  width: calc(100% - 60px);
+}
+.canvasControlsCont.width-1038 {
+  flex-direction: column;
+  gap: 20px;
+}
+.samMaskControls.width-1038 {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+.samMaskControls .sliderCont.width-1038 {
+  margin-top: 0px;
+}
+.canvasControls.sam.width-1038 {
+  width: calc(100% - 60px);
+}
+.maskTypeOptions.width-1038 {
+  /* width: calc(100% - 72px);
+  padding: 3px 20px 10px 20px; */
+  width: calc(100% - 50px);
+  padding: 15px;
+}
+.maskTypeOptionsButtons.width-1038 {
+  flex-direction: row;
+}
+
+/* 877px width */
+.selectingMaskHiddenHeaders.width-877 {
+  flex-wrap: wrap;
+}
+
+/* 735px width */
+.canvasModeAndVisibility.width-735 {
+  flex-wrap: wrap;
+}
+.maskTypeOptionsButtons.width-735 {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 600px width */
+.maskPromptCont.width-600 {
+  flex-direction: column;
+  width: 100%;
+  gap: 13px;
+}
+.topMaskActions.width-600 {
+  flex-direction: column;
+  padding: 6px 20px 0px 20px;
+  gap: 12px;
+}
+.showPreviewButton.width-600 {
+  margin-left: 226px;
+  margin-top: -59px;
+}
+.maskTypeOptionsButtons.width-600 {
+  justify-content: center;
+}
+.canvasModeAndVisibility.width-600 {
+  justify-content: center;
+}
+
+/* 510px width */
+.maskTypeOptions.width-510 {
+  /* width: calc(100% - 40px);
+  padding: 0px 0px 5px 0px; */
+  width: calc(100% - 50px);
+  padding: 15px;
+}
+
+/* 500px width */
+.canvasSliders.width-500 {
+  flex-direction: column;
+  gap: 0px;
+}
+.maskTypeOptionsButtons.width-500 {
+  flex-direction: column;
+}
+.canvasModeAndVisibility.width-500 {
+  flex-direction: column;
+}
+.showPreviewButton.width-500 {
+  width: 100%;
+  margin-left: 0px;
+  margin-top: 0px;
+}
+.samMaskControls.width-500 {
+  flex-direction: column;
+  gap: 10px;
 }

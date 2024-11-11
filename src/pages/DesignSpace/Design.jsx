@@ -56,11 +56,13 @@ function Design() {
 
   const [showComments, setShowComments] = useState(false);
   const [widthComments, setWidthComments] = useState(500);
+  const [controlWidthComments, setControlWidthComments] = useState(500);
   const [heightComments, setHeightComments] = useState("100%");
 
   const [showPromptBar, setShowPromptBar] = useState(true);
   const [numImageFrames, setNumImageFrames] = useState(2);
   const [widthPromptBar, setWidthPromptBar] = useState(500);
+  const [controlWidthPromptBar, setControlWidthPromptBar] = useState(500);
   const [heightPromptBar, setHeightPromptBar] = useState("100%");
 
   const [loading, setLoading] = useState(true);
@@ -258,7 +260,7 @@ function Design() {
 
   useEffect(() => {
     adjustImageFrames();
-  }, [showPromptBar, showComments, numImageFrames]);
+  }, [showPromptBar, showComments, numImageFrames, controlWidthComments, controlWidthPromptBar]);
 
   // Reset selected image to null if click happened on the working-area div itself
   const handleWorkingAreaClick = (e) => {
@@ -302,6 +304,9 @@ function Design() {
                     numImageFrames={numImageFrames}
                     showPromptBar={showPromptBar}
                     setShowPromptBar={setShowPromptBar}
+                    setShowComments={setShowComments}
+                    width={controlWidthPromptBar}
+                    setWidth={setControlWidthPromptBar}
                     prevWidth={widthPromptBar}
                     setPrevWidth={setWidthPromptBar}
                     prevHeight={heightPromptBar}
@@ -329,6 +334,8 @@ function Design() {
                     numImageFrames={numImageFrames}
                     showComments={showComments}
                     setShowComments={setShowComments}
+                    width={controlWidthComments}
+                    setWidth={setControlWidthComments}
                     prevWidth={widthComments}
                     setPrevWidth={setWidthComments}
                     prevHeight={heightComments}
@@ -340,7 +347,11 @@ function Design() {
 
             <div className="hiddenHeaders">
               {!showPromptBar && (
-                <div className="promptBarHiddenHeader">
+                <div
+                  className="promptBarHiddenHeader"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => togglePromptBar(setShowPromptBar)}
+                >
                   <Typography
                     variant="body1"
                     sx={{
@@ -363,7 +374,10 @@ function Design() {
                         backgroundColor: "var(--iconButtonActive)",
                       },
                     }}
-                    onClick={() => togglePromptBar(setShowPromptBar)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePromptBar(setShowPromptBar);
+                    }}
                   >
                     <ArrowBackIosRoundedIcon
                       sx={{
@@ -375,7 +389,11 @@ function Design() {
                 </div>
               )}
               {isMobileLayout && !showComments && (
-                <div className="commentSectionHiddenHeader">
+                <div
+                  className="commentSectionHiddenHeader"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => toggleComments(setShowComments)}
+                >
                   <Typography
                     variant="body1"
                     sx={{
@@ -390,6 +408,7 @@ function Design() {
                     sx={{
                       color: "var(--color-white)",
                       borderRadius: "50%",
+                      height: "45px",
                       zIndex: "49",
                       "&:hover": {
                         backgroundColor: "var(--iconButtonHover)",
@@ -398,7 +417,10 @@ function Design() {
                         backgroundColor: "var(--iconButtonActive)",
                       },
                     }}
-                    onClick={() => toggleComments(setShowComments)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleComments(setShowComments);
+                    }}
                   >
                     <ArrowBackIosRoundedIcon
                       sx={{
@@ -423,6 +445,8 @@ function Design() {
                   top: "8px",
                   marginTop: "10px",
                   zIndex: "50",
+                  height: "40px",
+                  width: "40px",
                   "&:hover": {
                     backgroundColor: "var(--iconButtonHover)",
                   },
@@ -450,6 +474,8 @@ function Design() {
                   marginRight: !showComments ? "5px" : "0px",
                   marginTop: "10px",
                   zIndex: "50",
+                  height: "40px",
+                  width: "40px",
                   "&:hover": {
                     backgroundColor: "var(--iconButtonHover)",
                   },
@@ -468,7 +494,13 @@ function Design() {
                 />
               </IconButton>
               {isSelectingMask ? (
-                <SelectMaskCanvas selectedImage={selectedImageData} />
+                <SelectMaskCanvas
+                  selectedImage={selectedImageData}
+                  showPromptBar={showPromptBar}
+                  showComments={showPromptBar}
+                  controlWidthComments={showPromptBar}
+                  controlWidthPromptBar={showPromptBar}
+                />
               ) : designVersionImages.length > 0 ? (
                 <>
                   <div className="frame-buttons">
@@ -612,6 +644,8 @@ function Design() {
                 numImageFrames={numImageFrames}
                 showComments={showComments}
                 setShowComments={setShowComments}
+                width={controlWidthComments}
+                setWidth={setControlWidthComments}
                 prevWidth={widthComments}
                 setPrevWidth={setWidthComments}
                 prevHeight={heightComments}

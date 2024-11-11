@@ -24,7 +24,7 @@ import NoImage from "./svg/NoImage";
 import CreatePallete from "./CreatePallete";
 import { extendTheme, CssVarsProvider } from "@mui/joy/styles";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
-import { togglePromptBar } from "./backend/DesignActions";
+import { togglePromptBar, toggleComments } from "./backend/DesignActions";
 import { showToast } from "../../functions/utils";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { EditIcon } from "../../components/svg/DefaultMenuIcons";
@@ -53,6 +53,9 @@ function PromptBar({
   numImageFrames,
   showPromptBar,
   setShowPromptBar,
+  setShowComments,
+  width,
+  setWidth,
   prevWidth,
   setPrevWidth,
   prevHeight,
@@ -99,10 +102,6 @@ function PromptBar({
   const handleColorPaletteChange = (event, newValue) => {
     setColorPalette(newValue);
   };
-
-  function valueText(value) {
-    return `${numImageToGenerate - 1}`;
-  }
 
   const handleBaseImageModalClose = () => {
     setInitBaseImage(null);
@@ -226,7 +225,6 @@ function PromptBar({
     }
   }, [userDoc]);
 
-  const [width, setWidth] = useState(500);
   const [height, setHeight] = useState("100%");
   const [applyMinHeight, setApplyMinHeight] = useState(true);
   const resizeFactor = 2;
@@ -492,7 +490,6 @@ function PromptBar({
             >
               <Slider
                 aria-labelledby="track-false-slider"
-                getAriaValueText={valueText}
                 valueLabelDisplay="auto"
                 min={1}
                 max={4}
@@ -626,7 +623,17 @@ function PromptBar({
                         backgroundImage: "var(--gradientCircleHover)",
                       },
                     }}
-                    onClick={() => setIsSelectingMask(!isSelectingMask)}
+                    onClick={() => {
+                      setIsSelectingMask(!isSelectingMask);
+                      setPrevWidth(width);
+                      setPrevHeight(height);
+                      if (!isSelectingMask) {
+                        setShowPromptBar(false);
+                        setShowComments(false);
+                      } else {
+                        setShowPromptBar(true);
+                      }
+                    }}
                   >
                     {isSelectingMask ? <DeselectMask /> : <SelectMask />}
                   </Button>

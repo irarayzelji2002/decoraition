@@ -187,6 +187,16 @@ select:-webkit-autofill {
   --bgcolor: #1f1e22;
   --comment-capsule: #f68950;
   --budget-capsule: #397438;
+  --green: #397438;
+  --greenHover: #225222;
+  --red: #f14750;
+  --redHover: #c2282f;
+  --pinkButton: #f13681;
+  --pinkButtonHover: #ec2073;
+  --yellowButton: #ff9900;
+  --yellowButtonHover: #e68a00;
+  --orangeButton: #f15f3e;
+  --orangeButtonHover: #e95433;
   --inputBg: #3e3c47;
   --inputBgBrighter: #4a4853;
   --iconBg: #302f37;
@@ -244,6 +254,9 @@ select:-webkit-autofill {
   );
   --yellow: #fec269;
   --optional: #88888b;
+  --addMask: #00ff40;
+  --removeMask: #ff0000;
+  --samMask: #7543ff;
 
   --font-size-h1: 2.5em;
   --font-size-h2: 2em;

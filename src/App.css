@@ -7,6 +7,11 @@ body {
 html {
   overflow-x: hidden;
 }
+
+span {
+  font-family: "Inter", sans-serif !important;
+  text-transform: capitalize !important;
+}
 .headTitle {
   font-size: 1.125em;
   font-weight: bold;
@@ -163,6 +168,23 @@ select:-webkit-autofill {
 
 .MuiTypography-root {
   font-family: "Inter", sans-serif !important;
+}
+
+.shorten-text {
+  width: auto;
+}
+
+.bottom-filler {
+  height: 150px;
+}
+
+@media (max-width: 480px) {
+  .shorten-text {
+    width: 45px;
+  }
+  .smaller-image {
+    height: 60px !important;
+  }
 }
 
 :root {

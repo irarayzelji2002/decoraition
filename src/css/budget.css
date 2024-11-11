@@ -22,14 +22,6 @@
   padding-bottom: 7px;
   border-radius: 28px;
 }
-.budgetSpace {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 1.125em;
-  width: 80%;
-  height: 100vh;
-}
 .pinSpace {
   display: flex;
   flex-direction: column;
@@ -38,6 +30,7 @@
   width: auto;
   height: 100vh;
 }
+
 .budgetSpaceImg {
   display: flex;
   flex-direction: column;
@@ -46,29 +39,31 @@
   width: 100%;
   height: 100vh;
 }
-
+.budgetSpace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  width: 100%;
+  height: 100vh;
+}
 .itemSpace {
   background-color: var(--nav-card-modal);
   width: 100%;
   height: 90px;
-  border-radius: 12px;
-  margin-top: 24px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-.thumbnail {
-  width: 72px;
-  height: 72px;
-  border-radius: 7px;
+  border-radius: 18px;
   margin: 12px;
-  object-fit: cover;
-  border: 1px solid var(--table-stroke);
-  background-color: var(--iconBg);
+  margin-top: 24px;
+}
+
+.thumbnail {
+  width: 70px;
+  height: 70%;
+  border-radius: 14px;
+  margin: 12px;
 }
 .itemName {
-  font-size: var(--font-size-h5);
-  font-weight: bold;
+  font-size: var(--font-size-h7);
   color: var(--color-white);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -78,16 +73,15 @@
   white-space: normal;
 }
 .itemPrice {
-  margin-top: 10px;
-  font-weight: 500;
-  font-size: var(--font-size-h6) !important;
+  margin-top: 12px;
+  font-size: var(--font-size-h7);
   opacity: 0.6;
   color: var(--corlor-white);
 }
 
 .circle-button-container {
   position: fixed;
-  bottom: 110px;
+  bottom: 100px;
   right: 30px;
   display: flex;
   flex-direction: column;
@@ -234,17 +228,12 @@ select {
 .rounded-input:focus-within {
   border-color: var(--brightFont);
 }
-.error-text {
-  color: var(--errorText);
-  font-size: var(--font-size-small);
-}
 
 .modal-actions {
   display: flex;
   justify-content: center;
   gap: 10px;
 }
-
 .modal-actions button {
   border: none;
   background-image: var(--gradientButton);
@@ -254,7 +243,6 @@ select {
   width: 100%;
   box-sizing: border-box;
 }
-
 .modal-actions button:hover {
   background-color: #9f0000 !important;
 }
@@ -299,6 +287,9 @@ select {
   .budget-page {
     height: 100%;
   }
+  .budgetSpaceImg {
+    height: auto;
+  }
 }
 
 @media (max-width: 768px) {
@@ -335,5 +326,9 @@ select {
   }
   .budgetSpace {
     height: 0%;
+  }
+
+  .itemSpace {
+    width: 90%;
   }
 }

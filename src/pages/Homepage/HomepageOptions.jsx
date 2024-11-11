@@ -292,6 +292,7 @@ function HomepageOptions({
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      console.log("is it a table" + isTable);
     };
   }, []);
 
@@ -327,9 +328,10 @@ function HomepageOptions({
               ref={optionsRef}
               className="dropdown-menu"
               style={{
-                marginRight: isTable ? "-50px" : !isTable ? "-10px" : "",
-                marginTop: isTable ? "6px" : !isTable ? "10px" : "",
-                top: !isTable ? "100%" : "",
+                position: "absolute",
+                left: isTable ? "-150px" : "0",
+                top: isTable ? "0" : "100%",
+                marginTop: isTable ? "0" : "10px",
               }}
             >
               <div className="dropdown-item" onClick={onOpen}>

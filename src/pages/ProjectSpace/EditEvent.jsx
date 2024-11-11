@@ -8,12 +8,17 @@ import AddIcon from "@mui/icons-material/Add";
 import { saveData, updateTask } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
+import { CustomSwitch } from "./ProjectSettings.jsx";
 import { Box, Modal, TextField, Button } from "@mui/material";
-import RepeatSelector from "./RepeatSelector";
+import { RepeatSelector } from "./svg/ExportIcon";
 import { ThemeProvider } from "@mui/system";
-import { theme, CustomSwitch } from "../DesignSpace/DesignSettings";
+import { theme } from "./ProjectSettings.jsx";
 import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import ReminderSpecific from "./ReminderSpecific";
+import { Typography, IconButton, InputBase, Select, MenuItem } from "@mui/material";
+import DialogTitle from "@mui/material/DialogTitle";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 function EditEvent() {
   const { projectId } = useParams();
@@ -62,9 +67,9 @@ function EditEvent() {
     });
   };
 
-  const handleReminderChange = (index, value) => {
+  const handleReminderChange = (index, reminder) => {
     const newReminders = [...formData.reminders];
-    newReminders[index].time = value;
+    newReminders[index] = reminder;
     setFormData((prevData) => ({
       ...prevData,
       reminders: newReminders,
@@ -72,14 +77,21 @@ function EditEvent() {
   };
 
   const addReminder = () => {
-    setSelectedReminder({ id: Date.now(), time: new Date() });
+    setSelectedReminder({
+      id: Date.now(),
+      count: 1,
+      unit: "day",
+      hours: 8,
+      minutes: 0,
+      period: "AM",
+    });
     setOpenModal(true);
   };
 
-  const saveReminder = () => {
+  const saveReminder = (reminder) => {
     setFormData((prevData) => ({
       ...prevData,
-      reminders: [...prevData.reminders, selectedReminder],
+      reminders: [...prevData.reminders, { ...reminder, id: Date.now() }],
     }));
     setOpenModal(false);
   };
@@ -105,6 +117,10 @@ function EditEvent() {
       }
       navigate(-1); // Go back to the previous page
     }
+  };
+
+  const handleCancel = () => {
+    setOpenModal(false);
   };
 
   return (
@@ -164,11 +180,13 @@ function EditEvent() {
                   <AddIcon />
                 </button>
               </div>
-              {formData.reminders.map((reminder) => (
+              {formData.reminders.map((reminder, index) => (
                 <div key={reminder.id} className="reminder-item">
                   <div className="reminder-display">
-                    <span>{new Date(reminder.time).toLocaleString()}</span>
-
+                    <span>
+                      {reminder.count} {reminder.unit} before {reminder.hours}:
+                      {reminder.minutes.toString().padStart(2, "0")} {reminder.period}
+                    </span>
                     <div className="reminder-actions">
                       <button
                         className="icon-button"
@@ -203,7 +221,7 @@ function EditEvent() {
           </div>
         </div>
       </div>
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+      <Modal open={openModal} onClose={handleCancel}>
         <Box
           sx={{
             position: "absolute",
@@ -215,25 +233,28 @@ function EditEvent() {
             boxShadow: 24,
             borderRadius: "12px",
             margin: "12px",
-            p: 4,
           }}
         >
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DateTimePicker
-              label="Select Date & Time"
-              value={selectedReminder?.time || new Date()}
-              onChange={(newValue) => setSelectedReminder((prev) => ({ ...prev, time: newValue }))}
-              renderInput={(params) => <TextField {...params} />}
+          <DialogTitle
+            className="dialog-title"
+            sx={{
+              borderRadius: "12px 12px 0 0",
+            }}
+          >
+            <IconButton onClick={handleCancel} className="dialog-icon-button">
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ color: "var(--color-white)" }}>
+              Set Reminder
+            </Typography>
+          </DialogTitle>
+          <div style={{ padding: "20px" }}>
+            <ReminderSpecific
+              reminder={selectedReminder}
+              onSave={saveReminder}
+              onCancel={handleCancel}
             />
-          </LocalizationProvider>
-          <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
-            <Button onClick={() => setOpenModal(false)} className="cancel-button">
-              Cancel
-            </Button>
-            <Button onClick={saveReminder} className="confirm-button">
-              Save
-            </Button>
-          </Box>
+          </div>
         </Box>
       </Modal>
     </ThemeProvider>

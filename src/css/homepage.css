@@ -1,6 +1,6 @@
 .navName {
   font-family: "Open Sans", sans-serif !important;
-  font-size: var(--font-size-h12) !important;
+  font-size: var(--font-size-h12);
   background: var(--gradientFont);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

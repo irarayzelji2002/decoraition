@@ -19,6 +19,7 @@
   margin-bottom: 10px;
   height: 3em;
   min-width: 100%;
+  border-bottom: var(--color-grey) 1px solid;
 }
 .inputFieldThree {
   display: flex;
@@ -26,6 +27,7 @@
   margin-bottom: 10px;
   height: 20em;
   min-width: 100%;
+  border-bottom: var(--color-grey) 1px solid;
 }
 .inputFieldImportant {
   display: flex;
@@ -65,7 +67,6 @@
   padding-bottom: 20px;
   margin-bottom: 10px;
   width: 100%;
-  max-width: 1080px;
 }
 
 /* Profile buttons */

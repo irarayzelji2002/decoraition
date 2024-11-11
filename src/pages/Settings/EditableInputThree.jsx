@@ -57,7 +57,7 @@ const EditableInputThree = ({
   };
 
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <div className="push-me-right">
         {isEditing && (
           <IconButton onClick={handleClose}>

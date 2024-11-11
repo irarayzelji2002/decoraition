@@ -130,7 +130,6 @@ const EditablePassInput = ({
           // label={labels[labels.length - 1]} // last label
           type="password"
           value="********"
-          disabled
           fullWidth
           margin="normal"
           sx={{

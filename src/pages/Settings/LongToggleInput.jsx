@@ -31,7 +31,6 @@ const LongToggleInput = ({ label, value, onToggle, isConnectedAccount }) => {
           return value === 0 ? "Dark" : "Light";
         }
       })()}
-      disabled
       fullWidth
       margin="normal"
       sx={{

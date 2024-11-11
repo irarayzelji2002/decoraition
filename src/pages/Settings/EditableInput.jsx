@@ -59,7 +59,6 @@ export default function EditableInput({
       type="text"
       value={inputValue}
       onChange={handleChange}
-      disabled={!isEditing}
       fullWidth
       margin="normal"
       helperText={getErrMessage(toCamelCase(label), errors)}

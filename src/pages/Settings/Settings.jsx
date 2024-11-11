@@ -848,7 +848,16 @@ function Settings() {
 
         {/* Account Tab Content */}
         {selectedTab === 0 && (
-          <Box mt={4} className="tab-content" sx={{ minWidth: "100%" }}>
+          <Box
+            mt={4}
+            className="tab-content"
+            sx={{
+              minWidth: "100%",
+              display: "flex",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+          >
             <div className="avatar-container" style={{ display: "flex", alignItems: "center" }}>
               <Box
                 sx={{
@@ -941,7 +950,7 @@ function Settings() {
 
             {/* Additional Fields */}
             <div className="inputFieldThree">
-              <label className="inputLabel">First Name</label>
+              <label className="inputLabel">Name Details</label>
               <EditableInputThree
                 labels={["First Name", "Last Name", "Username"]}
                 values={[firstName, lastName, username]}

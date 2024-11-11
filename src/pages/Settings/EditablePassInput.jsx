@@ -78,7 +78,6 @@ const EditablePassInput = ({
               type={showPassword ? "text" : "password"}
               value={inputValues[index]}
               onChange={(e) => handleChange(index, e.target.value)}
-              disabled={!isEditing}
               fullWidth
               margin="normal"
               helperText={getErrMessage(toCamelCase(label), errors)}

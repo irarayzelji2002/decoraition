@@ -8,6 +8,7 @@ import Loading from "../../components/Loading.jsx";
 import Dropdowns from "../../components/Dropdowns.jsx";
 import ProjectOptionsHome from "../../components/ProjectOptionsHome.jsx";
 import HomepageTable from "./HomepageTable.jsx";
+import { Button } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -18,6 +19,7 @@ import {
   formatDateLong,
   getUsernames,
 } from "./backend/HomepageActions";
+import { HorizontalIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
 
 export default function SeeAllProjects() {
   const navigate = useNavigate();
@@ -152,7 +154,8 @@ export default function SeeAllProjects() {
               <div style={{ marginLeft: "auto", display: "inline-flex" }}>
                 {filteredProjects.length > 0 && (
                   <div>
-                    <button
+                    <Button
+                      className="gradient-from-none"
                       onClick={() =>
                         handleViewChange(
                           user,
@@ -163,8 +166,8 @@ export default function SeeAllProjects() {
                         )
                       }
                     >
-                      {view === 0 ? "Tiled View" : "List View"}
-                    </button>
+                      {view === 0 ? <ListIcon /> : <HorizontalIcon />}
+                    </Button>
                   </div>
                 )}
               </div>

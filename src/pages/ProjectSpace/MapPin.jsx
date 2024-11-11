@@ -30,7 +30,7 @@ const MapPin = ({ title, editMode = false, pinNo }) => {
             <ChromePicker
               disableAlpha
               color={value}
-              onChangeComplete={handleChange}
+              onChange={handleChange}
               styles={{
                 default: {
                   picker: {

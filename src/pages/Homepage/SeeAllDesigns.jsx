@@ -5,6 +5,7 @@ import SearchAppBar from "./SearchAppBar.jsx";
 import "../../css/homepage.css";
 import "../../css/seeAll.css";
 import Loading from "../../components/Loading.jsx";
+import Button from "@mui/material/Button";
 import Dropdowns from "../../components/Dropdowns.jsx";
 import DesignIcon from "../../components/DesignIcon.jsx";
 import HomepageTable from "./HomepageTable.jsx";
@@ -18,6 +19,7 @@ import {
   formatDateLong,
   getUsername,
 } from "./backend/HomepageActions";
+import { HorizontalIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
 
 export default function SeeAllDesigns() {
   const navigate = useNavigate();
@@ -150,7 +152,8 @@ export default function SeeAllDesigns() {
               <div style={{ marginLeft: "auto", display: "inline-flex" }}>
                 {filteredDesigns.length > 0 && (
                   <div>
-                    <button
+                    <Button
+                      className="gradient-from-none"
                       onClick={() =>
                         handleViewChange(
                           user,
@@ -161,8 +164,8 @@ export default function SeeAllDesigns() {
                         )
                       }
                     >
-                      {view === 0 ? "Tiled View" : "List View"}
-                    </button>
+                      {view === 0 ? <ListIcon /> : <HorizontalIcon />}
+                    </Button>
                   </div>
                 )}
               </div>

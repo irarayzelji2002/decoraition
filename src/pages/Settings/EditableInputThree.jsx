@@ -58,13 +58,21 @@ const EditableInputThree = ({
 
   return (
     <div>
+      <div className="push-me-right">
+        {isEditing && (
+          <IconButton onClick={handleClose}>
+            <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
+          </IconButton>
+        )}
+
+        <IconButton onClick={isEditing ? handleSave : handleEdit}>{icon}</IconButton>
+      </div>
       {labels.map((label, index) => (
         <TextField
           key={index}
           label=""
           value={inputValues[index]}
           onChange={(e) => handleChange(index, e.target.value)}
-          disabled={!isEditing}
           fullWidth
           margin="normal"
           helperText={getErrMessage(toCamelCase(label), errors)}
@@ -104,13 +112,6 @@ const EditableInputThree = ({
           }}
         />
       ))}
-
-      {isEditing && (
-        <IconButton onClick={handleClose}>
-          <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
-        </IconButton>
-      )}
-      <IconButton onClick={isEditing ? handleSave : handleEdit}>{icon}</IconButton>
 
       {getHasError("all", errors) && <span className="">{getErrMessage("all", errors)}</span>}
     </div>

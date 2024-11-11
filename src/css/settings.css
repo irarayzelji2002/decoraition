@@ -63,7 +63,9 @@
   align-items: center;
   border-bottom: var(--color-grey) 1px solid;
   padding-bottom: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 10px;
+  width: 100%;
+  max-width: 1080px;
 }
 
 /* Profile buttons */

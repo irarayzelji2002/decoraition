@@ -139,6 +139,13 @@ select:-webkit-autofill {
   flex-direction: column;
   width: auto;
 }
+.push-me-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-direction: row;
+  width: auto;
+}
 
 .error-text {
   color: var(--errorText);

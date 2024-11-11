@@ -349,7 +349,7 @@ function Homepage() {
             </Button>
           )}
 
-        <section className="recent-section">
+        <section className="recent-section" style={{ marginBottom: "200px" }}>
           <div className="recent-designs">
             <div className="separator">
               {/* <ProjectIcon /> */}

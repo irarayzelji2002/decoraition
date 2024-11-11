@@ -31,7 +31,7 @@ import {
 } from "./svg/ProjectAccessIcons";
 import { set } from "lodash";
 
-const theme = createTheme({
+export const theme = createTheme({
   components: {
     MuiSwitch: {
       styleOverrides: {
@@ -741,7 +741,7 @@ const GeneralAccessSelect = ({
 };
 
 // Custom Switch Component for reusability
-const CustomSwitch = ({ label, checked, onChange, disabled }) => (
+export const CustomSwitch = ({ label, checked, onChange, disabled }) => (
   <Box
     className="customSwitchContainer"
     sx={{

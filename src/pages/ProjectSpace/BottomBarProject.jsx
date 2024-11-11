@@ -255,7 +255,7 @@ function BottomBarDesign({
       <Button
         size="md"
         component={Link}
-        to={`/projBudget/${projId}`}
+        to={`/projectBudget/${projId}`}
         sx={{
           ":hover": {
             backgroundColor: "var(--iconBg)",

@@ -55,6 +55,7 @@ function EnhancedTableHead(props) {
                   backgroundColor: "var(--bgMain)",
                   color: "var(--color-white)",
                   borderBottom: "1px solid var(--table-stroke)",
+                  textTransform: "none", // Add this line to remove all caps
                 }}
               >
                 <TableSortLabel
@@ -222,9 +223,11 @@ function EnhancedTable({
   }, [optionsState]);
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%", background: "var(--bgMain)" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <TableContainer>
+        <TableContainer
+          sx={{ overflowY: "visible", background: "var(--bgMain)", height: "fit-content" }}
+        >
           <Table sx={{ minWidth: 320, width: "100%" }} stickyHeader aria-label="sticky table">
             <EnhancedTableHead
               headCells={headCells}
@@ -304,7 +307,7 @@ function EnhancedTable({
                       </IconButton>
 
                       {optionsState.showOptions && optionsState.selectedId === row.id && (
-                        <div style={{ position: "absolute" }}>
+                        <div style={{ position: "relative" }}>
                           <HomepageOptions
                             isDesign={isDesign}
                             isTable={true}
@@ -328,6 +331,7 @@ function EnhancedTable({
             </TableBody>
           </Table>
         </TableContainer>
+        <Box /> {/* Add extra space beneath the table */}
         {/* <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

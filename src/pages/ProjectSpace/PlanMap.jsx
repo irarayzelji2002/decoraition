@@ -76,7 +76,7 @@ function PlanMap() {
   };
 
   const navigateToAddPin = () => {
-    navigate("/addPin/" + projectId);
+    navigate("/addPin/");
   };
   const navigateToPinLayout = () => {
     navigate("/pinOrder/" + projectId);
@@ -99,7 +99,12 @@ function PlanMap() {
         <div className="budgetSpaceImg">
           {designs.length > 0 ? (
             designs.map((design) => {
-              return <MapPin title={design.name} />;
+              return (
+                <>
+                  <MapPin title={design.name} />
+                  <div className="bottom-filler" />
+                </>
+              );
             })
           ) : (
             <div className="no-content" style={{ height: "80vh" }}>

@@ -226,7 +226,12 @@ function EnhancedTable({
     <Box sx={{ width: "100%", background: "var(--bgMain)" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <TableContainer
-          sx={{ overflowY: "visible", background: "var(--bgMain)", height: "fit-content" }}
+          sx={{
+            overflowY: "visible",
+            background: "var(--bgMain)",
+            paddingBottom: "100px",
+            height: "fit-content",
+          }}
         >
           <Table sx={{ minWidth: 320, width: "100%" }} stickyHeader aria-label="sticky table">
             <EnhancedTableHead

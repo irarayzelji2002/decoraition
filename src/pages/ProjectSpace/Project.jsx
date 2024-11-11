@@ -29,6 +29,7 @@ import { Typography } from "@mui/material";
 import { ListIcon } from "./svg/ExportIcon";
 import ItemList from "./ItemList";
 import DesignSvg from "../Homepage/svg/DesignSvg";
+import LoadingPage from "../../components/LoadingPage";
 
 function Project() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -121,7 +122,7 @@ function Project() {
   if (!projectData) {
     return (
       <>
-        <Loading />
+        <LoadingPage />
       </>
     );
   }

@@ -48,7 +48,7 @@ function Timeline() {
     return () => clearInterval(intervalId); // Clear interval on component unmount
   }, [projectId]);
   const formatDate = (date) => {
-    const options = { month: "short", day: "numeric" };
+    const options = { month: "short", day: "numeric", year: "numeric" };
     return date.toLocaleDateString(undefined, options);
   };
 
@@ -169,7 +169,14 @@ function Timeline() {
                     <div className="task-item" key={task.id}>
                       <div className="task-text">
                         <h3>{task.taskName}</h3>
-                        <p>Until {new Date(task.endDate).toLocaleDateString()}</p>
+                        <p>
+                          Until{" "}
+                          {new Date(task.endDate).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </p>
                       </div>
                       <div className="task-actions">
                         <div onClick={() => handleEditClick(task)}>
@@ -195,7 +202,6 @@ function Timeline() {
 
               <h2>
                 {date.toLocaleDateString(undefined, {
-                  weekday: "long",
                   month: "short",
                   day: "numeric",
                   year: "numeric",
@@ -213,7 +219,14 @@ function Timeline() {
                 <div className="task-item" key={task.id}>
                   <div className="task-text">
                     <h3>{task.taskName}</h3>
-                    <p>Until {new Date(task.endDate).toLocaleDateString()}</p>
+                    <p>
+                      Until{" "}
+                      {new Date(task.endDate).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </p>
                   </div>
                   <div className="task-actions">
                     <div onClick={() => handleEditClick(task)}>
@@ -246,7 +259,14 @@ function Timeline() {
             <div className="task-item">
               <div className="task-text">
                 <h3>{tasks[currentTaskIndex].taskName}</h3>
-                <p>Until {new Date(tasks[currentTaskIndex].endDate).toLocaleDateString()}</p>
+                <p>
+                  Until{" "}
+                  {new Date(tasks[currentTaskIndex].endDate).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
                 <p>{tasks[currentTaskIndex].description}</p>
               </div>
               <div className="task-actions">

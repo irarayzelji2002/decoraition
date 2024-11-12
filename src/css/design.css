@@ -59,7 +59,9 @@
   margin-right: 12px;
   display: block;
   font-size: var(--font-size-h6);
-
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold !important;
   text-decoration-color: var(--brightFont) !important;
 

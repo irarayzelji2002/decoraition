@@ -168,6 +168,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.label-item {
+  opacity: 0.5;
+  font-size: var(--font-size-tiny);
+}
 
 .task-date {
   color: var(--uib-color) !important;

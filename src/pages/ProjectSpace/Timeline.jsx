@@ -256,7 +256,7 @@ function Timeline() {
                 <ArrowForwardIos sx={{ color: "var(--color-white)" }} />{" "}
               </Button>
             </div>
-            <div className="task-item">
+            <div className="task-item" style={{ background: "none", marginBottom: "0px" }}>
               <div className="task-text">
                 <h3>{tasks[currentTaskIndex].taskName}</h3>
                 <p>
@@ -267,8 +267,8 @@ function Timeline() {
                     year: "numeric",
                   })}
                 </p>
-                <p>{tasks[currentTaskIndex].description}</p>
               </div>
+
               <div className="task-actions">
                 <div onClick={() => handleEditClick(tasks[currentTaskIndex])}>
                   <EditPen />
@@ -277,6 +277,20 @@ function Timeline() {
                   <Trash />
                 </div>
               </div>
+            </div>{" "}
+            <div style={{ padding: "1rem", paddingTop: "0px" }}>
+              <p className="label-item">Reminders before the event</p>
+              <p>1 day, 6:00AM 2 days, 10:00AM</p>
+
+              <p className="label-item">Repetition</p>
+              <p>Every week</p>
+
+              <p className="label-item">Description</p>
+              <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              </p>
             </div>
           </div>
         )}

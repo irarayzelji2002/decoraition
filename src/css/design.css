@@ -1149,7 +1149,7 @@ textarea {
     font-size: var(--font-size-h6);
   }
 }
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .workspace {
     flex-direction: column-reverse;
   }
@@ -1540,7 +1540,7 @@ textarea {
   margin: 2px;
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 768px) {
   .noDesignVersionsCont {
     position: absolute;
     top: -50px;
@@ -1807,7 +1807,7 @@ textarea {
   justify-content: center;
 }
 
-/* 600px width */
+/* 768px width */
 .maskPromptCont.width-600 {
   flex-direction: column;
   width: 100%;

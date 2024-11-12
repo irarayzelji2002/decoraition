@@ -377,7 +377,7 @@ tr:hover td {
 
 .faq-container {
   width: auto;
-  max-width: 600px;
+  max-width: 768px;
 }
 
 .faq-item {
@@ -429,7 +429,7 @@ tr:hover td {
 }
 
 /* Small screen sizes */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .layout {
     grid-template-columns: repeat(1, 1fr); /* 1 column for small screens */
   }

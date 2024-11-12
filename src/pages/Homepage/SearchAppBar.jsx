@@ -161,7 +161,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
                 whiteSpace: "nowrap",
                 textOverflow: "ellipsis",
                 maxWidth: "150px",
-                "@media (max-width: 600px)": {
+                "@media (max-width: 768px)": {
                   display: "none",
                 },
               }}

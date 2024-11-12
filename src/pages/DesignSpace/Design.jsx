@@ -321,7 +321,7 @@ function Design() {
                 </div>
               )}
 
-              {/* Location if < 600px */}
+              {/* Location if < 768px */}
               {isMobileLayout && showComments && (
                 <div
                   style={{

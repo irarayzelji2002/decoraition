@@ -161,6 +161,13 @@
   align-items: center;
   margin-bottom: 20px;
 }
+.date-navigation h2 {
+  font-size: var(--font-size-h6);
+  width: 150px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .task-date {
   color: var(--uib-color) !important;

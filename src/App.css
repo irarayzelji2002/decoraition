@@ -10,7 +10,10 @@ html {
 
 span {
   font-family: "Inter", sans-serif !important;
-  text-transform: capitalize !important;
+}
+
+.capitalize {
+  text-transform: capitalize;
 }
 .headTitle {
   font-size: 1.125em;

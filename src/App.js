@@ -38,6 +38,7 @@ import Version from "./pages/DesignSpace/Version.jsx";
 import DesignSettings from "./pages/DesignSpace/DesignSettings.jsx";
 import ProjectSettings from "./pages/ProjectSpace/ProjectSettings.jsx";
 import GenerateImgLoadingPage from "./components/GenerateImgLoadingPage.jsx";
+import PinLocation from "./pages/ProjectSpace/PinLocation.jsx";
 
 function ProtectedRoute({ children }) {
   const { user, userDoc, userDocFetched } = useAuth();
@@ -258,6 +259,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <PlanMap />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/adjustPin/:projectId"
+                element={
+                  <ProtectedRoute>
+                    <PinLocation />
                   </ProtectedRoute>
                 }
               />

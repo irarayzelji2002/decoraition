@@ -81,6 +81,9 @@ function PlanMap() {
   const navigateToPinLayout = () => {
     navigate("/pinOrder/" + projectId);
   };
+  const navigateToAdjustPin = () => {
+    navigate("/adjustPin/" + projectId);
+  };
 
   return (
     <>
@@ -131,7 +134,7 @@ function PlanMap() {
                 <ChangeOrder />
               </div>
             </div>
-            <div className="small-button-container">
+            <div className="small-button-container" onClick={navigateToAdjustPin}>
               <span className="small-button-text">Adjust Pins</span>
               <div className="small-circle-button">
                 <AdjustPin />

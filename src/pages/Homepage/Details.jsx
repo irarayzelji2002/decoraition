@@ -178,7 +178,7 @@ function Details() {
         {type === "design" && id && design.designName ? (
           <Button variant="text">
             <div className="content">
-              <div style={{ width: "100%", maxWidth: "600px", margin: "0 auto" }}>
+              <div style={{ width: "100%", maxWidth: "768px", margin: "0 auto" }}>
                 <div
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
@@ -197,7 +197,7 @@ function Details() {
           <Button variant="text">
             Who has access{" "}
             <div className="content">
-              <div style={{ width: "100%", maxWidth: "600px", margin: "0 auto" }}>
+              <div style={{ width: "100%", maxWidth: "768px", margin: "0 auto" }}>
                 <div
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >

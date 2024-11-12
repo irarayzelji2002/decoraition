@@ -157,7 +157,7 @@ export const dialogContentStyles = {
   paddingBottom: 0,
   overflow: "auto",
   width: "min(50vw, 50vh)",
-  "@media (max-width: 600px)": {
+  "@media (max-width: 768px)": {
     width: "auto",
   },
 };
@@ -171,7 +171,7 @@ export const dialogActionsStyles = {
   marginBottom: "20px",
   padding: 0,
   flexWrap: "nowrap",
-  "@media (max-width: 600px)": {
+  "@media (max-width: 768px)": {
     flexWrap: "wrap",
   },
 };
@@ -186,7 +186,7 @@ export const dialogActionsVertButtonsStyles = {
   margin: "auto",
   marginBottom: "20px",
   padding: 0,
-  "@media (max-width: 600px)": {
+  "@media (max-width: 768px)": {
     width: "100%",
   },
 };

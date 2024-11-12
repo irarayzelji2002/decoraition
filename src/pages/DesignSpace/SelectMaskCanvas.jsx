@@ -470,7 +470,7 @@ function SelectMaskCanvas({
                     ...textFieldStyles["& .MuiOutlinedInput-root"],
                     padding: "11.8px 146px 11.8px 14px",
                   },
-                  "@media (max-width: 600px)": {
+                  "@media (max-width: 768px)": {
                     width: "100%",
                     "& .MuiOutlinedInput-root": {
                       ...textFieldStyles["& .MuiOutlinedInput-root"],
@@ -490,7 +490,7 @@ function SelectMaskCanvas({
                 height: "42.6px",
                 borderRadius: "0px 8px 8px 0px",
                 marginLeft: "-145px !important",
-                "@media (max-width: 600px)": {
+                "@media (max-width: 768px)": {
                   borderRadius: "35px",
                   // marginLeft: "0px !important",
                   marginLeft: "-225px !important",
@@ -1097,7 +1097,7 @@ const ToggleButton = ({
             valuesMap[value]?.backgroundColorHover ?? valuesMap[value]?.backgroundColor ?? "",
           background: valuesMap[value]?.backgroundHover ?? "",
         },
-        "@media (max-width: 600px)": {
+        "@media (max-width: 768px)": {
           width: width600,
         },
         "@media (max-width: 510px)": {

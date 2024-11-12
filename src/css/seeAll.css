@@ -212,7 +212,7 @@
   font-size: var(--font-size-tiny) !important;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .scrollable-div {
     justify-content: start;
   }

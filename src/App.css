@@ -208,12 +208,14 @@ select:-webkit-autofill {
   --color-grey2: #c1c0ce;
   --bright-grey: #6c6c6c;
   --color-quaternary: #ef4f56;
+  --color-quaternary-hover: #df3941;
   --errorText: #ef4f56;
   --color-white: #fafafa;
   --color-white-hover: #e6e6e6;
   --color-blue: #0866ff;
   --color-blue-hover: #0050d1;
   --color-black: #080808;
+  --color-info-grey: #9a9a9a;
   --logo: #8f5e5e;
   --nav-card-modal: #27262c;
   --bgcolor: #1f1e22;

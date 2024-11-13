@@ -28,6 +28,9 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import { handleLogout } from "../Homepage/backend/HomepageFunctions";
+import { textFieldInputProps } from "../DesignSpace/DesignSettings";
+import { commonInputStyles } from "../../components/Signup";
+import { CheckboxIcon, CheckboxCheckedIcon } from "../../components/svg/SharedIcons";
 
 export default function LoginModal() {
   const navigate = useNavigate();
@@ -232,7 +235,7 @@ export default function LoginModal() {
         }}
       >
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
-          <span className="formLabels">Email Address</span>
+          <span className="formLabels">Email address</span>
           <TextField
             required
             fullWidth
@@ -246,29 +249,8 @@ export default function LoginModal() {
             onChange={(e) => setEmail(e.target.value)}
             error={!!errors.email}
             helperText={errors.email}
-            sx={{
-              marginTop: "10px",
-              marginBottom: "10px",
-              backgroundColor: "var(--inputBg)",
-              input: { color: "var(--color-white)" },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "var(--borderInput)", // Border color when not focused
-                  borderWidth: "2px", // Adjust the border thickness here
-                },
-                "&:hover fieldset": {
-                  borderColor: "var(--borderInput)", // Border color on hover
-                  borderWidth: "2px", // Maintain the thickness on hover
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "var(--borderInputBrighter)", // Border color when focused
-                  borderWidth: "2px", // Maintain the thickness on focus
-                },
-              },
-              "& .MuiFormHelperText-root": {
-                color: "var(--color-white)",
-              },
-            }}
+            sx={{ ...commonInputStyles, marginBottom: "20px" }}
+            inputProps={textFieldInputProps}
           />
 
           <span className="formLabels">Password</span>
@@ -285,6 +267,7 @@ export default function LoginModal() {
             error={!!errors.password}
             helperText={errors.password}
             InputProps={{
+              style: { color: "var(--color-white)" },
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
@@ -293,7 +276,7 @@ export default function LoginModal() {
                     onMouseDown={handleMouseDownPassword}
                     edge="end"
                     sx={{
-                      color: "var(--color-white)",
+                      color: "var(--color-grey)",
                     }}
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -301,29 +284,7 @@ export default function LoginModal() {
                 </InputAdornment>
               ),
             }}
-            sx={{
-              marginTop: "10px",
-              marginBottom: "10px",
-              backgroundColor: "var(--inputBg)",
-              input: { color: "var(--color-white)" },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "var(--borderInput)", // Border color when not focused
-                  borderWidth: "2px", // Adjust the border thickness here
-                },
-                "&:hover fieldset": {
-                  borderColor: "var(--borderInput)", // Border color on hover
-                  borderWidth: "2px", // Maintain the thickness on hover
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "var(--borderInputBrighter)", // Border color when focused
-                  borderWidth: "2px", // Maintain the thickness on focus
-                },
-              },
-              "& .MuiFormHelperText-root": {
-                color: "var(--color-white)",
-              },
-            }}
+            sx={{ ...commonInputStyles, marginBottom: "15px" }}
           />
 
           {errors.general && (
@@ -343,15 +304,28 @@ export default function LoginModal() {
                       "&.Mui-checked": {
                         color: "var(--brightFont)",
                       },
-                      borderRadius: "4px",
+                      borderRadius: "50%",
                       "& .MuiSvgIcon-root": {
                         fontSize: 28,
                       },
+                      "&:hover": {
+                        backgroundColor: "var(--iconButtonHover)",
+                      },
+                      "&:active": {
+                        backgroundColor: "var(--iconButtonActive)",
+                      },
                     }}
+                    icon={<CheckboxIcon />}
+                    checkedIcon={<CheckboxCheckedIcon />}
                   />
                 }
                 label="Remember me"
-                sx={{ color: "var(--color-white)" }}
+                sx={{
+                  color: "var(--color-white)",
+                  "& .MuiTypography-root": {
+                    marginLeft: "3px",
+                  },
+                }}
               />
             </Grid>
             <Grid item xs>
@@ -414,13 +388,15 @@ export default function LoginModal() {
             color: "var(--color-white)",
             backgroundColor: "transparent",
             border: "none",
+            borderRadius: "20px",
+            marginBottom: "5px",
             "&:hover": {
-              background: "transparent", // Ensure background remains transparent
-
-              color: "var(--color-white)", // Ensure color is transparent to reveal the gradient
+              background: "transparent",
+              color: "var(--color-white)",
+              backgroundColor: "var(--iconButtonHover)",
             },
             "&:active": {
-              backgroundColor: "transparent",
+              backgroundColor: "var(--iconButtonHoverActive)",
               boxShadow: "none",
             },
             "&:focus": {
@@ -443,13 +419,15 @@ export default function LoginModal() {
             color: "var(--color-white)",
             backgroundColor: "transparent",
             border: "none",
+            borderRadius: "20px",
+            marginBottom: "5px",
             "&:hover": {
-              background: "transparent", // Ensure background remains transparent
-
-              color: "var(--color-white)", // Ensure color is transparent to reveal the gradient
+              background: "transparent",
+              color: "var(--color-white)",
+              backgroundColor: "var(--iconButtonHover)",
             },
             "&:active": {
-              backgroundColor: "transparent",
+              backgroundColor: "var(--iconButtonHoverActive)",
               boxShadow: "none",
             },
             "&:focus": {
@@ -471,7 +449,7 @@ export default function LoginModal() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          marginTop: "18px ",
+          marginTop: "15px ",
         }}
       >
         Don&apos;t have an account?&nbsp;

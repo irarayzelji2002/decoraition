@@ -88,19 +88,30 @@ export default function ChangePass({ email, token }) {
           alignItems: "center",
         }}
       >
+        <h2
+          style={{
+            marginLeft: "10px",
+            textAlign: "center",
+            margin: "0px 20px 30px 20px",
+            fontSize: "1.8rem",
+          }}
+        >
+          Change your password
+        </h2>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <span className="formLabels">
+            New password
+            <span style={{ color: "var(--color-quaternary)" }}> *</span>
+          </span>
           <p
             style={{
               color: "gray",
               fontSize: "12px",
+              margin: 0,
             }}
           >
             At least 6 characters long, with 1 special character
           </p>
-          <span className="formLabels">
-            New Password
-            <span style={{ color: "var(--color-quaternary)" }}> *</span>
-          </span>
           <Password
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
@@ -108,7 +119,7 @@ export default function ChangePass({ email, token }) {
             helperText={errors.newPassword}
           />
           <span className="formLabels">
-            Confirm New Password
+            Confirm new password
             <span style={{ color: "var(--color-quaternary)" }}> *</span>
           </span>
           <Password

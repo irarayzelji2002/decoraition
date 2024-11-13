@@ -28,6 +28,7 @@ import {
   dialogContentStyles,
   dialogActionsStyles,
 } from "./RenameModal";
+import { CheckboxIcon, CheckboxCheckedIcon } from "./svg/SharedIcons";
 
 const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
   const { user } = useSharedProps();
@@ -201,14 +202,28 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
                       "&.Mui-checked": {
                         color: "var(--brightFont)",
                       },
-                      borderRadius: "4px",
+                      borderRadius: "50%",
                       "& .MuiSvgIcon-root": {
                         fontSize: 28,
                       },
+                      "&:hover": {
+                        backgroundColor: "var(--iconButtonHover)",
+                      },
+                      "&:active": {
+                        backgroundColor: "var(--iconButtonActive)",
+                      },
                     }}
+                    icon={<CheckboxIcon />}
+                    checkedIcon={<CheckboxCheckedIcon />}
                   />
                 }
                 label="Share with collaborators"
+                sx={{
+                  color: "var(--color-white)",
+                  "& .MuiTypography-root": {
+                    marginLeft: "3px",
+                  },
+                }}
               />
             </FormControl>
           </div>

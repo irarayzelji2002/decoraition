@@ -26,6 +26,7 @@ import {
   dialogContentStyles,
   dialogActionsStyles,
 } from "./RenameModal";
+import { CheckboxIcon, CheckboxCheckedIcon } from "./svg/SharedIcons";
 
 const ShareModal = ({ isOpen, onClose, handleShare, isDesign, object }) => {
   // object is design if isDesign is true, else it is project
@@ -196,19 +197,28 @@ const ShareModal = ({ isOpen, onClose, handleShare, isDesign, object }) => {
                 checked={notifyPeople}
                 onChange={(e) => setNotifyPeople(e.target.checked)}
                 sx={{
-                  margin: "0px 10px",
                   color: "var(--color-white)",
                   "&.Mui-checked": {
                     color: "var(--brightFont)",
                   },
+                  borderRadius: "50%",
+                  "& .MuiSvgIcon-root": {
+                    fontSize: 28,
+                  },
                   "&:hover": {
-                    backgroundColor: "var(--dropdownHover)",
+                    backgroundColor: "var(--iconButtonHover)",
+                  },
+                  "&:active": {
+                    backgroundColor: "var(--iconButtonActive)",
                   },
                 }}
+                icon={<CheckboxIcon />}
+                checkedIcon={<CheckboxCheckedIcon />}
               />
               <p
                 style={{
                   color: "var(--color-white)",
+                  marginLeft: "3px",
                 }}
               >
                 Notify People

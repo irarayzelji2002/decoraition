@@ -12,6 +12,8 @@ import { handleForgotPassword } from "../../firebase";
 import { useState } from "react"; // Import your forgot password function
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { commonInputStyles } from "../../components/Signup";
+import { textFieldInputProps } from "../DesignSpace/DesignSettings";
 
 // TODO: remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
@@ -60,8 +62,18 @@ export default function ForgotPass1() {
             alignItems: "center",
           }}
         >
+          <h2
+            style={{
+              marginLeft: "10px",
+              textAlign: "center",
+              margin: "0px 20px 30px 20px",
+              fontSize: "1.8rem",
+            }}
+          >
+            Enter your email address
+          </h2>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <span className="formLabels">Email Address</span>
+            <span className="formLabels">Email address</span>
             <TextField
               required
               fullWidth
@@ -75,29 +87,8 @@ export default function ForgotPass1() {
               onChange={(e) => setEmail(e.target.value)}
               error={!!emailError}
               helperText={emailError}
-              sx={{
-                marginTop: "10px",
-                marginBottom: "10px",
-                backgroundColor: "var(--inputBg)",
-                input: { color: "var(--color-white)" },
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "var(--borderInput)", // Border color when not focused
-                    borderWidth: "2px", // Adjust the border thickness here
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "var(--borderInput)", // Border color on hover
-                    borderWidth: "2px", // Maintain the thickness on hover
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "var(--borderInputBrighter)", // Border color when focused
-                    borderWidth: "2px", // Maintain the thickness on focus
-                  },
-                },
-                "& .MuiFormHelperText-root": {
-                  color: "var(--color-white)",
-                },
-              }}
+              sx={commonInputStyles}
+              inputProps={textFieldInputProps}
             />
 
             <Button

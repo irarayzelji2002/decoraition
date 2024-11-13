@@ -201,30 +201,24 @@ const grey = {
 const InputElement = styled("input")(
   ({ theme }) => `
   width: 40px;
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: var(--font-size-small);
+  font-family: 'Inter', sans-serif;
+  font-size: 1.3rem;
   font-weight: 400;
   line-height: 1.5;
-  padding: 8px 0px;
+  padding: 13px 0px;
   border-radius: 8px;
   text-align: center;
-  color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
-  background: ${theme.palette.mode === "dark" ? grey[900] : "#fff"};
-  border: 1px solid ${theme.palette.mode === "dark" ? grey[700] : grey[200]};
-  box-shadow: 0px 2px 4px ${
-    theme.palette.mode === "dark" ? "rgba(0,0,0, 0.5)" : "rgba(0,0,0, 0.05)"
-  };
-
+  color: var(--color-white);
+  background: var(--nav-card-modal);
+  border: 2px solid var(--borderInput);
+  box-shadow: none;
   &:hover {
-    border-color: ${blue[400]};
+    border-color: var(--borderInputBrighter);
   }
-
   &:focus {
-    border-color: ${blue[400]};
-    box-shadow: 0 0 0 3px ${theme.palette.mode === "dark" ? blue[600] : blue[200]};
+    border-color: var(--borderInputBrighter);
+    box-shadow: none;
   }
-
-  // firefox
   &:focus-visible {
     outline: 0;
   }
@@ -292,10 +286,18 @@ export default function OneTP() {
         <h1 className="h1-otp">One-Time-Password</h1>
       </div>
       <div className="modal-bg">
-        <h2 style={{ marginLeft: "10px" }}>Verify your account</h2>
-
         <center>
-          <h5>Enter the OTP code sent to {email}</h5>
+          <h2
+            style={{
+              marginLeft: "10px",
+              textAlign: "center",
+              margin: "30px 20px 30px 20px",
+              fontSize: "1.8rem",
+            }}
+          >
+            Verify your account
+          </h2>
+          <h5 style={{ fontWeight: "400" }}>Enter the OTP code sent to {email}</h5>
           {error && <p>{error}</p>}
           <Box
             sx={{
@@ -305,22 +307,29 @@ export default function OneTP() {
               gap: 2,
             }}
           >
-            <OTP separator={<span>-</span>} value={otp} onChange={setOtp} length={6} />
+            <OTP value={otp} onChange={setOtp} length={6} />
           </Box>
-          <h5>
+          <h5 style={{ fontWeight: "400", marginBottom: "-8px" }}>
             Didn’t receive the OTP code?
             {timeLeft > 0 && <span> Resend code in</span>}
           </h5>
           {timeLeft > 0 ? (
-            <div>
+            <div style={{ color: "var(--color-info-grey)", fontSize: "0.875rem" }}>
               {Math.floor(timeLeft / 60)} minutes {(timeLeft % 60).toString().padStart(2, "0")}{" "}
               seconds
             </div>
           ) : (
-            <div>
-              <button className="cancel-link" onClick={handleResend}>
+            <div
+              style={{
+                cursor: "pointer",
+                textDecoration: "underline",
+                textDecorationColor: "var(--orangeButton)",
+                fontSize: "0.875rem",
+              }}
+            >
+              <div className="cancel-link orange" onClick={handleResend}>
                 Resend Code
-              </button>
+              </div>
             </div>
           )}
           <Button

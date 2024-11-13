@@ -72,27 +72,47 @@ h5 {
   cursor: pointer;
 }
 
+.cancel-link.orange {
+  color: var(--orangeButton) !important;
+  text-decoration-color: var(--orangeButton) !important;
+}
+
+.cancel-link.orange:hover {
+  color: var(--orangeButtonHover) !important;
+  text-decoration-color: var(--orangeButtonHover) !important;
+}
+
 .terms-checkbox {
   display: flex;
   align-items: center;
   color: #fff; /* Adjust color as needed */
-  font-size: var(--font-size-h6) !important;
+  font-size: 0.875rem !important;
 }
 
 .terms-checkbox input[type="checkbox"] {
   width: 20px;
   height: 20px;
   margin-right: 10px;
-  accent-color: #d33; /* Customize checkbox color */
+  accent-color: var(--color-quaternary); /* Customize checkbox color */
+}
+.terms-checkbox input[type="checkbox"]:hover,
+.terms-checkbox input[type="checkbox"]:active,
+.terms-checkbox input[type="checkbox"]:focus {
+  accent-color: var(--color-quaternary-hover);
 }
 
 .terms-checkbox label {
-  font-size: var(--font-size-h6) !important;
+  font-size: 0.875rem !important;
   color: #d3d3d3;
 }
 
 .terms-checkbox a {
-  color: #d33;
+  color: var(--orangeButton);
   text-decoration: underline;
   font-weight: bold;
+}
+.terms-checkbox a:hover,
+.terms-checkbox a:active,
+.terms-checkbox a:focus {
+  color: var(--orangeButtonHover);
 }

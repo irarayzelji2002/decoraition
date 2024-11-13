@@ -19,7 +19,8 @@ html {
   margin-bottom: 24px;
 }
 .bg-login {
-  background-image: var(--bg-header);
+  background-image: var(--bg-decor);
+  animation: moveBackground 70s infinite;
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;

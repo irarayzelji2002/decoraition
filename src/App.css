@@ -203,6 +203,8 @@ select:-webkit-autofill {
 
 :root {
   --bg-header: url("../public/img/bg-login.png");
+  --bg-decor: url("../public/img/decorbg.png");
+  --bg-full: url("../public/img/fullbg.png");
   --bg-image: #1f1e22;
   --color-primary: #faa653;
   --color-secondary: #f04f59;
@@ -384,4 +386,13 @@ select:-webkit-autofill {
   --budgetCard: #e0e0e0;
   --lightGradient: linear-gradient(#e0e0e0, #e0e0e0); /* Light version of #27262c */
   --bgMain: #dbdae2;
+}
+
+@keyframes moveBackground {
+  from {
+    background-position: top;
+  }
+  to {
+    background-position: bottom;
+  }
 }

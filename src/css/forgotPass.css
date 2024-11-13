@@ -21,9 +21,10 @@ h5 {
 
 .headtext {
   margin-top: 100px;
+  text-align: center;
 }
 .bg {
-  background-color: var(--bgMain);
+  background-image: var(--bg-header);
   width: 100%;
   min-height: 100vh;
   justify-content: center;

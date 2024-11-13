@@ -396,18 +396,12 @@ function Homepage() {
         {filteredDesigns.length > thresholdDesign &&
           numToShowMoreDesign < filteredDesigns.length && (
             <Button
-              fullWidth
               variant="contained"
               onClick={() => setNumToShowMoreDesign(numToShowMoreDesign + thresholdDesign)}
+              className="cancel-button"
               sx={{
-                background: "var(--gradientButton)",
-                borderRadius: "20px",
-                color: "var(--color-white)",
-                fontWeight: "bold",
-                textTransform: "none",
-                "&:hover": {
-                  background: "var(--gradientButtonHover)",
-                },
+                marginTop: "20px",
+                width: "80%",
               }}
             >
               Show More

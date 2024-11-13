@@ -1,8 +1,12 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { showToast } from "../functions/utils";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
 
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -14,8 +18,6 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Link from "@mui/material/Link";
 import InputAdornment from "@mui/material/InputAdornment";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -37,12 +39,12 @@ const commonInputStyles = {
       borderWidth: "2px", // Maintain the thickness on hover
     },
     "&.Mui-focused fieldset": {
-      borderColor: "var(--borderInputBrighter)", // Border color when focused
+      borderColor: "var(--brightFont)", // Border color when focused
       borderWidth: "2px", // Maintain the thickness on focus
     },
   },
   "& .MuiFormHelperText-root": {
-    color: "var(--color-white)",
+    color: "white",
   },
 };
 
@@ -89,43 +91,45 @@ const Signup = () => {
       formErrors.password = "Password must contain at least 1 special character";
     if (!confirmPassword) formErrors.confirmPassword = "Please confirm your password";
     else if (password !== confirmPassword) formErrors.confirmPassword = "Passwords do not match";
-    if (!isChecked) formErrors.terms = "Please agree to the terms and conditions";
+    if (!isChecked) formErrors.terms = "You must agree to the terms and conditions";
 
     return formErrors;
   };
 
-  const onSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     const formErrors = handleValidation();
-
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "users", user.uid), {
+      const response = await axios.post("/api/register", {
         firstName,
         lastName,
         username,
         email,
+        password,
       });
-
-      console.log(user);
-      await auth.signOut();
-      navigate("/login");
+      if (response.status === 200) {
+        showToast("success", "Registration successful!");
+        navigate("/login");
+      } else {
+        showToast("error", "Registration failed. Please try again.");
+      }
     } catch (error) {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log(errorCode, errorMessage);
-
-      setErrors({
-        email: errorCode === "auth/email-already-in-use" ? "Email already in use" : "",
-        password: errorCode === "auth/weak-password" ? "Password is too weak" : "",
-      });
+      console.error("Registration error:", error);
+      const errMessage = error.response?.data?.message;
+      if (errMessage === "Username already in use") {
+        formErrors.username = "Username already in use";
+        setErrors(formErrors);
+      } else if (errMessage === "Email already in use") {
+        formErrors.email = "Email already in use";
+        setErrors(formErrors);
+      } else {
+        showToast("error", errMessage || "An error occurred during registration");
+      }
     }
   };
 
@@ -141,7 +145,7 @@ const Signup = () => {
             alignItems: "center",
           }}
         >
-          <Box component="form" onSubmit={onSubmit} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleRegister} noValidate sx={{ mt: 1 }}>
             <span className="formLabels">
               First Name
               <span style={{ color: "var(--color-quaternary)" }}> *</span>
@@ -272,7 +276,7 @@ const Signup = () => {
                 ),
               }}
               sx={commonInputStyles}
-            />
+            />{" "}
             <TermsCheckbox isChecked={isChecked} setIsChecked={setIsChecked} errors={errors} />
             <Button
               type="submit"
@@ -291,10 +295,11 @@ const Signup = () => {
         </Box>
         <Grid container justifyContent="center" alignItems="center">
           <Grid item>
-            <Typography variant="body2" sx={{ color: "var(--color-white)", marginRight: 1 }}>
+            <Typography variant="body2" sx={{ color: "white", marginRight: 1 }}>
               Already have an account?
             </Typography>
           </Grid>
+
           <Grid item>
             <Link href="/login" variant="body2" className="cancel-link">
               Login

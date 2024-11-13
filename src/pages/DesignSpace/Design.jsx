@@ -48,7 +48,6 @@ function Design() {
   const [designVersionImages, setDesignVersionImages] = useState([]);
   const [isNextGeneration, setIsNextGeneration] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedImageData, setSelectedImageData] = useState(null);
   const [isSelectingMask, setIsSelectingMask] = useState(false);
   const [imageDescToEdit, setImageDescToEdit] = useState(null);
   const [infoVisible, setInfoVisible] = useState(false);
@@ -69,6 +68,31 @@ function Design() {
   const [isMobileLayout, setIsMobileLayout] = useState(window.innerWidth <= 600);
   const workingAreaRef = useRef(null);
   const imagesWorkSpaceChildRef = useRef(null);
+
+  // For selecting mask and generation
+  const [maskPrompt, setMaskPrompt] = useState("");
+  const [samMaskMask, setSamMaskMask] = useState(null); // for canvas
+  const [samMaskImage, setSamMaskImage] = useState(null); // for generating
+  const [combinedMask, setCombinedMask] = useState(null);
+  const [maskErrors, setMaskErrors] = useState({});
+  const [samDrawing, setSamDrawing] = useState(null);
+  const [pickedColorSam, setPickedColorSam] = useState("var(--samMask)");
+  const [opacitySam, setOpacitySam] = useState(0.5);
+  const [handleClearAllCanvas, setHandleClearAllCanvas] = useState(null);
+  const [previewMask, setPreviewMask] = useState(null);
+  const [base64ImageAdd, setBase64ImageAdd] = useState(null);
+  const [base64ImageRemove, setBase64ImageRemove] = useState(null);
+  const [selectedSamMask, setSelectedSamMask] = useState(null);
+  const [refineMaskOption, setRefineMaskOption] = useState(true); // true for Add first then remove, false for Remove first then add
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Generation
+  const [statusMessage, setStatusMessage] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [eta, setEta] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedImagesPreview, setGeneratedImagesPreview] = useState([]);
+  const [generatedImages, setGeneratedImages] = useState([]);
 
   const handleEdit = async (imageId, description) => {
     console.log("got imageId", imageId);
@@ -312,11 +336,33 @@ function Design() {
                     prevHeight={heightPromptBar}
                     setPrevHeight={setHeightPromptBar}
                     selectedImage={selectedImage}
-                    setSelectedImage={setSelectedImage}
                     isNextGeneration={isNextGeneration}
-                    setIsNextGeneration={setIsNextGeneration}
                     isSelectingMask={isSelectingMask}
                     setIsSelectingMask={setIsSelectingMask}
+                    setStatusMessage={setStatusMessage}
+                    setProgress={setProgress}
+                    setEta={setEta}
+                    setIsGenerating={setIsGenerating}
+                    setGeneratedImagesPreview={setGeneratedImagesPreview}
+                    setGeneratedImages={setGeneratedImages}
+                    samMaskMask={samMaskMask}
+                    maskPrompt={maskPrompt}
+                    combinedMask={combinedMask}
+                    setMaskErrors={setMaskErrors}
+                    samDrawing={samDrawing}
+                    setSamMaskMask={setSamMaskMask}
+                    pickedColorSam={pickedColorSam}
+                    opacitySam={opacitySam}
+                    setSamMaskImage={setSamMaskImage}
+                    setCombinedMask={setCombinedMask}
+                    handleClearAllCanvas={handleClearAllCanvas}
+                    setPreviewMask={setPreviewMask}
+                    samMaskImage={samMaskImage}
+                    base64ImageAdd={base64ImageAdd}
+                    base64ImageRemove={base64ImageRemove}
+                    selectedSamMask={selectedSamMask}
+                    refineMaskOption={refineMaskOption}
+                    showPreview={showPreview}
                   />
                 </div>
               )}
@@ -495,11 +541,41 @@ function Design() {
               </IconButton>
               {isSelectingMask ? (
                 <SelectMaskCanvas
-                  selectedImage={selectedImageData}
+                  selectedImage={selectedImage}
                   showPromptBar={showPromptBar}
                   showComments={showPromptBar}
                   controlWidthComments={showPromptBar}
                   controlWidthPromptBar={showPromptBar}
+                  maskPrompt={maskPrompt}
+                  setMaskPrompt={setMaskPrompt}
+                  samMaskMask={samMaskMask}
+                  setSamMaskMask={setSamMaskMask}
+                  combinedMask={combinedMask}
+                  setCombinedMask={setCombinedMask}
+                  errors={maskErrors}
+                  setErrors={setMaskErrors}
+                  samDrawing={samDrawing}
+                  setSamDrawing={setSamDrawing}
+                  pickedColorSam={pickedColorSam}
+                  setPickedColorSam={setPickedColorSam}
+                  opacitySam={opacitySam}
+                  setOpacitySam={setOpacitySam}
+                  samMaskImage={samMaskImage}
+                  setSamMaskImage={setSamMaskImage}
+                  handleClearAllCanvas={handleClearAllCanvas}
+                  setHandleClearAllCanvas={setHandleClearAllCanvas}
+                  previewMask={previewMask}
+                  setPreviewMask={setPreviewMask}
+                  base64ImageAdd={base64ImageAdd}
+                  setBase64ImageAdd={setBase64ImageAdd}
+                  base64ImageRemove={base64ImageRemove}
+                  setBase64ImageRemove={setBase64ImageRemove}
+                  selectedSamMask={selectedSamMask}
+                  setSelectedSamMask={setSelectedSamMask}
+                  refineMaskOption={refineMaskOption}
+                  setRefineMaskOption={setRefineMaskOption}
+                  showPreview={showPreview}
+                  setShowPreview={setShowPreview}
                 />
               ) : designVersionImages.length > 0 ? (
                 <>
@@ -526,14 +602,11 @@ function Design() {
                             className="image-frame-cont"
                             style={{
                               background:
-                                selectedImage === image.id
+                                selectedImage && selectedImage.id === image.id
                                   ? "var(--gradientButton)"
                                   : "transparent",
                             }}
-                            onClick={() => {
-                              setSelectedImage(image.id);
-                              setSelectedImageData(image);
-                            }}
+                            onClick={() => setSelectedImage(image)}
                           >
                             <div className="image-frame" key={image.id}>
                               {infoVisible ? (

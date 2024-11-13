@@ -41,3 +41,4 @@ ai-api/venv
 
 # test files
 public/test-img/*.png
+public/test-img/**/*.png

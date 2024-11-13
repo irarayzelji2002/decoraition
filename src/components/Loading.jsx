@@ -11,7 +11,7 @@ function Loading() {
       }}
     >
       <div className="loader">
-        <h1 className="navName" style={{ fontSize: "20px" }}>
+        <h1 className="navName drawer" style={{ fontSize: "10px !important" }}>
           Loading...
         </h1>
         <div className="dot-spinner">

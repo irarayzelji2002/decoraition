@@ -15,8 +15,8 @@
 }
 .headerPlace {
   position: relative;
-  background-image: var(--bg-header);
-  animation: moveBackground 30s linear infinite;
+  background-image: var(--bg-full);
+  animation: moveBackground 70s infinite;
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;
@@ -459,6 +459,9 @@ tr:hover td {
 
 /* Small screen sizes */
 @media (max-width: 768px) {
+  .headerPlace {
+    animation: moveBackground 20s infinite;
+  }
   .layout {
     grid-template-columns: repeat(1, 1fr); /* 1 column for small screens */
   }

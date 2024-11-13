@@ -611,6 +611,20 @@ function SelectMaskCanvas({
   const handleGenerateMask = async () => {
     setErrors((prev) => ({ ...prev, maskPrompt: "", initImage: "" }));
     if (dummySamMasks) {
+      // Validation
+      let formErrors = {};
+      const mask_prompt = maskPrompt.trim();
+      const init_image = selectedImage.link;
+      if (!mask_prompt) {
+        formErrors.maskPrompt = "Mask prompt is required to generate a mask.";
+      }
+      if (!init_image) {
+        formErrors.initImage = "Initial image is required to generate a mask.";
+      }
+      if (Object.keys(formErrors).length > 0) {
+        setErrors(formErrors);
+        return;
+      }
       setSamMasks(dummySamMasks);
       const dummySamMask = dummySamMasks[0];
       setSelectedSamMask({
@@ -621,6 +635,8 @@ function SelectMaskCanvas({
       });
       setSamMaskImage(dummySamMask.mask);
       setSamMaskMask(dummySamMask.masked);
+      samDrawing.setNeedsRedraw(true);
+      setSamMaskModalOpen(true);
       return;
     }
     try {
@@ -636,7 +652,11 @@ function SelectMaskCanvas({
         setSamMaskMask,
         samDrawing
       );
-      if (!result.success) {
+      if (result.success) {
+        await Promise.resolve();
+        samDrawing.setNeedsRedraw(true);
+        setSamMaskModalOpen(true);
+      } else {
         console.log(result.message);
         if (result.message !== "Invalid inputs.") showToast("error", result.message);
       }

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../firebase";
-import { doc, setDoc } from "firebase/firestore";
-
+import { showToast } from "../functions/utils";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -104,28 +102,31 @@ const Signup = () => {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "users", user.uid), {
+      const response = await axios.post("/api/register", {
         firstName,
         lastName,
         username,
         email,
+        password,
       });
-
-      console.log(user);
-      await auth.signOut();
-      navigate("/login");
+      if (response.status === 200) {
+        showToast("success", "Registration successful!");
+        navigate("/login");
+      } else {
+        showToast("error", "Registration failed. Please try again.");
+      }
     } catch (error) {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log(errorCode, errorMessage);
-
-      setErrors({
-        email: errorCode === "auth/email-already-in-use" ? "Email already in use" : "",
-        password: errorCode === "auth/weak-password" ? "Password is too weak" : "",
-      });
+      console.error("Registration error:", error);
+      const errMessage = error.response?.data?.message;
+      if (errMessage === "Username already in use") {
+        formErrors.username = "Username already in use";
+        setErrors(formErrors);
+      } else if (errMessage === "Email already in use") {
+        formErrors.email = "Email already in use";
+        setErrors(formErrors);
+      } else {
+        showToast("error", errMessage || "An error occurred during registration");
+      }
     }
   };
 

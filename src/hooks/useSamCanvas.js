@@ -80,10 +80,12 @@ export const useSamCanvas = (
       console.log("Selected Mask Source:", maskSrc);
       setSamMaskMask(maskSrc);
       samMaskImage.onload = function () {
-        applySAMMaskStyling(); // Apply color and opacity styling
+        requestAnimationFrame(() => {
+          redrawCanvas(); // Apply color and opacity styling
+        });
       };
     },
-    [applySAMMaskStyling, setSamMaskMask]
+    [redrawCanvas, setSamMaskMask]
   );
 
   const useSelectedMask = useCallback(
@@ -95,6 +97,9 @@ export const useSamCanvas = (
         if (samMaskImage) {
           // Check if the value does not match any mask in the masks array
           const isValueInMasks = masks.includes(samMaskImage);
+          console.log("Masks:", masks);
+          console.log("samMaskImage:", samMaskImage);
+          console.log("Is Value in Masks:", isValueInMasks);
 
           // If the current value is not in masks, show confirmation dialog
           if (!isValueInMasks) {
@@ -115,6 +120,5 @@ export const useSamCanvas = (
     useSelectedMask,
     actualUseSelectedMask,
     setNeedsRedraw,
-    redrawCanvas,
   };
 };

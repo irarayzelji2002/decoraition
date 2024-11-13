@@ -12,12 +12,27 @@ export const useSamCanvas = (
   setSamMaskMask,
   showPreview
 ) => {
-  console.log("useSamCanvas values:", { color, opacity, canvasRef, previewCanvasRef });
+  const [needsRedraw, setNeedsRedraw] = useState(false);
+
+  // Hex to RGB conversion function
+  const hexToRgb = useCallback((hex) => {
+    let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+      return r + r + g + g + b + b;
+    });
+    let bigint = parseInt(hex.slice(1), 16);
+    let r = (bigint >> 16) & 255;
+    let g = (bigint >> 8) & 255;
+    let b = bigint & 255;
+    return `${r},${g},${b}`;
+  }, []);
+
   const applySAMMaskStyling = useCallback(() => {
     console.log("Applying styling with:", { color, opacity });
 
     let colorHex = color;
     if (colorHex === "var(--samMask)") colorHex = "#7543ff";
+    console.log("Color Hex:", colorHex);
 
     // Handle main canvas
     if (!canvasRef.current) {
@@ -25,7 +40,6 @@ export const useSamCanvas = (
       return;
     }
     const samImage = canvasRef.current?.querySelector("img");
-    console.log("Sam Image:", samImage);
     if (samImage) {
       samImage.style.filter = `drop-shadow(0px 1000px 0px rgba(${hexToRgb(colorHex)}, ${opacity}))`;
     }
@@ -37,25 +51,25 @@ export const useSamCanvas = (
     }
     const previewImage = previewCanvasRef.current?.querySelector("img");
     if (showPreview && previewImage) {
-      console.log("Preview Image:", previewImage);
       previewImage.style.filter = `drop-shadow(0px 1000px 0px rgba(${hexToRgb(
         colorHex
       )}, ${opacity}))`;
     }
-  }, [canvasRef, previewCanvasRef, color, opacity, showPreview]);
+  }, [color, opacity, canvasRef, previewCanvasRef, showPreview, hexToRgb]);
 
-  // Hex to RGB conversion function
-  const hexToRgb = (hex) => {
-    let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function (m, r, g, b) {
-      return r + r + g + g + b + b;
-    });
-    let bigint = parseInt(hex.slice(1), 16);
-    let r = (bigint >> 16) & 255;
-    let g = (bigint >> 8) & 255;
-    let b = bigint & 255;
-    return `${r},${g},${b}`;
-  };
+  useEffect(() => {
+    if (needsRedraw) {
+      applySAMMaskStyling();
+    }
+  }, [needsRedraw, applySAMMaskStyling]);
+
+  useEffect(() => {
+    setNeedsRedraw(true);
+  }, [color, opacity, showPreview]);
+
+  const redrawCanvas = useCallback(() => {
+    applySAMMaskStyling();
+  }, [applySAMMaskStyling]);
 
   // update the mask path input and display the selected mask
   const actualUseSelectedMask = useCallback(
@@ -100,5 +114,7 @@ export const useSamCanvas = (
     applySAMMaskStyling,
     useSelectedMask,
     actualUseSelectedMask,
+    setNeedsRedraw,
+    redrawCanvas,
   };
 };

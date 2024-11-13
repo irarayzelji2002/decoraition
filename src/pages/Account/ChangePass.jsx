@@ -7,10 +7,10 @@ import { showToast } from "../../functions/utils";
 export default function ChangePassw() {
   const location = useLocation();
   const { email, token } = location.state || {};
-  // if (!email || !token) {
-  //   showToast("error", "Session invalid");
-  //   return <Navigate to="/forgot" replace />;
-  // }
+  if (!email || !token) {
+    showToast("error", "Session invalid");
+    return <Navigate to="/forgot" replace />;
+  }
 
   return (
     <div className="bg-login">

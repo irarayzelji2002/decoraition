@@ -38,7 +38,7 @@ export default function ChangePass({ email, token }) {
         navigate("/forgot");
       }
     };
-    // checkTokenExpiration();
+    checkTokenExpiration();
     const intervalId = setInterval(checkTokenExpiration, 60000); // Check every minute
     return () => clearInterval(intervalId);
   }, [token, navigate]);

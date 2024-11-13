@@ -52,12 +52,12 @@ function ProjectOptionsHome({
           src={"/img/Room1.png"}
           className="pic"
           alt="Design"
-          style={{ objectFit: "cover", objectPosition: "top left" }}
+          style={{ objectFit: "cover", objectPosition: "center" }}
         />
       </div>
 
       {/* Design title */}
-      <div width="100%" style={{ textAlign: "start" }}>
+      <div style={{ textAlign: "start", padding: "0px 3px", width: "100%" }}>
         <h3 className="titleDesign" onClick={onOpen}>
           {name}
         </h3>

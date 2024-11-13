@@ -371,7 +371,6 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
             <ChromePicker
               disableAlpha
               color={pickedColor ?? defaultColor}
-              onChangeComplete={handleColorChange}
               onChange={debouncedColorChange}
               className="color-picker-cont"
               styles={{

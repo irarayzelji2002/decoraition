@@ -13,9 +13,18 @@ from flask import Flask, request, jsonify, send_file, redirect, url_for, send_fr
 from datetime import datetime
 import threading
 import time
+from io import BytesIO
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            r"http://localhost:\d+", 
+            "https://decoraition.onrender.com", 
+            "https://decoraition.org", 
+            "https://www.decoraition.org"
+    ]}
+})
 
 # Constant variables
 SD_URL = "http://127.0.0.1:7860"
@@ -47,11 +56,17 @@ def allowed_file(filename):
 def generate_image_filename(extension="png"):
     return f"{uuid.uuid4()}.{extension}"
 
-def load_and_encode_image(image_file):
+def load_and_encode_image(image_file, from_url=False):
     """Load an image using PIL and encode it to base64 PNG for ControlNet."""
     try:
-        # Load image with PIL
-        image = Image.open(image_file).convert('RGB')
+        # Check if image is a URL or file
+        if from_url:
+            response = requests.get(image_file)
+            response.raise_for_status()
+            image = Image.open(BytesIO(response.content)).convert('RGB')
+        else:
+            # Load image with PIL
+            image = Image.open(image_file).convert('RGB')
 
         # Convert PIL image to a numpy array
         image_np = np.array(image)
@@ -718,13 +733,24 @@ def generate_sam_mask_route():
         # Validate request data
         data = request.form if request.content_type.startswith('multipart/form-data') else request.json
         mask_prompt = data.get('mask_prompt', "").strip()
-        init_image = request.files.get('init_image')
+        init_image = request.files.get('init_image') or request.form.get('init_image')
+        init_image_encoded = None
         
-        if not init_image or not allowed_file(init_image.filename):
-            return jsonify({"error": "Valid base image is required"}), 400
         if not mask_prompt:
             return jsonify({"error": "Mask prompt is required"}), 400
-        init_image_encoded = load_and_encode_image(init_image)
+        if init_image:
+            if isinstance(init_image, str):  # If it's a URL string
+                print(f"Init image received.")
+                init_image_encoded = load_and_encode_image(init_image, from_url=True)
+                print(f"Init image successfully loaded.")
+            elif allowed_file(init_image.filename):  # If it's an uploaded file
+                print(f"Init image received.")
+                init_image_encoded = load_and_encode_image(init_image)
+                print(f"Init image successfully loaded.")
+            elif not allowed_file(init_image.filename):
+                return jsonify({"error": "Invalid base image"}), 400
+        else:
+            return jsonify({"error": "Invalid base image"}), 400
 
         # Call generate SAM mask function
         response = generate_sam_mask(init_image_encoded, mask_prompt)
@@ -1021,11 +1047,16 @@ def validate_next_generation_request(data):
             color_palette_str = data.get('color_palette', '[]')
             color_palette = json.loads(color_palette_str) if color_palette_str else []
             # Init image
-            init_image = request.files.get('init_image')
-            if init_image and allowed_file(init_image.filename):
-                print(f"Init image received.")
-                init_image_encoded = load_and_encode_image(init_image)
-                print(f"Init image successfully loaded.")
+            init_image = request.files.get('init_image') or request.form.get('init_image')
+            if init_image:
+                if isinstance(init_image, str):  # If it's a URL string
+                    print(f"Init image received.")
+                    init_image_encoded = load_and_encode_image(init_image, from_url=True)
+                    print(f"Init image successfully loaded.")
+                elif allowed_file(init_image.filename):  # If it's an uploaded file
+                    print(f"Init image received.")
+                    init_image_encoded = load_and_encode_image(init_image)
+                    print(f"Init image successfully loaded.")
             else:
                 print(f"No init image received.")
                 init_image_encoded = None

@@ -37,6 +37,7 @@ import {
 } from "../../components/RenameModal";
 import { set } from "lodash";
 import deepEqual from "deep-equal";
+import { generateFirstImage, generateNextImage } from "./backend/DesignActions";
 
 const theme = extendTheme({
   components: {
@@ -61,11 +62,33 @@ function PromptBar({
   prevHeight,
   setPrevHeight,
   selectedImage,
-  setSelectedImage,
   isNextGeneration,
-  setIsNextGeneration,
   isSelectingMask,
   setIsSelectingMask,
+  setStatusMessage, // checkTaskStatus args
+  setProgress,
+  setEta,
+  setIsGenerating,
+  setGeneratedImagesPreview,
+  setGeneratedImages,
+  samMaskMask,
+  maskPrompt, // second geenration args
+  combinedMask,
+  setMaskErrors, // applyMask args
+  samDrawing,
+  setSamMaskMask,
+  pickedColorSam,
+  opacitySam,
+  setSamMaskImage,
+  setCombinedMask,
+  handleClearAllCanvas,
+  setPreviewMask,
+  samMaskImage,
+  base64ImageAdd,
+  base64ImageRemove,
+  selectedSamMask,
+  refineMaskOption,
+  showPreview,
 }) {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
 
@@ -91,12 +114,13 @@ function PromptBar({
   const styleRefFileInputRef = useRef(null);
 
   const [prompt, setPrompt] = useState("");
-  const [numImageToGenerate, setNumImageToGenerate] = useState(1);
+  const [numberOfImages, setNumberOfImages] = useState(1);
+  const [generationErrors, setGenerationErrors] = useState({});
 
   const [isSmallWidth, setIsSmallWidth] = useState(false);
 
   const handleSliderChange = (event, newValue) => {
-    setNumImageToGenerate(newValue);
+    setNumberOfImages(newValue);
   };
 
   const handleColorPaletteChange = (event, newValue) => {
@@ -389,6 +413,75 @@ function PromptBar({
     checkWorkingAreaHeight();
   }, [numImageFrames]);
 
+  useEffect(() => {
+    if (generationErrors && Object.keys(generationErrors).length > 0)
+      if (generationErrors.general) showToast("error", generationErrors.general);
+  }, [generationErrors]);
+
+  const handleGeneration = async () => {
+    try {
+      if (!isNextGeneration) {
+        const colorPaletteToUse = userColorPalettes.find(
+          (palette) => palette.colorPaletteId === colorPalette
+        );
+        const colorPalettePassed = colorPaletteToUse ? colorPaletteToUse.colors.join(",") : "";
+        await generateFirstImage(
+          prompt, // actual generation args
+          numberOfImages,
+          colorPalettePassed,
+          baseImage,
+          styleRef,
+          setGenerationErrors,
+          setStatusMessage, // checkTaskStatus args
+          setProgress,
+          setEta,
+          setIsGenerating,
+          setGeneratedImagesPreview,
+          setGeneratedImages
+        );
+      } else {
+        const colorPaletteToUse = userColorPalettes.find(
+          (palette) => palette.colorPaletteId === colorPalette
+        );
+        const colorPalettePassed = colorPaletteToUse ? colorPaletteToUse.colors.join(",") : "";
+        await generateNextImage(
+          prompt, // actual generation args
+          numberOfImages,
+          colorPalettePassed,
+          selectedImage,
+          samMaskMask,
+          styleRef,
+          maskPrompt,
+          combinedMask,
+          setGenerationErrors,
+          setStatusMessage, // checkTaskStatus args
+          setProgress,
+          setEta,
+          setIsGenerating,
+          setGeneratedImagesPreview,
+          setGeneratedImages,
+          setMaskErrors, // applyMask args
+          samDrawing,
+          setSamMaskMask,
+          pickedColorSam,
+          opacitySam,
+          setSamMaskImage,
+          setCombinedMask,
+          handleClearAllCanvas,
+          setPreviewMask,
+          samMaskImage,
+          base64ImageAdd,
+          base64ImageRemove,
+          selectedSamMask,
+          refineMaskOption,
+          showPreview
+        );
+      }
+    } catch (error) {
+      setGenerationErrors((prev) => ({ ...prev, general: "Failed to generate image" }));
+    }
+  };
+
   return (
     <>
       <CssVarsProvider theme={theme}>
@@ -453,6 +546,8 @@ function PromptBar({
             >
               <Textarea
                 placeholder="Enter a prompt"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
                 maxRows={2}
                 disabled={disabled}
                 sx={{
@@ -493,7 +588,7 @@ function PromptBar({
                 valueLabelDisplay="auto"
                 min={1}
                 max={4}
-                value={numImageToGenerate}
+                value={numberOfImages}
                 onChange={handleSliderChange}
                 disabled={disabled}
                 sx={{
@@ -771,7 +866,11 @@ function PromptBar({
                       Select a color pallete
                     </Option>
                     {userColorPalettes.map((palette) => (
-                      <Option key={palette.colorPaletteId} sx={optionStyles} value="Among Us">
+                      <Option
+                        key={palette.colorPaletteId}
+                        sx={optionStyles}
+                        value={palette.colorPaletteId}
+                      >
                         <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
                           {palette.paletteName}
                           <div

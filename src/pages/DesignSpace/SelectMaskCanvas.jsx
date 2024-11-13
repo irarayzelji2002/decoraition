@@ -273,13 +273,13 @@ function SelectMaskCanvas({
       // console.log(`${width} <= 510`);
       container.querySelector(".maskTypeOptions")?.classList.add("width-510");
       container.querySelector(".generateMaskButton")?.classList.add("width-510");
+      container.querySelector(".showPreviewButton")?.classList.add("width-510");
     }
     if (width <= 500) {
       // console.log(`${width} <= 500`);
       container.querySelector(".canvasSliders")?.classList.add("width-500");
       container.querySelector(".maskTypeOptionsButtons")?.classList.add("width-500");
       container.querySelector(".canvasModeAndVisibility")?.classList.add("width-500");
-      container.querySelector(".showPreviewButton")?.classList.add("width-500");
       container.querySelector(".samMaskControls")?.classList.add("width-500");
     }
     if (width <= 374) {
@@ -498,6 +498,12 @@ function SelectMaskCanvas({
     }
   }, [opacityAdd, opacityRemove, pickedColorAdd, pickedColorRemove]);
 
+  // Update canvas when color and opacity changes (sam)
+  useEffect(() => {
+    if (samDrawing) samDrawing.setNeedsRedraw(true);
+    console.log("from useeffect:", samDrawing);
+  }, [opacitySam, pickedColorSam, showPreview]);
+
   // Update SAM mask when image, color, or opacity changes
   useEffect(() => {
     if (samDrawing && selectedSamMask) {
@@ -532,13 +538,8 @@ function SelectMaskCanvas({
         if (!removeCanvasRef.current || !removeDrawing) return;
         removeDrawing.redrawCanvas();
       }, 100),
-
-      sam: debounce((color, opacity) => {
-        if (!samCanvasRef.current || !samDrawing || !selectedSamMask) return;
-        samDrawing.applySAMMaskStyling();
-      }, 100),
     };
-  }, [addDrawing, removeDrawing, samDrawing]);
+  }, [addDrawing, removeDrawing]);
 
   const handleOpacityChange = (opacity, canvas) => {
     if (canvas === "add") {
@@ -549,20 +550,8 @@ function SelectMaskCanvas({
       debouncedRedraw.remove(pickedColorRemove, opacity);
     } else if (canvas === "sam") {
       setOpacitySam(opacity);
-      if (samDrawing && samDrawing.applySAMMaskStyling) samDrawing.applySAMMaskStyling();
     }
   };
-
-  useEffect(() => {
-    console.log("Effect triggered:", { samDrawing, opacitySam, showPreview });
-
-    if (samDrawing?.applySAMMaskStyling) {
-      samDrawing.applySAMMaskStyling();
-    } else {
-      console.log("samDrawing or applySAMMaskStyling not available");
-    }
-    // if (samDrawing && samDrawing.applySAMMaskStyling) handleOpacityChange(opacitySam, "sam");
-  }, [samDrawing, opacitySam, pickedColorSam, showPreview]);
 
   useEffect(() => {
     return () => {
@@ -622,6 +611,20 @@ function SelectMaskCanvas({
   const handleGenerateMask = async () => {
     setErrors((prev) => ({ ...prev, maskPrompt: "", initImage: "" }));
     if (dummySamMasks) {
+      // Validation
+      let formErrors = {};
+      const mask_prompt = maskPrompt.trim();
+      const init_image = selectedImage.link;
+      if (!mask_prompt) {
+        formErrors.maskPrompt = "Mask prompt is required to generate a mask.";
+      }
+      if (!init_image) {
+        formErrors.initImage = "Initial image is required to generate a mask.";
+      }
+      if (Object.keys(formErrors).length > 0) {
+        setErrors(formErrors);
+        return;
+      }
       setSamMasks(dummySamMasks);
       const dummySamMask = dummySamMasks[0];
       setSelectedSamMask({
@@ -632,6 +635,8 @@ function SelectMaskCanvas({
       });
       setSamMaskImage(dummySamMask.mask);
       setSamMaskMask(dummySamMask.masked);
+      samDrawing.setNeedsRedraw(true);
+      setSamMaskModalOpen(true);
       return;
     }
     try {
@@ -647,7 +652,11 @@ function SelectMaskCanvas({
         setSamMaskMask,
         samDrawing
       );
-      if (!result.success) {
+      if (result.success) {
+        await Promise.resolve();
+        samDrawing.setNeedsRedraw(true);
+        setSamMaskModalOpen(true);
+      } else {
         console.log(result.message);
         if (result.message !== "Invalid inputs.") showToast("error", result.message);
       }
@@ -771,6 +780,7 @@ function SelectMaskCanvas({
                 height: "42.6px",
                 borderRadius: "0px 8px 8px 0px",
                 marginLeft: "-145px !important",
+                marginTop: "2.5px !important",
                 "@media (max-width: 600px)": {
                   borderRadius: "35px",
                   // marginLeft: "0px !important",
@@ -1218,7 +1228,7 @@ function SelectMaskCanvas({
                       <Slider
                         value={opacitySam}
                         valueLabelFormat={percentText}
-                        onChange={(e, value) => setOpacitySam(value)}
+                        onChange={(e, value) => handleOpacityChange(value, "sam")}
                         min={0}
                         max={1}
                         step={0.1}

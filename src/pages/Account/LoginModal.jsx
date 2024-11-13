@@ -277,6 +277,7 @@ export default function LoginModal() {
                     edge="end"
                     sx={{
                       color: "var(--color-grey)",
+                      marginRight: "-9px",
                     }}
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}

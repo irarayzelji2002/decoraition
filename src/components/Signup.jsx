@@ -244,6 +244,7 @@ const Signup = () => {
                       edge="end"
                       sx={{
                         color: "var(--color-grey)",
+                        marginRight: "-9px",
                       }}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -279,6 +280,7 @@ const Signup = () => {
                       edge="end"
                       sx={{
                         color: "var(--color-grey)",
+                        marginRight: "-9px",
                       }}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}

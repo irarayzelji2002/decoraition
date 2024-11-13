@@ -38,7 +38,7 @@ export default function ChangePass({ email, token }) {
         navigate("/forgot");
       }
     };
-    checkTokenExpiration();
+    // checkTokenExpiration();
     const intervalId = setInterval(checkTokenExpiration, 60000); // Check every minute
     return () => clearInterval(intervalId);
   }, [token, navigate]);
@@ -92,7 +92,7 @@ export default function ChangePass({ email, token }) {
           style={{
             marginLeft: "10px",
             textAlign: "center",
-            margin: "0px 20px 30px 20px",
+            margin: "0px 20px 20px 20px",
             fontSize: "1.8rem",
           }}
         >
@@ -116,6 +116,7 @@ export default function ChangePass({ email, token }) {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             error={!!errors.newPassword}
+            label="Enter your new password"
             helperText={errors.newPassword}
           />
           <span className="formLabels">
@@ -126,7 +127,7 @@ export default function ChangePass({ email, token }) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             error={!!errors.confirmPassword}
-            label="Confirm Password"
+            label="Confirm your new password"
             helperText={errors.confirmPassword}
           />
           <Button

@@ -314,7 +314,9 @@ export default function OneTP() {
             {timeLeft > 0 && <span> Resend code in</span>}
           </h5>
           {timeLeft > 0 ? (
-            <div style={{ color: "var(--color-info-grey)", fontSize: "0.875rem" }}>
+            <div
+              style={{ color: "var(--color-info-grey)", fontSize: "0.875rem", marginTop: "15px" }}
+            >
               {Math.floor(timeLeft / 60)} minutes {(timeLeft % 60).toString().padStart(2, "0")}{" "}
               seconds
             </div>

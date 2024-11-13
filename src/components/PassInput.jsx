@@ -19,29 +19,15 @@ export default function Password({ value, onChange, error, helperText, label }) 
   };
 
   return (
-    <FormControl
-      sx={{ width: "100%", marginTop: "10px", marginBottom: "10px" }}
-      variant="outlined"
-      error={error}
-    >
-      <InputLabel
-        htmlFor="outlined-adornment-password"
-        sx={{
-          color: "var(--borderInput)", // Default label color
-          "&.Mui-focused": {
-            color: "var(--borderInput)", // Label color when focused
-          },
-        }}
-      >
-        {label || "Password"}
-      </InputLabel>
+    <FormControl sx={{ width: "100%" }} variant="outlined" error={error}>
       <TextField
         id="outlined-adornment-password"
         type={showPassword ? "text" : "password"}
         value={value}
         onChange={onChange}
-        label="Password"
-        sx={commonInputStyles}
+        label=""
+        sx={{ ...commonInputStyles, marginBottom: "20px" }}
+        placeholder={label}
         InputProps={{
           style: { color: "var(--color-white)" },
           endAdornment: (
@@ -53,6 +39,7 @@ export default function Password({ value, onChange, error, helperText, label }) 
                 edge="end"
                 sx={{
                   color: "var(--color-grey)",
+                  marginRight: "-9px",
                 }}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}

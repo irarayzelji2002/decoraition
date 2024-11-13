@@ -64,12 +64,12 @@
   justify-content: center;
   font-weight: bold !important;
   text-decoration-color: var(--brightFont) !important;
-
+  text-decoration: none;
   transition: 0.3s ease;
 }
 
 .seeAll:hover {
-  opacity: 0.7;
+  color: var(--brightFontHover) !important;
 }
 
 .workspace {

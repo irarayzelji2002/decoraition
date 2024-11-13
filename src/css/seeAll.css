@@ -133,17 +133,20 @@
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   border: 2px solid transparent;
-  background-image: var(--darkGradient), var(--gradientButton);
+
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }
 
-/* .pagination-button.active {
- 
-} */
+.pagination-button.active {
+  background-image: var(--gradientButton);
+}
+
+.pagination-button.active:hover {
+  background-image: var(--gradientButtonHover);
+}
 
 .pagination-button:hover {
-  background-image: var(--gradientButton);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 

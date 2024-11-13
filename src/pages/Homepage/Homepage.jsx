@@ -20,6 +20,7 @@ import {
 } from "./backend/HomepageActions";
 
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -36,7 +37,9 @@ import Loading from "../../components/Loading.jsx";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage.jsx";
 import { set } from "lodash";
 import { handleLogout } from "./backend/HomepageFunctions.jsx";
-import { HorizontalIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
+import { HorizontalIcon, ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
+import { iconButtonStyles } from "./DrawerComponent.jsx";
+import { gradientButtonStyles, outlinedButtonStyles } from "../DesignSpace/PromptBar.jsx";
 
 function Homepage() {
   const navigate = useNavigate();
@@ -227,24 +230,46 @@ function Homepage() {
               src="/img/Logo-Colored.png"
               alt="logo"
             />
-            <div>
+            <div className="homepageHeader">
               <h1 className="navName">DecorAItion</h1>
               <p className="navTagline">Forming ideas with generative AI</p>
             </div>
           </div>{" "}
           <div className="action-buttons">
-            <button
-              className="design-button"
+            <Button
+              variant="contained"
               onClick={() => handleCreateDesign(user, userDoc.id, navigate)}
+              sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundImage = "var(--gradientButton)";
+                e.target.style.padding = "8px 18px";
+                e.target.style.border = "none";
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)";
+                e.target.style.border = "2px solid transparent";
+                e.target.style.padding = "6px 16px";
+              }}
             >
               Create a design
-            </button>
-            <button
-              className="project-button"
+            </Button>
+            <Button
+              variant="contained"
               onClick={() => handleCreateProject(user, userDoc.id, navigate)}
+              sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundImage = "var(--gradientButton)";
+                e.target.style.padding = "8px 18px";
+                e.target.style.border = "none";
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)";
+                e.target.style.border = "2px solid transparent";
+                e.target.style.padding = "6px 16px";
+              }}
             >
               Create a project
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -255,23 +280,60 @@ function Homepage() {
             <div className="separator">
               {/* <DesignSvg /> */}
               <h2>Recent Designs</h2>
-              <div style={{ marginLeft: "auto", display: "inline-flex" }}>
+              <div style={{ marginLeft: "auto", display: "inline-flex", marginBottom: "10px" }}>
                 {filteredDesigns.length > 0 && (
-                  <Button
-                    className="gradient-from-none"
-                    onClick={() => {
-                      setViewForDesigns(viewForDesigns === 0 ? 1 : 0); // Immediately update the state
-                      handleViewChange(
-                        user,
-                        userDoc.id,
-                        userDoc.layoutSettings,
-                        "designsListHome",
-                        setViewForDesigns
-                      );
-                    }}
-                  >
-                    {viewForDesigns === 0 ? <ListIcon /> : <HorizontalIcon />}
-                  </Button>
+                  <div className="homepageIconButtons">
+                    <IconButton
+                      onClick={() => {
+                        setViewForDesigns(viewForDesigns === 0 ? 1 : 0); // Immediately update the state
+                        handleViewChange(
+                          user,
+                          userDoc.id,
+                          userDoc.layoutSettings,
+                          "designsListHome",
+                          setViewForDesigns
+                        );
+                      }}
+                      sx={{
+                        ...iconButtonStyles,
+                        padding: "10px",
+                        margin: "0px 5px",
+                        borderRadius: "8px",
+                        backgroundColor:
+                          viewForDesigns === 0 ? "var(--nav-card-modal)" : "transparent",
+                        "@media (max-width: 366px)": {
+                          padding: "8px",
+                        },
+                      }}
+                    >
+                      <TiledIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => {
+                        setViewForDesigns(viewForDesigns === 0 ? 1 : 0); // Immediately update the state
+                        handleViewChange(
+                          user,
+                          userDoc.id,
+                          userDoc.layoutSettings,
+                          "designsListHome",
+                          setViewForDesigns
+                        );
+                      }}
+                      sx={{
+                        ...iconButtonStyles,
+                        padding: "10px",
+                        margin: "0px 5px",
+                        borderRadius: "8px",
+                        backgroundColor:
+                          viewForDesigns === 1 ? "var(--nav-card-modal)" : "transparent",
+                        "@media (max-width: 366px)": {
+                          padding: "8px",
+                        },
+                      }}
+                    >
+                      <ListIcon />
+                    </IconButton>
+                  </div>
                 )}
                 <Link to="/seeAllDesigns" className="seeAll">
                   See All
@@ -285,7 +347,10 @@ function Homepage() {
                   viewForDesigns === 0 ? (
                     <div className="layout">
                       {filteredDesigns.slice(0, 6 + numToShowMoreDesign).map((design) => (
-                        <div key={design.id} style={{ width: "100%" }}>
+                        <div
+                          key={design.id}
+                          style={{ width: "100%", display: "flex", justifyContent: "center" }}
+                        >
                           <DesignIcon
                             id={design.id}
                             name={design.designName}
@@ -354,23 +419,60 @@ function Homepage() {
             <div className="separator">
               {/* <ProjectIcon /> */}
               <h2>Recent Projects</h2>
-              <div style={{ marginLeft: "auto", display: "inline-flex" }}>
+              <div style={{ marginLeft: "auto", display: "inline-flex", marginBottom: "10px" }}>
                 {filteredProjects.length > 0 && (
-                  <Button
-                    className="gradient-from-none"
-                    onClick={() => {
-                      setViewForProjects(viewForProjects === 0 ? 1 : 0); // Immediately update the state
-                      handleViewChange(
-                        user,
-                        userDoc.id,
-                        userDoc.layoutSettings,
-                        "projectsListHome",
-                        setViewForProjects
-                      );
-                    }}
-                  >
-                    {viewForProjects === 0 ? <ListIcon /> : <HorizontalIcon />}
-                  </Button>
+                  <div className="homepageIconButtons">
+                    <IconButton
+                      onClick={() => {
+                        setViewForProjects(viewForProjects === 0 ? 1 : 0); // Immediately update the state
+                        handleViewChange(
+                          user,
+                          userDoc.id,
+                          userDoc.layoutSettings,
+                          "projectsListHome",
+                          setViewForProjects
+                        );
+                      }}
+                      sx={{
+                        ...iconButtonStyles,
+                        padding: "10px",
+                        margin: "0px 5px",
+                        borderRadius: "8px",
+                        backgroundColor:
+                          viewForProjects === 0 ? "var(--nav-card-modal)" : "transparent",
+                        "@media (max-width: 366px)": {
+                          padding: "8px",
+                        },
+                      }}
+                    >
+                      <TiledIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => {
+                        setViewForProjects(viewForProjects === 0 ? 1 : 0); // Immediately update the state
+                        handleViewChange(
+                          user,
+                          userDoc.id,
+                          userDoc.layoutSettings,
+                          "projectsListHome",
+                          setViewForProjects
+                        );
+                      }}
+                      sx={{
+                        ...iconButtonStyles,
+                        padding: "10px",
+                        margin: "0px 5px",
+                        borderRadius: "8px",
+                        backgroundColor:
+                          viewForProjects === 1 ? "var(--nav-card-modal)" : "transparent",
+                        "@media (max-width: 366px)": {
+                          padding: "8px",
+                        },
+                      }}
+                    >
+                      <ListIcon />
+                    </IconButton>
+                  </div>
                 )}
                 <Link to="/seeAllProjects" className="seeAll">
                   See All

@@ -12,9 +12,15 @@ import { fetchTasks, deleteTask } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@mui/material";
-import { CalendarIcon, HorizontalIcon, ListIcon, SingleIcon } from "./svg/ExportIcon";
+import { Button, IconButton } from "@mui/material";
+import {
+  CalendarIcon,
+  HorizontalIcon,
+  ListIconTimeline,
+  SingleIconTimeline,
+} from "./svg/ExportIcon";
 import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
 
 function Timeline() {
   const [date, setDate] = useState(new Date());
@@ -123,23 +129,41 @@ function Timeline() {
       <ToastContainer />
       <div className="timeline-container">
         <div className="center-me" style={{ flexDirection: "row", marginBottom: "20px" }}>
-          <Button
-            className="gradient-from-none"
-            style={{ marginRight: "10px" }}
+          <IconButton
             onClick={() => setViewMode("calendar")}
+            sx={{
+              ...iconButtonStyles,
+              padding: "10px",
+              marginRight: "10px",
+              borderRadius: "8px",
+              backgroundColor: viewMode === "calendar" ? "var(--nav-card-modal)" : "transparent",
+            }}
           >
             <CalendarIcon />
-          </Button>
-          <Button
-            className="gradient-from-none"
-            style={{ marginRight: "10px" }}
+          </IconButton>
+          <IconButton
             onClick={handleListIconClick}
+            sx={{
+              ...iconButtonStyles,
+              padding: "10px",
+              marginRight: "10px",
+              borderRadius: "8px",
+              backgroundColor: viewMode === "list" ? "var(--nav-card-modal)" : "transparent",
+            }}
           >
-            <ListIcon />
-          </Button>
-          <Button className="gradient-from-none" onClick={handleSingleIconClick}>
-            <SingleIcon />
-          </Button>
+            <ListIconTimeline />
+          </IconButton>
+          <IconButton
+            onClick={handleSingleIconClick}
+            sx={{
+              ...iconButtonStyles,
+              padding: "10px",
+              borderRadius: "8px",
+              backgroundColor: viewMode === "single" ? "var(--nav-card-modal)" : "transparent",
+            }}
+          >
+            <SingleIconTimeline />
+          </IconButton>
         </div>
         {viewMode === "calendar" && (
           <>

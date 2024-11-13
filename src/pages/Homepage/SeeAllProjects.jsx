@@ -8,10 +8,14 @@ import Loading from "../../components/Loading.jsx";
 import Dropdowns from "../../components/Dropdowns.jsx";
 import ProjectOptionsHome from "../../components/ProjectOptionsHome.jsx";
 import HomepageTable from "./HomepageTable.jsx";
-import { Button } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
+import {
+  ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
+  ArrowBackIosRounded as ArrowBackIosRoundedIcon,
+} from "@mui/icons-material";
 import {
   handleDeleteProject,
   handleViewChange,
@@ -19,7 +23,10 @@ import {
   formatDateLong,
   getUsernames,
 } from "./backend/HomepageActions";
-import { HorizontalIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
+import { HorizontalIcon, ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
+import { iconButtonStyles } from "./DrawerComponent.jsx";
+import { disable } from "workbox-navigation-preload";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
 
 export default function SeeAllProjects() {
   const navigate = useNavigate();
@@ -150,12 +157,11 @@ export default function SeeAllProjects() {
         <section className="recent-section">
           <div className="recent-projects">
             <div className="separator">
-              <div className="title">Projects</div>
-              <div style={{ marginLeft: "auto", display: "inline-flex" }}>
+              <h2>Projects</h2>
+              <div style={{ marginLeft: "auto", display: "inline-flex", marginBottom: "10px" }}>
                 {filteredProjects.length > 0 && (
                   <div>
-                    <Button
-                      className="gradient-from-none"
+                    <IconButton
                       onClick={() =>
                         handleViewChange(
                           user,
@@ -165,9 +171,42 @@ export default function SeeAllProjects() {
                           setView
                         )
                       }
+                      sx={{
+                        ...iconButtonStyles,
+                        padding: "10px",
+                        margin: "0px 5px",
+                        borderRadius: "8px",
+                        backgroundColor: view === 0 ? "var(--nav-card-modal)" : "transparent",
+                        "@media (max-width: 366px)": {
+                          padding: "8px",
+                        },
+                      }}
                     >
-                      {view === 0 ? <ListIcon /> : <HorizontalIcon />}
-                    </Button>
+                      <TiledIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() =>
+                        handleViewChange(
+                          user,
+                          userDoc.id,
+                          userDoc.layoutSettings,
+                          "projectsListProjects",
+                          setView
+                        )
+                      }
+                      sx={{
+                        ...iconButtonStyles,
+                        padding: "10px",
+                        margin: "0px 5px",
+                        borderRadius: "8px",
+                        backgroundColor: view === 1 ? "var(--nav-card-modal)" : "transparent",
+                        "@media (max-width: 366px)": {
+                          padding: "8px",
+                        },
+                      }}
+                    >
+                      <ListIcon />
+                    </IconButton>
                   </div>
                 )}
               </div>
@@ -235,29 +274,48 @@ export default function SeeAllProjects() {
         {totalPages > 0 && (
           <div className="pagination-controls">
             {/* Previous Page Button */}
-            <button onClick={handlePreviousPage} className="pagination-arrow" disabled={page === 1}>
-              &lt;
-            </button>
+            <IconButton onClick={handlePreviousPage} disabled={page === 1} sx={iconButtonStyles}>
+              <ArrowBackIosRoundedIcon
+                sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+              />
+            </IconButton>
 
             {/* Map over an array to create pagination buttons */}
             {Array.from({ length: totalPages }, (_, index) => (
-              <button
+              <Button
                 key={index + 1}
-                className={`pagination-button ${page === index + 1 ? "active" : ""}`}
                 onClick={() => handlePageClick(index + 1)}
+                sx={{
+                  ...gradientButtonStyles,
+                  aspectRatio: "1/1",
+                  background:
+                    page === index + 1
+                      ? "var(--gradientButton) !important"
+                      : "var(--iconBg) !important",
+
+                  minWidth: page === index + 1 ? "40px" : "36.5px",
+                  "&:hover": {
+                    background:
+                      page === index + 1
+                        ? "var(--gradientButtonHover) !important"
+                        : "var(--iconBgHover) !important",
+                  },
+                }}
               >
                 {index + 1}
-              </button>
+              </Button>
             ))}
 
             {/* Next Page Button */}
-            <button
+            <IconButton
               onClick={handleNextPage}
-              className="pagination-arrow"
               disabled={page === totalPages}
+              sx={iconButtonStyles}
             >
-              &gt;
-            </button>
+              <ArrowForwardIosRoundedIcon
+                sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+              />
+            </IconButton>
           </div>
         )}
       </div>

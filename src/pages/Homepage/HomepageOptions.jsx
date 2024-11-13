@@ -42,6 +42,7 @@ function HomepageOptions({
   object,
   onOpen,
   isTable = false,
+  isDrawer = false,
   optionsState = {},
   setOptionsState = () => {},
   clickedId = "",
@@ -326,7 +327,7 @@ function HomepageOptions({
           ) : (
             <div
               ref={optionsRef}
-              className="dropdown-menu"
+              className={`dropdown-menu ${isTable ? "table" : ""} ${isDrawer ? "drawer" : ""}`}
               style={{
                 position: "absolute",
 

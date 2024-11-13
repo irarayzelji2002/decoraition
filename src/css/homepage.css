@@ -42,15 +42,15 @@
   font-family: "Open Sans", sans-serif !important;
   font-size: var(--font-size-h5);
   font-weight: bold;
-  text-align: center;
+  margin-left: 3px;
+  margin-top: 2px;
 }
 
 .separator {
   display: flex;
   text-align: left;
   width: 99%;
-  border-bottom: var(--bright-grey) 5px solid;
-
+  border-bottom: var(--inputBg) 2px solid;
   align-items: center;
   margin-top: 20px;
 }
@@ -80,7 +80,8 @@ h2 {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 20px 0;
+  margin: 5px 0 35px 0px;
+  gap: 20px;
 }
 
 /* .project-button {
@@ -148,7 +149,7 @@ h2 {
 .recent-projects h2 {
   color: var(--color-white);
   font-size: var(--font-size-h4);
-  margin-left: 12px;
+  min-height: 33px;
 }
 
 .no-content p {
@@ -279,8 +280,8 @@ tr:hover td {
 
 .dropdown-menu {
   position: absolute;
-  top: 30%;
-  right: 30%;
+  top: 32px !important;
+  right: -7px !important;
   background-color: var(--nav-card-modal);
   border-radius: 10px;
   padding: 10px 0;
@@ -288,6 +289,16 @@ tr:hover td {
   z-index: 1000;
   width: 200px;
   border: 1px solid var(--table-stroke);
+}
+
+.dropdown-menu.table {
+  top: 5px !important;
+  right: -50px !important;
+}
+
+.dropdown-menu.drawer {
+  top: 7px !important;
+  right: -20px !important;
 }
 
 .dropdown-item {
@@ -430,6 +441,15 @@ tr:hover td {
   transform: rotate(180deg);
 }
 
+.homepageHeader {
+  margin-top: 7px;
+  margin-left: 20px;
+}
+
+.homepageIconButtons {
+  margin-right: 10px;
+}
+
 @media (max-width: 1024px) {
   .layout {
     grid-template-columns: repeat(2, 1fr); /* 2 columns for medium screens */
@@ -451,13 +471,37 @@ tr:hover td {
   .layout {
     flex-direction: column;
   }
-
   .navName {
-    font-size: var(--font-size-h11);
+    font-size: var(--font-size-h12);
+  }
+  .homepageHeader {
+    margin-left: 10px;
+  }
+  .header img {
+    height: 80px;
   }
 }
+@media only screen and (max-width: 450px) {
+  .header {
+    flex-direction: column;
+    text-align: center;
+    margin-top: 20px;
+  }
+  .homepageHeader {
+    margin-left: 0;
+  }
+}
+
 @media only screen and (max-width: 366px) {
   .navName.drawer {
     font-size: var(--font-size-h4) !important;
+  }
+  .action-buttons {
+    gap: 15px;
+    flex-wrap: wrap;
+    flex-direction: column;
+  }
+  .homepageIconButtons {
+    margin-right: 0;
   }
 }

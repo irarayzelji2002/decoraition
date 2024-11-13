@@ -5,7 +5,6 @@ import SearchAppBar from "./SearchAppBar.jsx";
 import "../../css/homepage.css";
 import "../../css/seeAll.css";
 import Loading from "../../components/Loading.jsx";
-import Button from "@mui/material/Button";
 import Dropdowns from "../../components/Dropdowns.jsx";
 import DesignIcon from "../../components/DesignIcon.jsx";
 import HomepageTable from "./HomepageTable.jsx";
@@ -13,13 +12,20 @@ import ImageIcon from "@mui/icons-material/Image";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import {
+  ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
+  ArrowBackIosRounded as ArrowBackIosRoundedIcon,
+} from "@mui/icons-material";
+import {
   handleDeleteDesign,
   handleViewChange,
   formatDate,
   formatDateLong,
   getUsername,
 } from "./backend/HomepageActions";
-import { HorizontalIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
+import { TiledIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
+import { Button, IconButton } from "@mui/material";
+import { iconButtonStyles } from "./DrawerComponent.jsx";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
 
 export default function SeeAllDesigns() {
   const navigate = useNavigate();
@@ -148,12 +154,11 @@ export default function SeeAllDesigns() {
         <section className="recent-section">
           <div className="recent-designs">
             <div className="separator">
-              <div className="title">Designs</div>
-              <div style={{ marginLeft: "auto", display: "inline-flex" }}>
+              <h2>Designs</h2>
+              <div style={{ marginLeft: "auto", display: "inline-flex", marginBottom: "10px" }}>
                 {filteredDesigns.length > 0 && (
                   <div>
-                    <Button
-                      className="gradient-from-none"
+                    <IconButton
                       onClick={() =>
                         handleViewChange(
                           user,
@@ -163,9 +168,42 @@ export default function SeeAllDesigns() {
                           setView
                         )
                       }
+                      sx={{
+                        ...iconButtonStyles,
+                        padding: "10px",
+                        margin: "0px 5px",
+                        borderRadius: "8px",
+                        backgroundColor: view === 0 ? "var(--nav-card-modal)" : "transparent",
+                        "@media (max-width: 366px)": {
+                          padding: "8px",
+                        },
+                      }}
                     >
-                      {view === 0 ? <ListIcon /> : <HorizontalIcon />}
-                    </Button>
+                      <TiledIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() =>
+                        handleViewChange(
+                          user,
+                          userDoc.id,
+                          userDoc.layoutSettings,
+                          "designsListDesigns",
+                          setView
+                        )
+                      }
+                      sx={{
+                        ...iconButtonStyles,
+                        padding: "10px",
+                        margin: "0px 5px",
+                        borderRadius: "8px",
+                        backgroundColor: view === 1 ? "var(--nav-card-modal)" : "transparent",
+                        "@media (max-width: 366px)": {
+                          padding: "8px",
+                        },
+                      }}
+                    >
+                      <ListIcon />
+                    </IconButton>
                   </div>
                 )}
               </div>
@@ -177,7 +215,10 @@ export default function SeeAllDesigns() {
                   view === 0 ? (
                     <div className="layout">
                       {displayedDesigns.map((design) => (
-                        <div key={design.id} style={{ width: "100%" }}>
+                        <div
+                          key={design.id}
+                          style={{ width: "100%", display: "flex", justifyContent: "center" }}
+                        >
                           <DesignIcon
                             id={design.id}
                             name={design.designName}
@@ -227,29 +268,48 @@ export default function SeeAllDesigns() {
         {totalPages > 0 && (
           <div className="pagination-controls">
             {/* Previous Page Button */}
-            <button onClick={handlePreviousPage} className="pagination-arrow" disabled={page === 1}>
-              &lt;
-            </button>
+            <IconButton onClick={handlePreviousPage} disabled={page === 1} sx={iconButtonStyles}>
+              <ArrowBackIosRoundedIcon
+                sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+              />
+            </IconButton>
 
             {/* Map over an array to create pagination buttons */}
             {Array.from({ length: totalPages }, (_, index) => (
-              <button
+              <Button
                 key={index + 1}
-                className={`pagination-button ${page === index + 1 ? "active" : ""}`}
                 onClick={() => handlePageClick(index + 1)}
+                sx={{
+                  ...gradientButtonStyles,
+                  aspectRatio: "1/1",
+                  background:
+                    page === index + 1
+                      ? "var(--gradientButton) !important"
+                      : "var(--iconBg) !important",
+
+                  minWidth: page === index + 1 ? "40px" : "36.5px",
+                  "&:hover": {
+                    background:
+                      page === index + 1
+                        ? "var(--gradientButtonHover) !important"
+                        : "var(--iconBgHover) !important",
+                  },
+                }}
               >
                 {index + 1}
-              </button>
+              </Button>
             ))}
 
             {/* Next Page Button */}
-            <button
+            <IconButton
               onClick={handleNextPage}
-              className="pagination-arrow"
               disabled={page === totalPages}
+              sx={iconButtonStyles}
             >
-              &gt;
-            </button>
+              <ArrowForwardIosRoundedIcon
+                sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+              />
+            </IconButton>
           </div>
         )}
       </div>

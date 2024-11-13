@@ -325,6 +325,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
                   <HomepageOptions
                     isDesign={true}
                     isTable={true}
+                    isDrawer={true}
                     id={design.id}
                     onOpen={() =>
                       navigate(`/design/${design.id}`, {
@@ -388,6 +389,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
                   <HomepageOptions
                     isDesign={false}
                     isTable={true}
+                    isDrawer={true}
                     id={project.id}
                     onOpen={() =>
                       navigate(`/project/${project.id}`, {

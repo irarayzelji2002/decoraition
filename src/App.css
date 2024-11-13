@@ -203,6 +203,8 @@ select:-webkit-autofill {
 
 :root {
   --bg-header: url("../public/img/bg-login.png");
+  --bg-decor: url("../public/img/decorbg.png");
+  --bg-full: url("../public/img/fullbg.png");
   --bg-image: #1f1e22;
   --color-primary: #faa653;
   --color-secondary: #f04f59;
@@ -385,13 +387,10 @@ select:-webkit-autofill {
 }
 
 @keyframes moveBackground {
-  0% {
-    background-position: 0% 0%;
+  from {
+    background-position: top;
   }
-  50% {
-    background-position: 100% 0%;
-  }
-  100% {
-    background-position: 0% 0%;
+  to {
+    background-position: bottom;
   }
 }

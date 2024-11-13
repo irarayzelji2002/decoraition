@@ -16,6 +16,7 @@
 .headerPlace {
   position: relative;
   background-image: var(--bg-header);
+  animation: moveBackground 30s linear infinite;
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;

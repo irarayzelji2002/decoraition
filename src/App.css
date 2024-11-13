@@ -383,3 +383,15 @@ select:-webkit-autofill {
   --lightGradient: linear-gradient(#e0e0e0, #e0e0e0); /* Light version of #27262c */
   --bgMain: #dbdae2;
 }
+
+@keyframes moveBackground {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 0%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}

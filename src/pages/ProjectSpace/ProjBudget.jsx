@@ -172,6 +172,7 @@ function ProjBudget() {
           )}
         </div>
       </div>
+      <div className="bottom-filler" />
 
       <BottomBarDesign Budget={true} projId={projectId} />
     </>

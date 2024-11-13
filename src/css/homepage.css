@@ -292,6 +292,18 @@ tr:hover td {
   border: 1px solid var(--table-stroke);
 }
 
+.dropdown-menu-other {
+  position: absolute;
+  right: -7px !important;
+  background-color: var(--nav-card-modal);
+  border-radius: 10px;
+  padding: 10px 0;
+  box-shadow: -4px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 200px;
+  border: 1px solid var(--table-stroke);
+}
+
 .dropdown-menu.table {
   top: 5px !important;
   right: -50px !important;

@@ -103,7 +103,7 @@ function Notif() {
             />
             {showOptions && (
               <div
-                className="dropdown-menu"
+                className="dropdown-menu-other"
                 style={{ top: menuPosition.top, left: menuPosition.left - 200 }}
                 ref={dropdownRef}
               >

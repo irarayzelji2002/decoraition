@@ -35,7 +35,13 @@ import { handleDeleteDesign } from "../pages/Homepage/backend/HomepageActions.js
 import { useSharedProps } from "../contexts/SharedPropsContext.js";
 import { toggleComments } from "../pages/DesignSpace/backend/DesignActions.jsx";
 
-function DesignHead({ design, changeMode, setChangeMode, setShowComments = () => {} }) {
+function DesignHead({
+  design,
+  changeMode,
+  setChangeMode,
+  setShowComments = () => {},
+  isSelectingMask = false,
+}) {
   const { user, userDoc, handleLogout } = useSharedProps();
   const navigate = useNavigate();
   const location = useLocation();
@@ -519,7 +525,7 @@ function DesignHead({ design, changeMode, setChangeMode, setShowComments = () =>
         </div>
       </div>
       <div className="right">
-        {isDesignPath && (role === 1 || role === 2 || role === 3) && (
+        {isDesignPath && (role === 1 || role === 2 || role === 3) && !isSelectingMask && (
           <IconButton
             sx={{
               color: "var(--color-white)",
@@ -684,6 +690,7 @@ function DesignHead({ design, changeMode, setChangeMode, setShowComments = () =>
                 isDeleteVisible,
                 isChangeModeVisible,
               }}
+              isSelectingMask={isSelectingMask}
             />
           )}
         </Menu>

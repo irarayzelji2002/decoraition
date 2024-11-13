@@ -8,6 +8,7 @@ export const useSamCanvas = (
   setConfirmSamMaskChangeModalOpen,
   selectedSamMask,
   samMasks,
+  setSamMaskImage,
   samMaskImage,
   setSamMaskMask,
   showPreview
@@ -74,18 +75,11 @@ export const useSamCanvas = (
   // update the mask path input and display the selected mask
   const actualUseSelectedMask = useCallback(
     (selectedSamMask) => {
-      const samMaskImage = new Image();
-      samMaskImage.src = selectedSamMask["mask"];
-      const maskSrc = selectedSamMask["masked"];
-      console.log("Selected Mask Source:", maskSrc);
-      setSamMaskMask(maskSrc);
-      samMaskImage.onload = function () {
-        requestAnimationFrame(() => {
-          redrawCanvas(); // Apply color and opacity styling
-        });
-      };
+      setSamMaskImage(selectedSamMask["mask"]);
+      setSamMaskMask(selectedSamMask["masked"]);
+      setNeedsRedraw(true);
     },
-    [redrawCanvas, setSamMaskMask]
+    [setSamMaskMask]
   );
 
   const useSelectedMask = useCallback(

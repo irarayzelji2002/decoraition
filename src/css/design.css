@@ -1169,9 +1169,9 @@ textarea {
   }
 }
 @media (max-width: 768px) {
-  .workspace {
+  /* .workspace {
     flex-direction: column-reverse;
-  }
+  } */
   .promptBar,
   .comment-section {
     width: auto;
@@ -1631,7 +1631,8 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 16px 60px 0px 60px;
+  /* padding: 16px 60px 0px 60px; */
+  padding: 16px 16px 0px 60px;
   width: 100%;
 }
 
@@ -1724,7 +1725,7 @@ textarea {
 }
 
 .canvasControls.sam {
-  width: auto;
+  width: 50%;
 }
 
 .canvasModeAndVisibility {
@@ -1783,16 +1784,16 @@ textarea {
 }
 
 /* 1038px width */
-.canvasControls.width-1038 {
+.canvasControls.width-1155 {
   width: calc(100% - 60px);
 }
-.canvasControlsCont.width-1038 {
+.canvasControlsCont.width-1155 {
   flex-direction: column;
   gap: 20px;
 }
 .samMaskControls.width-1038 {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 10px;
   justify-content: center;
   align-items: center;
@@ -1800,7 +1801,7 @@ textarea {
 .samMaskControls .sliderCont.width-1038 {
   margin-top: 0px;
 }
-.canvasControls.sam.width-1038 {
+.canvasControls.sam.width-1155 {
   width: calc(100% - 60px);
 }
 .maskTypeOptions.width-1038 {
@@ -1818,11 +1819,11 @@ textarea {
   flex-wrap: wrap;
 }
 
-/* 735px width */
-.canvasModeAndVisibility.width-735 {
+/* 763 width */
+.canvasModeAndVisibility.width-763 {
   flex-wrap: wrap;
 }
-.maskTypeOptionsButtons.width-735 {
+.maskTypeOptionsButtons.width-763 {
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -1868,6 +1869,15 @@ textarea {
   height: 46.6px !important;
   width: 210.8px !important;
 }
+.maskTypeOptionsButton.width-600 {
+  width: 222.8px !important;
+}
+.canvasModeAndVisibilityButton.width-600 {
+  width: 162.5px !important;
+}
+.samMaskControlsButton.width-600 {
+  width: 47% !important;
+}
 
 /* 510px width */
 .maskTypeOptions.width-510 {
@@ -1878,6 +1888,15 @@ textarea {
 }
 .generateMaskButton.width-510 {
   margin-left: 0px !important;
+  width: 100% !important;
+}
+.maskTypeOptionsButton.width-510 {
+  width: 100% !important;
+}
+.canvasModeAndVisibilityButton.width-510 {
+  width: 100% !important;
+}
+.samMaskControlsButton.width-510 {
   width: 100% !important;
 }
 
@@ -1891,6 +1910,7 @@ textarea {
 }
 .canvasModeAndVisibility.width-500 {
   flex-direction: column;
+  align-items: center;
 }
 .showPreviewButton.width-510 {
   width: 100%;
@@ -1900,6 +1920,9 @@ textarea {
 .samMaskControls.width-500 {
   flex-direction: column;
   gap: 10px;
+}
+.samMaskControlsButton.width-500 {
+  min-width: 162.5px !important;
 }
 
 /* CANVAS AND PREVIEW */

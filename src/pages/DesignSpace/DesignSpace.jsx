@@ -4,7 +4,14 @@ import DesignHead from "../../components/DesignHead";
 import BottomBar from "./BottomBar";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 
-function DesignSpace({ design, isDesign, designId, setShowComments = () => {}, children }) {
+function DesignSpace({
+  design,
+  isDesign,
+  designId,
+  setShowComments = () => {},
+  isSelectingMask = false,
+  children,
+}) {
   const { user, userDoc } = useSharedProps();
   const location = useLocation();
   const [changeMode, setChangeMode] = useState(location.state?.changeMode || "Viewing");
@@ -51,6 +58,7 @@ function DesignSpace({ design, isDesign, designId, setShowComments = () => {}, c
         changeMode={changeMode}
         setChangeMode={setChangeMode}
         setShowComments={setShowComments}
+        isSelectingMask={isSelectingMask}
       />
       {children}
       <BottomBar isDesign={isDesign} designId={designId} changeMode={changeMode} />

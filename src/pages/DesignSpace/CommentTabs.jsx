@@ -104,16 +104,16 @@ function CommentTabs({
     // Handle resizing on mousedown and drag
     const handleMouseDownHeight = (e) => {
       e.preventDefault();
-      // console.log("Mouse down detected on resize handle");
+      console.log("Mouse down detected on resize handle");
       const startY = e.clientY;
       const startHeight = promptBar.getBoundingClientRect().height;
 
       const handleMouseMoveHeight = (e) => {
         const deltaY = startY - e.clientY;
         let newHeight = startHeight + deltaY;
-        // console.log(
-        //   `Mouse move detected. StartY: ${startY}, CurrentY: ${e.clientY}, deltaY: ${deltaY}, newHeight: ${newHeight}`
-        // );
+        console.log(
+          `Mouse move detected. StartY: ${startY}, CurrentY: ${e.clientY}, deltaY: ${deltaY}, newHeight: ${newHeight}`
+        );
 
         // Adjust height
         if (window.innerWidth <= 600) {
@@ -134,7 +134,7 @@ function CommentTabs({
       };
 
       const handleMouseUpHeight = () => {
-        // console.log("Mouse up detected, removing mousemove and mouseup listeners");
+        console.log("Mouse up detected, removing mousemove and mouseup listeners");
         window.removeEventListener("mousemove", handleMouseMoveHeight);
         window.removeEventListener("mouseup", handleMouseUpHeight);
       };

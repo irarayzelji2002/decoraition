@@ -89,6 +89,7 @@ function PromptBar({
   selectedSamMask,
   refineMaskOption,
   showPreview,
+  promptBarRef,
 }) {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
 
@@ -252,7 +253,6 @@ function PromptBar({
   const [height, setHeight] = useState("100%");
   const [applyMinHeight, setApplyMinHeight] = useState(true);
   const resizeFactor = 2;
-  const promptBarRef = useRef(null);
   const resizeHandleRef = useRef(null);
   const resizeHandleHeightRef = useRef(null);
 
@@ -275,9 +275,11 @@ function PromptBar({
       const handleMouseMove = (e) => {
         const newWidth = width + resizeFactor * (e.clientX - initialX);
         if (newWidth > 0 && newWidth <= window.innerWidth * 0.75) {
-          setWidth(newWidth);
+          if (window.innerWidth - (newWidth + 80) >= 320) {
+            setWidth(newWidth);
+            setIsSmallWidth(newWidth <= 380);
+          }
         }
-        setIsSmallWidth(newWidth <= 380);
       };
 
       const handleMouseUp = () => {

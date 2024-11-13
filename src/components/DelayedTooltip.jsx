@@ -1,24 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 
-function DelayedTooltip({
-  title = "",
-  children,
-  delay = 1000,
-  open = false,
-  setOpen,
-}) {
-  // const [open, setOpen] = useState(false);
-  let timer;
+function DelayedTooltip({ title = "", children, delay = 1000 }) {
+  const [open, setOpen] = useState(false);
+  const timer = useRef(null);
 
   const handleTooltipOpen = () => {
-    timer = setTimeout(() => {
+    timer.current = setTimeout(() => {
       setOpen(true);
     }, delay);
   };
 
   const handleTooltipClose = () => {
-    clearTimeout(timer);
+    clearTimeout(timer.current);
     setOpen(false);
   };
 
@@ -28,6 +22,7 @@ function DelayedTooltip({
       title={title}
       onMouseEnter={handleTooltipOpen}
       onMouseLeave={handleTooltipClose}
+      onBlur={handleTooltipClose}
       onClick={handleTooltipClose}
     >
       {children}

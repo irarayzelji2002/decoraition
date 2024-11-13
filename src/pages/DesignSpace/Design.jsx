@@ -69,6 +69,8 @@ function Design() {
   const workingAreaRef = useRef(null);
   const imagesWorkSpaceChildRef = useRef(null);
 
+  const promptBarRef = useRef(null);
+
   // For selecting mask and generation
   const [maskPrompt, setMaskPrompt] = useState("");
   const [samMaskMask, setSamMaskMask] = useState(null); // for canvas
@@ -78,7 +80,7 @@ function Design() {
   const [samDrawing, setSamDrawing] = useState(null);
   const [pickedColorSam, setPickedColorSam] = useState("var(--samMask)");
   const [opacitySam, setOpacitySam] = useState(0.5);
-  const [handleClearAllCanvas, setHandleClearAllCanvas] = useState(null);
+  const [handleClearAllCanvas, setHandleClearAllCanvas] = useState(() => {});
   const [previewMask, setPreviewMask] = useState(null);
   const [base64ImageAdd, setBase64ImageAdd] = useState(null);
   const [base64ImageRemove, setBase64ImageRemove] = useState(null);
@@ -284,7 +286,14 @@ function Design() {
 
   useEffect(() => {
     adjustImageFrames();
-  }, [showPromptBar, showComments, numImageFrames, controlWidthComments, controlWidthPromptBar]);
+  }, [
+    showPromptBar,
+    showComments,
+    numImageFrames,
+    controlWidthComments,
+    controlWidthPromptBar,
+    isSelectingMask,
+  ]);
 
   // Reset selected image to null if click happened on the working-area div itself
   const handleWorkingAreaClick = (e) => {
@@ -312,6 +321,7 @@ function Design() {
         isDesign={true}
         designId={designId}
         setShowComments={setShowComments}
+        isSelectingMask={isSelectingMask}
       >
         <div className="create-design">
           <div className="workspace">
@@ -363,6 +373,7 @@ function Design() {
                     selectedSamMask={selectedSamMask}
                     refineMaskOption={refineMaskOption}
                     showPreview={showPreview}
+                    promptBarRef={promptBarRef}
                   />
                 </div>
               )}
@@ -510,42 +521,44 @@ function Design() {
                   }}
                 />
               </IconButton>
-              <IconButton
-                sx={{
-                  color: "var(--color-white)",
-                  position: "absolute",
-                  borderRadius: "50%",
-                  right: "8px",
-                  top: "8px",
-                  marginRight: !showComments ? "5px" : "0px",
-                  marginTop: "10px",
-                  zIndex: "50",
-                  height: "40px",
-                  width: "40px",
-                  "&:hover": {
-                    backgroundColor: "var(--iconButtonHover)",
-                  },
-                  "& .MuiTouchRipple-root span": {
-                    backgroundColor: "var(--iconButtonActive)",
-                  },
-                }}
-                onClick={() => toggleComments(setShowComments)}
-                className="commentSectionIconButton"
-              >
-                <ArrowBackIosRoundedIcon
+              {!isSelectingMask && (
+                <IconButton
                   sx={{
-                    color: "var(--color-white) !important",
-                    transform: showComments ? "rotate(180deg)" : "",
+                    color: "var(--color-white)",
+                    position: "absolute",
+                    borderRadius: "50%",
+                    right: "8px",
+                    top: "8px",
+                    marginRight: !showComments ? "5px" : "0px",
+                    marginTop: "10px",
+                    zIndex: "50",
+                    height: "40px",
+                    width: "40px",
+                    "&:hover": {
+                      backgroundColor: "var(--iconButtonHover)",
+                    },
+                    "& .MuiTouchRipple-root span": {
+                      backgroundColor: "var(--iconButtonActive)",
+                    },
                   }}
-                />
-              </IconButton>
+                  onClick={() => toggleComments(setShowComments)}
+                  className="commentSectionIconButton"
+                >
+                  <ArrowBackIosRoundedIcon
+                    sx={{
+                      color: "var(--color-white) !important",
+                      transform: showComments ? "rotate(180deg)" : "",
+                    }}
+                  />
+                </IconButton>
+              )}
               {isSelectingMask ? (
                 <SelectMaskCanvas
                   selectedImage={selectedImage}
                   showPromptBar={showPromptBar}
-                  showComments={showPromptBar}
-                  controlWidthComments={showPromptBar}
-                  controlWidthPromptBar={showPromptBar}
+                  setShowPromptBar={setShowPromptBar}
+                  controlWidthPromptBar={controlWidthPromptBar}
+                  setControlWidthPromptBar={setControlWidthPromptBar}
                   maskPrompt={maskPrompt}
                   setMaskPrompt={setMaskPrompt}
                   samMaskMask={samMaskMask}
@@ -576,6 +589,7 @@ function Design() {
                   setRefineMaskOption={setRefineMaskOption}
                   showPreview={showPreview}
                   setShowPreview={setShowPreview}
+                  promptBarRef={promptBarRef}
                 />
               ) : designVersionImages.length > 0 ? (
                 <>

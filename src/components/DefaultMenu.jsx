@@ -50,6 +50,7 @@ const DefaultMenu = ({
     isRenameVisible: false,
     isDeleteVisible: false,
   },
+  isSelectingMask = false,
 }) => {
   const [changeModeIcon, setChangeModeIcon] = useState(null);
 
@@ -64,7 +65,7 @@ const DefaultMenu = ({
   }, [changeMode]);
   return (
     <>
-      {isDesign && (
+      {isDesign && !isSelectingMask && (
         <CustomMenuItem onClick={onComment}>
           <ListItemIcon>
             <CommentIcon sx={{ color: "var(--color-white)" }} />

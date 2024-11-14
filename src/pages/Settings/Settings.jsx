@@ -1266,7 +1266,7 @@ function Settings() {
               variant="contained"
               className="change-photo-btn"
               onClick={handleUploadPhotoClick}
-              sx={gradientButtonStyles}
+              sx={{ ...gradientButtonStyles, width: "100%" }}
             >
               {profilePic ? "Change photo" : "Upload photo"}
             </Button>
@@ -1275,7 +1275,7 @@ function Settings() {
               color="primary"
               className="save-photo-btn"
               onClick={handleSavePhoto}
-              sx={outlinedButtonStyles}
+              sx={{ ...outlinedButtonStyles, width: "100%" }}
               onMouseOver={(e) =>
                 (e.target.style.backgroundImage =
                   "var(--lightGradient), var(--gradientButtonHover)")

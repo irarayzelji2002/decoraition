@@ -18,15 +18,19 @@
   align-items: center;
   margin-bottom: 10px;
   height: 3em;
-  min-width: 100%;
+
+  width: 100%;
+  max-width: 768px;
   border-bottom: var(--color-grey) 1px solid;
 }
 .inputFieldThree {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
-  height: 20em;
-  min-width: 100%;
+  height: auto;
+
+  width: 100%;
+  max-width: 768px;
   border-bottom: var(--color-grey) 1px solid;
 }
 .inputFieldImportant {
@@ -37,7 +41,9 @@
   padding: 6px;
   padding-left: 24px;
   height: 3em;
-  min-width: auto;
+
+  width: 100%;
+  max-width: 768px;
 }
 
 /* AppBar styling */
@@ -66,7 +72,9 @@
   border-bottom: var(--color-grey) 1px solid;
   padding-bottom: 20px;
   margin-bottom: 10px;
+  gap: 10px;
   width: 100%;
+  max-width: 768px;
 }
 
 /* Profile buttons */

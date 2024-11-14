@@ -868,7 +868,7 @@ function Settings() {
                   justifyContent: "center",
                   background: "var(--gradientButton)",
                   borderRadius: "50%",
-                  padding: "5px",
+                  padding: "0px",
                   marginLeft: "20px",
                 }}
               >
@@ -950,7 +950,6 @@ function Settings() {
 
             {/* Additional Fields */}
             <div className="inputFieldThree">
-              <label className="inputLabel">Name Details</label>
               <EditableInputThree
                 labels={["First Name", "Last Name", "Username"]}
                 values={[firstName, lastName, username]}
@@ -1214,7 +1213,9 @@ function Settings() {
               <CloseRoundedIcon />
             </IconButton>
           </DialogTitle>
-          <DialogContent sx={dialogContentStyles}>
+          <DialogContent
+            sx={{ display: "flex", justifyContent: "center", marginTop: "10px", width: "300px" }}
+          >
             <Box
               sx={{
                 width: 155,

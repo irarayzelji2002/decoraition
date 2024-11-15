@@ -68,49 +68,50 @@ const EditableInputThree = ({
         <IconButton onClick={isEditing ? handleSave : handleEdit}>{icon}</IconButton>
       </div>
       {labels.map((label, index) => (
-        <TextField
-          key={index}
-          label=""
-          value={inputValues[index]}
-          onChange={(e) => handleChange(index, e.target.value)}
-          fullWidth
-          margin="normal"
-          helperText={getErrMessage(toCamelCase(label), errors)}
-          sx={{
-            marginTop: "10px",
-            marginBottom: "10px",
-            backgroundColor: "transparent",
-            input: { color: "var(--color-white)", fontWeight: "bold" },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--inputBg)",
-                borderWidth: `${isEditing ? "2px" : "0px"}`,
+        <div key={index} style={{ width: "100%", display: "flex", alignItems: "center" }}>
+          <label className="inputLabel">{label}</label>
+          <TextField
+            value={inputValues[index]}
+            onChange={(e) => handleChange(index, e.target.value)}
+            fullWidth
+            margin="normal"
+            helperText={getErrMessage(toCamelCase(label), errors)}
+            sx={{
+              marginTop: "10px",
+              marginBottom: "10px",
+              backgroundColor: "transparent",
+              input: { color: "var(--color-white)", fontWeight: "bold" },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "var(--inputBg)",
+                  borderWidth: `${isEditing ? "2px" : "0px"}`,
+                },
+                "&:hover fieldset": {
+                  borderColor: "var(--inputBg)",
+                  borderWidth: `${isEditing ? "2px" : "0px"}`,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "var(--inputBg)",
+                  borderWidth: "2px",
+                },
               },
-              "&:hover fieldset": {
-                borderColor: "var(--inputBg)",
-                borderWidth: `${isEditing ? "2px" : "0px"}`,
+              "& .MuiFormHelperText-root": {
+                color: "white",
               },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--inputBg)",
-                borderWidth: "2px",
-              },
-            },
-            "& .MuiFormHelperText-root": {
-              color: "white",
-            },
-          }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                {isEditing && (
-                  <IconButton onClick={() => handleReset(index)}>
-                    <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
-                  </IconButton>
-                )}
-              </InputAdornment>
-            ),
-          }}
-        />
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  {isEditing && (
+                    <IconButton onClick={() => handleReset(index)}>
+                      <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
+                    </IconButton>
+                  )}
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>
       ))}
 
       {getHasError("all", errors) && <span className="">{getErrMessage("all", errors)}</span>}

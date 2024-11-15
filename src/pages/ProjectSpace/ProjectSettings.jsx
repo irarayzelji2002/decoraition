@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
@@ -30,6 +30,7 @@ import {
   AnyoneWithLinkIcon,
 } from "./svg/ProjectAccessIcons";
 import { set } from "lodash";
+import { switchStyles } from "../DesignSpace/DesignSettings";
 
 export const theme = createTheme({
   components: {
@@ -37,10 +38,12 @@ export const theme = createTheme({
       styleOverrides: {
         switchBase: {
           "& .MuiSwitch-thumb": {
-            backgroundColor: "var(--color-white)",
+            backgroundColor: "var(--switchThumbGrey)",
+            boxShadow: "inset 0px 0px 0px 1px var(--switchThumbStroke)",
           },
           "&.Mui-checked .MuiSwitch-thumb": {
-            backgroundImage: "var(--gradientCircle)",
+            backgroundImage: "var(--gradientButton)",
+            boxShadow: "none",
           },
           "&.Mui-checked + .MuiSwitch-track": {
             backgroundColor: "var(--inputBg)",
@@ -67,6 +70,10 @@ const ProjectSettings = () => {
     projectBudgets,
   } = useSharedProps();
   const { projectId } = useParams({}); // Get the projectId parameter from the URL
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const [project, setProject] = useState({});
   const [projectName, setProjectName] = useState("Untitled Project");
   const [timeline, setTimeline] = useState({});
@@ -316,7 +323,11 @@ const ProjectSettings = () => {
 
   return (
     <div>
-      <TopBar state={`Project Settings for ${projectName}`} />
+      <TopBar
+        state={`Project Settings for ${projectName}`}
+        navigateTo={navigateTo}
+        navigateFrom={navigateFrom}
+      />
       {/* Tab Navigation */}
       <Box
         sx={{
@@ -823,59 +834,6 @@ const menuItemStyles = {
   },
   "&.Mui-selected:hover": {
     backgroundColor: "var(--dropdownSelectedHover) !important",
-  },
-};
-
-// Styles for Switch
-const switchStyles = {
-  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-    backgroundColor: "var(--inputBg)",
-  },
-  "& .MuiSwitch-thumb": {
-    backgroundColor: "var(--color-white)",
-    boxSizing: "border-box",
-    width: 22,
-    height: 22,
-    position: "relative",
-    top: "50%",
-  },
-  "& .MuiSwitch-track": {
-    backgroundColor: "var(--inputBg)",
-    borderRadius: 13, // Half the track height
-    opacity: 1,
-    transition: theme.transitions.create(["background-color"], {
-      duration: 500,
-    }),
-  },
-  width: 50,
-  height: 28,
-  padding: 0,
-  "& .MuiSwitch-switchBase": {
-    padding: "3px",
-    transitionDuration: "300ms",
-    "&.Mui-checked": {
-      transform: "translateX(22px)",
-      color: "#fff",
-      "& + .MuiSwitch-track": {
-        backgroundColor: "var(--inputBg)",
-        opacity: 1,
-        border: 0,
-      },
-      "&.Mui-disabled + .MuiSwitch-track": {
-        opacity: 0.5,
-      },
-    },
-    "&.Mui-focusVisible .MuiSwitch-thumb": {
-      color: "#33cf4d",
-      border: "6px solid #fff",
-    },
-    "&.Mui-disabled .MuiSwitch-thumb": {
-      color: "var(--inputBg)",
-      backgroundImage: "var(--gradientCircleDisabled)",
-    },
-    "&.Mui-disabled + .MuiSwitch-track": {
-      opacity: 0.3,
-    },
   },
 };
 

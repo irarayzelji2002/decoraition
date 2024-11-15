@@ -267,6 +267,11 @@ select:-webkit-autofill {
   --darkGradient: linear-gradient(#1e1e1e, #1e1e1e);
   --lightGradient: linear-gradient(#27262c, #27262c);
   --gradientIcon: linear-gradient(180deg, #f9a754, #f26b27, #ef4e59);
+  --switchThumbGrey: #5c5b5b;
+  --switchThumbGreyDisabled: rgba(92, 91, 91, 0.4);
+  --switchThumbStroke: #ada9a9;
+  --switchThumbStrokeDisabled: rgba(173, 169, 169, 0.4);
+  --switchThumbCheckedDisabled: linear-gradient(90deg, #c57f41, #b8533c, #aa3c69);
   --budgetCard: #32313a;
   --bgMain: #1e1d21;
   --slider: #3c3b42;

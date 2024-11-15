@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../../firebase";
@@ -33,9 +33,12 @@ import {
 } from "../../components/RenameModal";
 
 function PlanMap() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { projectId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigateFrom = location.pathname;
+  const { projectId } = useParams();
+
+  const [menuOpen, setMenuOpen] = useState(false);
   const [designs, setDesigns] = useState([]);
   const [user, setUser] = useState(null);
   const [styleRefModalOpen, setStyleRefModalOpen] = useState(false);
@@ -94,13 +97,19 @@ function PlanMap() {
   };
 
   const navigateToAddPin = () => {
-    navigate("/addPin/");
+    navigate("/addPin/", {
+      state: { navigateFrom: navigateFrom },
+    });
   };
   const navigateToPinLayout = () => {
-    navigate("/pinOrder/" + projectId);
+    navigate(`/pinOrder/${projectId}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
   const navigateToAdjustPin = () => {
-    navigate("/adjustPin/" + projectId);
+    navigate(`/adjustPin/${projectId}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   const handleStyleRefModalOpen = () => {

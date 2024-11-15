@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams, useLocation } from "react-router-dom";
 import { IconButton, Menu, TextField } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { toast } from "react-toastify";
@@ -25,7 +26,6 @@ import { db, auth } from "../../firebase.js";
 import DrawerComponent from "../Homepage/DrawerComponent.jsx";
 import { useNavigate } from "react-router-dom";
 import { useHandleNameChange, useProjectDetails } from "./backend/ProjectDetails";
-import { useParams } from "react-router-dom";
 import { showToast } from "../../functions/utils.js";
 import { handleDeleteProject } from "../Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
@@ -33,6 +33,9 @@ import { handleNameChange } from "./backend/ProjectDetails";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 
 function ProjectHead({ project }) {
+  const location = useLocation();
+  const navigateFrom = location.pathname;
+
   const { user, userDoc, handleLogout } = useSharedProps();
   const isOnline = useNetworkStatus();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -192,7 +195,9 @@ function ProjectHead({ project }) {
 
   const handleOpenInfoModal = () => {
     handleClose();
-    navigate(`/details/project/${projectId}`);
+    navigate(`/details/project/${projectId}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   const handleCloseInfoModal = () => {
@@ -222,7 +227,9 @@ function ProjectHead({ project }) {
     document.body.classList.toggle("dark-mode", !darkMode);
   };
   const handleSettings = () => {
-    navigate(`/settings/project/${projectId}`);
+    navigate(`/settings/project/${projectId}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   // Rename Modal Action

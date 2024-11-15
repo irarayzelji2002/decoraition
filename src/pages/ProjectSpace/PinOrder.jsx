@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
@@ -37,6 +38,10 @@ function DraggablePin({ id, index, movePin, title, editMode, pinNo }) {
 }
 
 function PinOrder() {
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const [pins, setPins] = useState([
     { id: 1, title: "Pin 1", pinNo: 1 },
     { id: 2, title: "Pin 2", pinNo: 2 },
@@ -62,7 +67,7 @@ function PinOrder() {
     >
       {/* dummy */}
       <div>
-        <TopBar state={"Change pins order"} />
+        <TopBar state={"Change pins order"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
         <div className="pinSpace">
           {pins.map((pin, index) => (
             <DraggablePin

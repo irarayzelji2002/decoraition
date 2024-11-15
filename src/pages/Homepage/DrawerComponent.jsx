@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import {
   fetchUserDesigns,
@@ -45,6 +45,8 @@ import { DesignIcn, FAQ, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/
 
 const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigateFrom = location.pathname;
 
   const {
     user,
@@ -216,34 +218,43 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
       </div>
 
       <div className="drawerUser">
-        <Box
-          sx={{
-            width: 60,
-            height: 60,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "var(--gradientButton)",
-            borderRadius: "50%",
-            padding: "4px",
-          }}
+        <IconButton
+          onClick={() =>
+            navigate("/settings", {
+              state: { navigateFrom: navigateFrom },
+            })
+          }
+          sx={{ p: 0 }}
         >
-          <Avatar
+          <Box
             sx={{
-              width: 62,
-              height: 62,
+              width: 60,
+              height: 60,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "var(--gradientButton)",
               borderRadius: "50%",
-              boxShadow: "0 0 0 4px var(--gradientButton)",
-              fontSize: "1.5rem",
-              "& .MuiAvatar-img": {
-                borderRadius: "50%",
-              },
-              ...stringAvatarColor(userDoc?.username),
+              padding: "4px",
             }}
-            src={userDoc?.profilePic || ""}
-            children={stringAvatarInitials(userDoc?.username)}
-          />
-        </Box>
+          >
+            <Avatar
+              sx={{
+                width: 62,
+                height: 62,
+                borderRadius: "50%",
+                boxShadow: "0 0 0 4px var(--gradientButton)",
+                fontSize: "1.5rem",
+                "& .MuiAvatar-img": {
+                  borderRadius: "50%",
+                },
+                ...stringAvatarColor(userDoc?.username),
+              }}
+              src={userDoc?.profilePic || ""}
+              children={stringAvatarInitials(userDoc?.username)}
+            />
+          </Box>
+        </IconButton>
         <div
           style={{
             display: "flex",
@@ -411,13 +422,27 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
 
         {/* Settings Menu Item */}
         {/* path to change? */}
-        <ListItemButton onClick={() => navigate("/faq")} sx={listItemStyles}>
+        <ListItemButton
+          onClick={() =>
+            navigate("/faq", {
+              state: { navigateFrom: navigateFrom },
+            })
+          }
+          sx={listItemStyles}
+        >
           <ListItemIcon sx={listItemIconStyles}>
             <FAQ />
           </ListItemIcon>
           <ListItemText primary="FAQ" />
         </ListItemButton>
-        <ListItemButton onClick={() => navigate("/settings")} sx={listItemStyles}>
+        <ListItemButton
+          onClick={() =>
+            navigate("/settings", {
+              state: { navigateFrom: navigateFrom },
+            })
+          }
+          sx={listItemStyles}
+        >
           <ListItemIcon sx={listItemIconStyles}>
             <SettingsIcn />
           </ListItemIcon>

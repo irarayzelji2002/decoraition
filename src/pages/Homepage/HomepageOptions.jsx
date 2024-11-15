@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../../css/homepage.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { showToast } from "../../functions/utils";
 import { handleDeleteDesign, handleDeleteProject } from "./backend/HomepageActions";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
@@ -60,6 +60,9 @@ function HomepageOptions({
   },
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigateFrom = location.pathname;
+
   const { appURL, user, userDoc } = useSharedProps();
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -176,7 +179,9 @@ function HomepageOptions({
 
   // Settings Fucntions
   const handleSettings = () => {
-    navigate(`/settings/${isDesign ? "design" : "project"}/${id}`);
+    navigate(`/settings/${isDesign ? "design" : "project"}/${id}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   // Download Functions
@@ -282,7 +287,9 @@ function HomepageOptions({
 
   // Info Functions
   const handleOpenInfoModal = () => {
-    navigate(`/details/${isDesign ? "design" : "project"}/${id}`);
+    navigate(`/details/${isDesign ? "design" : "project"}/${id}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   const handleCloseInfoModal = () => {

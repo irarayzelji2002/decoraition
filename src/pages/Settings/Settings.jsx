@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { auth } from "../../firebase";
 import axios from "axios";
@@ -72,6 +72,9 @@ import { textFieldStyles } from "../DesignSpace/DesignSettings";
 
 function Settings() {
   const { user, userDoc } = useSharedProps();
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
 
   const [selectedTab, setSelectedTab] = useState("Account");
   const fileInputRef = useRef(null);
@@ -808,7 +811,7 @@ function Settings() {
 
   return (
     <>
-      <TopBar state="Settings" />
+      <TopBar state="Settings" navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <Box
         sx={{
           display: "flex",
@@ -869,7 +872,7 @@ function Settings() {
           </Typography>
         ))}
       </Box>
-      <div className="settings-container">
+      <div className={`settings-container ${selectedTab === "Notification" && "notification"}`}>
         {/* App Bar for Tabs */}
 
         {/* Account Tab Content */}

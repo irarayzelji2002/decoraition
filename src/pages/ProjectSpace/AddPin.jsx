@@ -1,4 +1,5 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "../../css/addItem.css";
 import "../../css/budget.css";
 import TopBar from "../../components/TopBar";
@@ -15,10 +16,13 @@ import { Modal } from "@mui/material";
 import { ChromePicker } from "react-color";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useState } from "react";
 import ImageFrame from "../../components/ImageFrame";
 
 function AddPin({ EditMode }) {
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const [owner, setOwner] = React.useState("");
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [pins, setPins] = useState([]);
@@ -104,7 +108,7 @@ function AddPin({ EditMode }) {
 
   return (
     <>
-      <TopBar state={"Add Pin"} />
+      <TopBar state={"Add Pin"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="sectionBudget" style={{ background: "none" }}>
         <div className="budgetSpaceImg">
           <ImageFrame

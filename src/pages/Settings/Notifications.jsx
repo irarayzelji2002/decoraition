@@ -2,9 +2,19 @@ import React, { useState, useEffect } from "react";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import axios from "axios";
 import { showToast } from "../../functions/utils";
-
-import { Button, FormControlLabel, FormGroup, Slider, Switch, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  FormControlLabel,
+  FormGroup,
+  Slider,
+  Switch,
+  Typography,
+} from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { switchStyles } from "../DesignSpace/DesignSettings";
+import { sliderStyles } from "../DesignSpace/SelectMaskCanvas";
+import { gradientButtonStyles, outlinedButtonStyles } from "../DesignSpace/PromptBar";
 
 const theme = createTheme({
   components: {
@@ -12,17 +22,19 @@ const theme = createTheme({
       styleOverrides: {
         switchBase: {
           "& .MuiSwitch-thumb": {
-            backgroundColor: "var(--color-white)", // Color of the switch thumb
+            backgroundColor: "var(--switchThumbGrey)",
+            boxShadow: "inset 0px 0px 0px 1px var(--switchThumbStroke)",
           },
           "&.Mui-checked .MuiSwitch-thumb": {
-            backgroundImage: "var(--gradientCircle)", // Color when checked
+            backgroundImage: "var(--gradientButton)",
+            boxShadow: "none",
           },
           "&.Mui-checked + .MuiSwitch-track": {
-            backgroundColor: "var(--inputBg)", // Track color when checked
+            backgroundColor: "var(--inputBg)",
           },
         },
         track: {
-          backgroundColor: "var(--inputBg)", // Track color
+          backgroundColor: "var(--inputBg)",
         },
       },
     },
@@ -171,11 +183,7 @@ export default function Notifications() {
   return (
     <ThemeProvider theme={theme}>
       <div>
-        <Typography
-          variant="h6"
-          gutterBottom
-          style={{ color: "var(--color-white)", fontWeight: "bold" }}
-        >
+        <Typography variant="h6" gutterBottom className="settingsTitle">
           Notification preferences
         </Typography>
         <FormGroup>
@@ -184,16 +192,18 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Allow push notifications
             </Typography>
             <Switch
               checked={allowNotif}
               onChange={(event) => setAllowNotif(event.target.checked)}
               aria-label="Allow push notifications"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -201,24 +211,22 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Enable deletion of notifications
             </Typography>
             <Switch
               checked={deleteNotif}
               onChange={(event) => setDeleteNotif(event.target.checked)}
               aria-label="Enable deletion of notifications"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
 
-          <Typography
-            variant="h6"
-            gutterBottom
-            style={{ color: "var(--color-white)", fontWeight: "bold" }}
-          >
+          <Typography variant="h6" gutterBottom className="settingsTitle">
             Delete read notifications after how many days?
           </Typography>
           <Slider
@@ -228,27 +236,12 @@ export default function Notifications() {
             valueLabelDisplay="auto"
             min={1}
             max={30}
-            sx={{
-              marginTop: "24px",
-              color: "var(--slider)", // Slider color
-              "& .MuiSlider-thumb": {
-                background: "var(--gradientCircle)", // Gradient thumb
-              },
-              "& .MuiSlider-track": {
-                backgroundColor: "var(--slider)", // Track color
-              },
-              "& .MuiSlider-rail": {
-                backgroundColor: "var(--slider)", // Rail color
-              },
-            }}
+            defaultValue={15}
+            sx={sliderStyles}
           />
         </FormGroup>
         {/* TO DO Region and Time of Notif */}
-        <Typography
-          variant="h6"
-          gutterBottom
-          style={{ color: "var(--color-white)", fontWeight: "bold" }}
-        >
+        <Typography variant="h6" gutterBottom className="settingsTitle">
           Comment notification preferences
         </Typography>
         <FormGroup>
@@ -257,9 +250,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Mentioned in a comment or reply
             </Typography>
             <Switch
@@ -268,7 +262,8 @@ export default function Notifications() {
                 handleCommentNotificationChange("mentionedInComment", event.target.checked)
               }
               aria-label="Mentioned in a comment or reply"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -276,9 +271,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               A new comment or reply if I'm the owner
             </Typography>
             <Switch
@@ -287,7 +283,8 @@ export default function Notifications() {
                 handleCommentNotificationChange("newCommentReplyAsOwner", event.target.checked)
               }
               aria-label="A new comment or reply if I'm the owner"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -295,9 +292,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               A new comment or reply if I'm an editor or commenter
             </Typography>
             <Switch
@@ -306,7 +304,8 @@ export default function Notifications() {
                 handleCommentNotificationChange("newCommentReplyAsCollab", event.target.checked)
               }
               aria-label="A new comment or reply if I'm an editor or commenter"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -314,9 +313,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Comment is resolved or reopened if I'm the owner
             </Typography>
             <Switch
@@ -325,7 +325,8 @@ export default function Notifications() {
                 handleCommentNotificationChange("commentStatusChangeAsOwner", event.target.checked)
               }
               aria-label="Comment is resolved or reopened if I'm the owner"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -333,9 +334,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Comment is resolved or reopened if I'm an editor or commenter
             </Typography>
             <Switch
@@ -344,15 +346,12 @@ export default function Notifications() {
                 handleCommentNotificationChange("commentStatusChangeAsCollab", event.target.checked)
               }
               aria-label="Comment is resolved or reopened if I'm an editor or commenter"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
         </FormGroup>
-        <Typography
-          variant="h6"
-          gutterBottom
-          style={{ color: "var(--color-white)", fontWeight: "bold" }}
-        >
+        <Typography variant="h6" gutterBottom className="settingsTitle">
           Timeline notification preferences
         </Typography>
         <FormGroup>
@@ -361,24 +360,22 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Calendar event reminders
             </Typography>
             <Switch
               checked={calEventReminder}
               onChange={(event) => setCalEventReminder(event.target.checked)}
               aria-label="Calendar event reminders"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
         </FormGroup>
-        <Typography
-          variant="h6"
-          gutterBottom
-          style={{ color: "var(--color-white)", fontWeight: "bold" }}
-        >
+        <Typography variant="h6" gutterBottom className="settingsTitle">
           Design notification preferences
         </Typography>
         <FormGroup>
@@ -387,9 +384,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Design is renamed Project by a manager
             </Typography>
             <Switch
@@ -398,7 +396,8 @@ export default function Notifications() {
                 handleDesignNotificationChange("renamedDesign", event.target.checked)
               }
               aria-label="Design is renamed Project by a manager"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -406,9 +405,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Design will be or is in inactive mode
             </Typography>
             <Switch
@@ -417,7 +417,8 @@ export default function Notifications() {
                 handleDesignNotificationChange("inactiveDesign", event.target.checked)
               }
               aria-label="Design will be or is in inactive mode"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -425,9 +426,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Design will be or is deleted
             </Typography>
             <Switch
@@ -436,7 +438,8 @@ export default function Notifications() {
                 handleDesignNotificationChange("deletedDesign", event.target.checked)
               }
               aria-label="Design will be or is deleted"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -444,9 +447,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Your role in the design is changed by an owner or editor
             </Typography>
             <Switch
@@ -455,15 +459,12 @@ export default function Notifications() {
                 handleDesignNotificationChange("changeRoleInDesign", event.target.checked)
               }
               aria-label="Your role in the design is changed by an owner or editor"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
         </FormGroup>
-        <Typography
-          variant="h6"
-          gutterBottom
-          style={{ color: "var(--color-white)", fontWeight: "bold" }}
-        >
+        <Typography variant="h6" gutterBottom className="settingsTitle">
           Project notification preferences
         </Typography>
         <FormGroup>
@@ -472,9 +473,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Project is renamed by a manager
             </Typography>
             <Switch
@@ -483,7 +485,8 @@ export default function Notifications() {
                 handleProjectNotificationChange("renamedProject", event.target.checked)
               }
               aria-label="Project is renamed by a manager"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -491,9 +494,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Project will be or is in inactive mode
             </Typography>
             <Switch
@@ -502,7 +506,8 @@ export default function Notifications() {
                 handleProjectNotificationChange("inactiveProject", event.target.checked)
               }
               aria-label="Project will be or is in inactive mode"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -510,9 +515,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Project will be or is deleted
             </Typography>
             <Switch
@@ -521,7 +527,8 @@ export default function Notifications() {
                 handleProjectNotificationChange("deletedProject", event.target.checked)
               }
               aria-label="Project will be or is deleted"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
           <div
@@ -529,9 +536,10 @@ export default function Notifications() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              marginBottom: "0.8rem",
             }}
           >
-            <Typography style={{ color: "var(--color-white)" }}>
+            <Typography style={{ color: "var(--color-white)", marginRight: "20px" }}>
               Your role in the project is changed by an manager
             </Typography>
             <Switch
@@ -540,27 +548,47 @@ export default function Notifications() {
                 handleProjectNotificationChange("changeRoleInProject", event.target.checked)
               }
               aria-label="Your role in the project is changed by an manager"
-              color="warning" // Set the color prop for the switch
+              color="warning"
+              sx={switchStyles}
             />
           </div>
-
-          <Button
+          <Box
             sx={{
-              marginTop: "20px",
+              margin: "40px 0px",
+              justifyContent: "center",
+              display: "flex",
+              gap: "15px",
               marginBottom: "20px",
-              backgroundImage: "var(--gradientButton)",
-              color: "var(--color-white)",
-              fontWeight: "bold",
-              borderRadius: "20px",
-              textTransform: "none",
-              "&:hover": {
-                backgroundImage: "var(--gradientButtonHover)",
+              padding: 0,
+              flexWrap: "nowrap",
+              "@media (max-width: 600px)": {
+                flexWrap: "wrap",
               },
             }}
-            onClick={handleSaveChanges}
           >
-            Save Settings
-          </Button>
+            <Button
+              fullWidth
+              sx={{ ...gradientButtonStyles, height: "fit-content" }}
+              onClick={handleSaveChanges}
+            >
+              Save Settings
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => {}}
+              sx={{ ...outlinedButtonStyles, height: "fit-content" }}
+              onMouseOver={(e) =>
+                (e.target.style.backgroundImage =
+                  "var(--lightGradient), var(--gradientButtonHover)")
+              }
+              onMouseOut={(e) =>
+                (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+              }
+            >
+              Cancel
+            </Button>
+          </Box>
         </FormGroup>
       </div>
     </ThemeProvider>

@@ -44,6 +44,10 @@ const theme = createTheme({
 });
 
 function Details() {
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const { id, type } = useParams();
   const { user, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
   const [loading, setLoading] = useState(true);
@@ -130,7 +134,7 @@ function Details() {
   return (
     <ThemeProvider theme={theme}>
       <div style={{ overflowX: "hidden" }}>
-        <TopBar state="Details" />
+        <TopBar state="Details" navigateTo={navigateTo} navigateFrom={navigateFrom} />
         <div className="details-container">
           <div className="content">
             {type === "design" && id && design.designName ? (

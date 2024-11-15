@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import { debounce } from "lodash";
@@ -45,6 +45,9 @@ function Budget() {
     useSharedProps();
   const { designId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigateFrom = location.pathname;
+
   const [design, setDesign] = useState({});
   const [budget, setBudget] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
@@ -430,7 +433,11 @@ function Budget() {
                 <Item
                   key={index}
                   item={item}
-                  onEdit={() => navigate(`/editItem/${budget.id}/${item.id}`)}
+                  onEdit={() =>
+                    navigate(`/editItem/${budget.id}/${item.id}`, {
+                      state: { navigateFrom: navigateFrom },
+                    })
+                  }
                   setDesignItems={setDesignItems}
                   budgetId={budget.id}
                 />
@@ -474,7 +481,11 @@ function Budget() {
               </div>
               <div
                 className="small-button-container"
-                onClick={() => navigate(`/addItem/${budget.id}`)}
+                onClick={() =>
+                  navigate(`/addItem/${budget.id}`, {
+                    state: { navigateFrom: navigateFrom },
+                  })
+                }
               >
                 <span className="small-button-text">Add an Item</span>
                 <div className="small-circle-button">

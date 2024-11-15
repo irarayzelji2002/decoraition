@@ -24,6 +24,9 @@ function EditEvent() {
   const { projectId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const queryParams = new URLSearchParams(location.search);
   const selectedDate = queryParams.get("date");
   const taskDetails = queryParams.get("task");
@@ -127,7 +130,7 @@ function EditEvent() {
     <ThemeProvider theme={theme}>
       <div style={{ overflowX: "hidden" }}>
         <ToastContainer />
-        <TopBar state={"Edit Event"} />
+        <TopBar state={"Edit Event"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
         <div className="edit-event">
           <div className="form-container">
             <div className="form-group">

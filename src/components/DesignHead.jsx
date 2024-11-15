@@ -48,6 +48,7 @@ function DesignHead({
   const navigate = useNavigate();
   const location = useLocation();
   const isDesignPath = location.pathname.startsWith("/design");
+  const navigateFrom = location.pathname;
   const { designId } = useParams();
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -270,7 +271,9 @@ function DesignHead({
 
   const handleOpenInfoModal = () => {
     handleClose();
-    navigate(`/details/design/${design.id}`);
+    navigate(`/details/design/${design.id}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   const handleCloseInfoModal = () => {
@@ -442,7 +445,9 @@ function DesignHead({
   };
 
   const handleSettings = () => {
-    navigate(`/settings/design/${design.id}`);
+    navigate(`/settings/design/${design.id}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   return (

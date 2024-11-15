@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../../css/timeline.css";
@@ -11,7 +12,6 @@ import Trash from "../DesignSpace/svg/Trash";
 import { fetchTasks, deleteTask } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
-import { useNavigate } from "react-router-dom";
 import { Button, IconButton } from "@mui/material";
 import {
   CalendarIcon,
@@ -23,13 +23,16 @@ import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 
 function Timeline() {
-  const [date, setDate] = useState(new Date());
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navigateFrom = location.pathname;
   const { projectId } = useParams();
+
+  const [date, setDate] = useState(new Date());
   const [tasks, setTasks] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [viewMode, setViewMode] = useState("calendar"); // "calendar", "list", "single"
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-  const navigate = useNavigate();
 
   const openDeleteModal = () => {
     setShowDeleteModal(true);
@@ -73,14 +76,18 @@ function Timeline() {
 
   const handleEditClick = (task) => {
     const taskDetails = encodeURIComponent(JSON.stringify(task));
-    navigate(`/editEvent/${projectId}?task=${taskDetails}`);
+    navigate(`/editEvent/${projectId}?task=${taskDetails}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   const handleAddEventClick = () => {
     const formattedDate = new Date(date);
     formattedDate.setDate(formattedDate.getDate() + 1);
     const formattedDateString = formattedDate.toISOString().split("T")[0];
-    navigate(`/editEvent/${projectId}?date=${formattedDateString}`);
+    navigate(`/editEvent/${projectId}?date=${formattedDateString}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   const handleListIconClick = () => {

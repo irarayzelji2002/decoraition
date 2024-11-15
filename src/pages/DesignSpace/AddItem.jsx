@@ -3,7 +3,7 @@ import deepEqual from "deep-equal";
 import "../../css/addItem.css";
 import TopBar from "../../components/TopBar";
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../css/budget.css";
 import { db } from "../../firebase"; // Assuming you have firebase setup
 import { collection, addDoc, getDocs } from "firebase/firestore";
@@ -19,6 +19,10 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 const AddItem = () => {
   const { budgetId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const { user, designs, userDesigns } = useSharedProps();
   const [design, setDesign] = useState({});
 
@@ -200,7 +204,7 @@ const AddItem = () => {
 
   return (
     <div style={{ overflow: "hidden" }}>
-      <TopBar state={"Add Item"} />
+      <TopBar state={"Add Item"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="add-item-container">
         <div className="left-column">
           <TextField

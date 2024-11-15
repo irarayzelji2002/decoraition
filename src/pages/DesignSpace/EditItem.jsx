@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firebase Firestore methods
@@ -15,6 +15,10 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 
 const EditItem = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const { user, designs, userDesigns, items, userItems } = useSharedProps();
   const { budgetId, itemId } = useParams();
   const [design, setDesign] = useState({});
@@ -207,7 +211,7 @@ const EditItem = () => {
 
   return (
     <>
-      <TopBar state={"Edit Item"} />
+      <TopBar state={"Edit Item"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="add-item-container">
         <div className="left-column">
           <div className="upload-section">

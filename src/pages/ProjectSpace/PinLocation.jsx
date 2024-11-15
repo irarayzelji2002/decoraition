@@ -1,11 +1,15 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "../../css/addItem.css";
 import "../../css/budget.css";
 import TopBar from "../../components/TopBar";
-import { useState } from "react";
 import ImageFrame from "../../components/ImageFrame";
 
 function PinLocation({ EditMode }) {
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const [pins, setPins] = useState([]);
 
   const addPin = () => {
@@ -14,7 +18,7 @@ function PinLocation({ EditMode }) {
 
   return (
     <>
-      <TopBar state={"Add Pin"} />
+      <TopBar state={"Add Pin"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="sectionBudget" style={{ background: "none" }}>
         <div className="budgetSpaceImg">
           <ImageFrame

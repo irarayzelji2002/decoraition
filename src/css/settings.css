@@ -1,11 +1,13 @@
 /* Root container */
 .settings-container {
-  display: flex;
-  justify-content: center;
+  margin: 0px auto;
+  padding-bottom: 100px;
+  max-width: 800px;
   padding: 20px;
-  background-color: var(--bgcolor);
-  color: var(--color-white);
   min-height: calc(100vh - 203px);
+}
+.settings-container.notification {
+  padding: 20px;
 }
 .inputLabel {
   margin-right: 10px;
@@ -73,7 +75,7 @@
 .avatar-container {
   display: flex;
   align-items: center;
-  margin: 30px 0px;
+  margin: 30px 0px 50px 0px;
   gap: 10px;
   width: 100%;
   max-width: 768px;
@@ -186,6 +188,13 @@
 
 .inactivityTextField {
   /* Add any additional styles if needed */
+}
+.settingsTitle {
+  font-size: var(--font-size-h6) !important;
+  font-weight: bold !important;
+  margin-bottom: 1rem !important;
+  margin-top: 2rem !important;
+  color: var(--color-white) !important;
 }
 
 @media (max-width: 560px) {

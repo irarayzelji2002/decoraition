@@ -24,6 +24,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
   const { userDoc } = useSharedProps();
   const navigate = useNavigate();
   const location = useLocation();
+  const navigateFrom = location.pathname;
   const [searchPlaceholder, setSearchPlaceholder] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -167,7 +168,14 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
             >
               {userDoc?.username || "Guest"}
             </Box>
-            <IconButton onClick={() => navigate("/settings")} sx={{ p: 0 }}>
+            <IconButton
+              onClick={() =>
+                navigate("/settings", {
+                  state: { navigateFrom: navigateFrom },
+                })
+              }
+              sx={{ p: 0 }}
+            >
               <DelayedTooltip title="Account" delay={1000}>
                 <Box
                   sx={{

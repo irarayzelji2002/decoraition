@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
@@ -35,10 +35,12 @@ export const theme = createTheme({
       styleOverrides: {
         switchBase: {
           "& .MuiSwitch-thumb": {
-            backgroundColor: "var(--color-white)",
+            backgroundColor: "var(--switchThumbGrey)",
+            boxShadow: "inset 0px 0px 0px 1px var(--switchThumbStroke)",
           },
           "&.Mui-checked .MuiSwitch-thumb": {
-            backgroundImage: "var(--gradientCircle)",
+            backgroundImage: "var(--gradientButton)",
+            boxShadow: "none",
           },
           "&.Mui-checked + .MuiSwitch-track": {
             backgroundColor: "var(--inputBg)",
@@ -55,6 +57,10 @@ export const theme = createTheme({
 const DesignSettings = () => {
   const { user, userDoc, userDesigns } = useSharedProps();
   const { designId } = useParams({}); // Get the designId parameter from the URL
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateFrom = location.pathname;
+
   const [design, setDesign] = useState({});
   const [designName, setDesignName] = useState("Untitled Design");
   const [generalAccessSetting, setGeneralAccessSetting] = useState(0); //0 for Restricted, 1 for Anyone with the link
@@ -193,7 +199,11 @@ const DesignSettings = () => {
 
   return (
     <div>
-      <TopBar state={`Design Settings for ${designName}`} />
+      <TopBar
+        state={`Design Settings for ${designName}`}
+        navigateTo={navigateTo}
+        navigateFrom={navigateFrom}
+      />
       <SettingsContent
         generalAccessSetting={generalAccessSetting}
         setGeneralAccessSetting={setGeneralAccessSetting}
@@ -646,7 +656,8 @@ export const switchStyles = {
     backgroundColor: "var(--inputBg)",
   },
   "& .MuiSwitch-thumb": {
-    backgroundColor: "var(--color-white)",
+    backgroundColor: "var(--switchThumbGrey)",
+    boxShadow: "inset 0px 0px 0px 1px var(--switchThumbStroke)",
     boxSizing: "border-box",
     width: 22,
     height: 22,
@@ -660,6 +671,13 @@ export const switchStyles = {
     transition: theme.transitions.create(["background-color"], {
       duration: 500,
     }),
+  },
+  "&.Mui-checked .MuiSwitch-thumb": {
+    backgroundImage: "var(--gradientButton)",
+    boxShadow: "none",
+  },
+  "&.Mui-checked + .MuiSwitch-track": {
+    backgroundColor: "var(--inputBg)",
   },
   width: 50,
   height: 28,
@@ -685,7 +703,13 @@ export const switchStyles = {
     },
     "&.Mui-disabled .MuiSwitch-thumb": {
       color: "var(--inputBg)",
-      backgroundImage: "var(--gradientCircleDisabled)",
+      backgroundColor: "var(--switchThumbGreyDisabled)",
+      boxShadow: "inset 0px 0px 0px 1px var(--switchThumbStrokeDisabled)",
+    },
+    "&.Mui-disabled.Mui-checked .MuiSwitch-thumb": {
+      color: "var(--inputBg)",
+      backgroundImage: "var(--switchThumbCheckedDisabled)",
+      boxShadow: "none",
     },
     "&.Mui-disabled + .MuiSwitch-track": {
       opacity: 0.3,

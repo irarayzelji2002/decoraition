@@ -154,6 +154,7 @@ const DesignSettings = () => {
         `/api/design/${designId}/update-settings`,
         {
           designSettings: updatedSettings,
+          userId: userDoc.id,
         },
         {
           headers: {

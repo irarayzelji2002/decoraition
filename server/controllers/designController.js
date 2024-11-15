@@ -1,7 +1,8 @@
-const { db, auth, clientAuth, clientDb } = require("../firebase");
+const { db, auth, clientAuth, clientDb, storage } = require("../firebase");
 const { ref, uploadBytes, getDownloadURL, deleteObject } = require("firebase/storage");
 const { doc, getDoc, arrayUnion } = require("firebase/firestore");
 const { Resend } = require("resend");
+const axios = require("axios");
 const resend = new Resend(process.env.REACT_APP_RESEND_API_KEY);
 const appURL = process.env.REACT_APP_URL;
 
@@ -120,12 +121,85 @@ exports.fetchUserDesigns = async (req, res) => {
   }
 };
 
+// Check if user is owner (manage)
+const isOwnerDesign = (designDoc, userId) => {
+  const designData = designDoc.data();
+  const isOwner = designData.owner === userId;
+  return isOwner;
+};
+
+// Check if user is owner or editor in design (editing)
+const isOwnerEditorDesign = (designDoc, userId) => {
+  const designData = designDoc.data();
+  if (designData.designSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isOwner = designData.owner === userId;
+    const isEditor = designData.editors.includes(userId);
+    return isOwner || isEditor;
+  } else {
+    // Anyone with the link
+    if (designData.designSettings.generalAccessRole === 1) return true;
+    const isOwner = designData.owner === userId;
+    const isEditor = designData.editors.includes(userId);
+    return isOwner || isEditor;
+  }
+};
+
+// Check if user is owner, editor, commenter (commenting)
+const isOwnerEditorCommenterDesign = (designDoc, userId) => {
+  const designData = designDoc.data();
+  if (designData.designSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isOwner = designData.owner === userId;
+    const isEditor = designData.editors.includes(userId);
+    const isCommenter = designData.commenters.includes(userId);
+    return isOwner || isEditor || isCommenter;
+  } else {
+    // Anyone with the link
+    if (
+      designData.designSettings.generalAccessRole === 2 ||
+      designData.designSettings.generalAccessRole === 1
+    )
+      return true;
+    const isOwner = designData.owner === userId;
+    const isEditor = designData.editors.includes(userId);
+    const isCommenter = designData.commenters.includes(userId);
+    return isOwner || isEditor || isCommenter;
+  }
+};
+
+// Check if user is owner, editor, commenter, viewer (viewing)
+const isCollaboratorDesign = (designDoc, userId) => {
+  const designData = designDoc.data();
+  if (designData.designSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isOwner = designData.owner === userId;
+    const isEditor = designData.editors.includes(userId);
+    const isCommenter = designData.commenters.includes(userId);
+    const isViewer = designData.viewers.includes(userId);
+    return isOwner || isEditor || isCommenter || isViewer;
+  } else {
+    // Anyone with the link
+    if (
+      designData.designSettings.generalAccessRole === 0 ||
+      designData.designSettings.generalAccessRole === 1 ||
+      designData.designSettings.generalAccessRole === 2
+    )
+      return true;
+    const isOwner = designData.owner === userId;
+    const isEditor = designData.editors.includes(userId);
+    const isCommenter = designData.commenters.includes(userId);
+    const isViewer = designData.viewers.includes(userId);
+    return isOwner || isEditor || isCommenter || isViewer;
+  }
+};
+
 // Update Name
 exports.updateDesignName = async (req, res) => {
   const updatedDocuments = [];
   try {
     const { designId } = req.params;
-    const { name } = req.body;
+    const { name, userId } = req.body;
     const designRef = db.collection("designs").doc(designId);
 
     // Store previous name for potential rollback
@@ -133,6 +207,14 @@ exports.updateDesignName = async (req, res) => {
     if (!designDoc.exists) {
       return res.status(404).json({ error: "Design not found" });
     }
+    // Check user role in design
+    const allowAction = isOwnerEditorDesign(designDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
+    }
+
     const previousName = designDoc.data().designName;
     updatedDocuments.push({
       collection: "designs",
@@ -175,13 +257,20 @@ exports.updateDesignSettings = async (req, res) => {
   const updatedDocuments = [];
   try {
     const { designId } = req.params;
-    const { designSettings } = req.body;
+    const { designSettings, userId } = req.body;
 
     const designRef = db.collection("designs").doc(designId);
     const designDoc = await designRef.get();
 
     if (!designDoc.exists) {
       return res.status(404).json({ error: "Design not found" });
+    }
+    // Check user role in design
+    const allowAction = isOwnerEditorDesign(designDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
     }
 
     // Store the previous settings before update
@@ -263,6 +352,7 @@ exports.getDesignVersionDetails = async (req, res) => {
 exports.restoreDesignVersion = async (req, res) => {
   try {
     const { designId, versionId } = req.params;
+    const { userId } = req.body;
 
     // Get the design document & version to restore
     const designDoc = await db.collection("designs").doc(designId).get();
@@ -272,6 +362,13 @@ exports.restoreDesignVersion = async (req, res) => {
     const versionDoc = await db.collection("designVersions").doc(versionId).get();
     if (!versionDoc.exists) {
       return res.status(404).json({ error: "Design version not found" });
+    }
+    // Check user role in design
+    const allowAction = isOwnerEditorDesign(designDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
     }
 
     // Create new version document with empty field
@@ -323,6 +420,13 @@ exports.copyDesign = async (req, res) => {
     const origDesignData = origDesignDoc.data();
     if (!origDesignDoc.exists) {
       return res.status(404).json({ error: "Original design not found" });
+    }
+    // Check user role in design
+    const allowAction = isOwnerEditorDesign(origDesignDoc, userId);
+    if (!allowAction || !origDesignData.designSettings.allowCopy) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
     }
 
     // Get original budget document
@@ -387,26 +491,26 @@ exports.copyDesign = async (req, res) => {
     const userData = userDoc.data();
     const updatedDesigns = userData.designs ? [...userData.designs] : [];
     updatedDesigns.push({ designId: newDesignId, role: 2 }); // 2 for owner
-    await userRef.update({ designs: updatedDesigns });
     updatedDocuments.push({
       collection: "users",
       id: userId,
       field: "designs",
       previousValue: userData.designs,
     });
+    await userRef.update({ designs: updatedDesigns });
 
     // Step 5: Update version's copiedDesigns array
     const versionRef = db.collection("designVersions").doc(versionId);
     const versionDoc = await versionRef.get();
     const previousCopiedDesigns = versionDoc.data().copiedDesigns || [];
-    await versionRef.update({
-      copiedDesigns: [...previousCopiedDesigns, newDesignId],
-    });
     updatedDocuments.push({
       collection: "designVersions",
       id: versionId,
       field: "copiedDesigns",
       previousValue: previousCopiedDesigns,
+    });
+    await versionRef.update({
+      copiedDesigns: [...previousCopiedDesigns, newDesignId],
     });
 
     // Step 6: Update design document with full data
@@ -570,6 +674,13 @@ exports.shareDesign = async (req, res) => {
       return res.status(404).json({ error: "Design not found" });
     }
     const designData = designDoc.data();
+    // Check user role in design
+    const allowAction = isOwnerEditorDesign(designDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
+    }
 
     // Get owner data for email notification
     const ownerRef = db.collection("users").doc(designData.owner);
@@ -605,14 +716,14 @@ exports.shareDesign = async (req, res) => {
         const newDesign = { designId, role };
 
         if (!currentDesigns.some((design) => design.designId === designId)) {
-          batch.update(userRef, {
-            designs: [...currentDesigns, newDesign],
-          });
           updatedDocuments.push({
             collection: "users",
             id: collaboratorId,
             field: "designs",
             previousValue: currentDesigns,
+          });
+          batch.update(userRef, {
+            designs: [...currentDesigns, newDesign],
           });
         }
 
@@ -621,14 +732,14 @@ exports.shareDesign = async (req, res) => {
         if (roleField) {
           const currentRoleArray = designData[roleField] || [];
           if (!currentRoleArray.includes(collaboratorId)) {
-            batch.update(designRef, {
-              [roleField]: [...currentRoleArray, collaboratorId],
-            });
             updatedDocuments.push({
               collection: "designs",
               id: designId,
               field: roleField,
               previousValue: currentRoleArray,
+            });
+            batch.update(designRef, {
+              [roleField]: [...currentRoleArray, collaboratorId],
             });
           }
         }
@@ -643,14 +754,14 @@ exports.shareDesign = async (req, res) => {
           const newDesign = { designId, role };
 
           if (!currentDesigns.some((design) => design.designId === designId)) {
-            batch.update(nonUserRef, {
-              designs: [...currentDesigns, newDesign],
-            });
             updatedDocuments.push({
               collection: "nonUserInvites",
               id: email,
               field: "designs",
               previousValue: currentDesigns,
+            });
+            batch.update(nonUserRef, {
+              designs: [...currentDesigns, newDesign],
             });
           }
         } else {
@@ -736,15 +847,20 @@ exports.changeAccessDesign = async (req, res) => {
     // Get design document
     const designRef = db.collection("designs").doc(designId);
     const designDoc = await designRef.get();
-
     if (!designDoc.exists) {
       return res.status(404).json({
         success: false,
         error: "Design not found",
       });
     }
-
     const designData = designDoc.data();
+    // Check user role in design
+    const allowAction = isOwnerEditorDesign(designDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
+    }
 
     // Get all users by email
     const usersSnapshot = await db
@@ -784,12 +900,12 @@ exports.changeAccessDesign = async (req, res) => {
         userDesigns.push({ designId, role });
       }
 
-      await userRef.update({ designs: userDesigns });
       updatedDocuments.push({
         ref: userRef,
         field: "designs",
         previousValue: userData.designs,
       });
+      await userRef.update({ designs: userDesigns });
     }
 
     // Update design document (child)
@@ -846,13 +962,6 @@ exports.changeAccessDesign = async (req, res) => {
       }
     }
 
-    await designRef.update({
-      editors,
-      commenters,
-      viewers,
-      modifiedAt: new Date(),
-    });
-
     updatedDocuments.push({
       ref: designRef,
       previousValue: {
@@ -860,6 +969,12 @@ exports.changeAccessDesign = async (req, res) => {
         commenters: designData.commenters,
         viewers: designData.viewers,
       },
+    });
+    await designRef.update({
+      editors,
+      commenters,
+      viewers,
+      modifiedAt: new Date(),
     });
 
     res.status(200).json({
@@ -893,15 +1008,27 @@ exports.updateDesignVersionImageDescription = async (req, res) => {
   const updatedDocuments = [];
   try {
     const { designId, designVersionId } = req.params;
-    const { description, imageId } = req.body;
-    const designVersionRef = db.collection("designVersions").doc(designVersionId);
+    const { description, imageId, userId } = req.body;
+
+    // Check user role in design
+    const designRef = db.collection("designs").doc(designId);
+    const designDoc = await designRef.get();
+    if (!designDoc.exists) {
+      return res.status(404).json({ error: "Design not found" });
+    }
+    const allowAction = isOwnerEditorDesign(designDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
+    }
 
     // Store previous name for potential rollback
+    const designVersionRef = db.collection("designVersions").doc(designVersionId);
     const designVersionDoc = await designVersionRef.get();
     if (!designVersionDoc.exists) {
       return res.status(404).json({ error: "Design version not found" });
     }
-    // store rollback data
     const previousImages = designVersionDoc.data().images;
     const updatedImages = previousImages.map((img) =>
       img.id === imageId ? { ...img, description } : img
@@ -942,17 +1069,148 @@ exports.updateDesignVersionImageDescription = async (req, res) => {
   }
 };
 
-// Update
-exports.updateDesign = async (req, res) => {
+// Create Design Version
+exports.createDesignVersion = async (req, res) => {
+  const createdDocuments = [];
+  const updatedDocuments = [];
   try {
     const { designId } = req.params;
-    const updateData = req.body;
-    updateData.updatedAt = new Date();
-    await db.collection("designs").doc(designId).update(updateData);
-    res.json({ message: "Design updated successfully" });
+    const { userId, images, prompt } = req.body;
+
+    // Check user role in design
+    const designRef = db.collection("designs").doc(designId);
+    const designDoc = await designRef.get();
+    if (!designDoc.exists) {
+      return res.status(404).json({ error: "Design not found" });
+    }
+    const allowAction = isOwnerEditorDesign(designDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
+    }
+
+    // Create empty version first
+    const emptyDesignVersionData = {
+      description: "",
+      images: [],
+      createdAt: new Date(),
+      copiedDesigns: [],
+      isRestored: false,
+      isRestoredFrom: null,
+    };
+    const newVersionRef = await db.collection("designVersions").add(emptyDesignVersionData);
+    const newVersionId = newVersionRef.id;
+    createdDocuments.push({
+      collection: "designVersions",
+      id: newVersionId,
+      data: emptyDesignVersionData,
+    });
+
+    // Update design document (parent)
+    const previousHistory = designDoc.data().history || [];
+    const updatedHistory = [...previousHistory, newVersionId];
+    updatedDocuments.push({
+      collection: "designs",
+      id: designId,
+      field: "history",
+      previousValue: previousHistory,
+    });
+    await designRef.update({
+      history: updatedHistory,
+      modifiedAt: new Date(),
+    });
+
+    // Process images and upload to Firebase Storage
+    const updatedImages = await Promise.all(
+      images.map(async (img) => {
+        const imageId = db.collection("_").doc().id;
+        const imageName = img.link.split("/").pop();
+        const storagePath = `designs/${designId}/versions/${newVersionId}/images/${imageName}`;
+        const storageRef = ref(storage, storagePath);
+
+        try {
+          const aiApiUrl = `https://ai-api.decoraition.org/static/images/${imageName}`;
+          const response = await axios.get(aiApiUrl, { responseType: "arraybuffer" });
+          const imageBuffer = Buffer.from(response.data, "binary");
+
+          await uploadBytes(storageRef, imageBuffer, {
+            contentType: "image/png",
+          });
+          const downloadURL = await getDownloadURL(storageRef);
+
+          return {
+            ...img,
+            imageId,
+            link: downloadURL,
+            storagePath,
+          };
+        } catch (error) {
+          console.error(`Error processing image ${imageName}:`, error);
+          throw error;
+        }
+      })
+    );
+
+    // Update version with full data
+    const fullVersionData = {
+      description: prompt,
+      images: updatedImages,
+      createdAt: new Date(),
+      copiedDesigns: [],
+      isRestored: false,
+      isRestoredFrom: null,
+    };
+    await newVersionRef.update(fullVersionData);
+    createdDocuments[0].data = fullVersionData;
+
+    res.status(200).json({
+      success: true,
+      message: "Design version created successfully",
+      versionId: newVersionId,
+    });
   } catch (error) {
-    console.error("Error updating design:", error);
-    res.status(500).json({ error: "Failed to update design" });
+    console.error("Error creating design version:", error);
+
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+      } catch (rollbackError) {
+        console.error(`Rollback failed for ${doc.collection}/${doc.id}:`, rollbackError);
+      }
+    }
+    // Rollback created documents and delete storage files
+    for (const doc of createdDocuments) {
+      try {
+        // Delete Firestore document
+        await db.collection(doc.collection).doc(doc.id).delete();
+        // Delete associated storage files if they exist
+        if (doc.data?.images) {
+          await Promise.all(
+            doc.data.images.map(async (img) => {
+              if (img.storagePath) {
+                const imageRef = ref(storage, img.storagePath);
+                try {
+                  await deleteObject(imageRef);
+                } catch (deleteError) {
+                  console.error(`Error deleting image ${img.storagePath}:`, deleteError);
+                }
+              }
+            })
+          );
+        }
+      } catch (deleteError) {
+        console.error(`Deletion failed for ${doc.collection}/${doc.id}:`, deleteError);
+      }
+    }
+
+    res.status(500).json({ error: "Failed to create design version" });
   }
 };
 
@@ -971,6 +1229,12 @@ exports.deleteDesign = async (req, res) => {
       return res.status(404).json({ error: "Design not found" });
     }
     const designData = designDoc.data();
+    const allowAction = isOwnerDesign(designDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create design version" });
+    }
 
     // 1. Update parent documents first (users, projects, designs)
     // Update user's designs array
@@ -980,13 +1244,13 @@ exports.deleteDesign = async (req, res) => {
       const userData = userDoc.data();
       const previousDesigns = [...userData.designs];
       const updatedDesigns = previousDesigns.filter((design) => design.designId !== designId);
-      await userRef.update({ designs: updatedDesigns });
       updatedDocuments.push({
         ref: userRef,
         field: "designs",
         previousValue: previousDesigns,
         newValue: updatedDesigns,
       });
+      await userRef.update({ designs: updatedDesigns });
     }
 
     // Update projects containing this design
@@ -999,21 +1263,21 @@ exports.deleteDesign = async (req, res) => {
       const projectData = projectDoc.data();
       const previousDesigns = [...projectData.designs];
       const updatedDesigns = previousDesigns.filter((design) => design.designId !== designId);
-      await projectDoc.ref.update({ designs: updatedDesigns });
       updatedDocuments.push({
         ref: projectDoc.ref,
         field: "designs",
         previousValue: previousDesigns,
         newValue: updatedDesigns,
       });
+      await projectDoc.ref.update({ designs: updatedDesigns });
     }
 
     // Delete the design document first as it's also a parent
-    await designRef.delete();
     deletedDocuments.push({
       ref: designRef,
       data: designData,
     });
+    await designRef.delete();
 
     // 2. Handle pins and planMaps
     const pinsSnapshot = await db.collection("pins").where("designId", "==", designId).get();
@@ -1030,22 +1294,22 @@ exports.deleteDesign = async (req, res) => {
       const planMapData = planMapDoc.data();
       const previousPins = [...planMapData.pins];
       const updatedPins = previousPins.filter((pinId) => !pinIdsToDelete.includes(pinId));
-      await planMapDoc.ref.update({ pins: updatedPins });
       updatedDocuments.push({
         ref: planMapDoc.ref,
         field: "pins",
         previousValue: previousPins,
         newValue: updatedPins,
       });
+      await planMapDoc.ref.update({ pins: updatedPins });
     }
 
     // Then delete pins
     for (const pinDoc of pinsSnapshot.docs) {
-      await pinDoc.ref.delete();
       deletedDocuments.push({
         ref: pinDoc.ref,
         data: pinDoc.data(),
       });
+      await pinDoc.ref.delete();
     }
 
     // 3. Handle budgets and projectBudgets
@@ -1068,13 +1332,13 @@ exports.deleteDesign = async (req, res) => {
           const updatedBudgets = previousBudgets.filter(
             (budgetId) => budgetId !== designData.budgetId
           );
-          await projectBudgetDoc.ref.update({ budgets: updatedBudgets });
           updatedDocuments.push({
             ref: projectBudgetDoc.ref,
             field: "budgets",
             previousValue: previousBudgets,
             newValue: updatedBudgets,
           });
+          await projectBudgetDoc.ref.update({ budgets: updatedBudgets });
         }
 
         // Delete items after updating projectBudgets
@@ -1082,20 +1346,20 @@ exports.deleteDesign = async (req, res) => {
           const itemRef = db.collection("items").doc(itemId);
           const itemDoc = await itemRef.get();
           if (itemDoc.exists) {
-            await itemRef.delete();
             deletedDocuments.push({
               ref: itemRef,
               data: itemDoc.data(),
             });
+            await itemRef.delete();
           }
         }
 
         // Then delete budget
-        await budgetRef.delete();
         deletedDocuments.push({
           ref: budgetRef,
           data: budgetData,
         });
+        await budgetRef.delete();
       }
     }
 
@@ -1105,11 +1369,11 @@ exports.deleteDesign = async (req, res) => {
       const versionDoc = await versionRef.get();
       if (versionDoc.exists) {
         const versionData = versionDoc.data();
-        await versionRef.delete();
         deletedDocuments.push({
           ref: versionRef,
           data: versionData,
         });
+        await versionRef.delete();
 
         // Delete comments after design version is deleted
         if (versionData.images) {
@@ -1120,11 +1384,11 @@ exports.deleteDesign = async (req, res) => {
               .get();
 
             for (const commentDoc of commentsSnapshot.docs) {
-              await commentDoc.ref.delete();
               deletedDocuments.push({
                 ref: commentDoc.ref,
                 data: commentDoc.data(),
               });
+              await commentDoc.ref.delete();
             }
           }
         }

@@ -27,7 +27,7 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
       else showToast("error", result.message);
       return;
     }
-    showToast("success", `Image ${imageId} description updated successfully`);
+    showToast("success", `Image ${getImageIndex() + 1} description updated successfully`);
     handleClose();
   };
 
@@ -37,12 +37,21 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
     onClose();
   };
 
-  useEffect(() => {
+  const getImageDescription = () => {
     console.log("imageId", imageId);
     console.log("designVersion", designVersion);
     const designVersionImages = designVersion?.images;
     const image = designVersionImages.find((image) => image.id === imageId);
-    setDescription(image?.description ?? "");
+    return image?.description ?? "";
+  };
+
+  const getImageIndex = () => {
+    return designVersion?.images.findIndex((image) => image.id === imageId);
+  };
+
+  useEffect(() => {
+    const description = getImageDescription();
+    setDescription(description);
   }, [designVersion, imageId]);
 
   return (
@@ -102,7 +111,7 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
         <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
-          {`${designVersion?.images[imageId]?.description ? "Edit" : "Add"} description`}
+          {`${getImageDescription() ? "Edit" : "Add"} description`}
         </Button>
         <Button
           fullWidth

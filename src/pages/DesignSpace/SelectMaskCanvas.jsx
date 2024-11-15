@@ -102,6 +102,7 @@ function SelectMaskCanvas({
   showPreview,
   setShowPreview,
   promptBarRef,
+  generationErrors,
 }) {
   // Canvas/Container refs
   const addCanvasRef = useRef(null);
@@ -401,6 +402,14 @@ function SelectMaskCanvas({
     adjustCss();
   }, [showPromptBar, controlWidthPromptBar, showPreview]);
 
+  useEffect(() => {
+    if (samMaskModalOpen || pickColorModalOpen) {
+      document.body.style.overflow = "auto";
+    } else {
+      document.body.style.overflow = ""; // Reset when closed
+    }
+  }, [samMaskModalOpen, pickColorModalOpen]);
+
   const getInitColor = (canvas, pickedColor) => {
     const initColor = pickedColor;
     let color;
@@ -593,6 +602,7 @@ function SelectMaskCanvas({
 
   // Update SAM mask when selected mask changes
   useEffect(() => {
+    console.log("Selected SAM mask changed:", selectedSamMask);
     if (samDrawing && selectedSamMask) {
       samDrawing.useSelectedMask(selectedSamMask);
     }
@@ -837,7 +847,7 @@ function SelectMaskCanvas({
                 onChange={(e) => setMaskPrompt(e.target.value)}
                 placeholder="Type objects in the image to mask"
                 size="small"
-                helperText={errors?.maskPrompt}
+                helperText={errors?.maskPrompt || generationErrors?.maskPrompt}
                 variant="outlined"
                 inputProps={textFieldInputProps}
                 sx={{
@@ -1482,6 +1492,7 @@ function SelectMaskCanvas({
           onClose={() => setSamMaskModalOpen(false)}
           handleCancelSelectMask={handleCancelSelectMask}
           samMasks={samMasks}
+          samMaskMask={samMaskMask}
           selectedSamMask={selectedSamMask}
           setSelectedSamMask={setSelectedSamMask}
           setSamMaskMask={setSamMaskMask}
@@ -1594,15 +1605,23 @@ const ToggleButton = ({
   );
 };
 
-// Modal for picking color
-function PaperComponent({ handle, ...props }) {
+function PickColorModalPaperComponent(props) {
   return (
-    <Draggable handle={handle} cancel={'[class*="MuiDialogContent-root"]'}>
+    <Draggable handle="#draggable-color-picker-dialog" cancel={'[class*="MuiDialogContent-root"]'}>
       <Paper {...props} />
     </Draggable>
   );
 }
 
+function SamMaskModalPaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-sam-mask-dialog" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
+
+// Modal for picking color
 const PickColorModal = ({
   pickColorModalOpen,
   setPickColorModalOpen,
@@ -1698,10 +1717,18 @@ const PickColorModal = ({
     <Dialog
       open={pickColorModalOpen}
       onClose={handlePickColorModalClose}
-      sx={dialogStyles}
-      PaperComponent={(dialogProps) => (
-        <PaperComponent handle="#draggable-color-picker-dialog" {...dialogProps} />
-      )}
+      sx={{
+        ...dialogStyles,
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        height: "fit-content",
+        width: "fit-content",
+      }}
+      PaperComponent={PickColorModalPaperComponent}
+      disableScrollLock={true}
+      container={document.querySelector(".workspace")}
       aria-labelledby="draggable-color-picker-dialog"
       slots={{
         backdrop: () => null,
@@ -1711,7 +1738,12 @@ const PickColorModal = ({
       }}
     >
       <DialogTitle
-        sx={{ ...dialogTitleStyles, padding: "10px 12px 10px 6px", cursor: "move" }}
+        sx={{
+          ...dialogTitleStyles,
+          padding: "10px 12px 10px 6px",
+          cursor: "move",
+          userSelect: "none",
+        }}
         id="draggable-color-picker-dialog"
       >
         <IconButton
@@ -1955,6 +1987,7 @@ const SamMaskModal = ({
   onClose,
   handleCancelSelectMask,
   samMasks,
+  samMaskMask,
   selectedSamMask,
   setSelectedSamMask,
   setSamMaskMask,
@@ -1985,10 +2018,18 @@ const SamMaskModal = ({
     <Dialog
       open={isOpen}
       onClose={handleClose}
-      sx={dialogStyles}
-      PaperComponent={(dialogProps) => (
-        <PaperComponent handle="#draggable-sam-mask-dialog" {...dialogProps} />
-      )}
+      sx={{
+        ...dialogStyles,
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        height: "fit-content",
+        width: "fit-content",
+      }}
+      PaperComponent={SamMaskModalPaperComponent}
+      disableScrollLock={true}
+      container={document.querySelector(".workspace")}
       aria-labelledby="draggable-sam-mask-dialog"
       slots={{
         backdrop: () => null,
@@ -1997,7 +2038,14 @@ const SamMaskModal = ({
         elevation: 8,
       }}
     >
-      <DialogTitle sx={{ ...dialogTitleStyles, cursor: "move" }} id="draggable-sam-mask-dialog">
+      <DialogTitle
+        sx={{
+          ...dialogTitleStyles,
+          cursor: "move",
+          userSelect: "none",
+        }}
+        id="draggable-sam-mask-dialog"
+      >
         <Typography
           variant="body1"
           sx={{
@@ -2033,10 +2081,12 @@ const SamMaskModal = ({
               sx={{
                 ...styles.maskOption,
                 background:
-                  selectedSamMask.id === index ? "var(--gradientFontLessYellow)" : "var(--inputBg)",
+                  samMaskMask === option.masked
+                    ? "var(--gradientFontLessYellow)"
+                    : "var(--inputBg)",
                 "&:hover": {
                   background:
-                    selectedSamMask.id === index
+                    samMaskMask === option.masked
                       ? "var(--gradientFontLessYellowHover)"
                       : "var(--inputBgBrighter)",
                 },

@@ -34,6 +34,7 @@ import {
 import { handleDeleteDesign } from "../pages/Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../contexts/SharedPropsContext.js";
 import { toggleComments } from "../pages/DesignSpace/backend/DesignActions.jsx";
+import { useNetworkStatus } from "../hooks/useNetworkStatus.js";
 
 function DesignHead({
   design,
@@ -43,6 +44,7 @@ function DesignHead({
   isSelectingMask = false,
 }) {
   const { user, userDoc, handleLogout } = useSharedProps();
+  const isOnline = useNetworkStatus();
   const navigate = useNavigate();
   const location = useLocation();
   const isDesignPath = location.pathname.startsWith("/design");
@@ -70,7 +72,7 @@ function DesignHead({
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [isRenameVisible, setIsRenameVisible] = useState(false);
-  const [newName, setNewName] = useState(design?.designName ?? "Untitled Design");
+  const [newName, setNewName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
 
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
@@ -115,6 +117,7 @@ function DesignHead({
       else newRole = design?.designSettings?.generalAccessRole ?? 0;
     }
 
+    setNewName(design?.designName ?? "Untitled Design");
     // Set role and all dependent flags
     setRole(newRole);
     setIsViewCollab(newRole < 1);
@@ -122,11 +125,13 @@ function DesignHead({
     if (design.history && design.history.length > 0)
       setIsRestoreVisible(newRole === 1 || newRole === 3);
     setIsRenameVisible(newRole === 1 || newRole === 3);
-    setIsDeleteVisible(newRole === 1 || newRole === 3);
+    setIsDeleteVisible(newRole === 3);
     // Set visibility based on design settings
-    setIsDownloadVisible(!!design?.designSettings?.allowDownload);
-    setIsHistoryVisible(!!design?.designSettings?.allowViewHistory);
-    setIsMakeCopyVisible(!!design?.designSettings?.allowCopy);
+    setIsDownloadVisible(!!design?.designSettings?.allowDownload || newRole === 1 || newRole === 3);
+    setIsHistoryVisible(
+      !!design?.designSettings?.allowViewHistory || newRole === 1 || newRole === 3
+    );
+    setIsMakeCopyVisible(!!design?.designSettings?.allowCopy || newRole === 1 || newRole === 3);
   }, [design, user, userDoc]);
 
   const handleHistoryClick = () => {
@@ -282,10 +287,12 @@ function DesignHead({
       return;
     }
     if (design.designName === newName.trim()) {
-      handleEditNameToggle();
+      setIsEditingName(false);
       return;
     }
-    handleNameChange(design.id, newName, user, setIsEditingName);
+    const result = handleNameChange(design.id, newName, user, userDoc, setIsEditingName);
+    if (!result.success) showToast("success", result.message);
+    else showToast("error", result.message);
   };
 
   // Download Modal Action
@@ -381,7 +388,7 @@ function DesignHead({
       return { success: false, message: "Select a version to restore" };
     }
     try {
-      const result = await handleRestoreDesignVersion(design, designVersionId, user);
+      const result = await handleRestoreDesignVersion(design, designVersionId, user, userDoc);
       if (result.success) {
         handleClose();
         handleCloseRestoreModal();
@@ -401,7 +408,7 @@ function DesignHead({
       return { success: false, message: "Name is the same as the current name" };
     }
     try {
-      const result = await handleNameChange(design.id, newName, user, setIsEditingName);
+      const result = await handleNameChange(design.id, newName, user, userDoc, setIsEditingName);
       console.log("result", result);
       if (result.success) {
         handleClose();
@@ -490,7 +497,7 @@ function DesignHead({
               autoFocus
               onBlur={handleBlur}
               variant="outlined"
-              className="headTitleInput"
+              className="headTitleInput headTitle"
               fullWidth
               sx={{
                 backgroundColor: "transparent",
@@ -570,6 +577,9 @@ function DesignHead({
         >
           <MoreVertIcon sx={{ fontSize: "1.9rem" }} />
         </IconButton>
+        {!isOnline && (
+          <div className="offline-bar">You are offline. Please check your internet connection.</div>
+        )}
         {anchorEl === null && isShareMenuOpen && (
           <Menu
             anchorEl={anchorElShare}

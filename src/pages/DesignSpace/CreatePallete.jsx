@@ -40,9 +40,11 @@ import { useFetcher } from "react-router-dom";
 import { set } from "lodash";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { debounce } from "lodash";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 
 const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) => {
   const { user, userDoc } = useSharedProps();
+  const isOnline = useNetworkStatus();
   const [colorPalette, setColorPalette] = useState({ paletteName: "", colors: [] });
   const defaultColor = "#000000";
   const [colorToEdit, setColorToEdit] = useState("");
@@ -286,7 +288,16 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
             <ButtonMUI
               fullWidth
               variant="contained"
-              sx={gradientButtonStyles}
+              disabled={!isOnline}
+              sx={{
+                ...gradientButtonStyles,
+                color: "white !important",
+                opacity: !isOnline ? "0.5" : "1",
+                cursor: !isOnline ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: isOnline && "var(--gradientButtonHover)",
+                },
+              }}
               onClick={() => (!isEditingPalette ? handleAddColorPalette : handleEditColorPalette)}
             >
               {`${!isEditingPalette ? "Add" : "Edit"} color palette`}
@@ -295,7 +306,16 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
               <ButtonMUI
                 fullWidth
                 variant="contained"
-                sx={outlinedButtonStyles}
+                disabled={!isOnline}
+                sx={{
+                  ...outlinedButtonStyles,
+                  color: "white",
+                  opacity: !isOnline ? "0.5" : "1",
+                  cursor: !isOnline ? "default" : "pointer",
+                  "&:hover": {
+                    backgroundImage: isOnline && "var(--gradientButtonHover)",
+                  },
+                }}
                 onClick={handleDeleteColorPalette}
                 onMouseOver={(e) =>
                   (e.target.style.backgroundImage =

@@ -95,6 +95,8 @@ function Design() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImagesPreview, setGeneratedImagesPreview] = useState([]);
   const [generatedImages, setGeneratedImages] = useState([]);
+  const [loadingGeneration, setLoadingGeneration] = useState(false);
+  const [generationErrors, setGenerationErrors] = useState({});
 
   const handleEdit = async (imageId, description) => {
     console.log("got imageId", imageId);
@@ -110,7 +112,8 @@ function Design() {
         designVersion.id,
         imageId,
         description,
-        user
+        user,
+        userDoc
       );
       if (result.success) {
         setIsEditDescModalOpen(false);
@@ -315,7 +318,7 @@ function Design() {
   }
 
   return (
-    <div className="whole">
+    <div className="whole" id="designWhole">
       <DesignSpace
         design={design}
         isDesign={true}
@@ -354,6 +357,7 @@ function Design() {
                     setEta={setEta}
                     setIsGenerating={setIsGenerating}
                     setGeneratedImagesPreview={setGeneratedImagesPreview}
+                    generatedImages={generatedImages}
                     setGeneratedImages={setGeneratedImages}
                     samMaskMask={samMaskMask}
                     maskPrompt={maskPrompt}
@@ -374,6 +378,11 @@ function Design() {
                     refineMaskOption={refineMaskOption}
                     showPreview={showPreview}
                     promptBarRef={promptBarRef}
+                    loading={loadingGeneration}
+                    setLoading={setLoadingGeneration}
+                    generationErrors={generationErrors}
+                    setGenerationErrors={setGenerationErrors}
+                    designId={designId}
                   />
                 </div>
               )}
@@ -590,14 +599,18 @@ function Design() {
                   showPreview={showPreview}
                   setShowPreview={setShowPreview}
                   promptBarRef={promptBarRef}
+                  generationErrors={generationErrors}
                 />
               ) : designVersionImages.length > 0 ? (
                 <>
                   <div className="frame-buttons">
-                    <button onClick={() => setNumImageFrames(2)}>
+                    <button className={numImageFrames === 2 ? "active" : ""}>
                       <TwoFrames />
                     </button>
-                    <button onClick={() => setNumImageFrames(4)}>
+                    <button
+                      onClick={() => setNumImageFrames(4)}
+                      className={numImageFrames === 4 ? "active" : ""}
+                    >
                       <FourFrames />
                     </button>
                   </div>

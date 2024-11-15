@@ -72,11 +72,11 @@ export const getDesignImage = (designId, userDesigns, userDesignVersions, index 
   return fetchedLatestDesignVersion.images[index].link || "";
 };
 
-export const handleNameChange = async (designId, newName, user, setIsEditingName) => {
+export const handleNameChange = async (designId, newName, user, userDoc, setIsEditingName) => {
   try {
     const response = await axios.put(
       `/api/design/${designId}/update-name`,
-      { name: newName },
+      { name: newName, userId: userDoc.id },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }
@@ -108,11 +108,11 @@ export const fetchVersionDetails = async (design, user) => {
   return { success: false, versionDetails: [], message: "No history available" };
 };
 
-export const handleRestoreDesignVersion = async (design, designVersionId, user) => {
+export const handleRestoreDesignVersion = async (design, designVersionId, user, userDoc) => {
   try {
     const response = await axios.post(
       `/api/design/${design.id}/restore/${designVersionId}`,
-      {},
+      { userId: userDoc.id },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -241,12 +241,13 @@ export const handleEditDescription = async (
   designVersionId,
   imageId,
   description,
-  user
+  user,
+  userDoc
 ) => {
   try {
     const response = await axios.put(
       `/api/design/${designId}/design-version/${designVersionId}/update-desc`,
-      { description, imageId },
+      { description, imageId, userId: userDoc.id },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }
@@ -653,10 +654,13 @@ export const generateMask = async (
     };
   } catch (error) {
     console.error("Error:", error);
-    const errMessage = error.message || "Failed to generate mask";
+    let errorMessage = "";
+    if (error.message === "NetworkError when attempting to fetch resource.")
+      errorMessage = "Server is offline. Please try again later.";
+    else errorMessage = error.message || "Failed to generate mask";
     return {
       success: false,
-      message: errMessage,
+      message: errorMessage,
     };
   }
 };
@@ -731,7 +735,10 @@ export const previewMask = async (
   } catch (error) {
     console.error("Error:", error);
     let formErrors = {};
-    const errorMessage = error.message || "Failed to combine masks";
+    let errorMessage = "";
+    if (error.message === "NetworkError when attempting to fetch resource.")
+      errorMessage = "Server is offline. Please try again later.";
+    else errorMessage = error.message || "Failed to combine masks";
     formErrors.combinedMask = errorMessage;
     setErrors(formErrors);
     return {
@@ -760,7 +767,7 @@ export const applyMask = async (
   refineMaskOption,
   showPreview
 ) => {
-  const data = await previewMask(
+  const result = await previewMask(
     samMaskImage,
     base64ImageAdd,
     base64ImageRemove,
@@ -770,18 +777,18 @@ export const applyMask = async (
     showPreview,
     setPreviewMask
   ); // return mask
-  if (!data) {
+  if (!result.success) {
     let formErrors = {};
-    formErrors.combinedMask = "An error occurred. Please try again.";
+    formErrors.combinedMask = result.message;
     setErrors((prev) => ({ ...prev, ...formErrors }));
     return {
       success: false,
-      message: "An error occurred. Please try again.",
+      message: result.message,
       formErrors: formErrors,
     };
   }
-  const { mask, masked_image } = data;
-  setCombinedMask(data);
+  const { mask, masked_image } = result.data;
+  setCombinedMask(result.data);
   setPreviewMask(null);
 
   // Add masked_image to samCanvas with styles
@@ -796,6 +803,7 @@ export const applyMask = async (
   return {
     success: true,
     message: "Mask applied successfully",
+    data: result.data,
   };
 };
 
@@ -807,8 +815,6 @@ export const generateNextImage = async (
   selectedImage,
   samMaskMask,
   styleReference,
-  maskPrompt,
-  combinedMask,
   setGenerationErrors,
   setStatusMessage, // checkTaskStatus args
   setProgress,
@@ -836,50 +842,10 @@ export const generateNextImage = async (
   const combinedMaskImg = samMaskMask;
   let combinedMaskBW = "";
   let formErrors = {};
-
-  // Validation
-  // Combine mask
   let errMessage = "";
-  if (!selectedSamMask) {
-    if (!initImage && !maskPrompt) {
-      formErrors.general = "Generate a mask first with the mask prompt and init image";
-      return {
-        success: false,
-        message: "Invalid inputs.",
-        formErrors: formErrors,
-      };
-    } else if (!maskPrompt || !initImage) {
-      if (!maskPrompt) {
-        errMessage = "Mask prompt is required to generate a mask";
-        formErrors.maskPrompt = errMessage;
-      }
-      if (!initImage) {
-        errMessage = "Initial image is required to generate a mask";
-        formErrors.initImage = errMessage;
-      }
-      return {
-        success: false,
-        message: "Invalid inputs.",
-        formErrors: formErrors,
-      };
-    } else {
-      errMessage = "Generate a mask first";
-      formErrors.general = errMessage;
-      return {
-        success: false,
-        message: errMessage,
-      };
-    }
-  }
-  if (combinedMaskImg === "" || !combinedMaskImg) {
-    errMessage = "Generate a mask first with the mask prompt and init image";
-    formErrors.general = errMessage;
-    return {
-      success: false,
-      message: errMessage,
-    };
-  } else {
-    await applyMask(
+
+  if (combinedMaskImg) {
+    const result = await applyMask(
       setErrors,
       samDrawing,
       setSamMaskMask,
@@ -896,24 +862,27 @@ export const generateNextImage = async (
       refineMaskOption,
       showPreview
     );
-    const { mask, masked_image } = combinedMask;
+    if (!result.success) {
+      let formErrors = {};
+      formErrors.combinedMask = result.message;
+      setErrors((prev) => ({ ...prev, ...formErrors }));
+      return {
+        success: false,
+        message: result.message,
+        formErrors: result.formErrors,
+      };
+    }
+    const { mask, masked_image } = result.data;
     combinedMaskBW = mask;
-  }
-  if (!prompt) {
-    formErrors.prompt = "Prompt is required";
-  }
-  if (!numberOfImages || numberOfImages < 1 || numberOfImages > 4) {
-    formErrors.numberOfImages = "Only 1 - 4 number of images allowed";
-  }
-
-  if (Object.keys(formErrors).length > 0) {
-    setGenerationErrors(formErrors);
+  } else {
+    errMessage = "Generate a mask first with the mask prompt and init image";
+    formErrors.general = errMessage;
     return {
       success: false,
-      message: `Incorrect inputs. Please check the form for errors`,
+      message: errMessage,
+      formErrors: formErrors,
     };
   }
-
   // Create FormData object
   const formData = new FormData();
   formData.append("prompt", prompt);
@@ -929,7 +898,6 @@ export const generateNextImage = async (
   }
   console.log("Form Data:");
   console.log(formData);
-  formErrors = {};
 
   // Fetch API call to generate the next image
   try {
@@ -965,8 +933,10 @@ export const generateNextImage = async (
     };
   } catch (error) {
     console.error("Error:", error);
-    const errorMessage =
-      error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
+    let errorMessage = "";
+    if (error.message === "NetworkError when attempting to fetch resource.")
+      errorMessage = "Server is offline. Please try again later.";
+    else errorMessage = error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
     return {
       success: false,
       message: errorMessage,
@@ -989,38 +959,6 @@ export const generateFirstImage = async (
   setGeneratedImagesPreview,
   setGeneratedImages
 ) => {
-  // Validation
-  let formErrors = {};
-  if (!prompt) {
-    formErrors.prompt = "Prompt is required.";
-  }
-  if (!numberOfImages || numberOfImages < 1 || numberOfImages > 4) {
-    formErrors.numberOfImages = "Only 1 - 4 number of images allowed.";
-  }
-  if (baseImage) {
-    const validExtensions = ["jpg", "jpeg", "png"];
-    const fileExtension = baseImage.name.split(".").pop().toLowerCase();
-
-    if (!validExtensions.includes(fileExtension)) {
-      formErrors.baseImage = "Invalid file type. Please upload a JPG or PNG image.";
-    }
-  }
-  if (styleReference) {
-    const validExtensions = ["jpg", "jpeg", "png"];
-    const fileExtension = styleReference.name.split(".").pop().toLowerCase();
-
-    if (!validExtensions.includes(fileExtension)) {
-      formErrors.styleReference = "Invalid file type. Please upload a JPG or PNG image.";
-    }
-  }
-  if (Object.keys(formErrors).length > 0) {
-    setGenerationErrors(formErrors);
-    return {
-      success: false,
-      message: `Incorrect inputs. Please check the form for errors`,
-    };
-  }
-
   // Create FormData object
   const formData = new FormData();
   formData.append("prompt", prompt);
@@ -1035,6 +973,7 @@ export const generateFirstImage = async (
   if (styleReference) {
     formData.append("style_reference", styleReference);
   }
+  console.log("Form Data:", formData);
 
   // Fetch API call to generate the first image
   try {
@@ -1048,8 +987,11 @@ export const generateFirstImage = async (
       const error = await generateResponse.json();
       const errMessage = error.error || "Failed to queue task";
       formErrors.general = errMessage;
-      setGenerationErrors(formErrors);
-      throw new Error(errMessage);
+      return {
+        success: false,
+        message: errMessage,
+        formErrors: formErrors,
+      };
     }
 
     const generateData = await generateResponse.json();
@@ -1070,11 +1012,31 @@ export const generateFirstImage = async (
     };
   } catch (error) {
     console.error("Error:", error);
-    const errorMessage =
-      error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
+    let errorMessage = "";
+    if (error.message === "NetworkError when attempting to fetch resource.")
+      errorMessage = "Server is offline. Please try again later.";
+    else errorMessage = error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
     return {
       success: false,
       message: errorMessage,
     };
+  }
+};
+
+export const createDesignVersion = async (designId, generatedImages, prompt, user, userDoc) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${designId}/design-version/create-design-version`,
+      { userId: userDoc.id, images: generatedImages, prompt },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Design version created successfully" };
+    }
+  } catch (error) {
+    console.error("Error creating design version created:", error);
+    return { success: false, message: "Failed to create design version" };
   }
 };

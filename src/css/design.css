@@ -563,7 +563,8 @@ h6 {
   width: 500px;
   background-color: var(--nav-card-modal);
   padding: 10px;
-  padding-left: 29px;
+  padding-left: 30px;
+  padding-right: 13px;
   box-shadow: 2px 0px 4px rgba(0, 0, 0, 0.2);
   position: relative;
   height: 100%;
@@ -593,18 +594,15 @@ textarea {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  gap: 2px;
+  gap: 15px;
   min-height: 40px;
   flex-wrap: wrap;
-  margin: 10px 45px 0px 45px;
-  padding: 0px 10px 0px 10px;
+  margin: 10px 10px 0px 10px;
+  padding: 0px;
 }
 
 .pairTabs {
-  /* margin-left: 5px;
-  margin-right: 5px; */
   min-height: 40px;
-  margin-bottom: 10px;
 }
 
 .add-comment-button {
@@ -629,7 +627,7 @@ textarea {
 }
 
 .frame-buttons button {
-  background-color: var(--nav-card-modal);
+  background-color: transparent;
   color: var(--color-white);
   border: none;
   border-radius: 5px;
@@ -639,13 +637,27 @@ textarea {
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
+.frame-buttons button.active {
+  background-color: var(--nav-card-modal);
+}
+
 .frame-buttons button:hover {
-  background-color: var(--inputBg);
+  background-color: var(--iconBg);
   transform: scale(1.05);
 }
 
 .frame-buttons button:active {
-  background-color: var(--inputBgBrighter);
+  background-color: var(--iconBg);
+  transform: scale(0.98);
+}
+
+.frame-buttons button.active:hover {
+  background-color: var(--iconBgHover);
+  transform: scale(1.05);
+}
+
+.frame-button button.active:active {
+  background-color: var(--iconBgHover);
   transform: scale(0.98);
 }
 
@@ -861,17 +873,23 @@ textarea {
 
 /* sample reply */
 .comment-container {
-  background-color: var(--inputBg);
+  background-color: var(--iconBg);
   border-radius: 15px;
-  padding: 20px;
+  padding: 15px;
   margin-bottom: 20px;
   margin-top: 16px;
   transition: background-color 0.3s ease;
   cursor: pointer;
 }
 
-.comment-container.clicked {
-  background-color: var(--inputBg);
+.comment-container:hover,
+.comment-container:active,
+.comment-container:focus {
+  background-color: var(--iconBg2);
+}
+
+.profile-status {
+  margin-right: -5px;
 }
 
 .profile-section {
@@ -899,15 +917,17 @@ textarea {
   flex-direction: column;
 }
 
-.username {
+.user-details .username {
   color: var(--color-white);
   font-weight: bold;
   margin-bottom: 2px;
+  cursor: auto;
 }
 
-.date {
-  color: var(--color-white);
-  font-size: 0.075em;
+.user-details .date {
+  color: var(--greyText);
+  font-size: 0.75rem;
+  cursor: auto;
 }
 
 .check-mark {
@@ -934,6 +954,22 @@ textarea {
   padding: 10px;
   color: var(--color-white);
   margin-top: 10px;
+}
+
+.replies-details {
+  display: flex;
+  align-items: center;
+  color: var(--greyText);
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.gradient-bullet {
+  width: 6px;
+  height: 6px;
+  background: var(--gradientFont);
+  border-radius: 50%;
+  margin: 4px 10px;
 }
 
 .reply-input:focus-within {
@@ -1183,11 +1219,6 @@ textarea {
     padding: 20px;
     padding-top: 0px;
   }
-  .comment-section {
-    padding-left: 10px;
-    padding-top: 0px;
-    padding-bottom: 20px;
-  }
   .promptBar .transitionMinHeight {
     padding-top: 20px;
     padding-bottom: 20px;
@@ -1244,6 +1275,11 @@ textarea {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
     z-index: 1; 
   } */
+}
+@media (max-width: 600px) {
+  .comment-section {
+    padding-left: 13px;
+  }
 }
 @media (max-width: 480px) {
   .image-placeholder {
@@ -1557,6 +1593,7 @@ textarea {
 
 .noDesignVersionsCont p {
   margin: 2px;
+  text-align: center;
 }
 
 @media screen and (max-width: 768px) {

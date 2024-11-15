@@ -192,6 +192,15 @@ select:-webkit-autofill {
   min-width: 320px !important;
 }
 
+.offline-bar {
+  position: absolute;
+  width: calc(100% - 40px);
+  top: 74px;
+  left: 0;
+  padding: 10px 20px;
+  background-color: var(--errorTextBar);
+}
+
 @media (max-width: 480px) {
   .shorten-text {
     width: 45px;
@@ -215,6 +224,7 @@ select:-webkit-autofill {
   --bright-grey: #6c6c6c;
   --color-quaternary: #ef4f56;
   --color-quaternary-hover: #df3941;
+  --errorTextBar: #e43b44;
   --errorText: #ef4f56;
   --color-white: #fafafa;
   --color-white-hover: #e6e6e6;
@@ -240,6 +250,7 @@ select:-webkit-autofill {
   --inputBg: #3e3c47;
   --inputBgBrighter: #4a4853;
   --iconBg: #302f37;
+  --iconBg2: #36343d;
   --iconBgHover: #3f3e46;
   --brightFont: #ff8344;
   --brightFontHover: #ff9058;

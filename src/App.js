@@ -67,7 +67,7 @@ function StartElement() {
 function App() {
   return (
     <Router>
-      <div className="App">
+      <div className="App" id="App">
         <Layout>
           <SharedPropsProvider>
             <Routes>

@@ -129,6 +129,11 @@ router.put(
   authenticateUser,
   designController.updateDesignVersionImageDescription
 );
+router.post(
+  "/design/:designId/design-version/create-design-version",
+  authenticateUser,
+  designController.createDesignVersion
+);
 
 // Project routes
 router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);
@@ -144,5 +149,10 @@ router.put(
   authenticateUser,
   projectController.updateProjectSettings
 );
+
+// Network check
+router.get("/health-check", (req, res) => {
+  res.status(200).send("OK");
+});
 
 module.exports = router;

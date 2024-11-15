@@ -236,6 +236,7 @@ exports.updateProjectSettings = async (req, res) => {
       planMapSettings,
       projectBudgetId,
       budgetSettings,
+      userId,
     } = req.body;
 
     // Store previous states before updates

@@ -30,10 +30,11 @@ import { showToast } from "../../functions/utils.js";
 import { handleDeleteProject } from "../Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { handleNameChange } from "./backend/ProjectDetails";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 
 function ProjectHead({ project }) {
   const { user, userDoc, handleLogout } = useSharedProps();
-
+  const isOnline = useNetworkStatus();
   const [anchorEl, setAnchorEl] = useState(null);
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
@@ -47,7 +48,7 @@ function ProjectHead({ project }) {
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
-  const [newName, setNewName] = useState(project?.projectName ?? "Untitled Project");
+  const [newName, setNewName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
 
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
@@ -86,6 +87,8 @@ function ProjectHead({ project }) {
       return;
     }
     setIsViewCollab(true);
+
+    setNewName(project?.projectName ?? "Untitled Project");
   }, [project, user, userDoc]);
 
   const handleEditNameToggle = () => {
@@ -202,9 +205,16 @@ function ProjectHead({ project }) {
 
   const handleBlur = () => {
     // Save the name when the user clicks away from the input field
-    if (isEditingName) {
-      handleNameChange();
+    if (!isEditingName) {
+      return;
     }
+    if (project.projectName === newName.trim()) {
+      setIsEditingName(false);
+      return;
+    }
+    const result = handleNameChange(project.id, newName, user, userDoc, setIsEditingName);
+    if (!result.success) showToast("success", result.message);
+    else showToast("error", result.message);
   };
 
   const toggleDarkMode = () => {
@@ -220,7 +230,7 @@ function ProjectHead({ project }) {
     if (project.projectName === newName.trim()) {
       return { success: false, message: "Name is the same as the current name." };
     }
-    const result = handleNameChange(projectId, newName, user, setIsEditingName);
+    const result = handleNameChange(projectId, newName, user, userDoc, setIsEditingName);
     if (result.success) {
       handleClose();
       handleCloseRenameModal();
@@ -269,7 +279,7 @@ function ProjectHead({ project }) {
         <div className="design-name-section">
           {isEditingName ? (
             <TextField
-              placeholder="Design Name"
+              placeholder="Project Name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => {
@@ -281,7 +291,7 @@ function ProjectHead({ project }) {
               autoFocus
               onBlur={handleBlur}
               variant="outlined"
-              className="headTitleInput"
+              className="headTitleInput headTitle"
               fullWidth
               sx={{
                 backgroundColor: "transparent",
@@ -310,7 +320,7 @@ function ProjectHead({ project }) {
             />
           ) : (
             <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
-              {projectData?.name || "Untitled"}
+              {project?.projectName || "Untitled Project"}
             </span>
           )}
         </div>
@@ -343,6 +353,9 @@ function ProjectHead({ project }) {
         >
           <MoreVertIcon />
         </IconButton>
+        {!isOnline && (
+          <div className="offline-bar">You are offline. Please check your internet connection.</div>
+        )}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}

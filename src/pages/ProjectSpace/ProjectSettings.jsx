@@ -288,6 +288,7 @@ const ProjectSettings = () => {
           planMapSettings: updatedPlanMapSettings,
           projectBudgetId: projectBudget.id,
           budgetSettings: updatedBudgetSettings,
+          userId: userDoc.id,
         },
         {
           headers: {

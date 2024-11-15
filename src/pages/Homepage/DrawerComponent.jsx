@@ -300,7 +300,6 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           userDesignsLatest.slice(0, 3).map((design, index) => (
             <ListItemButton
               key={design.id}
-              button
               onClick={() =>
                 navigate(`/design/${design.id}`, {
                   state: { designId: design.id },
@@ -364,7 +363,6 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           userProjectsLatest.slice(0, 3).map((project, index) => (
             <ListItemButton
               key={project.id}
-              button
               onClick={() =>
                 navigate(`/project/${project.id}`, {
                   state: { projectId: project.id },
@@ -447,6 +445,17 @@ export const iconButtonStyles = {
   },
   "& .MuiTouchRipple-root span": {
     backgroundColor: "var(--iconButtonActive) !important",
+  },
+};
+
+export const iconButtonStylesBrighter = {
+  color: "var(--color-white)",
+  borderRadius: "50%",
+  "&:hover": {
+    backgroundColor: "var(--iconButtonHover2) !important",
+  },
+  "& .MuiTouchRipple-root span": {
+    backgroundColor: "var(--iconButtonActive2) !important",
   },
 };
 

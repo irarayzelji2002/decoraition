@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../../css/design.css";
-import { FormControl, Select, Option, Slider, Button, IconButton, Typography } from "@mui/joy";
+import {
+  FormControl,
+  Select,
+  Option,
+  Slider,
+  Button,
+  IconButton,
+  Typography,
+  FormHelperText,
+} from "@mui/joy";
 import {
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
   ArrowBackIosRounded as ArrowBackIosRoundedIcon,
@@ -37,7 +46,13 @@ import {
 } from "../../components/RenameModal";
 import { set } from "lodash";
 import deepEqual from "deep-equal";
-import { generateFirstImage, generateNextImage } from "./backend/DesignActions";
+import {
+  generateFirstImage,
+  generateNextImage,
+  createDesignVersion,
+} from "./backend/DesignActions";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { checkValidServiceWorker } from "../../serviceWorkerRegistration";
 
 const theme = extendTheme({
   components: {
@@ -70,9 +85,10 @@ function PromptBar({
   setEta,
   setIsGenerating,
   setGeneratedImagesPreview,
+  generatedImages,
   setGeneratedImages,
   samMaskMask,
-  maskPrompt, // second geenration args
+  maskPrompt, // second generation args
   combinedMask,
   setMaskErrors, // applyMask args
   samDrawing,
@@ -90,8 +106,14 @@ function PromptBar({
   refineMaskOption,
   showPreview,
   promptBarRef,
+  loading,
+  setLoading,
+  generationErrors,
+  setGenerationErrors,
+  designId,
 }) {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
+  const isOnline = useNetworkStatus();
 
   const [colorPaletteModalOpen, setColorPaletteModalOpen] = useState(false);
   const [colorPalette, setColorPalette] = useState("");
@@ -116,7 +138,6 @@ function PromptBar({
 
   const [prompt, setPrompt] = useState("");
   const [numberOfImages, setNumberOfImages] = useState(1);
-  const [generationErrors, setGenerationErrors] = useState({});
 
   const [isSmallWidth, setIsSmallWidth] = useState(false);
 
@@ -125,6 +146,7 @@ function PromptBar({
   };
 
   const handleColorPaletteChange = (event, newValue) => {
+    clearFieldError("colorPalette");
     setColorPalette(newValue);
   };
 
@@ -176,7 +198,7 @@ function PromptBar({
     setDragging(false);
   };
 
-  const handleDrop = (e, setInitImage, setImagePreview) => {
+  const handleDrop = (e, setInitImage, setImagePreview, field) => {
     e.preventDefault();
     e.stopPropagation();
     setDragging(false);
@@ -185,21 +207,21 @@ function PromptBar({
     if (file) {
       const message = handleImageValidation(file);
       if (message !== "") return;
-      handleFileChange(file, setInitImage, setImagePreview);
+      handleFileChange(file, setInitImage, setImagePreview, field);
     }
   };
 
-  const onFileUpload = (event, setInitImage, setImagePreview) => {
+  const onFileUpload = (event, setInitImage, setImagePreview, field) => {
     const file = event.target.files[0];
-    if (file) handleFileChange(file, setInitImage, setImagePreview);
+    if (file) handleFileChange(file, setInitImage, setImagePreview, field);
   };
 
   // Image validation
   const handleImageValidation = (file) => {
     let message = "";
-    const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+    const acceptedTypes = ["image/png", "image/jpeg", "image/jpg"];
     if (!acceptedTypes.includes(file.type)) {
-      message = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
+      message = "Please upload an image file of png, jpg, or jpeg type";
       showToast("error", message);
     } else {
       const maxSize = 5 * 1024 * 1024; // 5MB in bytes
@@ -211,7 +233,8 @@ function PromptBar({
     return message;
   };
 
-  const handleFileChange = (file, setInitImage, setImagePreview) => {
+  const handleFileChange = (file, setInitImage, setImagePreview, field) => {
+    clearFieldError(field);
     const message = handleImageValidation(file);
     if (message !== "") return;
 
@@ -416,18 +439,174 @@ function PromptBar({
   }, [numImageFrames]);
 
   useEffect(() => {
-    if (generationErrors && Object.keys(generationErrors).length > 0)
-      if (generationErrors.general) showToast("error", generationErrors.general);
-  }, [generationErrors]);
+    if (generationErrors?.initImage && selectedImage?.link) {
+      clearFieldError("initImage");
+    }
+  }, [selectedImage, generationErrors]);
+
+  // Remove only the specified field error
+  const clearFieldError = (field) => {
+    setGenerationErrors((prevErrors) => {
+      if (prevErrors && prevErrors[field]) {
+        const { [field]: _, ...remainingErrors } = prevErrors;
+        return remainingErrors;
+      }
+      return prevErrors;
+    });
+  };
+
+  const handleFirstImageValidation = () => {
+    let formErrors = {};
+    let colorPalettePassed = "";
+    if (!prompt) {
+      formErrors.prompt = "Prompt is required.";
+    }
+    if (!numberOfImages || numberOfImages < 1 || numberOfImages > 4) {
+      formErrors.numberOfImages = "Only 1 - 4 number of images allowed.";
+    }
+    if (baseImage) {
+      const validExtensions = ["jpg", "jpeg", "png"];
+      const fileExtension = baseImage.name.split(".").pop().toLowerCase();
+
+      if (!validExtensions.includes(fileExtension)) {
+        formErrors.baseImage = "Invalid file type. Please upload a JPG or PNG image.";
+      }
+    }
+    if (styleRef) {
+      const validExtensions = ["jpg", "jpeg", "png"];
+      const fileExtension = styleRef.name.split(".").pop().toLowerCase();
+
+      if (!validExtensions.includes(fileExtension)) {
+        formErrors.styleReference = "Invalid file type. Please upload a JPG or PNG image.";
+      }
+    }
+    if (colorPalette && colorPalette !== "none") {
+      const colorPaletteToUse = userColorPalettes.find(
+        (palette) => palette.colorPaletteId === colorPalette
+      );
+      if (!colorPaletteToUse) {
+        formErrors.colorPalette = "Invalid color palette selected";
+      } else {
+        colorPalettePassed = colorPaletteToUse.colors.join(",");
+      }
+    }
+
+    if (Object.keys(formErrors).length > 0) {
+      return {
+        success: false,
+        message: `Incorrect inputs.`,
+        formErrors: formErrors,
+      };
+    }
+    return {
+      success: true,
+      message: `Correct inputs.`,
+      colorPalette: colorPalettePassed,
+    };
+  };
+
+  const handleNextImageValidation = () => {
+    const initImage = selectedImage.link;
+    const combinedMaskImg = samMaskMask;
+    let formErrors = {};
+    let colorPalettePassed = "";
+    let errMessage = "";
+    if (!selectedSamMask) {
+      if (!initImage && !maskPrompt) {
+        formErrors.general = "Generate a mask first with mask prompt and your selected image";
+        return {
+          success: false,
+          message: "Invalid inputs.",
+          formErrors: formErrors,
+        };
+      } else if (!maskPrompt || !initImage) {
+        if (!maskPrompt) {
+          errMessage = "Mask prompt is required to generate a mask";
+          formErrors.maskPrompt = errMessage;
+        }
+        if (!initImage) {
+          errMessage = "Select an image first to generate a mask";
+          formErrors.initImage = errMessage;
+          showToast("error", errMessage);
+        }
+        return {
+          success: false,
+          message: "Invalid inputs.",
+          formErrors: formErrors,
+        };
+      } else {
+        errMessage = "Generate a mask first";
+        formErrors.general = errMessage;
+        return {
+          success: false,
+          message: errMessage,
+          formErrors: formErrors,
+        };
+      }
+    }
+    if (combinedMaskImg === "" || !combinedMaskImg) {
+      errMessage = "Generate a mask first with the mask prompt and init image";
+      formErrors.general = errMessage;
+      return {
+        success: false,
+        message: errMessage,
+        formErrors: formErrors,
+      };
+    }
+    if (!prompt) {
+      formErrors.prompt = "Prompt is required";
+    }
+    if (!numberOfImages || numberOfImages < 1 || numberOfImages > 4) {
+      formErrors.numberOfImages = "Only 1 - 4 number of images allowed";
+    }
+    if (styleRef) {
+      const validExtensions = ["jpg", "jpeg", "png"];
+      const fileExtension = styleRef.name.split(".").pop().toLowerCase();
+
+      if (!validExtensions.includes(fileExtension)) {
+        formErrors.styleReference = "Invalid file type. Please upload a JPG or PNG image.";
+      }
+    }
+    if (colorPalette && colorPalette !== "none") {
+      const colorPaletteToUse = userColorPalettes.find(
+        (palette) => palette.colorPaletteId === colorPalette
+      );
+      if (!colorPaletteToUse) {
+        formErrors.colorPalette = "Invalid color palette selected";
+      } else {
+        colorPalettePassed = colorPaletteToUse.colors.join(",");
+      }
+    }
+
+    if (Object.keys(formErrors).length > 0) {
+      return {
+        success: false,
+        message: `Incorrect inputs.`,
+        formErrors: formErrors,
+      };
+    }
+    return {
+      success: true,
+      message: `Correct inputs.`,
+      colorPalette: colorPalettePassed,
+    };
+  };
 
   const handleGeneration = async () => {
     try {
       if (!isNextGeneration) {
-        const colorPaletteToUse = userColorPalettes.find(
-          (palette) => palette.colorPaletteId === colorPalette
-        );
-        const colorPalettePassed = colorPaletteToUse ? colorPaletteToUse.colors.join(",") : "";
-        await generateFirstImage(
+        console.log("Validating - first image");
+        let colorPalettePassed = "";
+        const validationResult = handleFirstImageValidation();
+        if (!validationResult.success) {
+          setGenerationErrors(validationResult.formErrors);
+          console.log("Errors: ", validationResult.formErrors);
+          return;
+        } else {
+          colorPalettePassed = validationResult.colorPalette;
+        }
+        console.log("Generating - first image");
+        const result = await generateFirstImage(
           prompt, // actual generation args
           numberOfImages,
           colorPalettePassed,
@@ -441,20 +620,42 @@ function PromptBar({
           setGeneratedImagesPreview,
           setGeneratedImages
         );
+        if (result.success) {
+          const designVersionResult = createDesignVersion(
+            designId,
+            generatedImages,
+            prompt,
+            user,
+            userDoc
+          );
+          if (designVersionResult.success) {
+            showToast("success", result.message);
+          } else {
+            console.error("Error: ", designVersionResult.message);
+            showToast("error", result.message);
+          }
+        } else if (result?.formErrors && Object.keys(result?.formErrors).length > 0) {
+          setGenerationErrors(result?.formErrors);
+        } else {
+          showToast("error", result.message);
+        }
       } else {
-        const colorPaletteToUse = userColorPalettes.find(
-          (palette) => palette.colorPaletteId === colorPalette
-        );
-        const colorPalettePassed = colorPaletteToUse ? colorPaletteToUse.colors.join(",") : "";
-        await generateNextImage(
+        console.log("Validating - next image");
+        let colorPalettePassed = "";
+        const validationResult = handleNextImageValidation();
+        if (!validationResult.success) {
+          setGenerationErrors(validationResult.formErrors);
+          return;
+        } else {
+          colorPalettePassed = validationResult.colorPalette;
+        }
+        const result = await generateNextImage(
           prompt, // actual generation args
           numberOfImages,
           colorPalettePassed,
           selectedImage,
           samMaskMask,
           styleRef,
-          maskPrompt,
-          combinedMask,
           setGenerationErrors,
           setStatusMessage, // checkTaskStatus args
           setProgress,
@@ -478,6 +679,25 @@ function PromptBar({
           refineMaskOption,
           showPreview
         );
+        if (result.success) {
+          const designVersionResult = createDesignVersion(
+            designId,
+            generatedImages,
+            prompt,
+            user,
+            userDoc
+          );
+          if (designVersionResult.success) {
+            showToast("success", result.message);
+          } else {
+            console.error("Error: ", designVersionResult.message);
+            showToast("error", result.message);
+          }
+        } else if (result?.formErrors && Object.keys(result?.formErrors).length > 0) {
+          setGenerationErrors(result?.formErrors);
+        } else {
+          showToast("error", result.message);
+        }
       }
     } catch (error) {
       setGenerationErrors((prev) => ({ ...prev, general: "Failed to generate image" }));
@@ -533,11 +753,11 @@ function PromptBar({
             />
           </IconButton>
           <div
-            style={{ minHeight: applyMinHeight ? "calc(100% - 73px)" : "662.8px" }}
+            style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "662.8px" }}
             className="transitionMinHeight"
           >
             <h3>
-              Describe your Idea
+              Describe your idea
               <span style={{ color: "var(--color-quaternary)" }}> *</span>
             </h3>
             <div
@@ -546,33 +766,41 @@ function PromptBar({
                 else e.stopPropagation();
               }}
             >
-              <Textarea
-                placeholder="Enter a prompt"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                maxRows={2}
-                disabled={disabled}
-                sx={{
-                  padding: "20px",
-                  color: "var(--color-white)",
-                  backgroundColor: disabled ? "var(--disabledInput)" : "transparent",
-                  border: "1.5px solid var(--borderInput)",
-                  borderRadius: "10px",
-                  fontSize: "1rem",
-                  // boxShadow: "inset 0 0 0 2px var(--borderInput)",
-                  "&::placeholder": {
+              <FormControl>
+                <Textarea
+                  placeholder="Enter a prompt"
+                  value={prompt}
+                  onChange={(e) => {
+                    setPrompt(e.target.value);
+                    clearFieldError("prompt");
+                  }}
+                  maxRows={2}
+                  disabled={disabled}
+                  sx={{
+                    padding: "20px",
                     color: "var(--color-white)",
-                    opacity: 0.7,
-                  },
-                  "&::before": {
-                    boxShadow: "inset 0 0 0 1.5px var(--borderInput)",
-                  },
-                  "&:focus": {
-                    borderColor: "var(--borderInput)",
-                    outline: "none",
-                  },
-                }}
-              />
+                    backgroundColor: disabled ? "var(--disabledInput)" : "transparent",
+                    border: "1.5px solid var(--borderInput)",
+                    borderRadius: "10px",
+                    fontSize: "1rem",
+                    // boxShadow: "inset 0 0 0 2px var(--borderInput)",
+                    "&::placeholder": {
+                      color: "var(--color-white)",
+                      opacity: 0.7,
+                    },
+                    "&::before": {
+                      boxShadow: "inset 0 0 0 1.5px var(--borderInput)",
+                    },
+                    "&:focus": {
+                      borderColor: "var(--borderInput)",
+                      outline: "none",
+                    },
+                  }}
+                />
+                <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
+                  {generationErrors?.prompt}
+                </FormHelperText>
+              </FormControl>
             </div>
 
             <h3 style={{ marginTop: "35px" }}>
@@ -585,48 +813,53 @@ function PromptBar({
                 else e.stopPropagation();
               }}
             >
-              <Slider
-                aria-labelledby="track-false-slider"
-                valueLabelDisplay="auto"
-                min={1}
-                max={4}
-                value={numberOfImages}
-                onChange={handleSliderChange}
-                disabled={disabled}
-                sx={{
-                  marginTop: "10px",
-                  marginLeft: "7px",
-                  marginRight: "8px",
-                  width: "calc(100% - 19px)",
-                  color: "var(--slider)",
-                  "& .MuiSlider-thumb": {
-                    background: "var(--gradientCircle)",
-                    color: "transparent",
-                    width: "19px",
-                    height: "19px",
-                    outline: "none",
-                    opacity: disabled ? "0.5" : "1",
-                  },
-                  "& .MuiSlider-thumb::before": {
-                    borderColor: "transparent",
-                  },
-                  "& .MuiSlider-track": {
-                    backgroundColor: "var(--sliderHighlight)", // Track color
-                  },
-                  "& .MuiSlider-rail": {
-                    backgroundColor: "var(--slider)", // Rail color
-                  },
-                  "& .MuiSlider-valueLabel": {
-                    backgroundColor: "var(--slider)",
-                    color: "var(--color-white)",
-                    borderRadius: "5px",
-                    padding: "1px",
-                  },
-                  "& .MuiSlider-valueLabel::before": {
+              <FormControl>
+                <Slider
+                  aria-labelledby="track-false-slider"
+                  valueLabelDisplay="auto"
+                  min={1}
+                  max={4}
+                  value={numberOfImages}
+                  onChange={handleSliderChange}
+                  disabled={disabled}
+                  sx={{
+                    marginTop: "10px",
+                    marginLeft: "7px",
+                    marginRight: "8px",
+                    width: "calc(100% - 19px)",
                     color: "var(--slider)",
-                  },
-                }}
-              />
+                    "& .MuiSlider-thumb": {
+                      background: "var(--gradientCircle)",
+                      color: "transparent",
+                      width: "19px",
+                      height: "19px",
+                      outline: "none",
+                      opacity: disabled ? "0.5" : "1",
+                    },
+                    "& .MuiSlider-thumb::before": {
+                      borderColor: "transparent",
+                    },
+                    "& .MuiSlider-track": {
+                      backgroundColor: "var(--sliderHighlight)", // Track color
+                    },
+                    "& .MuiSlider-rail": {
+                      backgroundColor: "var(--slider)", // Rail color
+                    },
+                    "& .MuiSlider-valueLabel": {
+                      backgroundColor: "var(--slider)",
+                      color: "var(--color-white)",
+                      borderRadius: "5px",
+                      padding: "1px",
+                    },
+                    "& .MuiSlider-valueLabel::before": {
+                      color: "var(--slider)",
+                    },
+                  }}
+                />
+                <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
+                  {generationErrors?.numberOfImages}
+                </FormHelperText>
+              </FormControl>
             </div>
             {!isNextGeneration ? (
               <div
@@ -650,6 +883,7 @@ function PromptBar({
                         onClick={() => {
                           setBaseImage(null);
                           setBaseImagePreview("");
+                          clearFieldError("baseImage");
                         }}
                         sx={{
                           color: "var(--color-white)",
@@ -668,6 +902,11 @@ function PromptBar({
                       </IconButton>
                     </div>
                   )}
+                  <FormControl>
+                    <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
+                      {generationErrors?.baseImage}
+                    </FormHelperText>
+                  </FormControl>
                 </div>
 
                 <Button
@@ -679,6 +918,8 @@ function PromptBar({
                     padding: "11px 11px 14px 14px",
                     backgroundImage: "var(--gradientCircle)",
                     opacity: disabled || baseImage ? "0.5" : "1",
+                    width: "50px",
+                    height: "50px",
                     "&:hover": {
                       backgroundImage: "var(--gradientCircleHover)",
                     },
@@ -716,6 +957,8 @@ function PromptBar({
                       padding: "9.5px",
                       backgroundImage: "var(--gradientCircle)",
                       opacity: disabled ? "0.5" : "1",
+                      width: "50px",
+                      height: "50px",
                       "&:hover": {
                         backgroundImage: "var(--gradientCircleHover)",
                       },
@@ -759,6 +1002,7 @@ function PromptBar({
                       onClick={() => {
                         setStyleRef(null);
                         setStyleRefPreview("");
+                        clearFieldError("styleReference");
                       }}
                       sx={{
                         color: "var(--color-white)",
@@ -777,6 +1021,11 @@ function PromptBar({
                     </IconButton>
                   </div>
                 )}
+                <FormControl>
+                  <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
+                    {generationErrors?.styleReference}
+                  </FormHelperText>
+                </FormControl>
               </div>
 
               <div
@@ -794,6 +1043,8 @@ function PromptBar({
                     padding: "11px 11px 14px 14px",
                     backgroundImage: "var(--gradientCircle)",
                     opacity: disabled || styleRef ? "0.5" : "1",
+                    width: "50px",
+                    height: "50px",
                     "&:hover": {
                       backgroundImage: "var(--gradientCircleHover)",
                     },
@@ -865,7 +1116,12 @@ function PromptBar({
                     }}
                   >
                     <Option sx={{ ...optionStyles, display: "none !important" }} value="">
-                      Select a color pallete
+                      Select color pallete
+                    </Option>
+                    <Option sx={optionStyles} value="none">
+                      <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
+                        No color pallete
+                      </div>
                     </Option>
                     {userColorPalettes.map((palette) => (
                       <Option
@@ -880,6 +1136,7 @@ function PromptBar({
                           >
                             {palette.colors.map((color) => (
                               <div
+                                key={color}
                                 className="circle-small"
                                 style={{ backgroundColor: color, marginLeft: "-15px" }}
                               ></div>
@@ -915,6 +1172,9 @@ function PromptBar({
                       </Option>
                     ))}
                   </Select>
+                  <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
+                    {generationErrors?.colorPalette}
+                  </FormHelperText>
                 </FormControl>
                 <Button
                   size="md"
@@ -928,6 +1188,8 @@ function PromptBar({
                     padding: "12px 10px 12px 14px",
                     backgroundImage: "var(--gradientCircle)",
                     opacity: disabled ? "0.5" : "1",
+                    width: "50px",
+                    height: "50px",
                     "&:hover": {
                       backgroundImage: "var(--gradientCircleHover)",
                     },
@@ -943,14 +1205,21 @@ function PromptBar({
           <div
             onClick={(e) => {
               if (disabled) showToast("info", "Please select an image first");
+              else if (!isOnline)
+                showToast("info", "You are offline. Please check your internet connection.");
               else e.stopPropagation();
             }}
           >
+            <FormControl>
+              <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
+                {generationErrors?.general}
+              </FormHelperText>
+            </FormControl>
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              disabled={disabled}
+              disabled={disabled || !isOnline}
               sx={{
                 color: "white",
                 mt: 3,
@@ -959,15 +1228,13 @@ function PromptBar({
                 borderRadius: "20px",
                 textTransform: "none",
                 fontWeight: "bold",
-                opacity: disabled ? "0.5" : "1",
-                cursor: disabled ? "default" : "pointer",
+                opacity: disabled || !isOnline ? "0.5" : "1",
+                cursor: disabled || !isOnline ? "default" : "pointer",
                 "&:hover": {
-                  backgroundImage: !disabled && "var(--gradientButtonHover)",
+                  backgroundImage: !disabled && isOnline && "var(--gradientButtonHover)",
                 },
               }}
-              onClick={() => {
-                console.log("Generate Image clicked");
-              }}
+              onClick={handleGeneration}
             >
               Generate Image
             </Button>
@@ -1023,7 +1290,7 @@ function PromptBar({
             }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, setInitBaseImage, setBaseImagePreview)}
+            onDrop={(e) => handleDrop(e, setInitBaseImage, setBaseImagePreview, "baseImage")}
           >
             {baseImagePreview ? (
               <img
@@ -1060,10 +1327,12 @@ function PromptBar({
           </div>
           <input
             type="file"
-            accept="image/png, image/jpeg, image/gif, image/webp"
+            accept="image/png, image/jpeg"
             ref={baseImageFileInputRef}
             style={{ display: "none" }}
-            onChange={(event) => onFileUpload(event, setInitBaseImage, setBaseImagePreview)}
+            onChange={(event) =>
+              onFileUpload(event, setInitBaseImage, setBaseImagePreview, "baseImage")
+            }
           />
 
           <div style={dialogActionsVertButtonsStyles}>
@@ -1157,7 +1426,7 @@ function PromptBar({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => {
-              handleDrop(e, setInitStyleRef, setStyleRefPreview);
+              handleDrop(e, setInitStyleRef, setStyleRefPreview, "styleReference");
             }}
           >
             {styleRefPreview ? (
@@ -1195,10 +1464,12 @@ function PromptBar({
           </div>
           <input
             type="file"
-            accept="image/png, image/jpeg, image/gif, image/webp"
+            accept="image/png, image/jpeg"
             ref={styleRefFileInputRef}
             style={{ display: "none" }}
-            onChange={(event) => onFileUpload(event, setInitStyleRef, setStyleRefPreview)}
+            onChange={(event) =>
+              onFileUpload(event, setInitStyleRef, setStyleRefPreview, "styleReference")
+            }
           />
 
           <div style={dialogActionsVertButtonsStyles}>
@@ -1306,6 +1577,10 @@ export const gradientButtonStyles = {
   margin: "0 !important",
   "&:hover": {
     background: "var(--gradientButtonHover)", // Reverse gradient on hover
+  },
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    color: "var(--color-white)",
   },
 };
 

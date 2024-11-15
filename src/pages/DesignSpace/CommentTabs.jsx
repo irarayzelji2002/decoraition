@@ -8,6 +8,7 @@ import {
 import CommentContainer from "./CommentContainer";
 import { toggleComments } from "./backend/DesignActions";
 import { set } from "lodash";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function CommentTabs({
   workingAreaRef,
@@ -21,9 +22,11 @@ function CommentTabs({
   prevHeight,
   setPrevHeight,
 }) {
+  const { user, userDoc, userComments, userDesignComments } = useSharedProps();
   const [commentForTab, setCommentForTab] = useState(true); // true for All Comments, false for For You
   const [commentTypeTab, setCommentTypeTab] = useState(true); // true for Open, false for Resolved
   const [isAddCommentOpen, setIsAddCommentOpen] = useState(false);
+  const [activeComment, setActiveComment] = useState("");
 
   const handleCommentForTabChange = () => {
     setCommentForTab(!commentForTab);
@@ -210,6 +213,8 @@ function CommentTabs({
     };
   }, [width]);
 
+  useEffect(() => {}, [userComments]);
+
   return (
     <div className="comment-section" ref={commentSectionRef}>
       <div className={window.innerWidth > 600 ? "resizeHandle left" : ""} ref={resizeHandleRef}>
@@ -257,7 +262,7 @@ function CommentTabs({
         />
       </IconButton>
       <Box
-        sx={{ minHeight: applyMinHeight ? "calc(100% - 90px)" : "686px" }}
+        sx={{ minHeight: applyMinHeight ? "calc(100vh - 259px)" : "688px" }}
         className="transitionMinHeight"
       >
         <div className="comment-tabs-header">
@@ -307,7 +312,16 @@ function CommentTabs({
         </div>
 
         {/* Comments container */}
-        <CommentContainer />
+        <CommentContainer
+          commentId={"1"}
+          username={"Juan Dela Cruz"}
+          date={"June 17, 2024"}
+          comment={"I like the room design! Could we add some more table sheets?"}
+          hasTextBox={true}
+          replyCount={0}
+          replyLatestDate={"June 20, 2024"}
+          setActiveComment={setActiveComment}
+        />
       </Box>
 
       {/* Add a comment button */}
@@ -368,3 +382,68 @@ const getPillTabStyle = (isWrapped, selectedTab, index) => {
     width: "110px", // Ensures tabs are the same size
   };
 };
+
+const dummyComments = [
+  {
+    id: "comment1",
+    designVersionImageId: "image123",
+    userId: "userA",
+    message: "This is the first comment.",
+    mentions: ["userB", "userC"],
+    status: false, // open
+    createdAt: new Date("2024-10-01T10:00:00Z"),
+    modifiedAt: new Date("2024-10-01T12:00:00Z"),
+    replies: [
+      {
+        replyId: "reply1_1",
+        userId: "userB",
+        message: "This is a reply to the first comment.",
+        mentions: ["userA"],
+        createdAt: new Date("2024-10-01T11:00:00Z"),
+        modifiedAt: new Date("2024-10-01T11:30:00Z"),
+        replies: ["reply1_1_1"],
+      },
+      {
+        replyId: "reply1_2",
+        userId: "userC",
+        message: "Another reply to the first comment.",
+        mentions: [],
+        createdAt: new Date("2024-10-01T11:15:00Z"),
+        modifiedAt: new Date("2024-10-01T11:45:00Z"),
+        replies: [],
+      },
+    ],
+  },
+  {
+    id: "comment2",
+    designVersionImageId: "image456",
+    userId: "userB",
+    message: "This is the second comment.",
+    mentions: [],
+    status: true, // resolved
+    createdAt: new Date("2024-10-02T09:30:00Z"),
+    modifiedAt: new Date("2024-10-02T10:30:00Z"),
+    replies: [
+      {
+        replyId: "reply2_1",
+        userId: "userA",
+        message: "Replying to the second comment.",
+        mentions: ["userB"],
+        createdAt: new Date("2024-10-02T10:00:00Z"),
+        modifiedAt: new Date("2024-10-02T10:20:00Z"),
+        replies: ["reply2_1_1"],
+      },
+    ],
+  },
+  {
+    id: "comment3",
+    designVersionImageId: "image789",
+    userId: "userC",
+    message: "This is the third comment.",
+    mentions: ["userA"],
+    status: false, // open
+    createdAt: new Date("2024-10-03T14:00:00Z"),
+    modifiedAt: new Date("2024-10-03T14:30:00Z"),
+    replies: [],
+  },
+];

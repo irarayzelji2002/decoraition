@@ -67,7 +67,9 @@ export const useCanvasDrawing = (canvasRef, color, opacity, brushMode) => {
 
   const draw = useCallback(
     (event, brushSize) => {
+      console.log("Drawing with brush size:", brushSize);
       if (!canvasRef.current) return;
+      console.log("Drawing on canvas");
 
       const context = canvasRef.current.getContext("2d");
       const rect = canvasRef.current.getBoundingClientRect();

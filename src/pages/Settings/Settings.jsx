@@ -868,8 +868,7 @@ function Settings() {
                   justifyContent: "center",
                   background: "var(--gradientButton)",
                   borderRadius: "50%",
-                  padding: "0px",
-                  marginLeft: "20px",
+                  padding: "6px",
                 }}
               >
                 <Avatar
@@ -949,9 +948,9 @@ function Settings() {
             </div>
 
             {/* Additional Fields */}
-            <div className="inputFieldThree">
+            <div className="inputFieldThree top">
               <EditableInputThree
-                labels={["First Name", "Last Name", "Username"]}
+                labels={["First name", "Last name", "Username"]}
                 values={[firstName, lastName, username]}
                 origValues={[userDoc.firstName, userDoc.lastName, userDoc.username]}
                 onChange={handleThreeInputsChange}
@@ -961,10 +960,9 @@ function Settings() {
                 setErrors={setUserDetailsErr}
               />
             </div>
-            <div className="inputField">
-              <label className="inputLabel">Email</label>
+            <div className="inputField oneLine">
               <EditableInput
-                label="Email"
+                label="Email address"
                 value={email}
                 onChange={(value) => setEmail(value)}
                 onSave={(value) => handleSave("email", value)}
@@ -978,7 +976,7 @@ function Settings() {
             <div className="inputFieldThree">
               <label className="inputLabel">Password</label>
               <EditablePassInput
-                labels={["Old Password", "New Password", "Confirm New Password", "Password"]}
+                labels={["Old password", "New password", "Confirm new password", "Password"]}
                 values={[oldPassword, newPassword, confirmNewPassword]}
                 onChange={handlePasswordChange}
                 onSave={handlePasswordSave}
@@ -989,16 +987,14 @@ function Settings() {
               />
             </div>
             <div className="inputField">
-              <label className="inputLabel">Connected Account</label>
               <LongToggleInput
-                label="Connected Account"
+                label="Linked account"
                 value={connectedAccount}
                 onToggle={openlinkAccountModal}
                 isConnectedAccount={true}
               />
             </div>
             <div className="inputField">
-              <label className="inputLabel">Theme</label>
               <LongToggleInput
                 label="Theme"
                 value={theme}

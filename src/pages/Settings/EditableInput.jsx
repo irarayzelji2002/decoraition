@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { TextField, InputAdornment, IconButton, Button } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
 import { getHasError, getErrMessage, toCamelCase } from "../../functions/utils";
+import { ResetIconSmallGradient } from "../DesignSpace/svg/AddColor";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { SaveIconSmallGradient } from "../DesignSpace/svg/AddImage";
+import {
+  EditIconSmallGradient,
+  CancelIconSmallGradient,
+} from "../../components/svg/DefaultMenuIcons";
+import { textFieldStyles } from "../DesignSpace/DesignSettings";
 
 export default function EditableInput({
   label,
@@ -18,12 +24,6 @@ export default function EditableInput({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value);
-
-  const icon = isEditing ? (
-    <SaveIcon sx={{ color: "#FF894D" }} />
-  ) : (
-    <EditIcon sx={{ color: "#FF894D" }} />
-  );
 
   useEffect(() => {
     setInputValue(value);
@@ -40,6 +40,22 @@ export default function EditableInput({
     }
   };
 
+  const icon = isEditing ? (
+    <IconButton
+      onClick={isEditing ? handleSave : handleEdit}
+      sx={{ ...iconButtonStyles, padding: "9.5px" }}
+    >
+      <SaveIconSmallGradient sx={{ color: "#FF894D" }} />
+    </IconButton>
+  ) : (
+    <IconButton
+      onClick={isEditing ? handleSave : handleEdit}
+      sx={{ ...iconButtonStyles, padding: "9.5px" }}
+    >
+      <EditIconSmallGradient sx={{ color: "#FF894D" }} />
+    </IconButton>
+  );
+
   const handleChange = (e) => {
     setInputValue(e.target.value);
     onChange(e.target.value);
@@ -54,53 +70,80 @@ export default function EditableInput({
   };
 
   return (
-    <TextField
-      label=""
-      type="text"
-      value={inputValue}
-      onChange={handleChange}
-      fullWidth
-      margin="normal"
-      helperText={getErrMessage(toCamelCase(label), errors)}
-      sx={{
-        marginTop: "10px",
-        marginBottom: "10px",
-        backgroundColor: "transparent",
-        input: { color: "var(--color-white)", fontWeight: "bold" },
-        "& .MuiOutlinedInput-root": {
-          "& fieldset": {
-            borderColor: "var(--inputBg)",
-            borderWidth: `${isEditing ? "2px" : "0px"}`,
-          },
-          "&:hover fieldset": {
-            borderColor: "var(--inputBg)",
-            borderWidth: `${isEditing ? "2px" : "0px"}`,
-          },
-          "&.Mui-focused fieldset": {
-            borderColor: "var(--inputBg)",
-            borderWidth: "2px",
-          },
-        },
-        "& .MuiFormHelperText-root": {
-          color: "white",
-        },
-      }}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position="end">
-            {isEditable && (
-              <>
-                {isEditing && (
-                  <IconButton onClick={() => handleReset(toCamelCase(label))}>
-                    <CloseRoundedIcon sx={{ color: "rgba(255, 137, 77, 0.5)" }} />
-                  </IconButton>
+    <div style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "center" }}>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          margin: `${isEditing ? "15px" : "10px"} 0px`,
+        }}
+      >
+        <label className="inputLabel">{label}</label>
+        <TextField
+          label=""
+          type="text"
+          value={inputValue}
+          onChange={handleChange}
+          disabled={!isEditing}
+          fullWidth
+          margin="normal"
+          helperText={getErrMessage(toCamelCase(label), errors)}
+          sx={{
+            ...textFieldStyles,
+            margin: 0,
+            backgroundColor: "transparent",
+            "& .MuiOutlinedInput-root": {
+              ...textFieldStyles["& .MuiOutlinedInput-root"],
+              backgroundColor: `${isEditing ? "var(--nav-card-modal)" : "transparent"}`,
+              paddingRight: "7px",
+              "& fieldset": {
+                borderColor: "var(--borderInput)",
+                borderWidth: `${isEditing ? "2px" : "0px"}`,
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--borderInput)",
+                borderWidth: `${isEditing ? "2px" : "0px"}`,
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--borderInputBrighter)",
+                borderWidth: "2px",
+              },
+            },
+            "& input": {
+              color: "var(--color-white)",
+              padding: `${isEditing ? "15px" : "5px"} 15px`,
+            },
+            "& .MuiFormHelperText-root": {
+              color: "var(--color-quaternary)",
+              marginLeft: 0,
+            },
+            "& .Mui-disabled": {
+              WebkitTextFillColor: "inherit",
+              opacity: 1,
+            },
+          }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                {isEditable && (
+                  <>
+                    {isEditing && (
+                      <IconButton
+                        onClick={() => handleReset(toCamelCase(label))}
+                        sx={{ ...iconButtonStyles, padding: "10.5px" }}
+                      >
+                        <CancelIconSmallGradient />
+                      </IconButton>
+                    )}
+                    {icon}
+                  </>
                 )}
-                <IconButton onClick={isEditing ? handleSave : handleEdit}>{icon}</IconButton>
-              </>
-            )}
-          </InputAdornment>
-        ),
-      }}
-    />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </div>
+    </div>
   );
 }

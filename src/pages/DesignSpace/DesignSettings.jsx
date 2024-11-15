@@ -775,7 +775,7 @@ export const textFieldStyles = {
   "& .MuiOutlinedInput-root": {
     borderColor: "var(--borderInput)",
     borderRadius: "10px",
-    backgroundColor: "var(  --nav-card-modal)",
+    backgroundColor: "var(--nav-card-modal)",
     "& fieldset": {
       borderColor: "var(--borderInput)",
       borderRadius: "10px",

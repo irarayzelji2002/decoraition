@@ -53,3 +53,29 @@ export function ResetIcon() {
     </svg>
   );
 }
+
+export function ResetIconSmallGradient() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="-1 -1 26 26"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="gradientButton" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style={{ stopColor: "#F68B3F", stopOpacity: 1 }} />
+          <stop offset="50%" style={{ stopColor: "#F15D3F", stopOpacity: 1 }} />
+        </linearGradient>
+      </defs>
+      <path
+        d="M22 10.7477C21.6943 8.54382 20.6738 6.50181 19.0958 4.93618C17.5178 3.37055 15.4697 2.36816 13.2671 2.08342C11.0645 1.79868 8.82953 2.24739 6.9065 3.36042C4.98348 4.47345 3.47906 6.18907 2.625 8.24298M2 3.23363V8.24298H7M2 13.2523C2.3057 15.4562 3.32616 17.4982 4.9042 19.0638C6.48224 20.6295 8.5303 21.6318 10.7329 21.9166C12.9355 22.2013 15.1705 21.7526 17.0935 20.6396C19.0165 19.5265 20.5209 17.8109 21.375 15.757M22 20.7664V15.757H17"
+        stroke="url(#gradientButton)"
+        strokeWidth="3.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

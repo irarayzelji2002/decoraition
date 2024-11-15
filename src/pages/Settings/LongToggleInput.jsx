@@ -36,14 +36,7 @@ const LongToggleInput = ({ label, value, onToggle, isConnectedAccount }) => {
 
   return (
     <div style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "center" }}>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          margin: "10px 0px",
-        }}
-      >
+      <div style={{ margin: "10px 0px" }} className="settingsLabelAndInput">
         <label className="inputLabel">{label}</label>
         <TextField
           label=""
@@ -90,8 +83,13 @@ const LongToggleInput = ({ label, value, onToggle, isConnectedAccount }) => {
               marginLeft: 0,
             },
             "& .Mui-disabled": {
-              WebkitTextFillColor: "inherit",
+              WebkitTextFillColor: "inherit !important",
               opacity: 1,
+            },
+            "@media (max-width: 560px)": {
+              "& input": {
+                padding: "10px 0px 0px 0px",
+              },
             },
           }}
           InputProps={{

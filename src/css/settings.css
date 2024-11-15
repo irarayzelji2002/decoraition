@@ -5,7 +5,7 @@
   padding: 20px;
   background-color: var(--bgcolor);
   color: var(--color-white);
-  height: 100vh;
+  min-height: calc(100vh - 203px);
 }
 .inputLabel {
   margin-right: 10px;
@@ -43,6 +43,12 @@
   width: 100%;
   max-width: 768px;
 }
+.settingsLabelAndInput {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin: 15px 0px;
+}
 
 /* AppBar styling */
 .app-bar {
@@ -67,16 +73,23 @@
 .avatar-container {
   display: flex;
   align-items: center;
-  padding-bottom: 20px;
-  margin-bottom: 10px;
+  margin: 30px 0px;
   gap: 10px;
   width: 100%;
   max-width: 768px;
 }
 
+.avatarButtonCont {
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: 17px;
+  padding-left: 17px;
+  gap: 12px;
+}
+
 /* Profile buttons */
 .avatar-container .MuiButton-root {
-  margin-bottom: 10px;
   color: var(--color-white);
 }
 
@@ -90,12 +103,6 @@
 }
 
 /* Form fields styling */
-.MuiTextField-root {
-  margin-bottom: 16px;
-  background-color: tra;
-  border-radius: 4px;
-}
-
 .MuiInputBase-input {
   color: var(--color-white);
 }
@@ -112,11 +119,6 @@
 
 .MuiOutlinedInput-root:hover fieldset {
   border-color: #fc3d69;
-}
-
-/* Icon button styling */
-.MuiIconButton-root {
-  color: #fc3d69;
 }
 
 /* Notification Tab styling */
@@ -184,4 +186,36 @@
 
 .inactivityTextField {
   /* Add any additional styles if needed */
+}
+
+@media (max-width: 560px) {
+  .settingsLabelAndInput {
+    flex-wrap: wrap;
+  }
+  .inputLabel.editing {
+    margin-bottom: 10px;
+  }
+  .settingsPassLabelAndInput {
+    flex-wrap: wrap;
+  }
+  .inputFieldThree.password {
+    flex-wrap: wrap;
+  }
+  .inputFieldThree.password label {
+    margin-top: 10px;
+  }
+  .settings-container {
+    padding-bottom: 30px;
+  }
+}
+
+@media (max-width: 400px) {
+  .avatar-container {
+    flex-wrap: wrap;
+    flex-direction: column;
+  }
+  .avatarButtonCont {
+    margin-right: auto;
+    padding: 17px 17px 0px 17px;
+  }
 }

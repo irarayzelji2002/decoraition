@@ -59,10 +59,9 @@ function Notif() {
               <Avatar
                 src={userDoc?.profilePic ? userDoc?.profilePic : ""}
                 sx={{
-                  height: 39,
-                  width: 39,
+                  height: 41.5,
+                  width: 41.5,
                   borderRadius: "50%",
-                  border: "2.5px solid transparent",
                   boxShadow: "0 0 0 2.5px var(--gradientButton)",
                   "& .MuiAvatar-img": {
                     borderRadius: "50%",

@@ -230,10 +230,9 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
         >
           <Avatar
             sx={{
-              width: 54,
-              height: 54,
+              width: 62,
+              height: 62,
               borderRadius: "50%",
-              border: "4px solid transparent",
               boxShadow: "0 0 0 4px var(--gradientButton)",
               fontSize: "1.5rem",
               "& .MuiAvatar-img": {

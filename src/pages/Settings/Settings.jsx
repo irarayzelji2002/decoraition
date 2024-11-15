@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { auth } from "../../firebase";
@@ -47,6 +47,8 @@ import {
   Delete as DeleteIcon,
   CloseRounded as CloseRoundedIcon,
   Link as LinkIcon,
+  VisibilityOff as VisibilityOffIcon,
+  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import Link from "@mui/material/Link";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
@@ -66,11 +68,12 @@ import EditableInput from "./EditableInput";
 import EditableInputThree from "./EditableInputThree";
 import EditablePassInput from "./EditablePassInput";
 import LongToggleInput from "./LongToggleInput";
+import { textFieldStyles } from "../DesignSpace/DesignSettings";
 
 function Settings() {
   const { user, userDoc } = useSharedProps();
 
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState("Account");
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLinkAccountModalOpen, setIsLinkAccountModalOpen] = useState(false);
@@ -89,6 +92,7 @@ function Settings() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState("");
   const [otp, setOtp] = useState(0);
   const [unlinkPassword, setUnlinkPassword] = useState("");
   const [unlinkConfirmPassword, setUnlinkConfirmPassword] = useState("");
@@ -134,9 +138,7 @@ function Settings() {
   const [passErr, setPassErr] = useState(initPassErr);
   const [unlinkErr, setUnlinkErr] = useState(initUnlinkErr);
 
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
-  };
+  const handleTabChange = useCallback((tab) => setSelectedTab(tab), []);
 
   const handleReset = (field) => {
     if (field === "email") {
@@ -807,47 +809,71 @@ function Settings() {
   return (
     <>
       <TopBar state="Settings" />
-      <Tabs
-        value={selectedTab}
-        onChange={handleTabChange}
-        centered
-        className="tabs"
-        TabIndicatorProps={{
-          style: {
-            fontWeight: "bold",
-            backgroundImage: "var(--gradientFont)",
-            // Tab indicator color
-          },
-        }}
+      <Box
         sx={{
-          "& .MuiTab-root": {
-            color: "var(--color-white)", // Color for unselected tabs
-          },
-          "& .MuiTab-root.Mui-selected": {
-            color: "transparent", // Hide the actual text color
-            backgroundImage: "var(--gradientFont)", // Apply background image
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            fontWeight: "bold", // Optional: make text bold to stand out
-          },
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          paddingTop: 2,
+          paddingLeft: "15px",
+          paddingRight: "15px",
+          borderBottom: "1px solid var(--inputBg)",
         }}
       >
-        <Tab
-          label="Account"
-          className="tab-label"
-          style={{ textTransform: "none", fontWeight: "bold" }}
-        />
-        <Tab
-          label="Notification"
-          className="tab-label"
-          style={{ textTransform: "none", fontWeight: "bold" }}
-        />
-      </Tabs>
+        {["Account", "Notification"].map((tab) => (
+          <Typography
+            key={tab}
+            onClick={() => handleTabChange(tab)}
+            sx={{
+              fontSize: 18,
+              fontWeight: "bold",
+              textTransform: "none",
+              cursor: "pointer",
+              padding: 1,
+              paddingTop: 2,
+              paddingBottom: 2,
+              marginBottom: "1px",
+              position: "relative",
+              width: "20%",
+              minWidth: "125px",
+              textAlign: "center",
+
+              // Apply gradient border bottom if active
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: "-2px",
+                height: "4px",
+                background: selectedTab === tab ? "var(--gradientFont)" : "transparent",
+                borderRadius: "0px",
+              },
+
+              color: selectedTab === tab ? "transparent" : "var(--color-white)",
+              backgroundImage: selectedTab === tab ? "var(--gradientFont)" : "none",
+              backgroundClip: selectedTab === tab ? "text" : "unset",
+              WebkitBackgroundClip: selectedTab === tab ? "text" : "unset",
+
+              "&:focus, &:active": {
+                outline: "none",
+                backgroundColor: "transparent",
+              },
+
+              "@media (max-width: 350px)": {
+                justifyContent: "center",
+              },
+            }}
+          >
+            {tab}
+          </Typography>
+        ))}
+      </Box>
       <div className="settings-container">
         {/* App Bar for Tabs */}
 
         {/* Account Tab Content */}
-        {selectedTab === 0 && (
+        {selectedTab === "Account" && (
           <Box
             mt={4}
             className="tab-content"
@@ -856,6 +882,7 @@ function Settings() {
               display: "flex",
               alignItems: "center",
               flexDirection: "column",
+              margin: 0,
             }}
           >
             <div className="avatar-container" style={{ display: "flex", alignItems: "center" }}>
@@ -875,10 +902,9 @@ function Settings() {
                   alt=""
                   src={profilePic ?? ""}
                   sx={{
-                    width: 149,
-                    height: 149,
+                    width: 156,
+                    height: 156,
                     fontSize: "4rem",
-                    border: "5px solid transparent",
                     boxShadow: "0 0 0 5px var(--gradientButton)",
                     "& .MuiAvatar-img": {
                       borderRadius: "50%",
@@ -890,21 +916,13 @@ function Settings() {
               </Box>
 
               {/* Button Container */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  marginLeft: "auto",
-                  marginRight: "20px",
-                }}
-              >
+              <div className="avatarButtonCont">
                 {/* Change Photo Button */}
                 <Button
                   variant="contained"
                   className="change-photo-btn"
                   onClick={handleChangePhotoClick}
                   sx={{
-                    marginBottom: "10px",
                     borderRadius: "20px",
                     textTransform: "none",
                     fontWeight: "bold",
@@ -973,7 +991,7 @@ function Settings() {
                 isEditable={connectedAccount == null ? true : false}
               />
             </div>
-            <div className="inputFieldThree">
+            <div className="inputFieldThree password">
               <label className="inputLabel">Password</label>
               <EditablePassInput
                 labels={["Old password", "New password", "Confirm new password", "Password"]}
@@ -1006,7 +1024,7 @@ function Settings() {
         )}
 
         {/* Notification Tab Content */}
-        {selectedTab === 1 && (
+        {selectedTab === "Notification" && (
           <Box mt={4} className="notification-settings">
             <Notifications />
           </Box>
@@ -1042,10 +1060,11 @@ function Settings() {
               <CloseRoundedIcon />
             </IconButton>
           </DialogTitle>
-          <DialogContent sx={dialogContentStyles}>
+          <DialogContent
+            sx={{ ...dialogContentStyles, alignItems: "center", marginBottom: "20px" }}
+          >
             <Button
               variant="contained"
-              className="change-photo-btn"
               startIcon={<GoogleIcon />}
               onClick={() => handleLinkAccount("google")}
               sx={{
@@ -1060,13 +1079,15 @@ function Settings() {
                 },
                 color: "var(--color-black)",
                 background: "var(--color-white)",
+                "@media (max-width: 385px)": {
+                  width: "215px",
+                },
               }}
             >
               Connect with Google
             </Button>
             <Button
               variant="contained"
-              className="change-photo-btn"
               startIcon={<FacebookIconWhite />}
               onClick={() => handleLinkAccount("facebook")}
               sx={{
@@ -1081,26 +1102,36 @@ function Settings() {
                 },
                 color: "var(--color-white)",
                 background: "var(--color-blue)",
-              }}
-            >
-              Connect with Facebook
-            </Button>
-            <Link
-              onClick={() => setIsLinkAccountModalOpen(false)}
-              variant="body2"
-              sx={{
-                color: "var(--brightFont)",
-                fontWeight: "bold",
-                textDecoration: "underline",
-                "&:hover": {
-                  color: "var(--brightFontHover)",
-                  cursor: "pointer",
-                  textDecoration: "underline",
+                "@media (max-width: 385px)": {
+                  width: "215px",
                 },
               }}
             >
+              <div style={{ marginTop: "2px" }}>Connect with Facebook</div>
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => setIsLinkAccountModalOpen(false)}
+              sx={{
+                ...outlinedButtonStyles,
+                width: "250px",
+                padding: "4px 16px",
+                marginTop: "3px !important",
+                "@media (max-width: 385px)": {
+                  width: "215px",
+                },
+              }}
+              onMouseOver={(e) =>
+                (e.target.style.backgroundImage =
+                  "var(--lightGradient), var(--gradientButtonHover)")
+              }
+              onMouseOut={(e) =>
+                (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+              }
+            >
               Cancel
-            </Link>
+            </Button>
           </DialogContent>
         </Dialog>
       )}
@@ -1121,7 +1152,7 @@ function Settings() {
                 whiteSpace: "normal",
               }}
             >
-              Unlink Connected Account
+              Unlink connected account
             </Typography>
             <IconButton
               onClick={() => setIsUnlinkAccountModalOpen(false)}
@@ -1135,31 +1166,95 @@ function Settings() {
             </IconButton>
           </DialogTitle>
           <DialogContent sx={dialogContentStyles}>
-            <Typography variant="body1">Enter your new password to unlink your account.</Typography>
-            <div>Enter new password</div>
-            <label htmlFor="unlinkPassword">Password:</label>
-            <br />
-            <input
-              type="password"
-              id="unlinkPassword"
+            <Typography variant="body1" sx={{ textAlign: "center", marginBottom: "15px" }}>
+              Enter your new password to unlink your account.
+            </Typography>
+            <Typography variant="body1" sx={{ marginBottom: "10px" }}>
+              Password
+            </Typography>
+            <TextField
+              placeholder="Password"
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
               value={unlinkPassword}
               onChange={(e) => setUnlinkPassword(e.target.value)}
+              helperText={getErrMessage("password", unlinkErr)}
+              variant="outlined"
+              fullWidth
+              sx={{
+                ...textFieldStyles,
+                marginBottom: "15px",
+                "& .MuiOutlinedInput-root": {
+                  ...textFieldStyles["& .MuiOutlinedInput-root"],
+                  padding: "15px",
+                },
+              }}
+              InputProps={{
+                style: { color: "var(--color-white)" },
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      edge="end"
+                      sx={{
+                        color: "var(--color-grey)",
+                        marginRight: "-9px",
+                      }}
+                    >
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
-            <span style={{ color: "#ff0000" }}>{getErrMessage("password", unlinkErr)}</span>
-            <br />
-            <label htmlFor="unlinkConfirmPassword">Confirm Password:</label>
-            <br />
-            <input
-              type="password"
-              id="unlinkConfirmPassword"
+            <Typography variant="body1" sx={{ marginBottom: "10px" }}>
+              Confirm password
+            </Typography>
+            <TextField
+              placeholder="Confirm password"
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showPassword ? "text" : "password"}
               value={unlinkConfirmPassword}
               onChange={(e) => setUnlinkConfirmPassword(e.target.value)}
+              helperText={getErrMessage("confirmPassword", unlinkErr)}
+              variant="outlined"
+              fullWidth
+              sx={{
+                ...textFieldStyles,
+                marginBottom: "15px",
+                "& .MuiOutlinedInput-root": {
+                  ...textFieldStyles["& .MuiOutlinedInput-root"],
+                  padding: "15px",
+                },
+              }}
+              InputProps={{
+                style: { color: "var(--color-white)" },
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      edge="end"
+                      sx={{
+                        color: "var(--color-grey)",
+                        marginRight: "-9px",
+                      }}
+                    >
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
-            <span style={{ color: "#ff0000" }}>{getErrMessage("confirmPassword", unlinkErr)}</span>
-            <br />
           </DialogContent>
           <DialogActions sx={dialogActionsStyles}>
             <Button
+              fullWidth
               variant="contained"
               className="change-photo-btn"
               onClick={() => handleUnlink(true, connectedAccount === 0 ? "Google" : "Facebook")}
@@ -1168,6 +1263,7 @@ function Settings() {
               Unlink {connectedAccount === 0 ? "Google" : "Facebook"} Account
             </Button>
             <Button
+              fullWidth
               variant="contained"
               color="primary"
               className="save-photo-btn"
@@ -1196,7 +1292,7 @@ function Settings() {
                 whiteSpace: "normal",
               }}
             >
-              Change Profile
+              Change profile picture
             </Typography>
             <IconButton
               onClick={handleChangeProfileModalClose}
@@ -1209,9 +1305,7 @@ function Settings() {
               <CloseRoundedIcon />
             </IconButton>
           </DialogTitle>
-          <DialogContent
-            sx={{ display: "flex", justifyContent: "center", marginTop: "10px", width: "300px" }}
-          >
+          <DialogContent sx={{ ...dialogContentStyles, marginTop: 0, alignItems: "center" }}>
             <Box
               sx={{
                 width: 155,
@@ -1222,17 +1316,16 @@ function Settings() {
                 background: "var(--gradientButton)",
                 borderRadius: "50%",
                 padding: "5px",
-                marginLeft: "20px",
+                margin: "30px",
               }}
             >
               <Avatar
                 alt=""
                 src={profilePicPreview || ""}
                 sx={{
-                  width: 149,
-                  height: 149,
+                  width: 156,
+                  height: 156,
                   fontSize: "4rem",
-                  border: "5px solid transparent",
                   boxShadow: "0 0 0 5px var(--gradientButton)",
                   ...stringAvatarColor(userDoc?.username),
                 }}
@@ -1338,6 +1431,7 @@ function Settings() {
           </DialogContent>
           <DialogActions sx={dialogActionsStyles}>
             <Button
+              fullWidth
               variant="contained"
               className="change-photo-btn"
               onClick={handleRemovePhoto}
@@ -1346,11 +1440,19 @@ function Settings() {
               Yes
             </Button>
             <Button
+              fullWidth
               variant="contained"
               color="primary"
               className="save-photo-btn"
               onClick={() => setIsRemoveProfileModalOpen(false)}
               sx={outlinedButtonStyles}
+              onMouseOver={(e) =>
+                (e.target.style.backgroundImage =
+                  "var(--lightGradient), var(--gradientButtonHover)")
+              }
+              onMouseOut={(e) =>
+                (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+              }
             >
               No
             </Button>

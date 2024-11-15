@@ -115,10 +115,7 @@ const EditablePassInput = ({
         {isEditing ? (
           <>
             {labels.slice(0, labels.length - 1).map((label, index) => (
-              <div
-                key={index}
-                style={{ width: "100%", display: "flex", alignItems: "center", margin: "15px 0px" }}
-              >
+              <div key={index} className="settingsLabelAndInput">
                 <TextField
                   key={index}
                   label=""
@@ -232,8 +229,13 @@ const EditablePassInput = ({
                 marginLeft: 0,
               },
               "& .Mui-disabled": {
-                WebkitTextFillColor: "inherit",
+                WebkitTextFillColor: "inherit !important",
                 opacity: 1,
+              },
+              "@media (max-width: 560px)": {
+                "& input": {
+                  padding: `${isEditing ? "15px" : "10px 0px"}`,
+                },
               },
             }}
           />
@@ -241,7 +243,16 @@ const EditablePassInput = ({
         {getHasError("all", errors) && <span className="">{getErrMessage("all", errors)}</span>}
       </div>
       {isEditable && (
-        <div style={{ flexShrink: "1", marginLeft: "5px", marginRight: "8px", display: "flex" }}>
+        <div
+          style={{
+            flexShrink: "1",
+            marginLeft: "5px",
+            marginRight: "8px",
+            display: "flex",
+            minWidth: "75px",
+            justifyContent: "flex-end",
+          }}
+        >
           {isEditing && (
             <IconButton onClick={handleClose} sx={{ ...iconButtonStyles, padding: "10.5px" }}>
               <CancelIconSmallGradient />

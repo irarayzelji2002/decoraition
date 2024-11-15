@@ -793,8 +793,9 @@ export const textFieldStyles = {
   },
   "& .MuiFormHelperText-root": {
     color: "var(--color-quaternary)",
-    textAlign: "center",
+    textAlign: "left",
     marginLeft: 0,
+    marginTop: "5px",
   },
 };
 

@@ -857,6 +857,10 @@ function SelectMaskCanvas({
                     ...textFieldStyles["& .MuiOutlinedInput-root"],
                     padding: "11.8px 146px 11.8px 14px",
                   },
+                  "& .MuiFormHelperText-root": {
+                    ...textFieldStyles["& .MuiFormHelperText-root"],
+                    textAlign: "center",
+                  },
                   "@media (max-width: 768px)": {
                     width: "100%",
                     "& .MuiOutlinedInput-root": {

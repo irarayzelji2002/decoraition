@@ -75,11 +75,8 @@ const EditableInputThree = ({
     <div style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "center" }}>
       <div style={{ flexGrow: "1" }}>
         {labels.map((label, index) => (
-          <div
-            key={index}
-            style={{ width: "100%", display: "flex", alignItems: "center", margin: "15px 0px" }}
-          >
-            <label className="inputLabel">{label}</label>
+          <div key={index} className="settingsLabelAndInput">
+            <label className={`inputLabel ${isEditing && "editing"}`}>{label}</label>
             <TextField
               value={inputValues[index]}
               onChange={(e) => handleChange(index, e.target.value)}
@@ -118,8 +115,13 @@ const EditableInputThree = ({
                   marginLeft: 0,
                 },
                 "& .Mui-disabled": {
-                  WebkitTextFillColor: "inherit",
+                  WebkitTextFillColor: "inherit !important",
                   opacity: 1,
+                },
+                "@media (max-width: 560px)": {
+                  "& input": {
+                    padding: `${isEditing ? "15px" : "10px 0px 0px 0px"}`,
+                  },
                 },
               }}
               InputProps={{
@@ -138,7 +140,16 @@ const EditableInputThree = ({
         ))}
         {getHasError("all", errors) && <span className="">{getErrMessage("all", errors)}</span>}
       </div>
-      <div style={{ flexShrink: "1", marginLeft: "5px", marginRight: "8px" }}>
+      <div
+        style={{
+          flexShrink: "1",
+          marginLeft: "5px",
+          marginRight: "8px",
+          minWidth: "75px",
+          justifyContent: "flex-end",
+          display: "flex",
+        }}
+      >
         {isEditing && (
           <IconButton onClick={handleClose} sx={{ ...iconButtonStyles, padding: "10.5px" }}>
             <CancelIconSmallGradient />

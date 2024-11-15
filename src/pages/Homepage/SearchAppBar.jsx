@@ -178,17 +178,16 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
                     justifyContent: "center",
                     background: "var(--gradientButton)",
                     borderRadius: "50%",
-                    padding: "2.5px",
+                    padding: "3px",
                   }}
                 >
                   <Avatar
                     src={userDoc?.profilePic ? userDoc?.profilePic : ""}
                     sx={{
-                      height: 39,
-                      width: 39,
+                      height: 42,
+                      width: 42,
                       borderRadius: "50%",
-                      border: "2.5px solid transparent",
-                      boxShadow: "0 0 0 2.5px var(--gradientButton)",
+                      boxShadow: "0 0 0 3px var(--gradientButton)",
                       "& .MuiAvatar-img": {
                         borderRadius: "50%",
                       },

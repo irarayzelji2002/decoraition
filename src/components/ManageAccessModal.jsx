@@ -413,10 +413,9 @@ const ManageAcessModal = ({
                     >
                       <Avatar
                         sx={{
-                          width: 49,
-                          height: 49,
+                          width: 53,
+                          height: 53,
                           borderRadius: "50%",
-                          border: "3px solid transparent",
                           boxShadow: "0 0 0 3px var(--gradientButton)",
                           "& .MuiAvatar-img": {
                             borderRadius: "50%",

@@ -72,14 +72,10 @@ export default function EditableInput({
   return (
     <div style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "center" }}>
       <div
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          margin: `${isEditing ? "15px" : "10px"} 0px`,
-        }}
+        style={{ margin: `${isEditing ? "15px" : "10px"} 0px` }}
+        className="settingsLabelAndInput"
       >
-        <label className="inputLabel">{label}</label>
+        <label className={`inputLabel ${isEditing && "editing"}`}>{label}</label>
         <TextField
           label=""
           type="text"
@@ -119,8 +115,13 @@ export default function EditableInput({
               marginLeft: 0,
             },
             "& .Mui-disabled": {
-              WebkitTextFillColor: "inherit",
+              WebkitTextFillColor: "inherit !important",
               opacity: 1,
+            },
+            "@media (max-width: 560px)": {
+              "& input": {
+                padding: `${isEditing ? "15px" : "10px 0px 0px 0px"}`,
+              },
             },
           }}
           InputProps={{

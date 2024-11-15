@@ -47,6 +47,10 @@ export default function SeeAllDesigns() {
     selectedId: null,
   });
 
+  const [owners, setOwners] = useState([]);
+  const [selectedOwner, setSelectedOwner] = useState("");
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+
   const loadDesignDataForView = async () => {
     if (userDesigns.length > 0) {
       const designsByLatest = [...userDesigns].sort((a, b) => {
@@ -73,6 +77,14 @@ export default function SeeAllDesigns() {
         })
       );
       setFilteredDesignsForTable(tableData);
+
+      const uniqueOwners = await Promise.all(
+        [...new Set(userDesigns.map((design) => design.owner))].map(async (ownerId) => {
+          const username = await getUsername(ownerId);
+          return username;
+        })
+      );
+      setOwners(uniqueOwners);
     } else {
       setFilteredDesigns([]);
       setFilteredDesignsForTable([]);
@@ -86,12 +98,39 @@ export default function SeeAllDesigns() {
     loadData();
   }, []);
 
+  const handleOwnerChange = (owner) => {
+    setSelectedOwner(owner);
+    applyFilters(searchQuery, owner, dateRange);
+  };
+
+  const handleDateRangeChange = (range) => {
+    setDateRange(range);
+    applyFilters(searchQuery, selectedOwner, range);
+  };
+
+  const applyFilters = (searchQuery, owner, dateRange) => {
+    const filteredDesigns = userDesigns.filter((design) => {
+      const matchesSearchQuery = design.designName
+        .toLowerCase()
+        .includes(searchQuery.trim().toLowerCase());
+      const matchesOwner = owner ? design.owner === owner : true;
+      const matchesDateRange =
+        dateRange.start && dateRange.end
+          ? design.modifiedAt.toMillis() >= new Date(dateRange.start).getTime() &&
+            design.modifiedAt.toMillis() <= new Date(dateRange.end).getTime()
+          : true;
+      return matchesSearchQuery && matchesOwner && matchesDateRange;
+    });
+    setFilteredDesigns(filteredDesigns);
+    setPage(1); // Reset to the first page after filtering
+  };
+
   useEffect(() => {
     const loadData = async () => {
       await loadDesignDataForView();
     };
     loadData();
-  }, [designs, userDesigns, searchQuery]);
+  }, [designs, userDesigns, searchQuery, selectedOwner, dateRange]);
 
   useEffect(() => {
     setView(userDoc.layoutSettings.designsListDesigns ?? 0);
@@ -148,7 +187,11 @@ export default function SeeAllDesigns() {
 
       <div className="bg" style={{ background: "none" }}>
         <div className="dropdown-container">
-          <Dropdowns />
+          <Dropdowns
+            owners={owners}
+            onOwnerChange={handleOwnerChange}
+            onDateRangeChange={handleDateRangeChange}
+          />
         </div>
         {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
 

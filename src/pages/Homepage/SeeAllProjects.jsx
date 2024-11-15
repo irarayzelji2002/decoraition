@@ -25,7 +25,6 @@ import {
 } from "./backend/HomepageActions";
 import { HorizontalIcon, ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
 import { iconButtonStyles } from "./DrawerComponent.jsx";
-import { disable } from "workbox-navigation-preload";
 import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
 
 export default function SeeAllProjects() {
@@ -47,6 +46,10 @@ export default function SeeAllProjects() {
     showOptions: false,
     selectedId: null,
   });
+
+  const [owners, setOwners] = useState([]);
+  const [selectedOwner, setSelectedOwner] = useState("");
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
 
   const loadProjectDataForView = async () => {
     if (userProjects.length > 0) {
@@ -76,6 +79,14 @@ export default function SeeAllProjects() {
         })
       );
       setFilteredProjectsForTable(tableData);
+
+      const uniqueOwners = await Promise.all(
+        [...new Set(userProjects.map((project) => project.owner))].map(async (ownerId) => {
+          const username = await getUsernames(ownerId);
+          return username;
+        })
+      );
+      setOwners(uniqueOwners);
     } else {
       setFilteredProjects([]);
       setFilteredProjectsForTable([]);
@@ -89,12 +100,39 @@ export default function SeeAllProjects() {
     loadData();
   }, []);
 
+  const handleOwnerChange = (owner) => {
+    setSelectedOwner(owner);
+    applyFilters(searchQuery, owner, dateRange);
+  };
+
+  const handleDateRangeChange = (range) => {
+    setDateRange(range);
+    applyFilters(searchQuery, selectedOwner, range);
+  };
+
+  const applyFilters = (searchQuery, owner, dateRange) => {
+    const filteredProjects = userProjects.filter((project) => {
+      const matchesSearchQuery = project.projectName
+        .toLowerCase()
+        .includes(searchQuery.trim().toLowerCase());
+      const matchesOwner = owner ? project.owner === owner : true;
+      const matchesDateRange =
+        dateRange.start && dateRange.end
+          ? project.modifiedAt.toMillis() >= new Date(dateRange.start).getTime() &&
+            project.modifiedAt.toMillis() <= new Date(dateRange.end).getTime()
+          : true;
+      return matchesSearchQuery && matchesOwner && matchesDateRange;
+    });
+    setFilteredProjects(filteredProjects);
+    setPage(1); // Reset to the first page after filtering
+  };
+
   useEffect(() => {
     const loadData = async () => {
       await loadProjectDataForView();
     };
     loadData();
-  }, [projects, userProjects, searchQuery]);
+  }, [projects, userProjects, searchQuery, selectedOwner, dateRange]);
 
   useEffect(() => {
     setView(userDoc.layoutSettings.projectsListProjects ?? 0);
@@ -150,7 +188,11 @@ export default function SeeAllProjects() {
       <SearchAppBar onSearchChange={(value) => setSearchQuery(value)} searchQuery={searchQuery} />
       <div className="bg" style={{ background: "none" }}>
         <div className="dropdown-container">
-          <Dropdowns />
+          <Dropdowns
+            owners={owners}
+            onOwnerChange={handleOwnerChange}
+            onDateRangeChange={handleDateRangeChange}
+          />
         </div>
         {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
 

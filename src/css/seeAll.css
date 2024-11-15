@@ -192,6 +192,7 @@
   border-radius: 12px !important;
   border: 2px solid var(--borderInput) !important;
   margin-left: 12px;
+  font-size: var(--font-size-tiny) !important;
   height: 40px;
   margin-bottom: 12px;
 }

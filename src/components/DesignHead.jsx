@@ -284,7 +284,7 @@ function DesignHead({
     handleEditNameToggle();
   };
 
-  const handleBlur = () => {
+  const handleBlur = async () => {
     // Save the name when the user clicks away from the input field
     if (!isEditingName) {
       return;
@@ -293,9 +293,10 @@ function DesignHead({
       setIsEditingName(false);
       return;
     }
-    const result = handleNameChange(design.id, newName, user, userDoc, setIsEditingName);
-    if (!result.success) showToast("success", result.message);
-    else showToast("error", result.message);
+    const result = await handleNameChange(design.id, newName, user, userDoc, setIsEditingName);
+    console.log("result", result);
+    if (!result.success) showToast("error", result.message);
+    else showToast("success", result.message);
   };
 
   // Download Modal Action
@@ -495,7 +496,7 @@ function DesignHead({
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  handleBlur();
+                  e.preventDefault();
                   e.target.blur();
                 }
               }}

@@ -65,10 +65,20 @@ function StartElement() {
 }
 
 function App() {
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const { user, userDoc } = useAuth();
+
+  useEffect(() => {
+    if (user && userDoc?.theme !== undefined) {
+      const themeValue = Number(userDoc.theme);
+      setIsDarkMode(themeValue === 0);
+    }
+  }, [userDoc]);
+
   return (
     <Router>
       <div className="App" id="App">
-        <Layout>
+        <Layout isDarkMode={isDarkMode}>
           <SharedPropsProvider>
             <Routes>
               {/* PUBLIC ROUTES */}

@@ -208,7 +208,7 @@ function ProjectHead({ project }) {
     handleEditNameToggle();
   };
 
-  const handleBlur = () => {
+  const handleBlur = async () => {
     // Save the name when the user clicks away from the input field
     if (!isEditingName) {
       return;
@@ -217,9 +217,9 @@ function ProjectHead({ project }) {
       setIsEditingName(false);
       return;
     }
-    const result = handleNameChange(project.id, newName, user, userDoc, setIsEditingName);
-    if (!result.success) showToast("success", result.message);
-    else showToast("error", result.message);
+    const result = await handleNameChange(project.id, newName, user, userDoc, setIsEditingName);
+    if (!result.success) showToast("error", result.message);
+    else showToast("success", result.message);
   };
 
   const toggleDarkMode = () => {
@@ -233,11 +233,11 @@ function ProjectHead({ project }) {
   };
 
   // Rename Modal Action
-  const handleRename = (newName) => {
+  const handleRename = async (newName) => {
     if (project.projectName === newName.trim()) {
       return { success: false, message: "Name is the same as the current name." };
     }
-    const result = handleNameChange(projectId, newName, user, userDoc, setIsEditingName);
+    const result = await handleNameChange(projectId, newName, user, userDoc, setIsEditingName);
     if (result.success) {
       handleClose();
       handleCloseRenameModal();
@@ -291,7 +291,7 @@ function ProjectHead({ project }) {
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  handleBlur();
+                  e.preventDefault();
                   e.target.blur();
                 }
               }}

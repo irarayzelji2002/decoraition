@@ -5,7 +5,11 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 
-export default function SelectSmall({ owners, onOwnerChange, onDateRangeChange }) {
+export default function SelectSmall({
+  owners = [],
+  onOwnerChange = () => {},
+  onDateRangeChange = () => {},
+}) {
   const [owner, setOwner] = React.useState("");
   const [dateModified, setDateModified] = React.useState("");
   const [dateCreated, setDateCreated] = React.useState("");

@@ -127,7 +127,7 @@
 }
 
 .small-button-text {
-  color: var(--color-white);
+  color: var(--always-white);
   font-size: var(--font-size-small);
   font-weight: bold;
 }

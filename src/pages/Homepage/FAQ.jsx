@@ -46,7 +46,7 @@ const FAQ = () => {
   return (
     <div
       style={{
-        background: "var(--bg-header)",
+        background: "var(--bg-decor)",
         height: "100vh",
         display: "flex",
         alignItems: "center",
@@ -91,7 +91,7 @@ const FAQ = () => {
       </div>
       <footer className="footer">
         <img src="../../img/logo-White.png" alt="DecorAltion Icon" className="decoricon" />
-        <p>DecorAltion </p>
+        <p style={{ color: "white" }}>DecorAltion</p>
       </footer>
     </div>
   );

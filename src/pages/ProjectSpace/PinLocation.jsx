@@ -23,6 +23,7 @@ function PinLocation({ EditMode }) {
             pins={pins}
             setPins={setPins}
           />{" "}
+          <button className="add-item-btn">Save Pin Locations</button>
         </div>{" "}
       </div>
     </>

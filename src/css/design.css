@@ -1126,7 +1126,7 @@ textarea {
 .confirm-button {
   background: var(--gradientButton) !important;
   border-radius: 20px !important;
-  color: var(--color-white) !important;
+  color: var(--always-white) !important;
   font-weight: bold !important;
   text-transform: none !important;
 }

@@ -29,7 +29,12 @@ import {
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
   ColorizeRounded as ColorizeRoundedIcon,
 } from "@mui/icons-material";
-import { ViewIcon, UnviewIcon, EraseIcon, DeleteIcon } from "../../components/svg/DefaultMenuIcons";
+import {
+  ViewIconWhite,
+  UnviewIcon,
+  EraseIconWhite,
+  DeleteIconWhite,
+} from "../../components/svg/DefaultMenuIcons";
 import { SaveIconSmall } from "./svg/AddImage";
 import { ResetIcon } from "./svg/AddColor";
 import {
@@ -2167,13 +2172,15 @@ const selectedSamMaskValuesMap = {
 const canvasModeValuesMap = {
   true: {
     label: "Add to mask",
-    icon: <AddCircleRoundedIcon sx={{ color: "var(--color-white)" }} />,
+    color: "var(--always-white)",
+    icon: <AddCircleRoundedIcon sx={{ color: "var(--always-white)" }} />,
     backgroundColor: "var(--green)",
     backgroundColorHover: "var(--greenHover)",
   },
   false: {
     label: "Remove from mask",
-    icon: <RemoveCircleRoundedIcon sx={{ color: "var(--color-white)" }} />,
+    color: "var(--always-white)",
+    icon: <RemoveCircleRoundedIcon sx={{ color: "var(--always-white)" }} />,
     backgroundColor: "var(--red)",
     backgroundColorHover: "var(--redHover)",
   },
@@ -2183,13 +2190,15 @@ const canvasModeValuesMap = {
 const refineMaskOptionValuesMap = {
   true: {
     label: "Add first then remove",
-    icon: <AddCircleRoundedIcon sx={{ color: "var(--color-white)" }} />,
+    color: "var(--always-white)",
+    icon: <AddCircleRoundedIcon sx={{ color: "var(--always-white)" }} />,
     backgroundColor: "var(--green)",
     backgroundColorHover: "var(--greenHover)",
   },
   false: {
     label: "Remove first then add",
-    icon: <RemoveCircleRoundedIcon sx={{ color: "var(--color-white)" }} />,
+    color: "var(--always-white)",
+    icon: <RemoveCircleRoundedIcon sx={{ color: "var(--always-white)" }} />,
     backgroundColor: "var(--red)",
     backgroundColorHover: "var(--redHover)",
   },
@@ -2199,13 +2208,15 @@ const refineMaskOptionValuesMap = {
 const brushModeValuesMap = {
   true: {
     label: "Draw",
-    icon: <BrushRoundedIcon sx={{ color: "var(--color-white)" }} />,
+    color: "var(--always-white)",
+    icon: <BrushRoundedIcon sx={{ color: "var(--always-white)" }} />,
     backgroundColor: "var(--green)",
     backgroundColorHover: "var(--greenHover)",
   },
   false: {
     label: "Erase",
-    icon: <EraseIcon />,
+    color: "var(--always-white)",
+    icon: <EraseIconWhite />,
     backgroundColor: "var(--red)",
     backgroundColorHover: "var(--redHover)",
   },
@@ -2215,7 +2226,8 @@ const brushModeValuesMap = {
 const visibilityValuesMap = {
   true: {
     label: "Visible",
-    icon: <ViewIcon />,
+    color: "var(--always-white)",
+    icon: <ViewIconWhite />,
     backgroundColor: "var(--pinkButton)",
     backgroundColorHover: "var(--pinkButtonHover)",
   },
@@ -2230,7 +2242,9 @@ const visibilityValuesMap = {
 const clearCanvasValuesMap = {
   true: {
     label: "Clear canvas",
-    icon: <DeleteIcon />,
+    color: "var(--always-white)",
+
+    icon: <DeleteIconWhite />,
     background: "var(--gradientButton)",
     backgroundHover: "var(--gradientButtonHover)",
   },

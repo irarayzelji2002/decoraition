@@ -11,7 +11,7 @@ const ItemType = {
   PIN: "pin",
 };
 
-function DraggablePin({ id, index, movePin, title, editMode, pinNo }) {
+function DraggablePin({ id, index, movePin, title, editMode, pinNo, color }) {
   const ref = useRef(null);
   const [, drop] = useDrop({
     accept: ItemType.PIN,
@@ -32,7 +32,7 @@ function DraggablePin({ id, index, movePin, title, editMode, pinNo }) {
 
   return (
     <div ref={ref} style={{ width: "100%" }}>
-      <MapPin title={title} editMode={editMode} pinNo={pinNo} />
+      <MapPin title={title} editMode={editMode} pinNo={pinNo} pinColor={color} />
     </div>
   );
 }
@@ -43,9 +43,9 @@ function PinOrder() {
   const navigateFrom = location.pathname;
 
   const [pins, setPins] = useState([
-    { id: 1, title: "Pin 1", pinNo: 1 },
-    { id: 2, title: "Pin 2", pinNo: 2 },
-    { id: 3, title: "Pin 3", pinNo: 3 },
+    { id: 1, title: "Pin 1", pinNo: 1, color: "red" },
+    { id: 2, title: "Pin 2", pinNo: 2, color: "blue" },
+    { id: 3, title: "Pin 3", pinNo: 3, color: "green" },
   ]);
 
   const movePin = (fromIndex, toIndex) => {
@@ -79,8 +79,10 @@ function PinOrder() {
               title={pin.title}
               editMode={true}
               pinNo={pin.pinNo}
+              color={pin.color}
             />
           ))}
+          <button className="add-item-btn">Save pins order and color</button>
         </div>
       </div>
     </DndProvider>

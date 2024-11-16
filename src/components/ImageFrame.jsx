@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 
-const ImageFrame = ({ src, alt, pins = [], setPins }) => {
+const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true }) => {
   const frameRef = useRef(null);
   const imageRef = useRef(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
@@ -64,6 +64,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins }) => {
           <Draggable
             key={pin.id}
             bounds="parent"
+            disabled={!draggable}
             position={{ x: position.x, y: position.y }}
             onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
           >

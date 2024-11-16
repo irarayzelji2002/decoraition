@@ -1571,7 +1571,7 @@ const optionStyles = {
 export const gradientButtonStyles = {
   background: "var(--gradientButton)",
   borderRadius: "20px",
-  color: "var(--color-white)",
+  color: "var(--always-white)",
   fontWeight: "bold",
   textTransform: "none",
   margin: "0 !important",

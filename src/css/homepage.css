@@ -99,7 +99,7 @@ h2 {
 .project-button:hover {
   background: var(--gradientButton) border-box;
   border-radius: 20px !important;
-  color: var(--color-white);
+  color: var(--always-white);
 }
 
 .design-button:click,

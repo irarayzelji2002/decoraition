@@ -372,7 +372,7 @@ select:-webkit-autofill {
 
 .light-mode {
   --bg-header: url("../public/img/bg-white.png");
-  --bg-decor: url("../public/img/decorbg.png");
+  /* --bg-decor: url("../public/img/decorbglight.png"); */
   --bg-full: url("../public/img/fullbg.png");
   --bg-image: #ffffff;
   --color-primary: #faa653;

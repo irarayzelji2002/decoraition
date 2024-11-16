@@ -536,18 +536,12 @@ function Homepage() {
         {filteredProjects.length > thresholdProject &&
           numToShowMoreProject < filteredProjects.length && (
             <Button
-              fullWidth
               variant="contained"
               onClick={() => setNumToShowMoreProject(numToShowMoreProject + thresholdProject)}
+              className="cancel-button"
               sx={{
-                background: "var(--gradientButton)",
-                borderRadius: "20px",
-                color: "var(--color-white)",
-                fontWeight: "bold",
-                textTransform: "none",
-                "&:hover": {
-                  background: "var(--gradientButtonHover)",
-                },
+                marginTop: "20px",
+                width: "80%",
               }}
             >
               Show More

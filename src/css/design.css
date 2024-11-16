@@ -739,7 +739,7 @@ textarea {
 
 /* Text to the left of the circular buttons */
 .small-button-text {
-  color: var(--color-white);
+  color: var(--always-white);
   font-size: var(--font-size-small);
   font-weight: bold;
 }
@@ -1133,7 +1133,7 @@ textarea {
 .confirm-button {
   background: var(--gradientButton) !important;
   border-radius: 20px !important;
-  color: var(--color-white) !important;
+  color: var(--always-white) !important;
   font-weight: bold !important;
   text-transform: none !important;
 }

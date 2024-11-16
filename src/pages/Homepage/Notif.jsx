@@ -73,10 +73,10 @@ function Notif() {
             </Box>
             <div className="user-details">
               <span className="username"></span>
-              <span style={{ fontSize: "0.7rem" }} className="date">
+              <span style={{ fontSize: "0.7rem", color: "var(--color-white)" }} className="date">
                 <strong> Jakob</strong> made a comment on your post
               </span>
-              <span style={{ fontSize: "0.7rem" }} className="date">
+              <span style={{ fontSize: "0.7rem", color: "var(--color-white)" }} className="date">
                 <strong>-</strong> "I like the design!"
               </span>
             </div>
@@ -90,7 +90,7 @@ function Notif() {
               flexDirection: "column",
             }}
           >
-            <span style={{ fontSize: "0.5rem" }} className="date">
+            <span style={{ fontSize: "0.5rem", color: "var(--color-white)" }} className="date">
               <strong>15h</strong>
             </span>
             <FaEllipsisH

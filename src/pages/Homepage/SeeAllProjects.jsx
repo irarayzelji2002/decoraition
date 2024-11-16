@@ -51,6 +51,9 @@ export default function SeeAllProjects() {
   const [selectedOwner, setSelectedOwner] = useState("");
   const [dateRange, setDateRange] = useState({ start: null, end: null });
 
+  const [sortBy, setSortBy] = useState("");
+  const [order, setOrder] = useState("");
+
   const loadProjectDataForView = async () => {
     if (userProjects.length > 0) {
       const projectsByLatest = [...userProjects].sort((a, b) => {
@@ -111,7 +114,7 @@ export default function SeeAllProjects() {
   };
 
   const applyFilters = (searchQuery, owner, dateRange) => {
-    const filteredProjects = userProjects.filter((project) => {
+    let filteredProjects = userProjects.filter((project) => {
       const matchesSearchQuery = project.projectName
         .toLowerCase()
         .includes(searchQuery.trim().toLowerCase());
@@ -123,6 +126,23 @@ export default function SeeAllProjects() {
           : true;
       return matchesSearchQuery && matchesOwner && matchesDateRange;
     });
+
+    if (sortBy) {
+      filteredProjects = filteredProjects.sort((a, b) => {
+        let comparison = 0;
+        if (sortBy === "name") {
+          comparison = a.projectName.localeCompare(b.projectName);
+        } else if (sortBy === "owner") {
+          comparison = a.owner.localeCompare(b.owner);
+        } else if (sortBy === "created") {
+          comparison = a.createdAt.toMillis() - b.createdAt.toMillis();
+        } else if (sortBy === "modified") {
+          comparison = a.modifiedAt.toMillis() - b.modifiedAt.toMillis();
+        }
+        return order === "ascending" ? comparison : -comparison;
+      });
+    }
+
     setFilteredProjects(filteredProjects);
     setPage(1); // Reset to the first page after filtering
   };
@@ -158,6 +178,10 @@ export default function SeeAllProjects() {
     setLoadingProjects(false);
   }, [filteredProjects, page]);
 
+  useEffect(() => {
+    applyFilters(searchQuery, selectedOwner, dateRange);
+  }, [projects, userProjects, searchQuery, selectedOwner, dateRange, sortBy, order]);
+
   const handlePageClick = (pageNumber) => {
     setPage(pageNumber);
     window.scrollTo(0, 0);
@@ -192,6 +216,10 @@ export default function SeeAllProjects() {
             owners={owners}
             onOwnerChange={handleOwnerChange}
             onDateRangeChange={handleDateRangeChange}
+            sortBy={sortBy}
+            order={order}
+            onSortByChange={setSortBy}
+            onOrderChange={setOrder}
           />
         </div>
         {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}

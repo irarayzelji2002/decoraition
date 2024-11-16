@@ -111,11 +111,12 @@ const Layout = ({ isDarkMode, children }) => {
     "--addMask": "#00ff40",
     "--removeMask": "#ff0000",
     "--samMask": "#7543ff",
+    "--always-white": "#ffffff",
   };
 
   const lightThemeStyles = {
     "--bg-header": "url(/img/bg-white.png')",
-    "--bg-decor": "url(/img/decorbg.png')",
+    // "--bg-decor": "url(/img/decorbglight.png')",
     "--bg-full": "url(/img/fullbg.png')",
     "--bg-image": "#ffffff",
     "--color-primary": "#faa653",
@@ -218,6 +219,7 @@ const Layout = ({ isDarkMode, children }) => {
     "--addMask": "#00ff40",
     "--removeMask": "#ff0000",
     "--samMask": "#7543ff",
+    "--always-white": "#ffffff",
   };
 
   return (

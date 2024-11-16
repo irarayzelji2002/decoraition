@@ -282,3 +282,135 @@ h1 {
   height: 25px;
   margin-right: 10px;
 }
+
+.faq-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding-bottom: 60px;
+  position: relative;
+}
+
+.center-me {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 24px;
+  text-align: center;
+  padding-top: 40px;
+}
+
+.center-me > div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+}
+
+.faq-box {
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  margin: 20px auto;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.faq-container {
+  padding-bottom: 20px;
+}
+
+.faq-item {
+  margin-bottom: 20px;
+}
+
+.faq-question {
+  font-size: var(--font-size-h5);
+  padding: 15px;
+  background: var(--bg-decor);
+  border: 2px solid var(--color-white);
+  border-radius: 10px;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.faq-answer {
+  font-size: var(--font-size-h5);
+  margin-top: 10px;
+  padding: 15px;
+  background: var(--bg-decor-light);
+  border-radius: 10px;
+  display: none;
+}
+
+.faq-item.open .faq-answer {
+  display: block;
+}
+
+.arrow {
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.faq-item.open .arrow {
+  transform: rotate(180deg);
+}
+
+.faq-footer {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  font-weight: 800;
+  position: absolute;
+  background: var(--gradientCircle);
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  align-content: center;
+  outline: 3px solid var(--brightFont);
+}
+
+.faq-decoricon {
+  width: 25px;
+  height: 25px;
+  margin-right: 10px;
+}
+
+@media (max-width: 768px) {
+  .center-me {
+    position: center;
+  }
+
+  .faq-box {
+    padding-bottom: 30px;
+    margin: 10px;
+  }
+
+  .faq-question {
+    font-size: var(--font-size-h6);
+    padding: 12px;
+    padding-bottom: 20px;
+  }
+
+  .faq-answer {
+    font-size: var(--font-size-h6);
+    padding: 12px;
+    margin-bottom: 60px;
+  }
+
+  .faq-footer {
+    position: sticky;
+    bottom: 0;
+  }
+
+  .faq-page {
+    min-height: 100vh;
+    padding-bottom: 120px;
+  }
+}

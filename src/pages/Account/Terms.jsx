@@ -3,7 +3,8 @@ function Terms() {
     <div>
       <div
         style={{
-          background: "var(--bg-header)",
+          backgroundImage: "var(--bg-decor)",
+          animation: "moveBackground 70s infinite",
           height: "100vh",
           display: "flex",
           alignItems: "center",

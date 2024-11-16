@@ -369,7 +369,7 @@ const SettingsContent = ({
             sx={{
               background: "var(--gradientButton)",
               borderRadius: "20px",
-              color: "var(--color-white)",
+              color: "var(--always-white)",
               fontWeight: "bold",
               textTransform: "none",
               paddingLeft: "100px",

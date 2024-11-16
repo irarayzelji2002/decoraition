@@ -97,6 +97,7 @@
 
 .change-photo-btn {
   background: var(--gradientButton);
+  color: var(--always-white) !important;
 }
 
 .remove-photo-btn {

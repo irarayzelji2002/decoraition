@@ -217,7 +217,7 @@
   padding-bottom: 8px;
   background: var(--gradientButton);
   border-radius: 20px !important;
-  color: var(--color-white);
+  color: var(--always-white);
   font-weight: bold !important;
   border: none;
   cursor: pointer;

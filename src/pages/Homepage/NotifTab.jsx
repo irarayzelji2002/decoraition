@@ -45,7 +45,7 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
             spaceBetween: "space-between",
           }}
         >
-          <ArrowBackIos onClick={onClose} />
+          <ArrowBackIos style={{ color: "var(--color-white)" }} onClick={onClose} />
           <h2
             style={{
               color: "var(--color-white)",

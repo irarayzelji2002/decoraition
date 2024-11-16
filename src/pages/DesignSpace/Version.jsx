@@ -244,7 +244,10 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
             >
               <ArrowBackIosNewRoundedIcon sx={{ color: "var(--color-white)" }} />
             </IconButton>
-            <Typography variant="body1" sx={{ fontSize: "1.3em", fontWeight: "bold" }}>
+            <Typography
+              variant="body1"
+              sx={{ fontSize: "1.3em", fontWeight: "bold", color: "var(--color-white)" }}
+            >
               {title}
             </Typography>
           </Toolbar>
@@ -390,7 +393,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                   sx={{
                     background: "var(--gradientButton)", // Gradient background
                     borderRadius: "20px", // Button border radius
-                    color: "var(--color-white)", // Button text color
+                    color: "var(--always-white)", // Button text color
                     fontWeight: "bold",
                     textTransform: "none",
                     minWidth: "200px",
@@ -410,7 +413,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                   sx={{
                     background: "var(--gradientButton)", // Gradient background
                     borderRadius: "20px", // Button border radius
-                    color: "var(--color-white)", // Button text color
+                    color: "var(--always-white)", // Button text color
                     fontWeight: "bold",
                     textTransform: "none",
                     minWidth: "200px",
@@ -434,7 +437,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                   sx={{
                     background: "var(--gradientButton)", // Gradient background
                     borderRadius: "20px", // Button border radius
-                    color: "var(--color-white)", // Button text color
+                    color: "var(--always-white)", // Button text color
                     fontWeight: "bold",
                     textTransform: "none",
                     minWidth: "200px",

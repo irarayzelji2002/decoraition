@@ -45,9 +45,10 @@ const FAQ = () => {
 
   return (
     <div
+      className="faq-page"
       style={{
         background: "var(--bg-decor)",
-        height: "100vh",
+        height: "92vh",
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
@@ -64,7 +65,13 @@ const FAQ = () => {
         >
           <IconButton
             onClick={() => window.history.back()}
-            style={{ color: "var(--color-white)", fontSize: "2.5rem" }}
+            style={{
+              color: "var(--color-white)",
+              fontSize: "2.5rem",
+              position: "absolute",
+              top: "20px",
+              left: "20px",
+            }}
           >
             <ArrowBackIosNewIcon />
           </IconButton>
@@ -82,15 +89,18 @@ const FAQ = () => {
                 {faq.question}
                 <span className="arrow">&#9660;</span>
               </button>
-              <div className="faq-answer">
+              <div
+                className="faq-answer"
+                style={{ display: openIndex === index ? "block" : "none" }}
+              >
                 <p>{faq.answer}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
-      <footer className="footer">
-        <img src="../../img/logo-White.png" alt="DecorAltion Icon" className="decoricon" />
+      <footer className="faq-footer">
+        <img src="../../img/logo-White.png" alt="DecorAltion Icon" className="faq-decoricon" />
         <p style={{ color: "white" }}>DecorAltion</p>
       </footer>
     </div>

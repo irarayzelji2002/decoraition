@@ -39,7 +39,7 @@ export const stringAvatarColor = (passedname) => {
   let name = "";
   let initials = "";
   let bgColor = "#ff6262";
-  if (passedname === "undefined" || passedname === "null") {
+  if (passedname === undefined || passedname === "undefined") {
     name = "";
     bgColor = "#F26B27";
   } else if (passedname === "Deleted User") {
@@ -59,7 +59,7 @@ export const stringAvatarColor = (passedname) => {
 export const stringAvatarInitials = (passedname) => {
   let name = "";
   let initials = "";
-  if (passedname === undefined || passedname === null) {
+  if (passedname === undefined || passedname === "undefined") {
     name = "";
   } else if (passedname === "Deleted User") {
     name = "";

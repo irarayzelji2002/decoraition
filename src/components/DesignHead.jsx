@@ -595,7 +595,7 @@ function DesignHead({
               paper: {
                 elevation: 0,
                 sx: {
-                  overflow: "visible",
+                  overflow: "hidden",
                   filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
                   mt: 1.5,
                   backgroundColor: "#27262C",
@@ -608,6 +608,9 @@ function DesignHead({
                   borderTopRightRadius: "0px",
                   borderBottomLeftRadius: "10px",
                   borderBottomRightRadius: "0px",
+                  "& .MuiList-root": {
+                    overflow: "hidden",
+                  },
                 },
               },
             }}
@@ -639,7 +642,7 @@ function DesignHead({
             paper: {
               elevation: 0,
               sx: {
-                overflow: "visible",
+                overflow: "hidden",
                 filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
                 mt: 1.5,
                 backgroundColor: "#27262C",
@@ -652,6 +655,9 @@ function DesignHead({
                 borderTopRightRadius: "0px",
                 borderBottomLeftRadius: "10px",
                 borderBottomRightRadius: "0px",
+                "& .MuiList-root": {
+                  overflow: "hidden",
+                },
               },
             },
           }}

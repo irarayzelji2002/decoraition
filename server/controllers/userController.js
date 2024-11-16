@@ -150,6 +150,22 @@ exports.fetchUserData = async (req, res) => {
   }
 };
 
+// Read Other User
+exports.getOtherUserData = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const user = { id: userDoc.id, ...userDoc.data() };
+    return res.status(200).json({ user: user });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return res.status(500).json({ error: "Failed to fetch user" });
+  }
+};
+
 // Update User
 exports.updateUser = async (req, res) => {
   try {

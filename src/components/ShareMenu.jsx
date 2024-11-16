@@ -9,6 +9,12 @@ import { showToast } from "../functions/utils";
 
 const CustomMenuItem = styled(MenuItem)({
   minHeight: "2.6rem !important",
+  "&:hover": {
+    backgroundColor: "var(--iconBg)",
+  },
+  "&:focus": {
+    backgroundColor: "var(--iconBg)",
+  },
 });
 
 const ShareMenu = ({

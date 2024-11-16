@@ -581,13 +581,8 @@ textarea {
 
 .comment-section textarea {
   width: 100%;
-  height: 100px;
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #444;
   color: var(--color-white);
   border: none;
-  border-radius: 4px;
 }
 
 .commentTabsContainer {
@@ -887,8 +882,18 @@ textarea {
   background-color: var(--iconBg2);
 }
 
+.comment-container.active {
+  background-color: var(--iconBgHover);
+}
+.comment-container.active:hover {
+  background-color: var(--iconBgHover2);
+}
+
 .profile-status {
   margin-right: -5px;
+  justify-content: flex-end;
+  display: flex;
+  position: relative;
 }
 
 .profile-section {
@@ -901,6 +906,7 @@ textarea {
 .profile-info {
   display: flex;
   align-items: center;
+  margin-right: 7px;
 }
 .profile-pic {
   width: 50px;
@@ -969,6 +975,7 @@ textarea {
   background: var(--gradientFont);
   border-radius: 50%;
   margin: 4px 10px;
+  aspect-ratio: 1/1;
 }
 
 .reply-input:focus-within {
@@ -1278,6 +1285,10 @@ textarea {
 @media (max-width: 600px) {
   .comment-section {
     padding-left: 13px;
+    padding-top: 0px;
+  }
+  .commentTabsContainer {
+    margin: 10px 55px 0px 10px;
   }
 }
 @media (max-width: 480px) {

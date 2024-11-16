@@ -39,7 +39,9 @@ function ProjectHead({ project }) {
   const { user, userDoc, handleLogout } = useSharedProps();
   const isOnline = useNetworkStatus();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorElShare, setAnchorElShare] = useState(null);
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isManageAccessModalOpen, setIsManageAccessModalOpen] = useState(false);
@@ -108,7 +110,15 @@ function ProjectHead({ project }) {
     setIsChangeModeMenuOpen(false);
   };
 
-  const handleShareClick = () => {
+  const handleCloseShare = () => {
+    setAnchorElShare(null);
+    setIsShareMenuOpen(false);
+  };
+
+  const handleShareClick = (event) => {
+    console.log("Share clicked");
+    console.log("anchorEl", anchorEl);
+    setAnchorElShare(event.currentTarget);
     setIsShareMenuOpen(true);
   };
 
@@ -363,17 +373,89 @@ function ProjectHead({ project }) {
         {!isOnline && (
           <div className="offline-bar">You are offline. Please check your internet connection.</div>
         )}
+        {anchorEl === null && isShareMenuOpen && (
+          <Menu
+            anchorEl={anchorElShare}
+            open={Boolean(anchorElShare)}
+            onClose={handleCloseShare}
+            slotProps={{
+              paper: {
+                elevation: 0,
+                sx: {
+                  overflow: "hidden",
+                  filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                  mt: 1.5,
+                  backgroundColor: "#27262C",
+                  color: "var(--color-white)",
+                  minWidth: "220px",
+                  top: "62px !important",
+                  right: "0px !important",
+                  left: "auto !important",
+                  borderTopLeftRadius: "0px",
+                  borderTopRightRadius: "0px",
+                  borderBottomLeftRadius: "10px",
+                  borderBottomRightRadius: "0px",
+                  "& .MuiList-root": {
+                    overflow: "hidden",
+                  },
+                },
+              },
+            }}
+            MenuListProps={{
+              sx: {
+                color: "var(--color-white)",
+                padding: "0px !important",
+              },
+            }}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          >
+            <ShareMenu
+              onClose={handleCloseShare}
+              onBackToMenu={handleCloseShare}
+              onOpenShareModal={handleOpenShareModal}
+              onOpenManageAccessModal={handleOpenManageAccessModal}
+              onOpenManageAccessModalView={handleOpenViewCollabModal}
+              isViewCollab={isViewCollab}
+              isFromMenu={false}
+            />
+          </Menu>
+        )}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleClose}
-          PaperProps={{
-            style: {
-              backgroundColor: "#27262C",
-              color: "white",
-              minWidth: "200px",
+          slotProps={{
+            paper: {
+              elevation: 0,
+              sx: {
+                overflow: "hidden",
+                filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                mt: 1.5,
+                backgroundColor: "#27262C",
+                color: "var(--color-white)",
+                minWidth: "220px",
+                top: "62px !important",
+                right: "0px !important",
+                left: "auto !important",
+                borderTopLeftRadius: "0px",
+                borderTopRightRadius: "0px",
+                borderBottomLeftRadius: "10px",
+                borderBottomRightRadius: "0px",
+                "& .MuiList-root": {
+                  overflow: "hidden",
+                },
+              },
             },
           }}
+          MenuListProps={{
+            sx: {
+              color: "var(--color-white)",
+              padding: "0px !important",
+            },
+          }}
+          transformOrigin={{ horizontal: "right", vertical: "top" }}
+          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
           {isShareMenuOpen ? (
             <ShareMenu

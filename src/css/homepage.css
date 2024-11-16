@@ -290,6 +290,7 @@ tr:hover td {
   z-index: 1000;
   width: 200px;
   border: 1px solid var(--table-stroke);
+  overflow: hidden;
 }
 
 .dropdown-menu-other {
@@ -312,6 +313,12 @@ tr:hover td {
 .dropdown-menu.drawer {
   top: 7px !important;
   right: -20px !important;
+}
+
+.dropdown-menu.comment {
+  padding: 0;
+  margin-top: 6px !important;
+  right: -10px !important;
 }
 
 .dropdown-item {

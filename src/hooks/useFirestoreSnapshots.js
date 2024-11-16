@@ -98,6 +98,7 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       "userDesignVersions",
       "userDesignsComments",
       "userComments",
+      "userReplies",
       "userNotifications",
       "userProjectBudgets",
       "userBudgets",
@@ -114,6 +115,7 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       userDesignVersions: "designVersions",
       userDesignsComments: "comments",
       userComments: "comments",
+      userReplies: "comments",
       userNotifications: "notifications",
       userProjectBudgets: "projectBudgets",
       userBudgets: "budgets",
@@ -142,6 +144,7 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       userDesignsComments: (designVersionsSnapshot) =>
         fetchUserDesignsComments(designVersionsSnapshot),
       userComments: (user) => fetchUserComments(user),
+      userReplies: (user) => fetchUserReplies(user),
       userNotifications: (user) => fetchUserNotifications(user),
       userProjectBudgets: (projectsSnapshot) => fetchUserProjectBudgets(projectsSnapshot),
       userBudgets: (projectBudgetsSnapshot, designsSnapshot) =>
@@ -278,6 +281,10 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
         const { data: userCommentsData } = await fetchUserComments(user);
         stateSetterFunctions.userComments(userCommentsData);
         setupListener("userComments", () => fetchUserComments(user));
+
+        const { data: userRepliesData } = await fetchUserReplies(user);
+        stateSetterFunctions.userReplies(userRepliesData);
+        setupListener("userReplies", () => fetchUserReplies(user));
 
         const { data: notificationsData } = await fetchUserNotifications(user);
         stateSetterFunctions.userNotifications(notificationsData);
@@ -496,6 +503,30 @@ const fetchUserComments = async (user) => {
   );
   const data = userCommentsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   const snapshot = userCommentsSnapshot;
+  return { snapshot, data };
+};
+
+//get all user's replies in comments collection where userId is in replies field
+const fetchUserReplies = async (user) => {
+  if (!user) {
+    return { snapshot: null, data: [] };
+  }
+  const commentsSnapshot = await getDocs(collection(db, "comments"));
+  const data = [];
+  commentsSnapshot.docs.forEach((doc) => {
+    const comment = doc.data();
+    if (comment.replies) {
+      const userReplies = comment.replies.filter((reply) => reply.userId === user.uid);
+      userReplies.forEach((reply) => {
+        data.push({
+          id: reply.replyId,
+          commentId: doc.id,
+          ...reply,
+        });
+      });
+    }
+  });
+  const snapshot = commentsSnapshot;
   return { snapshot, data };
 };
 

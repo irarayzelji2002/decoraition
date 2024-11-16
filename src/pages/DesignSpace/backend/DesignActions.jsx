@@ -1040,3 +1040,141 @@ export const createDesignVersion = async (designId, generatedImages, prompt, use
     return { success: false, message: "Failed to create design version" };
   }
 };
+
+export const addComment = async (
+  designId,
+  designVersionImageId,
+  message,
+  mentions,
+  user,
+  userDoc
+) => {
+  if (!message && mentions.length === 0) {
+    // allow empty message if there's at least one mention
+    return { success: false, message: "Comment is required" };
+  }
+  try {
+    const response = await axios.post(
+      `/api/design/${designId}/comment/add-comment`,
+      { userId: userDoc.id, designVersionImageId, message, mentions },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Comment added successfully" };
+    } // "Mentioned user not found"/"Mentioned users not found"
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    // "Mentioned user not found"/"Mentioned users not found"
+    return { success: false, message: "Failed to add comment" };
+  }
+};
+
+export const editComment = async (designId, commentId, message, mentions, user, userDoc) => {
+  try {
+    const response = await axios.put(
+      `/api/design/${designId}/comment/${commentId}/edit-comment`,
+      { userId: userDoc.id, message, mentions },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Comment edited successfully" };
+    }
+  } catch (error) {
+    console.error("Error editing comment:", error);
+    return { success: false, message: "Failed to edit comment" };
+  }
+};
+
+export const deleteComment = async (designId, commentId, user, userDoc) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${designId}/comment/${commentId}/delete-comment`,
+      { userId: userDoc.id },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Comment deleted successfully" };
+    }
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    return { success: false, message: "Failed to delete comment" };
+  }
+};
+
+export const addReply = async (
+  designId,
+  isReplyToComment,
+  commentId = "",
+  replyId = "",
+  message,
+  mentions,
+  user,
+  userDoc
+) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${designId}/comment/${commentId}/add-reply`,
+      { userId: userDoc.id, isReplyToComment, commentId, replyId, message, mentions },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Reply added successfully" };
+    }
+  } catch (error) {
+    console.error("Error adding reply:", error);
+    return { success: false, message: "Failed to add reply" };
+  }
+};
+
+export const editReply = async (
+  designId,
+  isReplyToComment,
+  commentId = "",
+  replyId = "",
+  message,
+  mentions,
+  user,
+  userDoc
+) => {
+  try {
+    const response = await axios.put(
+      `/api/design/${designId}/comment/${commentId}/edit-reply`,
+      { userId: userDoc.id, isReplyToComment, commentId, replyId, message, mentions },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Reply edited successfully" };
+    }
+  } catch (error) {
+    console.error("Error editing reply:", error);
+    return { success: false, message: "Failed to edit reply" };
+  }
+};
+
+export const deleteReply = async (designId, commentId, replyId, user, userDoc) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${designId}/comment/${commentId}/delete-reply`,
+      { userId: userDoc.id, replyId },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Reply deleted successfully" };
+    }
+  } catch (error) {
+    console.error("Error deleting reply:", error);
+    return { success: false, message: "Failed to delete reply" };
+  }
+};

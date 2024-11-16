@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
@@ -224,11 +224,14 @@ function Design() {
     });
   };
 
-  const adjustImageFrames = () => {
+  const adjustImageFrames = useCallback(() => {
+    console.log("inside adjusting image frames");
+
     const imageGrid = containerRef.current;
     const imageFrames = containerRef.current?.querySelectorAll(".image-frame");
 
     if (!imageGrid || !imageFrames) return;
+    console.log("adjusting image frames");
 
     // Calculate thresholds based on viewport height
     const width62 = window.innerHeight * 0.62 - 142;
@@ -275,7 +278,14 @@ function Design() {
     }
 
     adjustImageFramesDefault();
-  };
+  }, [
+    showPromptBar,
+    showComments,
+    numImageFrames,
+    controlWidthComments,
+    controlWidthPromptBar,
+    isSelectingMask,
+  ]);
 
   useEffect(() => {
     // Attach the resize event listener and call the function initially
@@ -297,6 +307,12 @@ function Design() {
     controlWidthPromptBar,
     isSelectingMask,
   ]);
+
+  useEffect(() => {
+    if (designVersionImages.length > 0) {
+      adjustImageFrames();
+    }
+  }, [designVersionImages]);
 
   // Reset selected image to null if click happened on the working-area div itself
   const handleWorkingAreaClick = (e) => {
@@ -406,6 +422,10 @@ function Design() {
                     setPrevWidth={setWidthComments}
                     prevHeight={heightComments}
                     setPrevHeight={setHeightComments}
+                    design={design}
+                    designVersion={designVersion}
+                    designVersionImages={designVersionImages}
+                    showPromptBar={showPromptBar}
                   />
                 </div>
               )}
@@ -772,16 +792,37 @@ function Design() {
 export default Design;
 
 const dummyDesignVersionImages = [
-  { id: 1, link: "../../img/Room1.png", description: "desc for 1", comments: "" },
-  { id: 2, link: "../../img/Room1.png", description: "", comments: "" },
-  { id: 3, link: "../../img/Room1.png", description: "", comments: "" },
-  { id: 4, link: "../../img/Room1.png", description: "desc for 4", comments: "" },
+  {
+    id: "image123",
+    link: "../../img/Room1.png",
+    description: "Living room view 1",
+    comments: ["comment1"],
+  },
+  {
+    id: "image456",
+    link: "../../img/Room1.png",
+    description: "Living room view 2",
+    comments: ["comment2"],
+  },
+  {
+    id: "image789",
+    link: "../../img/Room1.png",
+    description: "Living room view 3",
+    comments: ["comment3", "comment4"],
+  },
+  {
+    id: "image101112",
+    link: "../../img/Room1.png",
+    description: "Living room view 4",
+    comments: "",
+  },
 ];
 
 const dummyDesignVersion = {
-  id: "1",
+  id: "designVersion1",
+  description: "Living room design concept",
   images: dummyDesignVersionImages,
-  createdAt: new Date(),
+  createdAt: new Date("2024-10-01T09:00:00Z"),
   copiedDesigns: [],
   isRestored: false,
   isRestoredFrom: null,

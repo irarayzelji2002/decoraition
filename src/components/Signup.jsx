@@ -85,6 +85,7 @@ const Signup = () => {
     if (!firstName) formErrors.firstName = "First name is required";
     if (!lastName) formErrors.lastName = "Last name is required";
     if (!username) formErrors.username = "Username is required";
+    else if (/\s/.test(username)) formErrors.username = "No spaces allowed";
     if (!email) formErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) formErrors.email = "Invalid email format";
     if (!password) formErrors.password = "Password is required";

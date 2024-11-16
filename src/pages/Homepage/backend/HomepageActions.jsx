@@ -334,8 +334,22 @@ export const getUsername = async (userId) => {
       return username;
     }
   } catch (error) {
-    console.error("Error fetching designs:", error);
+    console.error("Error fetching username:", error);
     return "";
+  }
+};
+
+export const getUser = async (userId) => {
+  try {
+    const response = await axios.get(`/api/user/get-other-user-data/${userId}`);
+
+    if (response.status === 200) {
+      const user = response.data.user;
+      return { success: true, message: "User data retrieved", user };
+    }
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return { success: false, message: "User data retrieval failed", user: null };
   }
 };
 

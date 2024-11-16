@@ -9,6 +9,7 @@ import CommentContainer from "./CommentContainer";
 import { toggleComments } from "./backend/DesignActions";
 import { set } from "lodash";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { formatDateDetail } from "../Homepage/backend/HomepageActions";
 
 function CommentTabs({
   workingAreaRef,
@@ -21,12 +22,28 @@ function CommentTabs({
   setPrevWidth,
   prevHeight,
   setPrevHeight,
+  design,
+  designVersion,
+  designVersionImages,
+  showPromptBar,
 }) {
-  const { user, userDoc, userComments, userDesignComments } = useSharedProps();
+  const { user, userDoc, userComments, userReplies, userDesignComments } = useSharedProps();
   const [commentForTab, setCommentForTab] = useState(true); // true for All Comments, false for For You
   const [commentTypeTab, setCommentTypeTab] = useState(true); // true for Open, false for Resolved
+  // userDesignComments & userComments for the designs's latest deisgn version
+  const [designComments, setDesignComments] = useState([]);
+  const [userOwnedComments, setUserOwnedComments] = useState([]);
+  const [userOwnedReplies, setUserOwnedReplies] = useState([]);
+  const [filteredAndSortedComments, setFilteredAndSortedComments] = useState([]);
+
   const [isAddCommentOpen, setIsAddCommentOpen] = useState(false);
-  const [activeComment, setActiveComment] = useState("");
+  const [selectedId, setSelectedId] = useState("");
+  const [optionsState, setOptionsState] = useState({
+    showOptions: false,
+    selectedId: null,
+  });
+
+  const [isLess600, setIsLess600] = useState(false);
 
   const handleCommentForTabChange = () => {
     setCommentForTab(!commentForTab);
@@ -56,8 +73,9 @@ function CommentTabs({
       e.preventDefault();
       if (window.innerWidth <= 600) {
         promptBar.style.width = "auto";
+        setIsLess600(true);
         return;
-      }
+      } else setIsLess600(false);
 
       const initialX = e.clientX;
       const handleMouseMove = (e) => {
@@ -82,8 +100,10 @@ function CommentTabs({
     const handleResize = () => {
       if (window.innerWidth <= 600) {
         promptBar.style.width = "auto";
+        setIsLess600(true);
       } else {
         promptBar.style.width = `${width}px`;
+        setIsLess600(false);
       }
     };
     window.addEventListener("resize", handleResize);
@@ -172,14 +192,12 @@ function CommentTabs({
 
     if (window.innerWidth <= 600) {
       promptBar.style.width = "auto";
+      promptBar.style.height = `${prevHeight ?? height}`;
+      setIsLess600(true);
     } else {
       promptBar.style.width = `${prevWidth ?? width}`;
-    }
-
-    if (window.innerWidth <= 600) {
-      promptBar.style.height = `${prevHeight ?? height}`;
-    } else {
       promptBar.style.height = "100%";
+      setIsLess600(false);
     }
   }, [showComments]);
 
@@ -202,7 +220,7 @@ function CommentTabs({
   const [isWrapped, setIsWrapped] = useState(false);
   const adjustPillStyle = () => {
     const commentTabsHeader = document.querySelector(".pairTabs");
-    setIsWrapped(commentTabsHeader?.offsetWidth < 220);
+    setIsWrapped(commentTabsHeader?.offsetWidth <= 219.99);
   };
 
   useEffect(() => {
@@ -213,7 +231,132 @@ function CommentTabs({
     };
   }, [width]);
 
-  useEffect(() => {}, [userComments]);
+  useEffect(() => {
+    adjustPillStyle();
+  }, [showPromptBar]);
+
+  useEffect(() => {
+    if (
+      dummyUserDesignComments &&
+      dummyUserDesignComments?.length > 0 &&
+      dummyUserComments &&
+      dummyUserComments?.length > 0
+    ) {
+      setDesignComments(dummyUserDesignComments);
+      setUserOwnedComments(dummyUserComments);
+      setUserOwnedReplies(dummyUserOwnedReplies);
+      return;
+    }
+
+    if (designVersion) {
+      // Get all imageIds from the current designVersion
+      const designVersionImageIds = designVersion?.images?.map((img) => img.imageId);
+
+      // Filter comments that belong to the current designVersion's images
+      const filteredDesignComments = userDesignComments.filter((comment) =>
+        designVersionImageIds.includes(comment.designVersionImageId)
+      );
+      setDesignComments(filteredDesignComments);
+
+      // Filter user's own comments from the filtered design comments
+      const filteredUserComments = userComments.filter((comment) =>
+        designVersionImageIds.includes(comment.designVersionImageId)
+      );
+      setUserOwnedComments(filteredUserComments);
+
+      // Filter user's replies that exist in any of the design comments
+      const userRepliesInDesign = userReplies.filter((reply) => {
+        return filteredDesignComments.some((comment) =>
+          comment.replies?.some((r) => r.replyId === reply.id)
+        );
+      });
+      setUserOwnedReplies(userRepliesInDesign);
+    }
+  }, [designVersion, userComments, userReplies, userDesignComments]);
+
+  useEffect(() => {
+    if (commentForTab) {
+      // All Comments tab
+      const filteredAndSortedComments = designComments
+        .filter((comment) => (commentTypeTab ? !comment.status : comment.status))
+        .sort((a, b) => {
+          const aImageIndex = designVersion?.images?.findIndex(
+            (img) => img.imageId === a.designVersionImageId
+          );
+          const bImageIndex = designVersion?.images?.findIndex(
+            (img) => img.imageId === b.designVersionImageId
+          );
+          if (aImageIndex !== bImageIndex) return aImageIndex - bImageIndex;
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+      // Set selectedId to first comment's id if available
+      if (filteredAndSortedComments.length > 0) {
+        setSelectedId(filteredAndSortedComments[0].id);
+        setFilteredAndSortedComments(filteredAndSortedComments);
+      }
+    } else {
+      // For You tab (user's comments, replies, and mentions)
+      // Create a Set to track unique comment IDs
+      const uniqueCommentIds = new Set();
+      const allUserRelatedComments = [];
+
+      // Add user's own comments
+      userOwnedComments.forEach((comment) => {
+        if (!uniqueCommentIds.has(comment.id)) {
+          uniqueCommentIds.add(comment.id);
+          allUserRelatedComments.push(comment);
+        }
+      });
+
+      // Add user's replies (as parent comments)
+      userOwnedReplies.forEach((reply) => {
+        const parentComment = designComments.find((c) => c.id === reply.commentId);
+        if (parentComment && !uniqueCommentIds.has(parentComment.id)) {
+          uniqueCommentIds.add(parentComment.id);
+          allUserRelatedComments.push(parentComment);
+        }
+      });
+
+      // Add comments where user is mentioned
+      designComments.forEach((comment) => {
+        const isUserMentioned =
+          comment.mentions?.includes(user?.uid) ||
+          comment.replies?.some((reply) => reply.mentions?.includes(user?.uid));
+        if (isUserMentioned && !uniqueCommentIds.has(comment.id)) {
+          uniqueCommentIds.add(comment.id);
+          allUserRelatedComments.push(comment);
+        }
+      });
+
+      const filteredAndSortedComments = allUserRelatedComments
+        .filter((item) => (commentTypeTab ? !item.status : item.status))
+        .sort((a, b) => {
+          const aImageIndex = designVersion?.images?.findIndex(
+            (img) => img.imageId === a.designVersionImageId
+          );
+          const bImageIndex = designVersion?.images?.findIndex(
+            (img) => img.imageId === b.designVersionImageId
+          );
+          if (aImageIndex !== bImageIndex) return aImageIndex - bImageIndex;
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+      // Set selectedId to first comment's id if available
+      if (filteredAndSortedComments.length > 0) {
+        setSelectedId(filteredAndSortedComments[0].id);
+        setFilteredAndSortedComments(filteredAndSortedComments);
+      }
+    }
+  }, [
+    commentForTab,
+    commentTypeTab,
+    designComments,
+    designVersion,
+    user,
+    userOwnedComments,
+    userOwnedReplies,
+  ]);
 
   return (
     <div className="comment-section" ref={commentSectionRef}>
@@ -230,37 +373,39 @@ function CommentTabs({
           <div className={window.innerWidth <= 600 ? "sliderIndicator" : ""}></div>
         </div>
       </div>
-      <IconButton
-        sx={{
-          color: "var(--color-white)",
-          position: "absolute",
-          borderRadius: "50%",
-          right: "8px",
-          top: "8px",
-          marginTop: "9px",
-          marginRight: "20px",
-          zIndex: "1200",
-          "&:hover": {
-            backgroundColor: "var(--iconButtonHover)",
-          },
-          "& .MuiTouchRipple-root span": {
-            backgroundColor: "var(--iconButtonActive)",
-          },
-        }}
-        onClick={() => {
-          setPrevWidth(width);
-          setPrevHeight(height);
-          toggleComments(setShowComments);
-        }}
-        className="commentSectionIconButtonInside"
-      >
-        <ArrowBackIosRoundedIcon
+      {isLess600 && (
+        <IconButton
           sx={{
-            color: "var(--color-white) !important",
-            transform: showComments ? "rotate(270deg)" : "rotate(90deg)",
+            color: "var(--color-white)",
+            position: "absolute",
+            borderRadius: "50%",
+            right: "8px",
+            top: "8px",
+            marginTop: "9px",
+            marginRight: "20px",
+            zIndex: "1200",
+            "&:hover": {
+              backgroundColor: "var(--iconButtonHover)",
+            },
+            "& .MuiTouchRipple-root span": {
+              backgroundColor: "var(--iconButtonActive)",
+            },
           }}
-        />
-      </IconButton>
+          onClick={() => {
+            setPrevWidth(width);
+            setPrevHeight(height);
+            toggleComments(setShowComments);
+          }}
+          className="commentSectionIconButtonInside"
+        >
+          <ArrowBackIosRoundedIcon
+            sx={{
+              color: "var(--color-white) !important",
+              transform: showComments ? "rotate(270deg)" : "rotate(90deg)",
+            }}
+          />
+        </IconButton>
+      )}
       <Box
         sx={{ minHeight: applyMinHeight ? "calc(100vh - 259px)" : "688px" }}
         className="transitionMinHeight"
@@ -312,16 +457,29 @@ function CommentTabs({
         </div>
 
         {/* Comments container */}
-        <CommentContainer
-          commentId={"1"}
-          username={"Juan Dela Cruz"}
-          date={"June 17, 2024"}
-          comment={"I like the room design! Could we add some more table sheets?"}
-          hasTextBox={true}
-          replyCount={0}
-          replyLatestDate={"June 20, 2024"}
-          setActiveComment={setActiveComment}
-        />
+        {commentForTab
+          ? // All Comments tab
+            filteredAndSortedComments.map((comment) => (
+              <CommentContainer
+                key={comment.id}
+                comment={comment}
+                optionsState={optionsState}
+                setOptionsState={setOptionsState}
+                selectedId={selectedId}
+                setSelectedId={setSelectedId}
+              />
+            ))
+          : // For You tab (user's comments, replies, and mentions)
+            filteredAndSortedComments.map((comment) => (
+              <CommentContainer
+                key={comment.id}
+                comment={comment}
+                optionsState={optionsState}
+                setOptionsState={setOptionsState}
+                selectedId={selectedId}
+                setSelectedId={setSelectedId}
+              />
+            ))}
       </Box>
 
       {/* Add a comment button */}
@@ -383,33 +541,47 @@ const getPillTabStyle = (isWrapped, selectedTab, index) => {
   };
 };
 
-const dummyComments = [
+const dummyUser1 = { id: "ub9S8LqLBXRFKPJCUQL8xGgCMkH2", username: "irarayzelji" }; // current user
+const dummyUser2 = { id: "qZjAWQkR1ShNfWhG6BQJkElEkQy1", username: "EmanuelRegister" };
+const dummyUser3 = { id: "VJbdZCvYn4hxiEpiT2d6pIzQq2P2", username: "irarayzelji2" };
+
+const createDummyDate = (stringDate) => {
+  const date = new Date(stringDate); // ex: "2024-11-15T10:00:00Z"
+  const seconds = Math.floor(date.getTime() / 1000);
+  const nanoseconds = (date.getTime() % 1000) * 1e6;
+  const mockTimestamp = { seconds, nanoseconds };
+  // Outputs: { seconds: 1731649200, nanoseconds: 0 }
+  return mockTimestamp;
+};
+
+// Comments for the design version
+const dummyUserDesignComments = [
   {
     id: "comment1",
     designVersionImageId: "image123",
-    userId: "userA",
-    message: "This is the first comment.",
-    mentions: ["userB", "userC"],
-    status: false, // open
-    createdAt: new Date("2024-10-01T10:00:00Z"),
-    modifiedAt: new Date("2024-10-01T12:00:00Z"),
+    userId: dummyUser1.id,
+    message: `This is the first comment. @${dummyUser2.username} This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment. @${dummyUser3.username} This is the first comment.This is the first comment.`,
+    mentions: [dummyUser2.id, dummyUser3.id],
+    status: false,
+    createdAt: createDummyDate("2024-10-01T10:00:00Z"),
+    modifiedAt: createDummyDate("2024-10-01T12:00:00Z"),
     replies: [
       {
         replyId: "reply1_1",
-        userId: "userB",
-        message: "This is a reply to the first comment.",
-        mentions: ["userA"],
-        createdAt: new Date("2024-10-01T11:00:00Z"),
-        modifiedAt: new Date("2024-10-01T11:30:00Z"),
+        userId: dummyUser2.id,
+        message: `@${dummyUser1.username} mention in fornt. This is a reply to the first comment.`,
+        mentions: [dummyUser1.id],
+        createdAt: createDummyDate("2024-10-01T11:00:00Z"),
+        modifiedAt: createDummyDate("2024-10-01T11:30:00Z"),
         replies: ["reply1_1_1"],
       },
       {
         replyId: "reply1_2",
-        userId: "userC",
+        userId: dummyUser3.id,
         message: "Another reply to the first comment.",
         mentions: [],
-        createdAt: new Date("2024-10-01T11:15:00Z"),
-        modifiedAt: new Date("2024-10-01T11:45:00Z"),
+        createdAt: createDummyDate("2024-10-01T11:15:00Z"),
+        modifiedAt: createDummyDate("2024-10-01T11:45:00Z"),
         replies: [],
       },
     ],
@@ -417,20 +589,20 @@ const dummyComments = [
   {
     id: "comment2",
     designVersionImageId: "image456",
-    userId: "userB",
+    userId: dummyUser2.id,
     message: "This is the second comment.",
     mentions: [],
-    status: true, // resolved
-    createdAt: new Date("2024-10-02T09:30:00Z"),
-    modifiedAt: new Date("2024-10-02T10:30:00Z"),
+    status: true,
+    createdAt: createDummyDate("2024-10-02T09:30:00Z"),
+    modifiedAt: createDummyDate("2024-10-02T10:30:00Z"),
     replies: [
       {
         replyId: "reply2_1",
-        userId: "userA",
-        message: "Replying to the second comment.",
-        mentions: ["userB"],
-        createdAt: new Date("2024-10-02T10:00:00Z"),
-        modifiedAt: new Date("2024-10-02T10:20:00Z"),
+        userId: dummyUser1.id,
+        message: `Replying to the second comment. @${dummyUser2.username} message after mention.`,
+        mentions: [dummyUser2.id],
+        createdAt: createDummyDate("2024-10-02T10:00:00Z"),
+        modifiedAt: createDummyDate("2024-10-02T10:20:00Z"),
         replies: ["reply2_1_1"],
       },
     ],
@@ -438,12 +610,43 @@ const dummyComments = [
   {
     id: "comment3",
     designVersionImageId: "image789",
-    userId: "userC",
-    message: "This is the third comment.",
-    mentions: ["userA"],
-    status: false, // open
-    createdAt: new Date("2024-10-03T14:00:00Z"),
-    modifiedAt: new Date("2024-10-03T14:30:00Z"),
+    userId: dummyUser3.id,
+    message: `This is the third comment. @${dummyUser1.username}`,
+    mentions: [dummyUser1.id],
+    status: false,
+    createdAt: createDummyDate("2024-10-03T14:00:00Z"),
+    modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
+    replies: [],
+  },
+  {
+    id: "comment4",
+    designVersionImageId: "image789",
+    userId: dummyUser1.id,
+    message: "This is the fourth comment.",
+    mentions: [],
+    status: false,
+    createdAt: createDummyDate("2024-10-03T14:00:00Z"),
+    modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
     replies: [],
   },
 ];
+
+// User's own comments (assuming current user is dummyUser1.id)
+const dummyUserComments = dummyUserDesignComments.filter(
+  (comment) => comment.userId === dummyUser1.id
+);
+
+// User's own replies (assuming current user is dummyUser1.id)
+const dummyUserOwnedReplies = dummyUserDesignComments.flatMap((comment) =>
+  comment.replies
+    .filter((reply) => reply.userId === dummyUser1.id)
+    .map((reply) => ({
+      id: reply.replyId,
+      commentId: comment.id,
+      ...reply,
+    }))
+);
+
+// const dummyUserDesignComments=[];
+// const dummyUserComments = [];
+// const dummyUserOwnedReplies = [];

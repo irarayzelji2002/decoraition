@@ -73,6 +73,7 @@ router.post("/user/get-usernames", userController.getUsernames);
 router.post("/user/add-color-palette", authenticateUser, userController.addColorPalette);
 router.put("/user/update-color-palette", authenticateUser, userController.updateColorPalette);
 router.put("/user/delete-color-palette", authenticateUser, userController.deleteColorPalette);
+router.get("/user/get-other-user-data/:userId", userController.getOtherUserData);
 
 // Design routes
 router.get("/design/:userId", authenticateUser, designController.fetchUserDesigns);

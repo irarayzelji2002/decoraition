@@ -251,11 +251,13 @@ select:-webkit-autofill {
   --inputBgBrighter: #4a4853;
   --iconBg: #302f37;
   --iconBg2: #36343d;
-  --iconBgHover: #3f3e46;
+  --iconBgHover: #3f3d47;
+  --iconBgHover2: #43414d;
   --brightFont: #ff8344;
   --brightFontHover: #ff9058;
   --borderInput: #515151;
   --borderInputBrighter: #646464;
+  --borderInputBrighter2: #707070;
   --gradientCircle: linear-gradient(20deg, #ec2073, #ff894d);
   --gradientCircleDisabled: linear-gradient(20deg, #db3074, #e78655);
   --gradientCircleHover: linear-gradient(20deg, #ff894d, #ec2073);
@@ -410,10 +412,12 @@ select:-webkit-autofill {
   --iconBg: #fafafa;
   --iconBg2: #f0f0f0;
   --iconBgHover: #e4e4e4;
+  --iconBgHover2: #dbd9d9;
   --brightFont: #ff7a28;
   --brightFontHover: #f36b25;
   --borderInput: #515151;
   --borderInputBrighter: #646464;
+  --borderInputBrighter2: #707070;
   --gradientCircle: linear-gradient(20deg, #ec2073, #ff894d);
   --gradientCircleDisabled: linear-gradient(20deg, #db3074, #e78655);
   --gradientCircleHover: linear-gradient(20deg, #ff894d, #ec2073);

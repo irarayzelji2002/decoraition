@@ -31,12 +31,15 @@ import {
   gradientButtonStyles,
   outlinedButtonStyles,
 } from "../../components/RenameModal";
+import ImageFrame from "../../components/ImageFrame";
 
 function PlanMap() {
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
+
+  const [pins, setPins] = useState([]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [designs, setDesigns] = useState([]);
@@ -167,13 +170,13 @@ function PlanMap() {
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
       <div className="sectionBudget" style={{ background: "none" }}>
         <div className="budgetSpaceImg">
-          <div className="image-frame">
-            <img
-              src="../../img/logoWhitebg.png"
-              alt={`design preview `}
-              className="image-preview"
-            />
-          </div>
+          <ImageFrame
+            src="../../img/floorplan.png"
+            alt="design preview"
+            pins={pins}
+            setPins={setPins}
+            draggable={false} // Ensure this line is present
+          />
         </div>
         <div className="budgetSpaceImg">
           {designs.length > 0 ? (

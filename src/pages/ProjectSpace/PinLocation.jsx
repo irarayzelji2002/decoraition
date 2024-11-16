@@ -12,10 +12,6 @@ function PinLocation({ EditMode }) {
 
   const [pins, setPins] = useState([]);
 
-  const addPin = () => {
-    setPins([...pins, { id: Date.now(), x: 0, y: 0 }]);
-  };
-
   return (
     <>
       <TopBar state={"Add Pin"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
@@ -27,13 +23,6 @@ function PinLocation({ EditMode }) {
             pins={pins}
             setPins={setPins}
           />{" "}
-          <button
-            className="add-item-btn"
-            style={{ width: "100%", margin: "8px" }}
-            onClick={addPin}
-          >
-            Add Pin
-          </button>
         </div>{" "}
       </div>
     </>

@@ -23,6 +23,18 @@ const ImageFrame = ({ src, alt, pins = [], setPins }) => {
     };
   }, [imageRef]);
 
+  useEffect(() => {
+    if (pins.length === 0) {
+      const defaultPins = [
+        { id: 1, x: 25, y: -15 },
+        { id: 2, x: 30, y: -50 },
+        { id: 3, x: 50, y: -50 },
+        { id: 4, x: 70, y: -70 },
+      ];
+      setPins(defaultPins);
+    }
+  }, [pins, setPins]);
+
   const updatePinPosition = (id, x, y) => {
     const rect = imageRef.current.getBoundingClientRect();
     const relativeX = (x / rect.width) * 100;
@@ -39,8 +51,14 @@ const ImageFrame = ({ src, alt, pins = [], setPins }) => {
   };
 
   return (
-    <div className="image-frame-other" ref={frameRef}>
-      <img src={src} alt={alt} className="image-preview-other" ref={imageRef} />
+    <div className="image-frame-other" ref={frameRef} style={{ position: "relative" }}>
+      <img
+        src={src}
+        alt={alt}
+        className="image-preview-other"
+        ref={imageRef}
+        style={{ display: "block" }}
+      />
       {pins.map((pin) => {
         const position = getPinPosition(pin);
         return (
@@ -50,7 +68,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins }) => {
             position={{ x: position.x, y: position.y }}
             onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
           >
-            <div className="pin">
+            <div className="pin" style={{ position: "absolute" }}>
               <MapPinIcon />
             </div>
           </Draggable>

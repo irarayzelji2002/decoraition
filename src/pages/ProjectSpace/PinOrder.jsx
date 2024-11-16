@@ -31,7 +31,7 @@ function DraggablePin({ id, index, movePin, title, editMode, pinNo }) {
   drag(drop(ref));
 
   return (
-    <div ref={ref}>
+    <div ref={ref} style={{ width: "100%" }}>
       <MapPin title={title} editMode={editMode} pinNo={pinNo} />
     </div>
   );
@@ -66,8 +66,9 @@ function PinOrder() {
       options={isMobile ? { enableMouseEvents: true } : undefined}
     >
       {/* dummy */}
-      <div>
-        <TopBar state={"Change pins order"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
+
+      <TopBar state={"Change pins order"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
+      <div style={{ width: "95%" }}>
         <div className="pinSpace">
           {pins.map((pin, index) => (
             <DraggablePin

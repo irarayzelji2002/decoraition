@@ -50,6 +50,8 @@ export default function SeeAllDesigns() {
   const [owners, setOwners] = useState([]);
   const [selectedOwner, setSelectedOwner] = useState("");
   const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const [sortBy, setSortBy] = useState("");
+  const [order, setOrder] = useState("");
 
   const loadDesignDataForView = async () => {
     if (userDesigns.length > 0) {
@@ -109,7 +111,7 @@ export default function SeeAllDesigns() {
   };
 
   const applyFilters = (searchQuery, owner, dateRange) => {
-    const filteredDesigns = userDesigns.filter((design) => {
+    let filteredDesigns = userDesigns.filter((design) => {
       const matchesSearchQuery = design.designName
         .toLowerCase()
         .includes(searchQuery.trim().toLowerCase());
@@ -121,6 +123,23 @@ export default function SeeAllDesigns() {
           : true;
       return matchesSearchQuery && matchesOwner && matchesDateRange;
     });
+
+    if (sortBy) {
+      filteredDesigns = filteredDesigns.sort((a, b) => {
+        let comparison = 0;
+        if (sortBy === "name") {
+          comparison = a.designName.localeCompare(b.designName);
+        } else if (sortBy === "owner") {
+          comparison = a.owner.localeCompare(b.owner);
+        } else if (sortBy === "created") {
+          comparison = a.createdAt.toMillis() - b.createdAt.toMillis();
+        } else if (sortBy === "modified") {
+          comparison = a.modifiedAt.toMillis() - b.modifiedAt.toMillis();
+        }
+        return order === "ascending" ? comparison : -comparison;
+      });
+    }
+
     setFilteredDesigns(filteredDesigns);
     setPage(1); // Reset to the first page after filtering
   };
@@ -131,6 +150,10 @@ export default function SeeAllDesigns() {
     };
     loadData();
   }, [designs, userDesigns, searchQuery, selectedOwner, dateRange]);
+
+  useEffect(() => {
+    applyFilters(searchQuery, selectedOwner, dateRange);
+  }, [designs, userDesigns, searchQuery, selectedOwner, dateRange, sortBy, order]);
 
   useEffect(() => {
     setView(userDoc.layoutSettings.designsListDesigns ?? 0);
@@ -191,6 +214,10 @@ export default function SeeAllDesigns() {
             owners={owners}
             onOwnerChange={handleOwnerChange}
             onDateRangeChange={handleDateRangeChange}
+            sortBy={sortBy}
+            order={order}
+            onSortByChange={setSortBy}
+            onOrderChange={setOrder}
           />
         </div>
         {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}

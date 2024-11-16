@@ -60,7 +60,7 @@ function AddPin({ EditMode }) {
   const formControlStyles = {
     m: 1,
     minWidth: 200,
-    backgroundColor: "#2c2c2e",
+    backgroundColor: "transparent",
     color: "var(--color-white)",
     width: "100%",
     borderRadius: "8px",

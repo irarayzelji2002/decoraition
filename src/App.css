@@ -214,6 +214,7 @@ select:-webkit-autofill {
   --bg-header: url("../public/img/bg-login.png");
   --bg-decor: url("../public/img/decorbg.png");
   --bg-full: url("../public/img/fullbg.png");
+  /* --bg-placeholder: url("../public/img/design-placeholder.png"); */
   --bg-image: #1f1e22;
   --color-primary: #faa653;
   --color-secondary: #f04f59;
@@ -374,6 +375,7 @@ select:-webkit-autofill {
   --bg-header: url("../public/img/bg-white.png");
   /* --bg-decor: url("../public/img/decorbglight.png"); */
   --bg-full: url("../public/img/fullbg.png");
+  /* --bg-placeholder: url("../public/img/design-placeholder-dark.png"); */
   --bg-image: #ffffff;
   --color-primary: #faa653;
   --color-secondary: #ff6347;

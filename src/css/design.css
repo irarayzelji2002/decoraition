@@ -842,7 +842,7 @@ textarea {
   padding: 10px 20px;
   border: none;
   cursor: pointer;
-  background-color: #27262c;
+  background-color: var(--nav-card-modal);
   color: white;
   transition: background-color 0.3s ease;
   flex: 1;

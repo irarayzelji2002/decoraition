@@ -9,6 +9,7 @@ import { query, where, setDoc, deleteDoc, getDocs } from "firebase/firestore";
 import { CheckCircle, Delete } from "@mui/icons-material";
 import { showToast } from "../../../functions/utils";
 import axios from "axios";
+import { projectId } from "../../../../server/firebaseConfig";
 
 // Adjust the import path as necessary
 
@@ -47,35 +48,31 @@ export const fetchDesigns = (
   return unsubscribeDesigns;
 };
 
-export const handleCreateDesign = async (projectId, navigate) => {
+export const handleCreateProjectDesign = async (user, userId, navigate) => {
   try {
-    const currentUser = auth.currentUser;
-    const randomString = Math.random().toString(36).substring(2, 6);
-    const designId = new Date().getTime().toString() + randomString;
+    const token = await user.getIdToken();
+    const response = await axios.post(
+      `/api/project/createDesign/${projectId}`,
+      {
+        userId: userId,
+        designName: "Untitled Design",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    if (currentUser) {
-      // Design reference within the specific project
-      const designRef = doc(db, "designs", designId);
-
-      await setDoc(designRef, {
-        name: "Untitled", // Default design name
-        createdAt: new Date(),
-        projectId: projectId, // Linking design to the project
-        createdBy: currentUser.uid,
-      });
-
-      // Show toast notification when the project is created
-      showToast("success", "Design created successfully!");
-
-      // Navigate to the newly created design
-      // setTimeout(
-      //   () => navigate(`/design/${designId}/${projectId}/project`),
-      //   1500
-      // );
+    if (response.status === 200) {
+      showToast("success", "Design created successfully");
+      setTimeout(() => navigate(`/design/${response.data.id}`), 1500);
+    } else {
+      showToast("error", "Failed to create design.");
     }
   } catch (error) {
-    console.error("Error creating design: ", error);
-    showToast("error", "Error creating design! Please try again.");
+    console.error("Error creating design:", error);
+    showToast("error", "Failed to create design");
   }
 };
 

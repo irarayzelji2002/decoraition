@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { isEqual } from "lodash";
 import { initializeApp as initializeClientApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
 import {
   getFirestore,
   collection,

@@ -10,38 +10,40 @@ import {
   Folder as FolderIcon,
   Image as ImageIcon,
 } from "@mui/icons-material";
-import { ToastContainer, toast } from "react-toastify";
+import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { auth, db } from "../../firebase";
 import ProjectHead from "./ProjectHead";
 import Modal from "../../components/Modal";
 import BottomBarDesign from "./BottomBarProject";
-import Loading from "../../components/Loading";
 import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import { fetchDesigns, handleCreateDesign, handleDeleteDesign } from "./backend/ProjectDetails";
-import { Button } from "@mui/material";
+import {
+  fetchDesigns,
+  handleCreateProjectDesign,
+  handleDeleteDesign,
+} from "./backend/ProjectDetails";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, VerticalIcon } from "./svg/ExportIcon";
 import { Typography } from "@mui/material";
 import { ListIcon } from "./svg/ExportIcon";
 import ItemList from "./ItemList";
-import DesignSvg from "../Homepage/svg/DesignSvg";
 import LoadingPage from "../../components/LoadingPage";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 
 function Project() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
+  const { user, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
   const { projectId } = useParams();
   const [newName, setNewName] = useState("");
   const [userId, setUserId] = useState(null);
   const [projectData, setProjectData] = useState(null);
-  const [designs, setDesigns] = useState([]);
+
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
+
   const [isVertical, setIsVertical] = useState(false);
   const navigate = useNavigate();
   const handleVerticalClick = () => {
@@ -53,24 +55,6 @@ function Project() {
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
-
-  useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (user) {
-    }
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-        fetchDesigns(currentUser.uid, projectId, setDesigns);
-      } else {
-        setUser(null);
-        setDesigns([]);
-      }
-    });
-
-    return () => unsubscribeAuth();
-  }, [user]);
-
   useEffect(() => {
     const auth = getAuth();
 
@@ -129,7 +113,7 @@ function Project() {
   }
   return (
     <>
-      <ProjectHead />
+      <ProjectHead project={projectData} />
       <div
         style={{
           display: "flex",
@@ -254,7 +238,12 @@ function Project() {
 
           <div
             className={`layout ${isVertical ? "vertical" : ""}`}
-            style={{ width: "100%", display: "flex", justifyContent: "center" }}
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              flexDirection: "column",
+            }}
           >
             {isVertical
               ? designs.length > 0 &&
@@ -295,13 +284,19 @@ function Project() {
       <div className="circle-button-container">
         {menuOpen && (
           <div className="small-buttons">
-            <div className="small-button-container" onClick={() => handleCreateDesign(projectId)}>
+            <div
+              className="small-button-container"
+              onClick={() => handleCreateProjectDesign(user, userId, navigate, projectId)}
+            >
               <span className="small-button-text">Import a Design</span>
               <div className="small-circle-button">
                 <AddDesign />
               </div>
             </div>
-            <div className="small-button-container" onClick={() => handleCreateDesign(projectId)}>
+            <div
+              className="small-button-container"
+              onClick={() => handleCreateProjectDesign(user, userId, navigate, projectId)}
+            >
               <span className="small-button-text">Create a Design</span>
               <div className="small-circle-button">
                 <AddProject />

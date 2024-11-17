@@ -18,21 +18,16 @@ import {
   getUsername,
   getUsernames,
 } from "./backend/HomepageActions";
-
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
-import FolderIcon from "@mui/icons-material/Folder";
-import ImageIcon from "@mui/icons-material/Image";
 import HomepageTable from "./HomepageTable.jsx";
 import SearchAppBar from "./SearchAppBar.jsx";
 import DesignIcon from "../../components/DesignIcon.jsx";
 import ProjectOptionsHome from "../../components/ProjectOptionsHome.jsx";
 import "../../css/homepage.css";
 import "../../css/design.css";
-import ProjectIcon from "./svg/ProjectIcon.jsx";
-import DesignSvg from "./svg/DesignSvg.jsx";
 import Loading from "../../components/Loading.jsx";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage.jsx";
 import { set } from "lodash";
@@ -44,18 +39,15 @@ import { gradientButtonStyles, outlinedButtonStyles } from "../DesignSpace/Promp
 function Homepage() {
   const navigate = useNavigate();
   const { user, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredDesigns, setFilteredDesigns] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [filteredDesignsForTable, setFilteredDesignsForTable] = useState([]);
   const [filteredProjectsForTable, setFilteredProjectsForTable] = useState([]);
-
   const [viewForDesigns, setViewForDesigns] = useState(0); //0 for tiled view, 1 for list view
   const [viewForProjects, setViewForProjects] = useState(0);
   const [loadingDesigns, setLoadingDesigns] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
-
   const [numToShowMoreDesign, setNumToShowMoreDesign] = useState(0);
   const [numToShowMoreProject, setNumToShowMoreProject] = useState(0);
 
@@ -66,6 +58,21 @@ function Homepage() {
   });
   const [thresholdDesign, setThresholdDesign] = useState(0);
   const [thresholdProject, setThresholdProject] = useState(0);
+
+  const [isCreatingDesign, setIsCreatingDesign] = useState(false);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+
+  const handleCreateDesignClick = async () => {
+    setIsCreatingDesign(true);
+    await handleCreateDesign(user, userDoc.id, navigate);
+    setIsCreatingDesign(false);
+  };
+
+  const handleCreateProjectClick = async () => {
+    setIsCreatingProject(true);
+    await handleCreateProject(user, userDoc.id, navigate);
+    setIsCreatingProject(false);
+  };
 
   const loadDesignDataForView = async () => {
     setLoadingDesigns(true);
@@ -238,7 +245,8 @@ function Homepage() {
           <div className="action-buttons">
             <Button
               variant="contained"
-              onClick={() => handleCreateDesign(user, userDoc.id, navigate)}
+              onClick={handleCreateDesignClick}
+              disabled={isCreatingDesign}
               sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
               onMouseOver={(e) => {
                 e.target.style.backgroundImage = "var(--gradientButton)";
@@ -257,7 +265,8 @@ function Homepage() {
             </Button>
             <Button
               variant="contained"
-              onClick={() => handleCreateProject(user, userDoc.id, navigate)}
+              onClick={handleCreateProjectClick}
+              disabled={isCreatingProject}
               sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
               onMouseOver={(e) => {
                 e.target.style.backgroundImage = "var(--gradientButton)";
@@ -559,7 +568,8 @@ function Homepage() {
                 <span className="small-button-text">Create a Project</span>
                 <div
                   className="small-circle-button"
-                  onClick={() => handleCreateProject(user, userDoc.id, navigate)}
+                  onClick={handleCreateProjectClick}
+                  disabled={isCreatingProject}
                 >
                   <AddProject />
                 </div>
@@ -568,7 +578,8 @@ function Homepage() {
                 <span className="small-button-text">Create a Design</span>
                 <div
                   className="small-circle-button"
-                  onClick={() => handleCreateDesign(user, userDoc.id, navigate)}
+                  onClick={handleCreateDesignClick}
+                  disabled={isCreatingDesign}
                 >
                   <AddDesign />
                 </div>

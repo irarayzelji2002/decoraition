@@ -82,11 +82,11 @@ const Signup = () => {
   const handleValidation = () => {
     let formErrors = {};
 
-    if (!firstName) formErrors.firstName = "First name is required";
-    if (!lastName) formErrors.lastName = "Last name is required";
-    if (!username) formErrors.username = "Username is required";
-    else if (/\s/.test(username)) formErrors.username = "No spaces allowed";
-    if (!email) formErrors.email = "Email is required";
+    if (!firstName.trim()) formErrors.firstName = "First name is required";
+    if (!lastName.trim()) formErrors.lastName = "Last name is required";
+    if (!username.trim()) formErrors.username = "Username is required";
+    else if (/\s/.test(username.trim())) formErrors.username = "No spaces allowed";
+    if (!email.trim()) formErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) formErrors.email = "Invalid email format";
     if (!password) formErrors.password = "Password is required";
     else if (password.length < 6)
@@ -111,10 +111,10 @@ const Signup = () => {
 
     try {
       const response = await axios.post("/api/register", {
-        firstName,
-        lastName,
-        username,
-        email,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        username: username.trim(),
+        email: email.trim(),
         password,
       });
       if (response.status === 200) {

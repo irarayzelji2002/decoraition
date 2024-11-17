@@ -357,6 +357,7 @@ function Design() {
                     numImageFrames={numImageFrames}
                     showPromptBar={showPromptBar}
                     setShowPromptBar={setShowPromptBar}
+                    showComments={showComments}
                     setShowComments={setShowComments}
                     width={controlWidthPromptBar}
                     setWidth={setControlWidthPromptBar}
@@ -477,8 +478,8 @@ function Design() {
               {isMobileLayout && !showComments && (
                 <div
                   className="commentSectionHiddenHeader"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => toggleComments(setShowComments)}
+                  style={{ cursor: design?.designSettings ? "pointer" : "auto" }}
+                  onClick={() => design?.designSettings && toggleComments(setShowComments)}
                 >
                   <Typography
                     variant="body1"
@@ -496,13 +497,17 @@ function Design() {
                       borderRadius: "50%",
                       height: "45px",
                       zIndex: "49",
+                      opacity: design?.designSettings ? 1 : 0.5,
                       "&:hover": {
-                        backgroundColor: "var(--iconButtonHover)",
+                        backgroundColor: design?.designSettings
+                          ? "var(--iconButtonHover)"
+                          : "transparent",
                       },
                       "& .MuiTouchRipple-root span": {
                         backgroundColor: "var(--iconButtonActive)",
                       },
                     }}
+                    disabled={!design?.designSettings}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleComments(setShowComments);
@@ -563,14 +568,18 @@ function Design() {
                     zIndex: "50",
                     height: "40px",
                     width: "40px",
+                    opacity: design?.designSettings ? 1 : 0.5,
                     "&:hover": {
-                      backgroundColor: "var(--iconButtonHover)",
+                      backgroundColor: design?.designSettings
+                        ? "var(--iconButtonHover)"
+                        : "transparent",
                     },
                     "& .MuiTouchRipple-root span": {
                       backgroundColor: "var(--iconButtonActive)",
                     },
                   }}
-                  onClick={() => toggleComments(setShowComments)}
+                  disabled={!design?.designSettings}
+                  onClick={() => design?.designSettings && toggleComments(setShowComments)}
                   className="commentSectionIconButton"
                 >
                   <ArrowBackIosRoundedIcon

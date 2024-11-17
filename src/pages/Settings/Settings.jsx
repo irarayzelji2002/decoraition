@@ -203,6 +203,9 @@ function Settings() {
     if (trimmedUsername === "") {
       tempErrors.find((field) => field.field === "username").hasError = true;
       tempErrors.find((field) => field.field === "username").errMessage = "This field is required";
+    } else if (/\s/.test(trimmedUsername)) {
+      tempErrors.find((field) => field.field === "username").hasError = true;
+      tempErrors.find((field) => field.field === "username").errMessage = "No spaces allowed";
     } else {
       const usernameExists = await checkExistingUsername(userDoc.id, trimmedUsername);
       if (usernameExists) {

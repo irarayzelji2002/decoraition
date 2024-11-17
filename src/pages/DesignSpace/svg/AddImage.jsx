@@ -93,6 +93,25 @@ export function SaveIconSmallGradient() {
   );
 }
 
+export function SendIconSmallGradient() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gradientButton" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style={{ stopColor: "#F68B3F", stopOpacity: 1 }} />
+          <stop offset="50%" style={{ stopColor: "#F15D3F", stopOpacity: 1 }} />
+        </linearGradient>
+      </defs>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M0.0162123 2.78846C-0.201114 0.837542 1.80748 -0.595138 3.58203 0.245747L13.5656 4.97509C15.4781 5.88034 15.4781 8.60193 13.5656 9.50718L3.58203 14.2374C1.80748 15.0782 -0.200278 13.6456 0.0162123 11.6946L0.417429 8.077H7.20301C7.4247 8.077 7.63731 7.98894 7.79406 7.83218C7.95082 7.67543 8.03888 7.46282 8.03888 7.24113C8.03888 7.01945 7.95082 6.80684 7.79406 6.65009C7.63731 6.49333 7.4247 6.40527 7.20301 6.40527H0.418265L0.0162123 2.78846Z"
+        fill="url(#gradientButton)"
+      />
+    </svg>
+  );
+}
+
 export function AddItem() {
   return (
     <svg width="30" height="30" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">

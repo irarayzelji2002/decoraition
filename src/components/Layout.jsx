@@ -10,7 +10,7 @@ const Layout = ({ isDarkMode, children }) => {
     "--bg-header": "url('/img/bg-login.png')",
     "--bg-decor": "url('/img/decorbg.png')",
     "--bg-full": "url('/img/fullbg.png')",
-    // "--bg-placeholder": "url('img/design-placeholder.png')",
+    "--bg-placeholder": "url('/img/design-placeholder.png')",
     "--bg-image": "#1f1e22",
     "--color-primary": "#faa653",
     "--color-secondary": "#f04f59",
@@ -116,10 +116,10 @@ const Layout = ({ isDarkMode, children }) => {
   };
 
   const lightThemeStyles = {
-    "--bg-header": "url(/img/bg-white.png')",
-    // "--bg-decor": "url(/img/decorbglight.png')",
-    "--bg-full": "url(/img/fullbg.png')",
-    // "--bg-placeholder": "url('img/design-placeholder-dark.png')",
+    "--bg-header": "url('/img/bg-white.png')",
+    "--bg-decor": "url('/img/decorbglight.png')",
+    "--bg-full": "url('/img/fullbg.png')",
+    "--bg-placeholder": "url('/img/design-placeholder-dark.png')",
     "--bg-image": "#ffffff",
     "--color-primary": "#faa653",
     "--color-secondary": "#ff6347",

@@ -1,4 +1,3 @@
-// SelectMaskCanvas.jsx
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   Dialog,

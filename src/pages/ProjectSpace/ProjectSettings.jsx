@@ -464,7 +464,7 @@ const ProjectSettings = () => {
                 sx={{
                   background: "var(--gradientButton)",
                   borderRadius: "20px",
-                  color: "var(--color-white)",
+                  color: "var(--always-white)",
                   fontWeight: "bold",
                   textTransform: "none",
                   width: "230px",

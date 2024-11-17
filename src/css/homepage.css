@@ -338,6 +338,9 @@ tr:hover td {
 .dropdown-item .icon {
   margin-right: 12px;
 }
+.dropdown-item .icon2 {
+  margin-right: 12px;
+}
 .dateModified {
   font-size: var(--font-size-tiny);
   color: var(--color-white);

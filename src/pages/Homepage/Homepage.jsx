@@ -244,11 +244,13 @@ function Homepage() {
                 e.target.style.backgroundImage = "var(--gradientButton)";
                 e.target.style.padding = "8px 18px";
                 e.target.style.border = "none";
+                e.target.style.color = "var(--always-white)";
               }}
               onMouseOut={(e) => {
                 e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)";
                 e.target.style.border = "2px solid transparent";
                 e.target.style.padding = "6px 16px";
+                e.target.style.color = "var(--color-white)";
               }}
             >
               Create a design
@@ -261,11 +263,13 @@ function Homepage() {
                 e.target.style.backgroundImage = "var(--gradientButton)";
                 e.target.style.padding = "8px 18px";
                 e.target.style.border = "none";
+                e.target.style.color = "var(--always-white)";
               }}
               onMouseOut={(e) => {
                 e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)";
                 e.target.style.border = "2px solid transparent";
                 e.target.style.padding = "6px 16px";
+                e.target.style.color = "var(--color-white)";
               }}
             >
               Create a project

@@ -22,19 +22,19 @@ import InfoModal from "../../components/InfoModal";
 
 import IconButton from "@mui/material/IconButton";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import SettingsIcon from "@mui/icons-material/Settings";
 
 import {
-  OpenInNew as OpenInNewIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Info as InfoIcon,
-  Link as LinkIcon,
-  Share as ShareIcon,
-  FileCopy as FileCopyIcon,
-  Download as DownloadIcon,
-} from "@mui/icons-material";
-import DriveFileRenameOutlineRoundedIcon from "@mui/icons-material/DriveFileRenameOutlineRounded";
+  CopyLinkIcon,
+  ShareIcon,
+  SettingsIcon,
+  MakeACopyIcon,
+  RenameIcon,
+  DownloadIcon,
+  DeleteIcon,
+  DetailsIcon,
+} from "../../components/svg/DefaultMenuIcons";
+
+import { OpenInNew as OpenInNewIcon } from "@mui/icons-material";
 
 function HomepageOptions({
   isDesign,
@@ -347,37 +347,53 @@ function HomepageOptions({
                 Open
               </div>
               <div className="dropdown-item" onClick={() => setIsShareMenuOpen(true)}>
-                <ShareIcon style={{ fontSize: 20 }} className="icon" />
+                <div className="icon">
+                  <ShareIcon style={{ fontSize: 20 }} />
+                </div>
                 Share
               </div>
               <div className="dropdown-item" onClick={handleCopyLink}>
-                <LinkIcon style={{ fontSize: 20 }} className="icon" />
+                <div className="icon">
+                  <CopyLinkIcon style={{ fontSize: 20 }} className="icon" />
+                </div>
                 Copy Link
               </div>
               <div className="dropdown-item" onClick={handleSettings}>
-                <SettingsIcon style={{ fontSize: 20 }} className="icon" />
+                <div className="icon">
+                  <SettingsIcon style={{ fontSize: 20 }} className="icon" />
+                </div>
                 Settings
               </div>
               <div className="dropdown-item" onClick={openDownloadModal}>
-                <DownloadIcon style={{ fontSize: 20 }} className="icon" />
+                <div className="icon">
+                  <DownloadIcon style={{ fontSize: 20 }} className="icon" />
+                </div>
                 Download
               </div>
               {isDesign && (
                 <div className="dropdown-item" onClick={openCopyModal}>
-                  <FileCopyIcon style={{ fontSize: 20 }} className="icon" />
+                  <div className="icon">
+                    <MakeACopyIcon style={{ fontSize: 20 }} className="icon" />
+                  </div>
                   Make a copy
                 </div>
               )}
               <div className="dropdown-item" onClick={openRenameModal}>
-                <DriveFileRenameOutlineRoundedIcon style={{ fontSize: 20 }} className="icon" />
+                <div className="icon">
+                  <RenameIcon style={{ fontSize: 20 }} className="icon" />
+                </div>
                 Rename
               </div>
               <div className="dropdown-item" onClick={openDeleteModal}>
-                <DeleteIcon style={{ fontSize: 20 }} className="icon" />
+                <div className="icon">
+                  <DeleteIcon style={{ fontSize: 20 }} className="icon" />
+                </div>
                 Delete
               </div>
               <div className="dropdown-item" onClick={handleOpenInfoModal}>
-                <InfoIcon style={{ fontSize: 20 }} className="icon" />
+                <div className="icon">
+                  <DetailsIcon style={{ fontSize: 20 }} className="icon" />
+                </div>
                 Details
               </div>
             </div>

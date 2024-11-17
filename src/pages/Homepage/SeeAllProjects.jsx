@@ -26,6 +26,7 @@ import {
 import { HorizontalIcon, ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
 import { iconButtonStyles } from "./DrawerComponent.jsx";
 import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
+import { AddProject } from "../DesignSpace/svg/AddImage.jsx";
 
 export default function SeeAllProjects() {
   const navigate = useNavigate();
@@ -346,7 +347,7 @@ export default function SeeAllProjects() {
             {/* Previous Page Button */}
             <IconButton onClick={handlePreviousPage} disabled={page === 1} sx={iconButtonStyles}>
               <ArrowBackIosRoundedIcon
-                sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+                sx={{ color: page === totalPages ? "var(--color-white)" : "var(--color-white)" }}
               />
             </IconButton>
 
@@ -358,6 +359,7 @@ export default function SeeAllProjects() {
                 sx={{
                   ...gradientButtonStyles,
                   aspectRatio: "1/1",
+                  color: "var(--color-white)",
                   background:
                     page === index + 1
                       ? "var(--gradientButton) !important"
@@ -377,13 +379,9 @@ export default function SeeAllProjects() {
             ))}
 
             {/* Next Page Button */}
-            <IconButton
-              onClick={handleNextPage}
-              disabled={page === totalPages}
-              sx={iconButtonStyles}
-            >
+            <IconButton onClick={handleNextPage} sx={iconButtonStyles}>
               <ArrowForwardIosRoundedIcon
-                sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+                sx={{ color: page === totalPages ? "var(--color-white)" : "var(--color-white)" }}
               />
             </IconButton>
           </div>
@@ -396,7 +394,7 @@ export default function SeeAllProjects() {
             <div className="small-button-container" onClick={toggleModal}>
               <span className="small-button-text">Create a Project</span>
               <div className="small-circle-button">
-                <FolderIcon className="icon" />
+                <AddProject />
               </div>
             </div>
             <div

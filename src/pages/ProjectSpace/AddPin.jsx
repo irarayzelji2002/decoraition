@@ -60,7 +60,7 @@ function AddPin({ EditMode }) {
   const formControlStyles = {
     m: 1,
     minWidth: 200,
-    backgroundColor: "#2c2c2e",
+    backgroundColor: "transparent",
     color: "var(--color-white)",
     width: "100%",
     borderRadius: "8px",
@@ -103,7 +103,8 @@ function AddPin({ EditMode }) {
   };
 
   const addPin = () => {
-    setPins([...pins, { id: Date.now(), x: 0, y: 0 }]);
+    const highestId = pins.length > 0 ? Math.max(...pins.map((pin) => pin.id)) : 0;
+    setPins([...pins, { id: highestId + 1, x: 0, y: 0, color: selectedColor }]);
   };
 
   return (

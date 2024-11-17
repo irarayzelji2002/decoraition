@@ -67,6 +67,9 @@ function Homepage() {
   const [thresholdDesign, setThresholdDesign] = useState(0);
   const [thresholdProject, setThresholdProject] = useState(0);
 
+  const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
+  const [isProjectButtonDisabled, setIsProjectButtonDisabled] = useState(false);
+
   const loadDesignDataForView = async () => {
     setLoadingDesigns(true);
     if (userDesigns.length > 0) {
@@ -238,7 +241,11 @@ function Homepage() {
           <div className="action-buttons">
             <Button
               variant="contained"
-              onClick={() => handleCreateDesign(user, userDoc.id, navigate)}
+              onClick={() => {
+                setIsDesignButtonDisabled(true);
+                handleCreateDesign(user, userDoc.id, navigate);
+              }}
+              disabled={isDesignButtonDisabled}
               sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
               onMouseOver={(e) => {
                 e.target.style.backgroundImage = "var(--gradientButton)";
@@ -257,7 +264,11 @@ function Homepage() {
             </Button>
             <Button
               variant="contained"
-              onClick={() => handleCreateProject(user, userDoc.id, navigate)}
+              onClick={() => {
+                setIsProjectButtonDisabled(true);
+                handleCreateProject(user, userDoc.id, navigate);
+              }}
+              disabled={isProjectButtonDisabled}
               sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
               onMouseOver={(e) => {
                 e.target.style.backgroundImage = "var(--gradientButton)";

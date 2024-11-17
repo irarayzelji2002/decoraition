@@ -129,7 +129,7 @@ function Project() {
   }
   return (
     <>
-      <ProjectHead />
+      <ProjectHead project={projectData} />
       <div
         style={{
           display: "flex",

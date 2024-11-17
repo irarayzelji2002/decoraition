@@ -21,16 +21,18 @@ import Dropdowns from "../../components/Dropdowns";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import { fetchDesigns, handleCreateDesign, handleDeleteDesign } from "./backend/ProjectDetails";
+import { fetchDesigns, handleDeleteDesign, fetchProjectDesigns } from "./backend/ProjectDetails";
 import { Button } from "@mui/material";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, VerticalIcon } from "./svg/ExportIcon";
 import { Typography } from "@mui/material";
 import { ListIcon } from "./svg/ExportIcon";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 import ItemList from "./ItemList";
 import DesignSvg from "../Homepage/svg/DesignSvg";
 import LoadingPage from "../../components/LoadingPage";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import axios from "axios";
 
 function Project() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,7 +43,7 @@ function Project() {
   const [projectData, setProjectData] = useState(null);
   const [designs, setDesigns] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const { user } = useSharedProps();
   const [isVertical, setIsVertical] = useState(false);
   const navigate = useNavigate();
   const handleVerticalClick = () => {
@@ -55,21 +57,19 @@ function Project() {
   };
 
   useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (user) {
-    }
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    const fetchData = async () => {
       if (user) {
-        setUser(user);
-        fetchDesigns(currentUser.uid, projectId, setDesigns);
-      } else {
-        setUser(null);
-        setDesigns([]);
+        try {
+          console.log(`Fetching designs for projectId: ${projectId}`); // Debug log
+          await fetchProjectDesigns(projectId, setDesigns);
+        } catch (error) {
+          toast.error(`Error fetching project designs: ${error.message}`);
+        }
       }
-    });
+    };
 
-    return () => unsubscribeAuth();
-  }, [user]);
+    fetchData();
+  }, [user, projectId]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -118,6 +118,31 @@ function Project() {
   const closeModal = () => {
     setModalOpen(false);
     setModalContent(null);
+  };
+
+  const handleCreateDesign = async (projectId) => {
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const response = await axios.post(
+        `/api/project/${projectId}/create-design`,
+        {
+          userId: auth.currentUser.uid,
+          designName: "Untitled Design",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        toast.success("Design created successfully!");
+        // Optionally, navigate to the new design or refresh the designs list
+      }
+    } catch (error) {
+      console.error("Error creating design:", error);
+      toast.error("Error creating design! Please try again.");
+    }
   };
 
   if (!projectData) {
@@ -263,6 +288,8 @@ function Project() {
                     key={design.id}
                     name={design.name}
                     designId={design.id}
+                    createdBy={design.createdBy}
+                    createdAt={design.createdAt}
                     onDelete={() => handleDeleteDesign(projectId, design.id)}
                     onOpen={() =>
                       navigate(`/design/${design.id}`, {

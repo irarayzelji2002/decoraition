@@ -317,8 +317,9 @@ tr:hover td {
 
 .dropdown-menu.comment {
   padding: 0;
-  margin-top: 6px !important;
+  margin-top: 9px !important;
   right: -10px !important;
+  background-color: var(--iconBg);
 }
 
 .dropdown-item {

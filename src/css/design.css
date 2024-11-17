@@ -889,6 +889,14 @@ textarea {
   background-color: var(--iconBgHover2);
 }
 
+.comment-container.reply {
+  background-color: transparent;
+  padding-right: 0;
+  border-left: 2px solid var(--borderInputBrighter);
+  border-radius: 0;
+  margin: 0;
+}
+
 .profile-status {
   margin-right: -5px;
   justify-content: flex-end;
@@ -1223,6 +1231,7 @@ textarea {
   }
   .promptBar {
     padding: 20px;
+    padding-right: 40px;
     padding-top: 0px;
   }
   .promptBar .transitionMinHeight {
@@ -1289,6 +1298,9 @@ textarea {
   }
   .commentTabsContainer {
     margin: 10px 55px 0px 10px;
+  }
+  .promptBar {
+    padding-right: 20px;
   }
 }
 @media (max-width: 480px) {

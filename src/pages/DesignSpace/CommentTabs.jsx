@@ -37,11 +37,14 @@ function CommentTabs({
   const [filteredAndSortedComments, setFilteredAndSortedComments] = useState([]);
 
   const [isAddCommentOpen, setIsAddCommentOpen] = useState(false);
+  // For option select
   const [selectedId, setSelectedId] = useState("");
   const [optionsState, setOptionsState] = useState({
     showOptions: false,
     selectedId: null,
   });
+  // for selected in image pinpoint
+  const [activeComment, setActiveComment] = useState("");
 
   const [isLess600, setIsLess600] = useState(false);
 
@@ -197,7 +200,6 @@ function CommentTabs({
     } else {
       promptBar.style.width = `${prevWidth ?? width}`;
       promptBar.style.height = "100%";
-      setIsLess600(false);
     }
   }, [showComments]);
 
@@ -240,11 +242,13 @@ function CommentTabs({
       dummyUserDesignComments &&
       dummyUserDesignComments?.length > 0 &&
       dummyUserComments &&
-      dummyUserComments?.length > 0
+      dummyUserComments?.length > 0 &&
+      dummyUserReplies &&
+      dummyUserReplies?.length > 0
     ) {
       setDesignComments(dummyUserDesignComments);
       setUserOwnedComments(dummyUserComments);
-      setUserOwnedReplies(dummyUserOwnedReplies);
+      setUserOwnedReplies(dummyUserReplies);
       return;
     }
 
@@ -462,22 +466,30 @@ function CommentTabs({
             filteredAndSortedComments.map((comment) => (
               <CommentContainer
                 key={comment.id}
+                commentId={comment.id}
                 comment={comment}
+                design={design}
                 optionsState={optionsState}
                 setOptionsState={setOptionsState}
                 selectedId={selectedId}
                 setSelectedId={setSelectedId}
+                activeComment={activeComment}
+                setActiveComment={setActiveComment}
               />
             ))
           : // For You tab (user's comments, replies, and mentions)
             filteredAndSortedComments.map((comment) => (
               <CommentContainer
                 key={comment.id}
+                commentId={comment.id}
                 comment={comment}
+                design={design}
                 optionsState={optionsState}
                 setOptionsState={setOptionsState}
                 selectedId={selectedId}
                 setSelectedId={setSelectedId}
+                activeComment={activeComment}
+                setActiveComment={setActiveComment}
               />
             ))}
       </Box>
@@ -637,7 +649,7 @@ const dummyUserComments = dummyUserDesignComments.filter(
 );
 
 // User's own replies (assuming current user is dummyUser1.id)
-const dummyUserOwnedReplies = dummyUserDesignComments.flatMap((comment) =>
+const dummyUserReplies = dummyUserDesignComments.flatMap((comment) =>
   comment.replies
     .filter((reply) => reply.userId === dummyUser1.id)
     .map((reply) => ({
@@ -649,4 +661,4 @@ const dummyUserOwnedReplies = dummyUserDesignComments.flatMap((comment) =>
 
 // const dummyUserDesignComments=[];
 // const dummyUserComments = [];
-// const dummyUserOwnedReplies = [];
+// const dummyUserReplies = [];

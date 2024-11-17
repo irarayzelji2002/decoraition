@@ -140,6 +140,7 @@ function PromptBar({
   const [numberOfImages, setNumberOfImages] = useState(1);
 
   const [isSmallWidth, setIsSmallWidth] = useState(false);
+  const [isLess600, setIsLess600] = useState(false);
 
   const handleSliderChange = (event, newValue) => {
     setNumberOfImages(newValue);
@@ -291,8 +292,9 @@ function PromptBar({
       e.preventDefault();
       if (window.innerWidth <= 600) {
         promptBar.style.width = "auto";
+        setIsLess600(true);
         return;
-      }
+      } else setIsLess600(false);
 
       const initialX = e.clientX;
       const handleMouseMove = (e) => {
@@ -320,8 +322,10 @@ function PromptBar({
       if (window.innerWidth <= 600) {
         promptBar.style.width = "auto";
         setIsSmallWidth(window.innerWidth <= 380);
+        setIsLess600(true);
       } else {
         promptBar.style.width = `${width}px`;
+        setIsLess600(false);
       }
     };
     window.addEventListener("resize", handleResize);
@@ -411,14 +415,12 @@ function PromptBar({
 
     if (window.innerWidth <= 600) {
       promptBar.style.width = "auto";
+      promptBar.style.height = `${prevHeight ?? height}`;
+      setIsLess600(true);
     } else {
       promptBar.style.width = `${prevWidth ?? width}`;
-    }
-
-    if (window.innerWidth <= 600) {
-      promptBar.style.height = `${prevHeight ?? height}`;
-    } else {
       promptBar.style.height = "100%";
+      setIsLess600(false);
     }
   }, [showPromptBar]);
 
@@ -721,37 +723,39 @@ function PromptBar({
               <div className={window.innerWidth <= 600 ? "sliderIndicator" : ""}></div>
             </div>
           </div>
-          <IconButton
-            sx={{
-              color: "var(--color-white)",
-              position: "absolute",
-              borderRadius: "50%",
-              right: "8px",
-              top: "8px",
-              marginTop: "20px",
-              marginRight: "7px",
-              zIndex: "49",
-              "&:hover": {
-                backgroundColor: "var(--iconButtonHover)",
-              },
-              "& .MuiTouchRipple-root span": {
-                backgroundColor: "var(--iconButtonActive)",
-              },
-            }}
-            onClick={() => {
-              setPrevWidth(width);
-              setPrevHeight(height);
-              togglePromptBar(setShowPromptBar);
-            }}
-            className="promptBarIconButtonInside"
-          >
-            <ArrowBackIosRoundedIcon
+          {isLess600 && (
+            <IconButton
               sx={{
-                color: "var(--color-white) !important",
-                transform: showPromptBar ? "rotate(270deg)" : "rotate(90deg)",
+                color: "var(--color-white)",
+                position: "absolute",
+                borderRadius: "50%",
+                right: "8px",
+                top: "8px",
+                marginTop: "20px",
+                marginRight: "7px",
+                zIndex: "49",
+                "&:hover": {
+                  backgroundColor: "var(--iconButtonHover)",
+                },
+                "& .MuiTouchRipple-root span": {
+                  backgroundColor: "var(--iconButtonActive)",
+                },
               }}
-            />
-          </IconButton>
+              onClick={() => {
+                setPrevWidth(width);
+                setPrevHeight(height);
+                togglePromptBar(setShowPromptBar);
+              }}
+              className="promptBarIconButtonInside"
+            >
+              <ArrowBackIosRoundedIcon
+                sx={{
+                  color: "var(--color-white) !important",
+                  transform: showPromptBar ? "rotate(270deg)" : "rotate(90deg)",
+                }}
+              />
+            </IconButton>
+          )}
           <div
             style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "662.8px" }}
             className="transitionMinHeight"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import {
   Avatar,
@@ -96,6 +96,7 @@ const CommentContainer = ({
   const [openMentionOptions, setOpenMentionOptions] = useState(false);
   const [mentionOptions, setMentionOptions] = useState([]);
   const [originalMentionOptions, setOriginalMentionOptions] = useState([]);
+  const [mentionOptionClicked, setMentionOptionClicked] = useState(null);
 
   // Editing comment states
   const [isEditingComment, setIsEditingComment] = useState(false);
@@ -121,8 +122,10 @@ const CommentContainer = ({
 
   const [isSingleLine, setIsSingleLine] = useState(true);
   const textFieldRef = useRef(null);
+  const textFieldInputRef = useRef(null);
   const [isSingleLineReply, setIsSingleLineReply] = useState(true);
   const textFieldReplyRef = useRef(null);
+  const textFieldReplyInputRef = useRef(null);
 
   // Check the height of the textarea to determine if it's a single line
   useEffect(() => {
@@ -191,6 +194,70 @@ const CommentContainer = ({
     }
     setOpenMentionOptions(true);
   };
+
+  useEffect(() => {
+    const handleMentionOptionClick = (content, setContent, user, ref) => {
+      if (!ref?.current) {
+        console.error("TextField ref not found");
+        return;
+      }
+
+      let cursorPosition = ref.current.selectionStart;
+      if (!cursorPosition) cursorPosition = content.length;
+
+      let textBeforeCursor = content.substring(0, cursorPosition);
+      const textAfterCursor = content.substring(cursorPosition);
+      const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+      if (lastAtIndex !== -1) {
+        // Find the incomplete username portion (from @ to next space or cursor)
+        const textFromAt = textBeforeCursor.substring(lastAtIndex);
+        const nextSpaceIndex = textFromAt.indexOf(" ");
+        const incompleteUsername =
+          nextSpaceIndex !== -1 ? textFromAt.substring(0, nextSpaceIndex) : textFromAt;
+
+        // Find where the incomplete username ends in the full text
+        const beforeMention = content.substring(0, lastAtIndex);
+        const afterMention = content.substring(lastAtIndex + incompleteUsername.length);
+
+        // Check if space is needed before mention
+        const needsSpaceBefore =
+          lastAtIndex > 0 && beforeMention.charAt(beforeMention.length - 1) !== " ";
+        const spaceBefore = needsSpaceBefore ? " " : "";
+
+        // Check if space is needed after mention
+        const needsSpaceAfter = afterMention.charAt(0) !== " ";
+        const spaceAfter = needsSpaceAfter ? " " : "";
+
+        const newContent = `${beforeMention}${spaceBefore}@${user.username}${spaceAfter}${afterMention}`;
+        setContent(newContent);
+
+        if (!updatedMentions.includes(user.id)) {
+          setUpdatedMentions([...updatedMentions, user.id]);
+        }
+      }
+      setOpenMentionOptions(false);
+      setMentionOptionClicked(null);
+    };
+
+    let content, setContent, user, ref;
+    console.log("inside useeffect");
+    if (!mentionOptionClicked) return;
+    else user = mentionOptionClicked;
+    console.log("textFieldReplyInputRef.current", textFieldReplyInputRef.current);
+    console.log("isAddingReply", isAddingReply);
+    if (textFieldInputRef.current && isEditingComment) {
+      content = updatedCommentContent;
+      setContent = setUpdatedCommentContent;
+      ref = textFieldInputRef;
+      handleMentionOptionClick(content, setContent, user, ref);
+    } else if (textFieldReplyInputRef.current && isAddingReply) {
+      content = replyContent;
+      setContent = setReplyContent;
+      ref = textFieldReplyInputRef;
+      handleMentionOptionClick(content, setContent, user, ref);
+    }
+  }, [mentionOptionClicked]);
 
   // Get user details from collaborators list
   const getUserDetails = (username) => {
@@ -563,10 +630,11 @@ const CommentContainer = ({
           {!isEditingComment ? (
             <div>
               {commentContent.split(/(@\w+\s|@\w+$)/).map((part, index) => {
-                // Check if this part is a valid mention (starts with @ and ends with space or end of string)
                 if (part.match(/^@\w+(\s|$)/)) {
                   const username = part.trim().substring(1);
-                  const isValidMention = mentions.includes(getUserDetails(username)?.id);
+                  const userId = users.find((opt) => opt.username === username)?.id;
+                  const isValidMention = mentions.includes(userId);
+
                   return isValidMention ? (
                     <CustomTooltip
                       key={index}
@@ -586,10 +654,10 @@ const CommentContainer = ({
                       </span>
                     </CustomTooltip>
                   ) : (
-                    part
+                    <span key={index}>{part}</span>
                   );
                 }
-                return part;
+                return <span key={index}>{part}</span>;
               })}
             </div>
           ) : (
@@ -598,16 +666,32 @@ const CommentContainer = ({
               type="text"
               multiline
               ref={textFieldRef}
+              inputRef={textFieldInputRef}
               placeholder="Comment or mention someone"
               value={updatedCommentContent}
               onChange={(e) => {
                 const newValue = e.target.value;
+                const cursorPosition = e.target.selectionStart;
                 setUpdatedCommentContent(newValue);
-                const lastAtIndex = newValue.lastIndexOf("@");
+
+                // Get text before cursor and find the last @ before cursor
+                const textBeforeCursor = newValue.substring(0, cursorPosition);
+                const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
                 if (lastAtIndex !== -1) {
-                  const afterAt = newValue.slice(lastAtIndex + 1);
-                  const searchText = afterAt.split(/\s/)[0];
-                  if (searchText && afterAt[0] !== " ") {
+                  // Get text between @ and cursor
+                  const textBetweenAtAndCursor = textBeforeCursor.slice(lastAtIndex + 1);
+                  // Check if there's a space between @ and cursor
+                  if (textBetweenAtAndCursor.startsWith(" ")) {
+                    setOpenMentionOptions(false);
+                    return;
+                  }
+
+                  // Get text after @ until next space or cursor
+                  const searchText = textBetweenAtAndCursor.split(/\s/)[0];
+
+                  // Check if there's any text between @ and next space/cursor
+                  if (searchText) {
                     const filtered = mentionOptions
                       .map((user) => ({
                         ...user,
@@ -615,20 +699,33 @@ const CommentContainer = ({
                       }))
                       .filter((user) => user.score > 0)
                       .sort((a, b) => b.score - a.score);
-                    if (filtered.length > 0) {
-                      setOpenMentionOptions(true);
-                      setMentionOptions(filtered);
-                    } else setOpenMentionOptions(false);
-                  } else if (searchText === "") {
+                    setOpenMentionOptions(filtered.length > 0);
+                    setMentionOptions(filtered);
+                  } else {
                     setOpenMentionOptions(true);
                     setMentionOptions(originalMentionOptions);
-                  } else setOpenMentionOptions(false);
-                } else setOpenMentionOptions(false);
+                  }
+                } else {
+                  setOpenMentionOptions(false);
+                }
               }}
               onKeyDown={(e) => {
                 if (e.key === "@") {
                   setOpenMentionOptions(true);
                   setMentionOptions(originalMentionOptions);
+                } else if (e.key === "Backspace") {
+                  const cursorPosition = e.target.selectionStart;
+                  const textBeforeCursor = updatedCommentContent.substring(0, cursorPosition);
+                  const mentionMatch = textBeforeCursor.match(/@(\w+)$/);
+
+                  if (mentionMatch) {
+                    const username = mentionMatch[1];
+                    const userId = users.find((opt) => opt.username === username)?.id;
+                    if (userId && updatedMentions.includes(userId)) {
+                      setUpdatedMentions((prev) => prev.filter((id) => id !== userId));
+                      setOpenMentionOptions(true);
+                    }
+                  }
                 }
               }}
               disabled={!isEditingComment}
@@ -755,26 +852,7 @@ const CommentContainer = ({
               }}
             >
               {mentionOptions.slice(0, 5).map((user) => (
-                <MenuItem
-                  key={user.id}
-                  onClick={() => {
-                    const mention = `@${user.username}`;
-                    const beforeMention = updatedCommentContent.slice(
-                      0,
-                      updatedCommentContent.lastIndexOf("@")
-                    );
-                    const afterMention = updatedCommentContent.slice(
-                      updatedCommentContent.lastIndexOf("@") + user.username.length + 1
-                    );
-                    // Only add to mentions if it's a valid mention (has space after or is at end)
-                    const newContent = `${beforeMention}${mention} ${afterMention}`;
-                    setUpdatedCommentContent(newContent);
-                    // Add to mentions only if it's a valid mention
-                    if (!updatedMentions.includes(user.id))
-                      setUpdatedMentions([...updatedMentions, user.id]);
-                    setOpenMentionOptions(false);
-                  }}
-                >
+                <MenuItem key={user.id} onClick={() => setMentionOptionClicked(user)}>
                   <UserInfoTooltip {...user} />
                 </MenuItem>
               ))}
@@ -858,18 +936,34 @@ const CommentContainer = ({
                 label=""
                 type="text"
                 ref={textFieldReplyRef}
+                inputRef={textFieldReplyInputRef}
                 fullWidth
                 multiline
                 placeholder="Add a reply"
                 value={replyContent}
                 onChange={(e) => {
                   const newValue = e.target.value;
+                  const cursorPosition = e.target.selectionStart;
                   setReplyContent(newValue);
-                  const lastAtIndex = newValue.lastIndexOf("@");
+
+                  // Get text before cursor and find the last @ before cursor
+                  const textBeforeCursor = newValue.substring(0, cursorPosition);
+                  const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
                   if (lastAtIndex !== -1) {
-                    const afterAt = newValue.slice(lastAtIndex + 1);
-                    const searchText = afterAt.split(/\s/)[0];
-                    if (searchText && afterAt[0] !== " ") {
+                    // Get text between @ and cursor
+                    const textBetweenAtAndCursor = textBeforeCursor.slice(lastAtIndex + 1);
+                    // Check if there's a space between @ and cursor
+                    if (textBetweenAtAndCursor.startsWith(" ")) {
+                      setOpenMentionOptions(false);
+                      return;
+                    }
+
+                    // Get text after @ until next space or cursor
+                    const searchText = textBetweenAtAndCursor.split(/\s/)[0];
+
+                    // Check if there's any text between @ and next space/cursor
+                    if (searchText) {
                       const filtered = mentionOptions
                         .map((user) => ({
                           ...user,
@@ -877,16 +971,34 @@ const CommentContainer = ({
                         }))
                         .filter((user) => user.score > 0)
                         .sort((a, b) => b.score - a.score);
-                      if (filtered.length > 0) {
-                        setOpenMentionOptions(true);
-                        setMentionOptions(filtered);
-                      } else setOpenMentionOptions(false);
-                    } else if (searchText === "") {
-                      console.log("here");
+                      setOpenMentionOptions(filtered.length > 0);
+                      setMentionOptions(filtered);
+                    } else {
                       setOpenMentionOptions(true);
                       setMentionOptions(originalMentionOptions);
-                    } else setOpenMentionOptions(false);
-                  } else setOpenMentionOptions(false);
+                    }
+                  } else {
+                    setOpenMentionOptions(false);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "@") {
+                    setOpenMentionOptions(true);
+                    setMentionOptions(originalMentionOptions);
+                  } else if (e.key === "Backspace") {
+                    const cursorPosition = e.target.selectionStart;
+                    const textBeforeCursor = replyContent.substring(0, cursorPosition);
+                    const mentionMatch = textBeforeCursor.match(/@(\w+)$/);
+
+                    if (mentionMatch) {
+                      const username = mentionMatch[1];
+                      const userId = users.find((opt) => opt.username === username)?.id;
+                      if (userId && replyMentions.includes(userId)) {
+                        setReplyMentions((prev) => prev.filter((id) => id !== userId));
+                        setOpenMentionOptions(true);
+                      }
+                    }
+                  }
                 }}
                 onFocus={() => setIsAddingReply(true)}
                 onBlur={() => setIsAddingReply(false)}
@@ -1002,23 +1114,7 @@ const CommentContainer = ({
                 }}
               >
                 {mentionOptions.slice(0, 5).map((user) => (
-                  <MenuItem
-                    key={user.id}
-                    onClick={() => {
-                      const mention = `@${user.username}`;
-                      const beforeMention = replyContent.slice(0, replyContent.lastIndexOf("@"));
-                      const afterMention = replyContent.slice(
-                        replyContent.lastIndexOf("@") + user.username.length + 1
-                      );
-                      // Only add to mentions if it's a valid mention (has space after or is at end)
-                      const newContent = `${beforeMention}${mention} ${afterMention}`;
-                      setReplyContent(newContent);
-                      // Add to mentions only if it's a valid mention
-                      if (!replyMentions.includes(user.id))
-                        setReplyMentions([...replyMentions, user.id]);
-                      setOpenMentionOptions(false);
-                    }}
-                  >
+                  <MenuItem key={user.id} onClick={() => setMentionOptionClicked(user)}>
                     <UserInfoTooltip {...user} />
                   </MenuItem>
                 ))}

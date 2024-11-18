@@ -141,6 +141,109 @@ exports.createProject = async (req, res) => {
   }
 };
 
+exports.createDesignProject = async (req, res) => {
+  const createdDocuments = [];
+  try {
+    const { projectId } = req.params;
+    const { userId, designName } = req.body;
+
+    // Validate input data
+    if (!projectId || !userId || !designName) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Create design document
+    const designData = {
+      designName,
+      owner: userId,
+      editors: [],
+      commenters: [],
+      viewers: [],
+      history: [],
+      projectId: projectId,
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+      isCopied: false,
+      isCopiedFrom: { designId: "", versionId: "" },
+      designSettings: {
+        generalAccessSetting: 0, //0 for Restricted, 1 for Anyone with the link
+        generalAccessRole: 0, //0 for viewer, 1 for editor, 2 for commenter, 3 for owner
+        allowDownload: true,
+        allowViewHistory: true,
+        allowCopy: true,
+        documentCopyByOwner: true,
+        documentCopyByEditor: true,
+        inactivityEnabled: true,
+        inactivityDays: 30,
+        deletionDays: 30,
+        notifyDays: 7,
+      },
+    };
+
+    const designRef = await db.collection("designs").add(designData);
+    const designId = designRef.id;
+    createdDocuments.push({ collection: "designs", id: designId });
+
+    // Update the design document with the link field
+    await designRef.update({
+      link: `/design/${designId}`,
+    });
+
+    // Create associated budget document
+    const budgetData = {
+      designId: designId,
+      budget: {
+        amount: 0,
+        currency: "PHP", //default
+      },
+      items: [],
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+    };
+
+    const budgetRef = await db.collection("budgets").add(budgetData);
+    const budgetId = budgetRef.id;
+    createdDocuments.push({ collection: "budgets", id: budgetId });
+
+    // Update design document with budgetId
+    await designRef.update({ budgetId });
+
+    // Update user's designs array
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      throw new Error("User not found");
+    }
+    const userData = userDoc.data();
+    const updatedDesigns = userData.designs ? [...userData.designs] : [];
+    updatedDesigns.push({ designId, role: 3 }); // 3 for owner
+    await userRef.update({
+      designs: updatedDesigns,
+    });
+
+    res.status(200).json({
+      id: designId,
+      ...designData,
+      link: `/design/${designId}`,
+      budgetId,
+    });
+  } catch (error) {
+    console.error("Error creating design:", error);
+
+    // Rollback: delete all created documents
+    for (const doc of createdDocuments) {
+      try {
+        await db.collection(doc.collection).doc(doc.id).delete();
+        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
+      } catch (deleteError) {
+        console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
+      }
+    }
+
+    res.status(500).json({ message: "Error creating design", error: error.message });
+  }
+};
+
 // Read
 exports.fetchUserProjects = async (req, res) => {
   try {
@@ -156,6 +259,25 @@ exports.fetchUserProjects = async (req, res) => {
   } catch (error) {
     console.error("Error fetching projects:", error);
     res.status(500).json({ message: "Error fetching projects", error: error.message });
+  }
+};
+
+exports.fetchProjectDesigns = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const designsSnapshot = await db
+      .collection("designs")
+      .where("projectId", "==", projectId)
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const designs = designsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    res.status(200).json(designs);
+  } catch (error) {
+    console.error("Error fetching designs:", error);
+    res.status(500).json({ message: "Error fetching designs", error: error.message });
   }
 };
 

@@ -3,7 +3,6 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 const projectController = require("../controllers/projectController");
 const designController = require("../controllers/designController");
-
 const commentController = require("../controllers/commentController");
 const notificationController = require("../controllers/notificationController");
 const projectBudgetController = require("../controllers/projectBudgetController");
@@ -187,6 +186,12 @@ router.put(
   authenticateUser,
   projectController.updateProjectSettings
 );
+router.post(
+  "/project/:projectId/create-design",
+  authenticateUser,
+  projectController.createDesignProject
+);
+router.get("/project/:projectId/designs", authenticateUser, projectController.fetchProjectDesigns);
 
 // Network check
 router.get("/health-check", (req, res) => {

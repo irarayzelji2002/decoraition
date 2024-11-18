@@ -93,17 +93,19 @@ function Notif() {
             <span style={{ fontSize: "0.5rem", color: "var(--color-white)" }} className="date">
               <strong>15h</strong>
             </span>
-            <FaEllipsisH
-              className="options-dots"
+            <span
               onClick={(e) => {
                 e.stopPropagation(); // Prevent the div click event
                 toggleOptions(e); // Toggle the options menu
               }}
-            />
+            >
+              <FaEllipsisH className="options-dots" />
+            </span>
+
             {showOptions && (
               <div
                 className="dropdown-menu-other"
-                style={{ top: menuPosition.top, left: menuPosition.left - 200 }}
+                style={{ top: 0 }} // Adjusted top position
                 ref={dropdownRef}
               >
                 <div className="dropdown-item">

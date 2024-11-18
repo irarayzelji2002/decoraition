@@ -91,6 +91,7 @@ function PromptBar({
   setGeneratedImages,
   samMaskMask,
   maskPrompt, // second generation args
+  setMaskPrompt,
   combinedMask,
   setMaskErrors, // applyMask args
   samDrawing,
@@ -105,12 +106,19 @@ function PromptBar({
   base64ImageAdd,
   base64ImageRemove,
   selectedSamMask,
+  setSelectedSamMask,
   refineMaskOption,
   showPreview,
+  setShowPreview,
   promptBarRef,
   generationErrors,
   setGenerationErrors,
   designId,
+  setRefineMaskOption,
+  setCanvasMode,
+  setSamMasks,
+  setBase64ImageAdd,
+  setBase64ImageRemove,
 }) {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
   const isOnline = useNetworkStatus();
@@ -654,6 +662,7 @@ function PromptBar({
           if (designVersionResult.success) {
             setStatusMessage("Upload complete");
             showToast("success", designVersionResult.message);
+            clearAllFields();
           } else {
             console.error("create design ver - error: ", designVersionResult.message);
             console.error("create design ver - error status: ", designVersionResult.status);
@@ -702,7 +711,8 @@ function PromptBar({
           base64ImageRemove,
           selectedSamMask,
           refineMaskOption,
-          showPreview
+          showPreview,
+          setIsSelectingMask
         );
         if (result.success) {
           // Store result data locally
@@ -731,6 +741,7 @@ function PromptBar({
           if (designVersionResult.success) {
             setStatusMessage("Upload complete");
             showToast("success", designVersionResult.message);
+            clearAllFields();
           } else {
             console.error("create design ver - error: ", designVersionResult.message);
             console.error("create design ver - error status: ", designVersionResult.status);
@@ -756,6 +767,33 @@ function PromptBar({
     setGeneratedImagesPreview([]);
     setGeneratedImages([]);
     setIsGenerating(false);
+  };
+
+  const clearAllFields = () => {
+    setPrompt("");
+    setNumberOfImages(1);
+    setStyleRef(null);
+    setStyleRefPreview("");
+    setColorPalette("");
+    if (!isNextGeneration) {
+      setBaseImage(null);
+      setBaseImagePreview("");
+    } else {
+      setMaskPrompt("");
+      setSelectedSamMask(null);
+      setShowPreview(false);
+      setPreviewMask(null);
+      setBase64ImageAdd(null);
+      setBase64ImageRemove(null);
+      setCombinedMask(null);
+      selectedImage(null);
+      setSamMasks([]);
+      setSamMaskMask(null);
+      setSamMaskImage(null);
+      setPreviewMask(null);
+      setCanvasMode(true);
+      setRefineMaskOption(true);
+    }
   };
 
   useEffect(() => {
@@ -817,7 +855,7 @@ function PromptBar({
             </IconButton>
           )}
           <div
-            style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "662.8px" }}
+            style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "655.8px" }}
             className="transitionMinHeight"
           >
             <h3>
@@ -1166,6 +1204,9 @@ function PromptBar({
                           padding: 0,
                           border: 0,
                           borderRadius: "10px",
+                          maxWidth: "80vw",
+                          width: "100%",
+                          display: "inline-flex",
                         },
                       },
                     }}
@@ -1196,10 +1237,33 @@ function PromptBar({
                         sx={optionStyles}
                         value={palette.colorPaletteId}
                       >
-                        <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
-                          {palette.paletteName}
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "2px",
+                            alignItems: "center",
+                            width: "100%",
+                          }}
+                        >
                           <div
-                            style={{ display: "flex", marginLeft: "auto", alignItems: "center" }}
+                            style={{
+                              minWidth: 0,
+                              flex: 1,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {palette.paletteName}
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              marginLeft: "auto",
+                              alignItems: "center",
+                              paddingLeft: "25px",
+                              flexShrink: 0,
+                            }}
                           >
                             {palette.colors.map((color) => (
                               <div
@@ -1603,6 +1667,8 @@ const selectStyles = {
   backgroundColor: "transparent",
   borderRadius: "10px",
   padding: "15px 20px",
+  width: "100%",
+  boxSizing: "border-box",
   borderRight: "1px solid var(--borderInput)",
   fontSize: "1rem",
   color: "var(--color-white)",
@@ -1626,6 +1692,10 @@ const optionStyles = {
   minHeight: "auto",
   display: "block",
   padding: "10px 20px",
+  width: "100%",
+  whiteSpace: "normal",
+  wordWrap: "break-word",
+  boxSizing: "border-box",
   "&:hover": {
     color: "var(--color-white) !important",
     backgroundColor: "var(--dropdownHover2) !important",

@@ -92,6 +92,13 @@ function Design() {
   const [selectedSamMask, setSelectedSamMask] = useState(null);
   const [refineMaskOption, setRefineMaskOption] = useState(true); // true for Add first then remove, false for Remove first then add
   const [showPreview, setShowPreview] = useState(false);
+  const [canvasMode, setCanvasMode] = useState(true); // true for Add to Mask, false for Remove form Mask
+  const [samMasks, setSamMasks] = useState([]);
+
+  // Comment
+  const [isPinpointing, setIsPinpointing] = useState(false);
+  const [pinpointLocation, setPinpointLocation] = useState(null); // {x, y}
+  const [pinpointSelectedImage, setPinpointSelectedImage] = useState(null);
 
   // Generation
   const [statusMessage, setStatusMessage] = useState("");
@@ -387,6 +394,7 @@ function Design() {
                     setGeneratedImages={setGeneratedImages}
                     samMaskMask={samMaskMask}
                     maskPrompt={maskPrompt}
+                    setMaskPrompt={setMaskPrompt}
                     combinedMask={combinedMask}
                     setMaskErrors={setMaskErrors}
                     samDrawing={samDrawing}
@@ -401,12 +409,19 @@ function Design() {
                     base64ImageAdd={base64ImageAdd}
                     base64ImageRemove={base64ImageRemove}
                     selectedSamMask={selectedSamMask}
+                    setSelectedSamMask={setSelectedSamMask}
                     refineMaskOption={refineMaskOption}
                     showPreview={showPreview}
+                    setShowPreview={setShowPreview}
                     promptBarRef={promptBarRef}
                     generationErrors={generationErrors}
                     setGenerationErrors={setGenerationErrors}
                     designId={designId}
+                    setRefineMaskOption={setRefineMaskOption}
+                    setCanvasMode={setCanvasMode}
+                    setSamMasks={setSamMasks}
+                    setBase64ImageAdd={setBase64ImageAdd}
+                    setBase64ImageRemove={setBase64ImageRemove}
                   />
                 </div>
               )}
@@ -434,6 +449,10 @@ function Design() {
                     designVersion={designVersion}
                     designVersionImages={designVersionImages}
                     showPromptBar={showPromptBar}
+                    isPinpointing={isPinpointing}
+                    setIsPinpointing={setIsPinpointing}
+                    pinpointLocation={pinpointLocation}
+                    pinpointSelectedImage={pinpointSelectedImage}
                   />
                 </div>
               )}
@@ -542,7 +561,7 @@ function Design() {
                   left: "8px",
                   top: "8px",
                   marginTop: "10px",
-                  zIndex: "50",
+                  zIndex: "49",
                   height: "40px",
                   width: "40px",
                   "&:hover": {
@@ -572,7 +591,7 @@ function Design() {
                     top: "8px",
                     marginRight: !showComments ? "5px" : "0px",
                     marginTop: "10px",
-                    zIndex: "50",
+                    zIndex: "49",
                     height: "40px",
                     width: "40px",
                     opacity: design?.designSettings ? 1 : 0.5,
@@ -636,6 +655,10 @@ function Design() {
                   setShowPreview={setShowPreview}
                   promptBarRef={promptBarRef}
                   generationErrors={generationErrors}
+                  canvasMode={canvasMode}
+                  setCanvasMode={setCanvasMode}
+                  samMasks={samMasks}
+                  setSamMasks={setSamMasks}
                 />
               ) : (isGenerating && generatedImagesPreview.length > 0) ||
                 designVersionImages.length > 0 ? (
@@ -677,13 +700,18 @@ function Design() {
                                   ? "var(--gradientButton)"
                                   : "transparent",
                             }}
-                            onClick={() => (!isGenerating ? setSelectedImage(image) : {})}
+                            onClick={() =>
+                              !isGenerating && !showComments ? setSelectedImage(image) : {}
+                            }
                           >
                             <div
                               className="image-frame"
-                              style={{ cursor: !isGenerating ? "pointer" : "auto" }}
+                              style={{
+                                cursor: !isGenerating && !showComments ? "pointer" : "auto",
+                              }}
                             >
                               {!isGenerating &&
+                                !showComments &&
                                 (infoVisible ? (
                                   <div className="image-info">
                                     <div className="image-actual-info">
@@ -796,18 +824,28 @@ function Design() {
             </div>
             {/* Default location on desktop screen */}
             {!isMobileLayout && showComments && (
-              <CommentTabs
-                workingAreaRef={workingAreaRef}
-                numImageFrames={numImageFrames}
-                showComments={showComments}
-                setShowComments={setShowComments}
-                width={controlWidthComments}
-                setWidth={setControlWidthComments}
-                prevWidth={widthComments}
-                setPrevWidth={setWidthComments}
-                prevHeight={heightComments}
-                setPrevHeight={setHeightComments}
-              />
+              <div>
+                <div style={{ height: "100%" }}>
+                  <CommentTabs
+                    workingAreaRef={workingAreaRef}
+                    numImageFrames={numImageFrames}
+                    showComments={showComments}
+                    setShowComments={setShowComments}
+                    width={controlWidthComments}
+                    setWidth={setControlWidthComments}
+                    prevWidth={widthComments}
+                    setPrevWidth={setWidthComments}
+                    design={design}
+                    designVersion={designVersion}
+                    designVersionImages={designVersionImages}
+                    showPromptBar={showPromptBar}
+                    isPinpointing={isPinpointing}
+                    setIsPinpointing={setIsPinpointing}
+                    pinpointLocation={pinpointLocation}
+                    pinpointSelectedImage={pinpointSelectedImage}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -848,6 +886,7 @@ export const GeneratingOverlay = ({ statusMessage, progress, eta }) => {
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 fontWeight: "800",
+                textShadow: "0px 2px 11px rgba(0,0,0,0.5)",
               }}
             >
               <BouncyText text={`${statusMessage}...`} />

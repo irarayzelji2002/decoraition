@@ -52,6 +52,14 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
   const [pickColorModalOpen, setPickColorModalOpen] = useState(false);
   const [errors, setErrors] = useState({ paletteName: "", colors: "" });
 
+  useEffect(() => {
+    console.log("color palette", colorPalette);
+  }, [colorPalette]);
+
+  useEffect(() => {
+    console.log("color to edit", colorToEdit);
+  }, [colorToEdit]);
+
   const handleClose = () => {
     onClose();
     setTimeout(() => {
@@ -59,8 +67,20 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
     }, 500);
   };
 
+  // Remove only the specified field error
+  const clearFieldError = (field) => {
+    setErrors((prevErrors) => {
+      if (prevErrors && prevErrors[field]) {
+        const { [field]: _, ...remainingErrors } = prevErrors;
+        return remainingErrors;
+      }
+      return prevErrors;
+    });
+  };
+
   // Color palette functions
   const handleAddColorPalette = async () => {
+    console.log("add color palette - clicked");
     let formErrors = { paletteName: "", colors: "" };
     const result = await handleAddColorPaletteBackend(colorPalette, user, userDoc);
     if (!result.success) {
@@ -204,6 +224,7 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
               onChange={(e) => {
                 const newPaletteName = e.target.value;
                 setColorPalette({ ...colorPalette, paletteName: newPaletteName.trim() });
+                clearFieldError("paletteName");
               }}
               helperText={errors?.paletteName}
               variant="outlined"
@@ -212,10 +233,14 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                 marginBottom: "16px",
                 backgroundColor: "var(  --nav-card-modal)",
                 input: { color: "var(--color-white)" },
+                borderRadius: "10px",
                 "& .MuiOutlinedInput-root": {
+                  borderColor: "var(--borderInput)",
                   borderRadius: "10px",
+                  backgroundColor: "var(--nav-card-modal)",
                   "& fieldset": {
                     borderColor: "var( --borderInput)",
+                    borderRadius: "10px",
                   },
                   "&:hover fieldset": {
                     borderColor: "var( --borderInput)",
@@ -223,6 +248,12 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                   "&.Mui-focused fieldset": {
                     borderColor: "var(--borderInputBrighter)",
                   },
+                },
+                "& .MuiFormHelperText-root": {
+                  color: "var(--color-quaternary)",
+                  textAlign: "left",
+                  marginLeft: 0,
+                  marginTop: "5px",
                 },
               }}
             />
@@ -283,6 +314,11 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
               />
             </IconButtonMUI>
           </div>
+          {errors.colors && (
+            <span className="error-text" style={{ marginBottom: "20px" }}>
+              {errors?.colors}
+            </span>
+          )}
 
           <DialogActions sx={dialogActionsVertButtonsStyles}>
             <ButtonMUI
@@ -298,7 +334,9 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                   backgroundImage: isOnline && "var(--gradientButtonHover)",
                 },
               }}
-              onClick={() => (!isEditingPalette ? handleAddColorPalette : handleEditColorPalette)}
+              onClick={() =>
+                !isEditingPalette ? handleAddColorPalette() : handleEditColorPalette()
+              }
             >
               {`${!isEditingPalette ? "Add" : "Edit"} color palette`}
             </ButtonMUI>
@@ -316,7 +354,7 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                     backgroundImage: isOnline && "var(--gradientButtonHover)",
                   },
                 }}
-                onClick={handleDeleteColorPalette}
+                onClick={() => handleDeleteColorPalette()}
                 onMouseOver={(e) =>
                   (e.target.style.backgroundImage =
                     "var(--lightGradient), var(--gradientButtonHover)")
@@ -446,14 +484,17 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
               <IconButtonMUI
                 onClick={() => {
                   if (colorToEdit) {
-                    const newColors = colorPalette.colors.map((color) =>
-                      color === colorToEdit ? pickedColor : color
-                    );
+                    const colorIndex = colorPalette.colors.indexOf(colorToEdit);
+                    const newColors = [...colorPalette.colors];
+                    if (colorIndex !== -1) {
+                      newColors[colorIndex] = pickedColor;
+                    }
                     setColorPalette({ ...colorPalette, colors: newColors });
                     setColorToEdit("");
                   } else {
                     const newColors = [...colorPalette.colors, pickedColor];
                     setColorPalette({ ...colorPalette, colors: newColors });
+                    clearFieldError("colors");
                   }
                   handlePickColorModalClose();
                 }}

@@ -56,7 +56,7 @@ import {
 } from "../../components/RenameModal.jsx";
 import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar.jsx";
 
-const CustomMenuItem = styled(MenuItem)({
+export const CustomMenuItem = styled(MenuItem)({
   minHeight: "2.6rem !important",
   "&:hover": {
     backgroundColor: "var(--iconBg2)",
@@ -487,9 +487,6 @@ const CommentContainer = ({
     }
     return nonExistentUsers;
   };
-
-  // to change location
-  const handleAddComment = async () => {};
 
   // Comment database functions
   const handleChangeCommentStatus = async () => {
@@ -1057,6 +1054,28 @@ const CommentContainer = ({
                   ),
                 }}
               />
+              {openMentionOptions && mentionOptions.length > 0 && isEditingComment && (
+                <Paper
+                  ref={mentionOptionsRef}
+                  sx={{
+                    position: "absolute",
+                    zIndex: 1000,
+                    maxHeight: "200px",
+                    overflow: "auto",
+                    width: "calc(100% - 60px)",
+                    left: "30px",
+                    backgroundColor: "var(--iconBg)",
+                    boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
+                    borderRadius: "10px",
+                  }}
+                >
+                  {mentionOptions.slice(0, 5).map((user) => (
+                    <CustomMenuItem key={user.id} onClick={() => setMentionOptionClicked(user)}>
+                      <UserInfoTooltip {...user} />
+                    </CustomMenuItem>
+                  ))}
+                </Paper>
+              )}
               {updatedMentions.length > 0 && (
                 <div className="editingMentionsCont">
                   <span className="editingMentionsText">Mentions:</span>
@@ -1078,28 +1097,6 @@ const CommentContainer = ({
                 </div>
               )}
             </>
-          )}
-          {openMentionOptions && mentionOptions.length > 0 && isEditingComment && (
-            <Paper
-              ref={mentionOptionsRef}
-              sx={{
-                position: "absolute",
-                zIndex: 1000,
-                maxHeight: "200px",
-                overflow: "auto",
-                width: "calc(100% - 60px)",
-                left: "30px",
-                backgroundColor: "var(--iconBg)",
-                boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
-                borderRadius: "10px",
-              }}
-            >
-              {mentionOptions.slice(0, 5).map((user) => (
-                <CustomMenuItem key={user.id} onClick={() => setMentionOptionClicked(user)}>
-                  <UserInfoTooltip {...user} />
-                </CustomMenuItem>
-              ))}
-            </Paper>
           )}
         </div>
         {!isRepliesExpanded ? (
@@ -1374,6 +1371,35 @@ const CommentContainer = ({
                   ),
                 }}
               />
+              {openMentionOptions && mentionOptions.length > 0 && isAddingReply && (
+                <Paper
+                  ref={mentionOptionsReplyRef}
+                  sx={{
+                    position: "absolute",
+                    zIndex: 1000,
+                    maxHeight: "200px",
+                    overflow: "auto",
+                    width: "calc(100% - 60px)",
+                    left: "30px",
+                    backgroundColor: "var(--iconBg)",
+                    boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
+                    borderRadius: "10px",
+                  }}
+                >
+                  {mentionOptions.slice(0, 5).map((user) => (
+                    <CustomMenuItem
+                      key={user.id}
+                      onClick={(e) => {
+                        console.log("clciked");
+                        console.log("user", user);
+                        setMentionOptionClicked(user);
+                      }}
+                    >
+                      <UserInfoTooltip {...user} />
+                    </CustomMenuItem>
+                  ))}
+                </Paper>
+              )}
               {replyMentions.length > 0 && (
                 <div className="editingMentionsCont">
                   <span className="editingMentionsText">Mentions:</span>
@@ -1395,35 +1421,6 @@ const CommentContainer = ({
                 </div>
               )}
             </div>
-            {openMentionOptions && mentionOptions.length > 0 && isAddingReply && (
-              <Paper
-                ref={mentionOptionsReplyRef}
-                sx={{
-                  position: "absolute",
-                  zIndex: 1000,
-                  maxHeight: "200px",
-                  overflow: "auto",
-                  width: "calc(100% - 60px)",
-                  left: "30px",
-                  backgroundColor: "var(--iconBg)",
-                  boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
-                  borderRadius: "10px",
-                }}
-              >
-                {mentionOptions.slice(0, 5).map((user) => (
-                  <CustomMenuItem
-                    key={user.id}
-                    onClick={(e) => {
-                      console.log("clciked");
-                      console.log("user", user);
-                      setMentionOptionClicked(user);
-                    }}
-                  >
-                    <UserInfoTooltip {...user} />
-                  </CustomMenuItem>
-                ))}
-              </Paper>
-            )}
           </>
         )}
       </div>
@@ -1443,7 +1440,7 @@ const CommentContainer = ({
 export default CommentContainer;
 
 // Selection mentions menu item and user tooltip
-const UserInfoTooltip = ({ username, firstName, lastName, role, profilePic }) => (
+export const UserInfoTooltip = ({ username, firstName, lastName, role, profilePic }) => (
   <Box
     sx={{
       display: "flex",
@@ -1555,7 +1552,7 @@ const ConfirmDeleteModal = ({ isOpen, onClose, handleDelete, isReply, date }) =>
   );
 };
 
-const CustomTooltip = styled(({ className, ...props }) => (
+export const CustomTooltip = styled(({ className, ...props }) => (
   <Tooltip
     {...props}
     classes={{ popper: className }}

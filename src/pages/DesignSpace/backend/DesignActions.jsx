@@ -868,7 +868,8 @@ export const generateNextImage = async (
   base64ImageRemove,
   selectedSamMask,
   refineMaskOption,
-  showPreview
+  showPreview,
+  setIsSelectingMask
 ) => {
   const initImage = selectedImage.link;
   const combinedMaskImg = samMaskMask;
@@ -946,7 +947,7 @@ export const generateNextImage = async (
       setGenerationErrors(formErrors);
       throw new Error(errMessage);
     }
-
+    setIsSelectingMask(false);
     const generateData = await generateResponse.json();
     const taskId = generateData.task.task_id;
     console.log(`Task ID: ${taskId}`);

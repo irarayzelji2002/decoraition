@@ -107,6 +107,10 @@ function SelectMaskCanvas({
   setShowPreview,
   promptBarRef,
   generationErrors,
+  canvasMode,
+  setCanvasMode,
+  samMasks,
+  setSamMasks,
 }) {
   // Canvas/Container refs
   const addCanvasRef = useRef(null);
@@ -132,10 +136,10 @@ function SelectMaskCanvas({
   const [confirmSamMaskChangeModalOpen, setConfirmSamMaskChangeModalOpen] = useState(false);
 
   // Mask Prompt & Preview
-  const [samMasks, setSamMasks] = useState([]);
   const [statusMessage, setStatusMessage] = useState("");
   const [isChangingMask, setIsChangingMask] = useState(false);
   // passed form parent:
+  // - samMasks, setSamMasks
   // - maskPrompt, setMaskPrompt,
   // - selectedSamMask, setSelectedSamMask,
   // - showPreview, setShowPreview,
@@ -147,8 +151,8 @@ function SelectMaskCanvas({
   // - samMaskImage, setSamMaskImage
 
   // Mask Type
-  const [canvasMode, setCanvasMode] = useState(true); // true for Add to Mask, false for Remove form Mask
   // passed from parent:
+  // - canvasMode, setCanvasMode
   // - refineMaskOption, setRefineMaskOption
 
   // Canvas controls for add mask

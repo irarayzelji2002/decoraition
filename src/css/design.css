@@ -305,7 +305,7 @@ h6 {
   background: transparent;
   width: 100%;
   height: 100%;
-  border-radius: 17px;
+  border-radius: 13px;
 }
 
 .image-frame {
@@ -354,8 +354,8 @@ h6 {
   /* align-items: center; */
   padding: 8px;
   background-image: var(--topInfoGradient);
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
   padding-bottom: 20px;
 }
 
@@ -903,6 +903,12 @@ textarea {
   border-left: 2px solid var(--borderInputBrighter);
 }
 
+.comment-container.add-comment:hover,
+.comment-container.add-comment:active,
+.comment-container.add-comment:focus {
+  background-color: var(--iconBg);
+}
+
 .replies-container {
   margin-left: 0;
   position: relative;
@@ -1066,7 +1072,7 @@ textarea {
   justify-content: left;
   align-items: flex-start;
   width: 100%;
-  height: min(50vw, 22vh);
+  /* height: min(50vw, 22vh); */
   max-height: 500px;
 }
 
@@ -2112,7 +2118,7 @@ textarea {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 50;
+  z-index: 49;
 }
 
 .generatingOverlayContent {

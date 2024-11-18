@@ -39,6 +39,7 @@ const initialState = {
   userPins: [],
   userTimelines: [],
   userEvents: [],
+  isDarkMode: true,
 };
 
 export function SharedPropsProvider({ children }) {
@@ -77,6 +78,7 @@ export function SharedPropsProvider({ children }) {
   const setUserPins = (userPins) => setState((prev) => ({ ...prev, userPins }));
   const setUserTimelines = (userTimelines) => setState((prev) => ({ ...prev, userTimelines }));
   const setUserEvents = (userEvents) => setState((prev) => ({ ...prev, userEvents }));
+  const setIsDarkMode = (isDarkMode) => setState((prev) => ({ ...prev, isDarkMode }));
 
   useEffect(() => {
     const auth = getAuth();
@@ -209,6 +211,7 @@ export function SharedPropsProvider({ children }) {
     setUserPins,
     setUserTimelines,
     setUserEvents,
+    setIsDarkMode,
   };
 
   // useEffect for debugging (!!! Remove before production !!!)
@@ -296,6 +299,9 @@ export function SharedPropsProvider({ children }) {
   useEffect(() => {
     console.log("User Events updated:", state.userEvents);
   }, [state.userEvents]);
+  useEffect(() => {
+    console.log("Dark Mode updated:", state.isDarkMode);
+  }, [state.isDarkMode]);
 
   if (!isCollectionLoaded || loading) {
     return (

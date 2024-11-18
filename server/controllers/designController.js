@@ -1146,6 +1146,7 @@ exports.createDesignVersion = async (req, res) => {
     const emptyDesignVersionData = {
       description: "",
       images: [],
+      createdBy: userId,
       createdAt: new Date(),
       copiedDesigns: [],
       isRestored: false,
@@ -1204,10 +1205,15 @@ exports.createDesignVersion = async (req, res) => {
       })
     );
 
+    console.log("createDesignVersion - updatedImages", updatedImages);
+    if (!updatedImages || updatedImages.length === 0) {
+      throw new Error("Failed to generate image");
+    }
     // Update version with full data
     const fullVersionData = {
       description: prompt,
       images: updatedImages,
+      createdBy: userId,
       createdAt: new Date(),
       copiedDesigns: [],
       isRestored: false,

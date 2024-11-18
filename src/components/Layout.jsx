@@ -3,9 +3,21 @@ import { GlobalStyles, CssBaseline } from "@mui/material";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import defaultTheme from "../themes/defaultTheme";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useSharedProps } from "../contexts/SharedPropsContext";
 
-const Layout = ({ isDarkMode, children }) => {
+const Layout = ({ children }) => {
+  const { user, userDoc } = useAuth();
+  const { isDarkMode, setIsDarkMode } = useSharedProps();
+
+  useEffect(() => {
+    if (user && userDoc?.theme !== undefined) {
+      const themeValue = Number(userDoc.theme);
+      setIsDarkMode(themeValue === 0);
+    }
+  }, [userDoc]);
+
   const darkThemeStyles = {
     "--bg-header": "url('/img/bg-login.png')",
     "--bg-decor": "url('/img/decorbg.png')",

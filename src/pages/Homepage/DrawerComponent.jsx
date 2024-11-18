@@ -318,7 +318,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               sx={listItemStyles}
             >
               <div className="miniThumbnail">
-                <img src={getDesignImage(design.id)} alt="" />
+                <img src={getDesignImage(design.id)} alt="" className="" />
               </div>
               <ListItemText primary={design.designName} />
               <IconButton

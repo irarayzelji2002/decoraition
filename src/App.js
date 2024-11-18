@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from "react-router-dom";
-import { SharedPropsProvider } from "./contexts/SharedPropsContext";
+import { SharedPropsProvider, useSharedProps } from "./contexts/SharedPropsContext";
 import { useAuth } from "./contexts/AuthContext.js";
 
 import "./App.css";
@@ -65,21 +65,11 @@ function StartElement() {
 }
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const { user, userDoc } = useAuth();
-
-  useEffect(() => {
-    if (user && userDoc?.theme !== undefined) {
-      const themeValue = Number(userDoc.theme);
-      setIsDarkMode(themeValue === 0);
-    }
-  }, [userDoc]);
-
   return (
     <Router>
       <div className="App" id="App">
-        <Layout isDarkMode={isDarkMode}>
-          <SharedPropsProvider>
+        <SharedPropsProvider>
+          <Layout>
             <Routes>
               {/* PUBLIC ROUTES */}
               <Route path="/" element={<StartElement />} />
@@ -345,8 +335,8 @@ function App() {
                 }
               />
             </Routes>
-          </SharedPropsProvider>
-        </Layout>
+          </Layout>
+        </SharedPropsProvider>
       </div>
     </Router>
   );

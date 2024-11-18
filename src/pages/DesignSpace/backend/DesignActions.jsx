@@ -387,46 +387,56 @@ export const checkTaskStatus = async (
   setGeneratedImagesPreview,
   setGeneratedImages
 ) => {
-  let running = false;
-  console.log("Tracking Status: ");
-  while (!running) {
-    const response = await fetch(
-      `https://ai-api.decoraition.org/generate-image/task-status?task_id=${taskId}`
-    );
-
-    if (!response.ok) {
-      const errorMessage = await response.json();
-      throw new Error(errorMessage.error || "Failed to get task results");
-    }
-
-    const data = await response.json();
-
-    if (data.position !== 1) {
-      let message = getQueuePositionMessage(data.position);
-      setStatusMessage(message);
-      console.log(message);
-    } else {
-      running = true;
-      setStatusMessage("Image generation in progress");
-      // Track progress until task is complete
-      console.log("Tracking Image: ");
-      await trackImageGenerationProgress(
-        taskId,
-        setStatusMessage,
-        setProgress,
-        setEta,
-        setIsGenerating,
-        setGeneratedImagesPreview
+  try {
+    let running = false;
+    console.log("Tracking Status: ");
+    while (!running) {
+      const response = await fetch(
+        `https://ai-api.decoraition.org/generate-image/task-status?task_id=${taskId}`
       );
-      // Fetch and display the generated images
-      console.log("Displaying Image: ");
-      const retryCount = 0;
-      await displayGeneratedImages(taskId, retryCount, setGeneratedImages);
-    }
 
-    if (!running) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (!response.ok) {
+        const errorMessage = await response.json();
+        throw new Error(errorMessage.error || "Failed to get task results");
+      }
+
+      const data = await response.json();
+
+      if (data.position !== 1) {
+        let message = getQueuePositionMessage(data.position);
+        setStatusMessage(message);
+        console.log(message);
+      } else {
+        running = true;
+        setStatusMessage("Image generation in progress");
+        // Track progress until task is complete
+        console.log("Tracking Image: ");
+        const progressResult = await trackImageGenerationProgress(
+          taskId,
+          setStatusMessage,
+          setProgress,
+          setEta,
+          setIsGenerating,
+          setGeneratedImagesPreview
+        );
+        if (!progressResult.success) {
+          throw new Error(progressResult.message);
+        }
+        // Fetch and display the generated images
+        console.log("Displaying Image: ");
+        const retryCount = 0;
+        const displayResult = await displayGeneratedImages(taskId, retryCount, setGeneratedImages);
+        if (!displayResult.success) {
+          throw new Error(displayResult.message);
+        }
+        return { success: true, data: displayResult.data };
+      }
+      if (!running) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
     }
+  } catch (error) {
+    return { success: false, message: error.message };
   }
 };
 
@@ -439,121 +449,143 @@ export const trackImageGenerationProgress = async (
   setIsGenerating,
   setGeneratedImagesPreview
 ) => {
-  setIsGenerating(true);
-  let progress = 0;
-  let eta_relative = 0;
-  let current_image_index = 0;
-  let current_image = null;
-  let previous_image = null;
-  let completed = false;
-  let status = "pending";
-  let curr_step = 0;
-  let prev_step = -1;
-  const number_of_images = window.number_of_images || 1;
+  try {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 300;
 
-  // Create image tags in the image container
-  for (let i = 0; i < number_of_images; i++) {
-    setGeneratedImagesPreview((prev) => [...prev, { id: i, src: "" }]);
-  }
+    setIsGenerating(true);
+    let progress = 0;
+    let eta_relative = 0;
+    let current_image_index = 0;
+    let current_image = null;
+    let previous_image = null;
+    let completed = false;
+    let status = "pending";
+    let curr_step = 0;
+    let prev_step = -1;
+    const number_of_images = window.number_of_images || 1;
 
-  while (!completed) {
-    // Fetch API
-    const response = await fetch(
-      `https://ai-api.decoraition.org/generate-image/image-status?task_id=${taskId}`
-    );
-
-    if (!response.ok) {
-      const errorMessage = await response.json();
-      throw new Error(errorMessage.error || "Failed to get progress.");
+    // Create image tags in the image container
+    for (let i = 0; i < number_of_images; i++) {
+      setGeneratedImagesPreview((prev) => [...prev, { id: i, src: "" }]);
     }
 
-    const data = await response.json();
-    progress = data.progress;
-    eta_relative = data.eta_relative;
-    current_image = data.current_image;
-    status = data.status;
-    curr_step = data.state.sampling_step;
-
-    // Display progress for each image
-    if (current_image_index < number_of_images) {
-      setStatusMessage(
-        `Image generation in progress. Generating image ${
-          current_image_index + 1
-        } of ${number_of_images}`
+    while (!completed && attempts < MAX_ATTEMPTS) {
+      attempts++;
+      // Fetch API
+      const response = await fetch(
+        `https://ai-api.decoraition.org/generate-image/image-status?task_id=${taskId}`
       );
-    }
-    const progress_percent = Math.round(progress * 100);
-    setProgress(progress_percent);
-    setEta(`${Math.round(eta_relative).toFixed(0)}s`);
-    console.log(
-      `Progress: ${progress_percent}%; ETA: ${Math.round(eta_relative).toFixed(
-        0
-      )}s; Sampling Step: ${curr_step}`
-    );
 
-    // Display image if current_image changes
-    if (current_image !== null && previous_image !== current_image) {
-      // eslint-disable-next-line no-loop-func
-      setGeneratedImagesPreview((prev) =>
-        prev.map((img) =>
-          img.id === current_image_index
-            ? { ...img, src: `data:image/png;base64,${data.current_image}` }
-            : img
-        )
+      if (!response.ok) {
+        const errorMessage = await response.json();
+        throw new Error(errorMessage.error || "Failed to get progress.");
+      }
+
+      const data = await response.json();
+      progress = data.progress;
+      eta_relative = data.eta_relative;
+      current_image = data.current_image;
+      status = data.status;
+      curr_step = data.state.sampling_step;
+
+      // Display progress for each image
+      if (current_image_index < number_of_images) {
+        setStatusMessage(`Generating image ${current_image_index + 1} of ${number_of_images}`);
+      }
+      const progress_percent = Math.round(progress * 100);
+      setProgress(progress_percent);
+      setEta(`${Math.round(eta_relative).toFixed(0)} seconds left`);
+      console.log(
+        `Progress: ${progress_percent}%; ETA: ${Math.round(eta_relative).toFixed(
+          0
+        )}s; Sampling Step: ${curr_step}`
       );
-      previous_image = current_image;
-    }
 
-    // Check if we completed the image based on sampling steps
-    if ((prev_step === 29 || prev_step === 30) && curr_step === 0) {
-      current_image_index++;
-    }
-    prev_step = curr_step;
+      // Display image if current_image changes
+      if (current_image !== null && previous_image !== current_image) {
+        // eslint-disable-next-line no-loop-func
+        setGeneratedImagesPreview((prev) =>
+          prev.map((img) =>
+            img.id === current_image_index
+              ? { ...img, src: `data:image/png;base64,${data.current_image}` }
+              : img
+          )
+        );
+        previous_image = current_image;
+      }
 
-    // Mark the task as completed if current_image becomes null after being non-null & status is success/failed
-    if (
-      previous_image !== null &&
-      current_image === null &&
-      (status === "success" || status === "failed")
-    ) {
-      completed = true;
-      console.log("Image generation completed.");
-      setStatusMessage("Image generation complete");
-      setProgress(100);
-      setEta("");
-      setIsGenerating(false);
-      setProgress(0);
-    }
+      // Check if we completed the image based on sampling steps
+      if ((prev_step === 29 || prev_step === 30) && curr_step === 0) {
+        current_image_index++;
+      }
+      prev_step = curr_step;
 
-    if (!completed) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Mark the task as completed if current_image becomes null after being non-null & status is success/failed
+      if (
+        previous_image !== null &&
+        current_image === null &&
+        (status === "success" || status === "failed")
+      ) {
+        completed = true;
+        console.log("Image generation completed.");
+        setStatusMessage("Image generation complete");
+        setProgress(100);
+        setEta("");
+        setProgress(0);
+        return { success: true, data: { progress: 100, status: status } };
+      }
+
+      if (!completed) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
     }
+    throw new Error("Image generation timed out");
+  } catch (error) {
+    return { success: false, message: error.message };
   }
 };
 
 // Fetch and display the generated images
 export const displayGeneratedImages = async (taskId, retryCount = 0, setGeneratedImages) => {
-  const response = await fetch(
-    `https://ai-api.decoraition.org/generate-image/get-results?task_id=${taskId}`,
-    {
-      method: "GET",
+  try {
+    const MAX_RETRIES = 10;
+    if (retryCount >= MAX_RETRIES) {
+      throw new Error("Max retries exceeded waiting for images");
     }
-  );
 
-  if (response.status === 202) {
-    console.log("Request accepted, still processing. Please wait...");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return displayGeneratedImages(taskId, retryCount + 1, setGeneratedImages);
-  } else if (!response.ok) {
-    const errorMessage = await response.json();
-    throw new Error(errorMessage.error || "Failed to get task results");
-  }
+    const response = await fetch(
+      `https://ai-api.decoraition.org/generate-image/get-results?task_id=${taskId}`,
+      {
+        method: "GET",
+      }
+    );
 
-  const data = await response.json();
-  if (data && data.image_paths) {
-    data.image_paths.forEach((path) => {
-      setGeneratedImages((prev) => [...prev, { link: path, description: "", comments: [] }]);
-    });
+    if (response.status === 202) {
+      console.log("Request accepted, still processing. Please wait...");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return await displayGeneratedImages(taskId, retryCount + 1, setGeneratedImages);
+    } else if (!response.ok) {
+      const errorMessage = await response.json();
+      throw new Error(errorMessage?.error || "Failed to get task results");
+    }
+
+    const data = await response.json();
+    console.log("Image generation response:", data);
+    if (!data?.image_paths || data?.image_paths?.length === 0) {
+      throw new Error("Failed to get image results");
+    }
+    // Transform all paths at once instead of using forEach
+    const formattedImages = data.image_paths.map((path) => ({
+      link: path,
+      description: "",
+      comments: [],
+    }));
+    setGeneratedImages(formattedImages);
+    return { success: true, data: data.image_paths };
+  } catch (error) {
+    console.error("Error in displayGeneratedImages:", error);
+    return { success: false, message: error.message };
   }
 };
 
@@ -918,7 +950,7 @@ export const generateNextImage = async (
     const generateData = await generateResponse.json();
     const taskId = generateData.task.task_id;
     console.log(`Task ID: ${taskId}`);
-    let task = await checkTaskStatus(
+    const taskResult = await checkTaskStatus(
       taskId,
       setStatusMessage,
       setProgress,
@@ -927,8 +959,15 @@ export const generateNextImage = async (
       setGeneratedImagesPreview,
       setGeneratedImages
     );
+    if (!taskResult.success) {
+      throw new Error(taskResult.message);
+    }
+    if (!taskResult.data || !Array.isArray(taskResult.data)) {
+      throw new Error("Invalid image generation result");
+    }
     return {
       success: true,
+      data: taskResult.data,
       message: "Images generated successfully",
     };
   } catch (error) {
@@ -997,7 +1036,7 @@ export const generateFirstImage = async (
     const generateData = await generateResponse.json();
     const taskId = generateData.task.task_id;
     console.log(`Task ID: ${taskId}`);
-    let task = await checkTaskStatus(
+    const taskResult = await checkTaskStatus(
       taskId,
       setStatusMessage,
       setProgress,
@@ -1006,8 +1045,17 @@ export const generateFirstImage = async (
       setGeneratedImagesPreview,
       setGeneratedImages
     );
+    if (!taskResult.success) {
+      throw new Error(taskResult.message);
+    }
+    if (!taskResult.data || !Array.isArray(taskResult.data) || taskResult.data.length === 0) {
+      throw new Error("No images were generated");
+    }
+    console.log("Generated images:", taskResult.data);
+    setGeneratedImages(taskResult.data);
     return {
       success: true,
+      data: taskResult.data,
       message: `Image${numberOfImages > 1 ? "s" : ""} generated successfully`,
     };
   } catch (error) {
@@ -1033,11 +1081,12 @@ export const createDesignVersion = async (designId, generatedImages, prompt, use
       }
     );
     if (response.status === 200) {
-      return { success: true, message: "Design version created successfully" };
+      return { success: true, message: "Images uploaded successfully" };
     }
+    return { success: false, message: "Failed to create design version", status: response.status };
   } catch (error) {
     console.error("Error creating design version created:", error);
-    return { success: false, message: "Failed to create design version" };
+    return { success: false, message: "Failed to upload images" };
   }
 };
 

@@ -2093,11 +2093,48 @@ textarea {
   padding: 20px 0px 147px 0px !important;
 }
 
-/* ...existing code... */
 .pin {
   position: absolute;
   transform: translate(-50%, -100%);
   cursor: pointer;
   z-index: 10;
 }
-/* ...existing code... */
+
+/* Loading/Progress */
+.generatingOverlayBox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0);
+  /* rgba(0, 0, 0, 0.4) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.generatingOverlayContent {
+  text-align: center;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 90%;
+}
+
+.gradientCircleDiv {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.generatingOverlayTextCont {
+  margin-top: 3px;
+  height: 50px;
+  max-width: 90%;
+}

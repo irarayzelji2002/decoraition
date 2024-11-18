@@ -191,58 +191,58 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
             );
 
             // Check and update dependent collections
-            const dependents = Object.keys(dependencyMap).filter((key) =>
-              dependencyMap[key].includes(userDataName)
-            );
+            // const dependents = Object.keys(dependencyMap).filter((key) =>
+            //   dependencyMap[key].includes(userDataName)
+            // );
 
-            if (dependents.length > 0) {
-              isProcessingDependentUpdate = true;
-              for (const dependent of dependents) {
-                const dependentFetchFunction = fetchFunctions[dependent];
-                if (dependentFetchFunction) {
-                  try {
-                    let dependentNewData;
-                    if (dependent === "userBudgets") {
-                      // Special case for userBudgets
-                      let projectBudgetsSnapshot, designsSnapshot;
-                      if (userDataName === "userProjectBudgets") {
-                        projectBudgetsSnapshot = newSnapshot;
-                        const dependentFetchFunction = fetchFunctions["userDesigns"];
-                        const { snapshot: fetchedDesignsSnapshot } = await dependentFetchFunction(
-                          user
-                        );
-                        designsSnapshot = fetchedDesignsSnapshot;
-                      } else if (userDataName === "userDesigns") {
-                        designsSnapshot = newSnapshot;
-                        const dependentFetchFunction = fetchFunctions["userProjectBudgets"];
-                        const { snapshot: fetchedProjectBudgetsSnapshot } =
-                          await dependentFetchFunction(user);
-                        projectBudgetsSnapshot = fetchedProjectBudgetsSnapshot;
-                      }
-                      const { data } = await dependentFetchFunction(
-                        projectBudgetsSnapshot,
-                        designsSnapshot
-                      );
-                      dependentNewData = data;
-                    } else {
-                      // For all other cases
-                      const { data } = await dependentFetchFunction(newSnapshot);
-                      dependentNewData = data;
-                    }
-                    const currentDependentData = stateSetterFunctions[dependent]();
-                    if (!isEqual(dependentNewData, currentDependentData)) {
-                      stateSetterFunctions[dependent](dependentNewData);
-                      console.log(
-                        `State updated for dependent user data: ${dependent} with ${dependentNewData.length} items`
-                      );
-                    }
-                  } catch (error) {
-                    console.error(`Error updating dependent data for ${dependent}:`, error);
-                  }
-                }
-              }
-              isProcessingDependentUpdate = false;
-            }
+            // if (dependents.length > 0) {
+            //   isProcessingDependentUpdate = true;
+            //   for (const dependent of dependents) {
+            //     const dependentFetchFunction = fetchFunctions[dependent];
+            //     if (dependentFetchFunction) {
+            //       try {
+            //         let dependentNewData;
+            //         if (dependent === "userBudgets") {
+            //           // Special case for userBudgets
+            //           let projectBudgetsSnapshot, designsSnapshot;
+            //           if (userDataName === "userProjectBudgets") {
+            //             projectBudgetsSnapshot = newSnapshot;
+            //             const dependentFetchFunction = fetchFunctions["userDesigns"];
+            //             const { snapshot: fetchedDesignsSnapshot } = await dependentFetchFunction(
+            //               user
+            //             );
+            //             designsSnapshot = fetchedDesignsSnapshot;
+            //           } else if (userDataName === "userDesigns") {
+            //             designsSnapshot = newSnapshot;
+            //             const dependentFetchFunction = fetchFunctions["userProjectBudgets"];
+            //             const { snapshot: fetchedProjectBudgetsSnapshot } =
+            //               await dependentFetchFunction(user);
+            //             projectBudgetsSnapshot = fetchedProjectBudgetsSnapshot;
+            //           }
+            //           const { data } = await dependentFetchFunction(
+            //             projectBudgetsSnapshot,
+            //             designsSnapshot
+            //           );
+            //           dependentNewData = data;
+            //         } else {
+            //           // For all other cases
+            //           const { data } = await dependentFetchFunction(newSnapshot);
+            //           dependentNewData = data;
+            //         }
+            //         const currentDependentData = stateSetterFunctions[dependent]();
+            //         if (!isEqual(dependentNewData, currentDependentData)) {
+            //           stateSetterFunctions[dependent](dependentNewData);
+            //           console.log(
+            //             `State updated for dependent user data: ${dependent} with ${dependentNewData.length} items`
+            //           );
+            //         }
+            //       } catch (error) {
+            //         console.error(`Error updating dependent data for ${dependent}:`, error);
+            //       }
+            //     }
+            //   }
+            //   isProcessingDependentUpdate = false;
+            // }
           }
         } catch (error) {
           console.error(`Error updating ${userDataName}:`, error);

@@ -193,6 +193,11 @@ h2 {
   margin-right: 16px;
   border-radius: 5px;
   border: 1px solid var(--thumbnailBorder);
+  overflow: hidden;
+}
+.miniThumbnail img {
+  width: 100%;
+  background-size: cover;
 }
 .drawerUser {
   display: flex;

@@ -85,6 +85,7 @@ function PromptBar({
   setProgress,
   setEta,
   setIsGenerating,
+  generatedImagesPreview,
   setGeneratedImagesPreview,
   generatedImages,
   setGeneratedImages,
@@ -107,8 +108,6 @@ function PromptBar({
   refineMaskOption,
   showPreview,
   promptBarRef,
-  loading,
-  setLoading,
   generationErrors,
   setGenerationErrors,
   designId,
@@ -145,10 +144,12 @@ function PromptBar({
 
   const handleSliderChange = (event, newValue) => {
     setNumberOfImages(newValue);
+    clearFieldError("general");
   };
 
   const handleColorPaletteChange = (event, newValue) => {
     clearFieldError("colorPalette");
+    clearFieldError("general");
     setColorPalette(newValue);
   };
 
@@ -237,6 +238,7 @@ function PromptBar({
 
   const handleFileChange = (file, setInitImage, setImagePreview, field) => {
     clearFieldError(field);
+    clearFieldError("general");
     const message = handleImageValidation(file);
     if (message !== "") return;
 
@@ -444,6 +446,7 @@ function PromptBar({
   useEffect(() => {
     if (generationErrors?.initImage && selectedImage?.link) {
       clearFieldError("initImage");
+      clearFieldError("general");
     }
   }, [selectedImage, generationErrors]);
 
@@ -624,18 +627,37 @@ function PromptBar({
           setGeneratedImages
         );
         if (result.success) {
-          const designVersionResult = createDesignVersion(
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          // Store result data locally
+          const generatedImageData = result.data.map((path) => ({
+            link: path,
+            description: "",
+            comments: [],
+          }));
+          setGeneratedImages(generatedImageData);
+          // Create design version with local data
+          console.log("create design ver - Result from AI API:", {
             designId,
-            generatedImages,
+            generatedImageData,
+            prompt,
+            userDoc,
+          });
+          setStatusMessage("Uploading images");
+          const designVersionResult = await createDesignVersion(
+            designId,
+            generatedImageData,
             prompt,
             user,
             userDoc
           );
+          console.log("create design ver - designVersionResult", designVersionResult);
           if (designVersionResult.success) {
-            showToast("success", result.message);
+            setStatusMessage("Upload complete");
+            showToast("success", designVersionResult.message);
           } else {
-            console.error("Error: ", designVersionResult.message);
-            showToast("error", result.message);
+            console.error("create design ver - error: ", designVersionResult.message);
+            console.error("create design ver - error status: ", designVersionResult.status);
+            showToast("error", designVersionResult.message);
           }
         } else if (result?.formErrors && Object.keys(result?.formErrors).length > 0) {
           setGenerationErrors(result?.formErrors);
@@ -683,18 +705,36 @@ function PromptBar({
           showPreview
         );
         if (result.success) {
-          const designVersionResult = createDesignVersion(
+          // Store result data locally
+          const generatedImageData = result.data.map((path) => ({
+            link: path,
+            description: "",
+            comments: [],
+          }));
+          setGeneratedImages(generatedImageData);
+          // Create design version with local data
+          console.log("create design ver - Result from AI API:", {
             designId,
-            generatedImages,
+            generatedImageData,
+            prompt,
+            userDoc,
+          });
+          setStatusMessage("Uploading images");
+          const designVersionResult = await createDesignVersion(
+            designId,
+            generatedImageData,
             prompt,
             user,
             userDoc
           );
+          console.log("create design ver - designVersionResult", designVersionResult);
           if (designVersionResult.success) {
-            showToast("success", result.message);
+            setStatusMessage("Upload complete");
+            showToast("success", designVersionResult.message);
           } else {
-            console.error("Error: ", designVersionResult.message);
-            showToast("error", result.message);
+            console.error("create design ver - error: ", designVersionResult.message);
+            console.error("create design ver - error status: ", designVersionResult.status);
+            showToast("error", designVersionResult.message);
           }
         } else if (result?.formErrors && Object.keys(result?.formErrors).length > 0) {
           setGenerationErrors(result?.formErrors);
@@ -704,8 +744,27 @@ function PromptBar({
       }
     } catch (error) {
       setGenerationErrors((prev) => ({ ...prev, general: "Failed to generate image" }));
+    } finally {
+      resetStateVariables();
     }
   };
+
+  const resetStateVariables = () => {
+    setStatusMessage("");
+    setProgress(0);
+    setEta("");
+    setGeneratedImagesPreview([]);
+    setGeneratedImages([]);
+    setIsGenerating(false);
+  };
+
+  useEffect(() => {
+    console.log("generatedImages updated:", generatedImages);
+  }, [generatedImages]);
+
+  useEffect(() => {
+    console.log("generatedImagesPreview updated:", generatedImagesPreview);
+  }, [generatedImagesPreview]);
 
   return (
     <>
@@ -778,6 +837,7 @@ function PromptBar({
                   onChange={(e) => {
                     setPrompt(e.target.value);
                     clearFieldError("prompt");
+                    clearFieldError("general");
                   }}
                   maxRows={2}
                   disabled={disabled}
@@ -889,6 +949,7 @@ function PromptBar({
                           setBaseImage(null);
                           setBaseImagePreview("");
                           clearFieldError("baseImage");
+                          clearFieldError("general");
                         }}
                         sx={{
                           color: "var(--color-white)",
@@ -1008,6 +1069,7 @@ function PromptBar({
                         setStyleRef(null);
                         setStyleRefPreview("");
                         clearFieldError("styleReference");
+                        clearFieldError("general");
                       }}
                       sx={{
                         color: "var(--color-white)",
@@ -1240,7 +1302,11 @@ function PromptBar({
                     !disabled && isOnline && !showComments && "var(--gradientButtonHover)",
                 },
               }}
-              onClick={handleGeneration}
+              onClick={() => {
+                setGenerationErrors({});
+                resetStateVariables();
+                handleGeneration();
+              }}
             >
               Generate Image
             </Button>

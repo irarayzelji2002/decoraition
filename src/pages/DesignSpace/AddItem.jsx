@@ -193,7 +193,7 @@ const AddItem = () => {
     } catch (error) {
       console.error("Error adding item:", error);
       if (error.response) {
-        showToast("error", error?.response?.data?.error || "Failed to add item. Please try again.");
+        showToast("error", error?.response?.data?.message || "Failed to add item. Please try again.");
       } else if (error.request) {
         showToast("error", "Network error. Please check your connection.");
       } else {

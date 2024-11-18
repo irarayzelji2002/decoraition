@@ -8,6 +8,7 @@ const appURL = process.env.REACT_APP_URL;
 
 // Create Design
 exports.createDesign = async (req, res) => {
+  const updatedDocuments = [];
   const createdDocuments = [];
   try {
     const { userId, designName } = req.body;
@@ -66,6 +67,12 @@ exports.createDesign = async (req, res) => {
     createdDocuments.push({ collection: "budgets", id: budgetId });
 
     // Update design document with budgetId
+    updatedDocuments.push({
+      ref: designRef,
+      data: { budgetId: designRef.data().budgetId },
+      collection: "budgets",
+      id: designRef.id,
+    });
     await designRef.update({ budgetId });
 
     // Update user's designs array
@@ -90,6 +97,15 @@ exports.createDesign = async (req, res) => {
   } catch (error) {
     console.error("Error creating design:", error);
 
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
     // Rollback: delete all created documents
     for (const doc of createdDocuments) {
       try {
@@ -350,6 +366,8 @@ exports.getDesignVersionDetails = async (req, res) => {
 
 // Restore Design Version
 exports.restoreDesignVersion = async (req, res) => {
+  const createdDocuments = [];
+  const updatedDocuments = [];
   try {
     const { designId, versionId } = req.params;
     const { userId } = req.body;
@@ -382,16 +400,24 @@ exports.restoreDesignVersion = async (req, res) => {
     };
     const newVersionRef = await db.collection("designVersions").add(newVersionData);
     const newVersionId = newVersionRef.id;
+    createdDocuments.push({ collection: "designVersions", id: newVersionId });
 
     // Get current history array and append new version then update design document
     const currentHistory = designDoc.data().history || [];
     const updatedHistory = [...currentHistory, newVersionId];
+    updatedDocuments.push({
+      collection: "designs",
+      id: designId,
+      field: "history",
+      previousValue: currentHistory,
+    });
     await db.collection("designs").doc(designId).update({
       history: updatedHistory,
       modifiedAt: new Date(),
     });
 
     // Copy data from original version to new version
+
     await newVersionRef.update({
       images: versionDoc.data().images,
     });
@@ -403,6 +429,32 @@ exports.restoreDesignVersion = async (req, res) => {
     });
   } catch (error) {
     console.error("Error restoring design version:", error);
+
+    // Rollback updates to existing documents
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    // Rollback created documents
+    for (const doc of createdDocuments) {
+      try {
+        await db.collection(doc.collection).doc(doc.id).delete();
+        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
+      } catch (deleteError) {
+        console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
+      }
+    }
+
     res.status(500).json({ error: "Failed to restore design version" });
   }
 };

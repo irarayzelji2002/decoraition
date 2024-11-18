@@ -4,6 +4,7 @@ const { doc, getDoc, arrayUnion } = require("firebase/firestore");
 
 // Create Project
 exports.createProject = async (req, res) => {
+  const updatedDocuments = [];
   const createdDocuments = [];
   try {
     const { userId, projectName } = req.body;
@@ -112,6 +113,12 @@ exports.createProject = async (req, res) => {
     if (!userDoc.exists) {
       throw new Error("User not found"); //  for manager
     }
+    updatedDocuments.push({
+      ref: userRef,
+      data: { projects: userDoc.data().projects },
+      collection: "users",
+      id: userRef.id,
+    });
     await userRef.update({
       projects: updatedProjects,
     });
@@ -127,6 +134,15 @@ exports.createProject = async (req, res) => {
   } catch (error) {
     console.error("Error creating project:", error);
 
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
     // Rollback: delete all created documents
     for (const doc of createdDocuments) {
       try {
@@ -262,39 +278,6 @@ exports.fetchUserProjects = async (req, res) => {
   }
 };
 
-exports.fetchProjectDesigns = async (req, res) => {
-  try {
-    const { projectId } = req.params;
-
-    const designsSnapshot = await db
-      .collection("designs")
-      .where("projectId", "==", projectId)
-      .orderBy("createdAt", "desc")
-      .get();
-
-    const designs = designsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
-    res.status(200).json(designs);
-  } catch (error) {
-    console.error("Error fetching designs:", error);
-    res.status(500).json({ message: "Error fetching designs", error: error.message });
-  }
-};
-
-// Update
-exports.updateProject = async (req, res) => {
-  try {
-    const { projectId } = req.params;
-    const updateData = req.body;
-    updateData.updatedAt = new Date();
-    await db.collection("projects").doc(projectId).update(updateData);
-    res.json({ message: "Project updated successfully" });
-  } catch (error) {
-    console.error("Error updating project:", error);
-    res.status(500).json({ error: "Failed to update project" });
-  }
-};
-
 // Update Name
 exports.updateProjectName = async (req, res) => {
   const updatedDocuments = [];
@@ -310,10 +293,10 @@ exports.updateProjectName = async (req, res) => {
     }
     const previousName = projectDoc.data().projectName;
     updatedDocuments.push({
-      collection: "projects",
-      id: projectId,
-      field: "projectName",
-      previousValue: previousName,
+      ref: projectRef,
+      data: { projectName: previousName },
+      collection: "budgets",
+      id: projectRef.id,
     });
 
     // Perform update
@@ -326,16 +309,11 @@ exports.updateProjectName = async (req, res) => {
   } catch (error) {
     console.error("Error updating project name:", error);
 
-    // Rollback updates to existing documents
+    // Rollback updates
     for (const doc of updatedDocuments) {
       try {
-        await db
-          .collection(doc.collection)
-          .doc(doc.id)
-          .update({
-            [doc.field]: doc.previousValue,
-          });
-        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
       } catch (rollbackError) {
         console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
       }

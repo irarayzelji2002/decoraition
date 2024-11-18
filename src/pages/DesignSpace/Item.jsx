@@ -61,7 +61,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
       if (error.response) {
         showToast(
           "error",
-          error?.response?.data?.error || "Failed to update item. Please try again."
+          error?.response?.data?.message || "Failed to update item. Please try again."
         );
       } else if (error.request) {
         showToast("error", "Network error. Please check your connection.");

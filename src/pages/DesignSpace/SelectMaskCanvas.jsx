@@ -2467,23 +2467,25 @@ const styles = {
   },
 };
 
-const dummySamMasks = [
-  {
-    id: 0,
-    blended: "../../test-img/masks/d3b1d166-1d13-4541-8ad0-f81ab9b6e7c7.png",
-    mask: "../../test-img/masks/20f7c60f-e94c-45f7-9473-f4bb98902864.png",
-    masked: "../../test-img/masks/f1627810-d96a-4b04-94e7-29931ee8184c.png",
-  },
-  {
-    id: 1,
-    blended: "../../test-img/masks/abd4bbe6-4e46-415c-bc3e-8550b7209808.png",
-    mask: "../../test-img/masks/7e5417fa-f706-4aac-9e33-d0e0fa819949.png",
-    masked: "../../test-img/masks/3931fca2-3b27-40c1-9f78-e49274274900.png",
-  },
-  {
-    id: 2,
-    blended: "../../test-img/masks/44b2a203-644f-4650-9dc1-16fe22638fb6.png",
-    mask: "../../test-img/masks/7a3ac909-7b91-45a2-9d1d-a6f43a7c3ba0.png",
-    masked: "../../test-img/masks/187dd26a-f865-42af-9baa-41972ad32e4c.png",
-  },
-];
+// const dummySamMasks = [
+//   {
+//     id: 0,
+//     blended: "../../test-img/masks/d3b1d166-1d13-4541-8ad0-f81ab9b6e7c7.png",
+//     mask: "../../test-img/masks/20f7c60f-e94c-45f7-9473-f4bb98902864.png",
+//     masked: "../../test-img/masks/f1627810-d96a-4b04-94e7-29931ee8184c.png",
+//   },
+//   {
+//     id: 1,
+//     blended: "../../test-img/masks/abd4bbe6-4e46-415c-bc3e-8550b7209808.png",
+//     mask: "../../test-img/masks/7e5417fa-f706-4aac-9e33-d0e0fa819949.png",
+//     masked: "../../test-img/masks/3931fca2-3b27-40c1-9f78-e49274274900.png",
+//   },
+//   {
+//     id: 2,
+//     blended: "../../test-img/masks/44b2a203-644f-4650-9dc1-16fe22638fb6.png",
+//     mask: "../../test-img/masks/7a3ac909-7b91-45a2-9d1d-a6f43a7c3ba0.png",
+//     masked: "../../test-img/masks/187dd26a-f865-42af-9baa-41972ad32e4c.png",
+//   },
+// ];
+
+const dummySamMasks = [];

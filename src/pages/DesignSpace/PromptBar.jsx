@@ -1603,8 +1603,10 @@ export const outlinedButtonStyles = {
   margin: "0 !important",
 };
 
-const dummyUserColorPalettes = [
-  { colorPaletteId: 1, paletteName: "Red-Green", colors: ["#efefef", "#ef4f56", "#397438"] },
-  { colorPaletteId: 2, paletteName: "Pink-Yellow", colors: ["#ff8344", "#ec2073", "#3e3c47"] },
-  { colorPaletteId: 3, paletteName: "Among Us", colors: ["#3e3c47", "#faa653", "#ff4500"] },
-];
+// const dummyUserColorPalettes = [
+//   { colorPaletteId: 1, paletteName: "Red-Green", colors: ["#efefef", "#ef4f56", "#397438"] },
+//   { colorPaletteId: 2, paletteName: "Pink-Yellow", colors: ["#ff8344", "#ec2073", "#3e3c47"] },
+//   { colorPaletteId: 3, paletteName: "Among Us", colors: ["#3e3c47", "#faa653", "#ff4500"] },
+// ];
+
+const dummyUserColorPalettes = [];

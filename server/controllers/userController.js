@@ -166,31 +166,6 @@ exports.getOtherUserData = async (req, res) => {
   }
 };
 
-// Update User
-exports.updateUser = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const updateData = req.body;
-    await db.collection("users").doc(userId).update(updateData);
-    res.json({ message: "User updated successfully" });
-  } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ error: "Failed to update user" });
-  }
-};
-
-// Delete User
-exports.deleteUser = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    await db.collection("users").doc(userId).delete();
-    res.json({ message: "User deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ error: "Failed to delete user" });
-  }
-};
-
 // Login with Google/Facebook
 exports.loginUserOAuth = async (req, res) => {
   try {

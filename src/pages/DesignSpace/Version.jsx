@@ -189,16 +189,21 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
       }
     };
 
-    // if (dummyVersionDetails && dummyCopiedVersionDetails) {
-    //   setVersionDetails(dummyVersionDetails.reverse());
-    //   setCopiedVersionDetails(dummyCopiedVersionDetails.reverse());
-    //   const latestVersion = dummyVersionDetails[0];
-    //   if (latestVersion) {
-    //     setSelectedDesignVersionId(latestVersion.id);
-    //     setSelectedVersionDetails(latestVersion);
-    //   }
-    //   return;
-    // }
+    if (
+      dummyVersionDetails &&
+      dummyVersionDetails.length > 0 &&
+      dummyCopiedVersionDetails &&
+      dummyCopiedVersionDetails.length > 0
+    ) {
+      setVersionDetails(dummyVersionDetails.reverse());
+      setCopiedVersionDetails(dummyCopiedVersionDetails.reverse());
+      const latestVersion = dummyVersionDetails[0];
+      if (latestVersion) {
+        setSelectedDesignVersionId(latestVersion.id);
+        setSelectedVersionDetails(latestVersion);
+      }
+      return;
+    }
     getVersionDetails();
   }, [isDrawerOpen, design, designVersions, designs, user]);
 
@@ -672,228 +677,231 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
 export default Version;
 
 // Dummy Data for Testing
-const dummyVersionDetails = [
-  {
-    id: "version1",
-    description: "Initial design version",
-    images: [
-      {
-        id: "img1",
-        link: "../test-img/1.png",
-        comments: ["comment1", "comment2"],
-      },
-    ],
-    createdAt: new Date("2024-01-01T10:00:00"),
-    copiedDesigns: ["copiedDesign1", "copiedVersion2", "copiedVersion3"],
-    isRestored: false,
-    isRestoredFrom: null,
-    imagesLink: [
-      "../test-img/1.png",
-      "../test-img/4.png",
-      "../test-img/5.png",
-      "../test-img/6.png",
-    ],
-    displayDate: "Jan 1, 2024, 10:00 AM",
-  },
-  {
-    id: "version2",
-    description: "Updated color scheme",
-    images: [
-      {
-        id: "img2",
-        link: "../test-img/2.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-02T15:30:00"),
-    copiedDesigns: ["copiedDesign4"],
-    isRestored: true,
-    isRestoredFrom: {
-      designId: "originalDesign1",
-      versionId: "version1",
-      createdAt: new Date("2024-01-01T10:00:00"),
-      displayDate: "Jan 1, 2024, 10:00 AM",
-    },
-    imagesLink: ["../test-img/2.png"],
-    displayDate: "Jan 2, 2024, 3:30 PM",
-  },
-  {
-    id: "version3",
-    description: "Updated color scheme",
-    images: [
-      {
-        id: "img2",
-        link: "../test-img/2.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-02T15:30:00"),
-    copiedDesigns: ["copiedDesign5", "copiedDesign6"],
-    isRestored: true,
-    isRestoredFrom: {
-      designId: "originalDesign1",
-      versionId: "version1",
-      createdAt: new Date("2024-01-01T10:00:00"),
-      displayDate: "Jan 1, 2024, 10:00 AM",
-    },
-    imagesLink: ["../test-img/2.png"],
-    displayDate: "Jan 2, 2024, 3:30 PM",
-  },
-  {
-    id: "version4",
-    description: "Updated color scheme",
-    images: [
-      {
-        id: "img2",
-        link: "../test-img/2.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-02T15:30:00"),
-    copiedDesigns: [],
-    isRestored: true,
-    isRestoredFrom: {
-      designId: "originalDesign1",
-      versionId: "version1",
-      createdAt: new Date("2024-01-01T10:00:00"),
-      displayDate: "Jan 1, 2024, 10:00 AM",
-    },
-    imagesLink: ["../test-img/2.png"],
-    displayDate: "Jan 2, 2024, 3:30 PM",
-  },
-];
+// const dummyVersionDetails = [
+//   {
+//     id: "version1",
+//     description: "Initial design version",
+//     images: [
+//       {
+//         id: "img1",
+//         link: "../test-img/1.png",
+//         comments: ["comment1", "comment2"],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-01T10:00:00"),
+//     copiedDesigns: ["copiedDesign1", "copiedVersion2", "copiedVersion3"],
+//     isRestored: false,
+//     isRestoredFrom: null,
+//     imagesLink: [
+//       "../test-img/1.png",
+//       "../test-img/4.png",
+//       "../test-img/5.png",
+//       "../test-img/6.png",
+//     ],
+//     displayDate: "Jan 1, 2024, 10:00 AM",
+//   },
+//   {
+//     id: "version2",
+//     description: "Updated color scheme",
+//     images: [
+//       {
+//         id: "img2",
+//         link: "../test-img/2.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-02T15:30:00"),
+//     copiedDesigns: ["copiedDesign4"],
+//     isRestored: true,
+//     isRestoredFrom: {
+//       designId: "originalDesign1",
+//       versionId: "version1",
+//       createdAt: new Date("2024-01-01T10:00:00"),
+//       displayDate: "Jan 1, 2024, 10:00 AM",
+//     },
+//     imagesLink: ["../test-img/2.png"],
+//     displayDate: "Jan 2, 2024, 3:30 PM",
+//   },
+//   {
+//     id: "version3",
+//     description: "Updated color scheme",
+//     images: [
+//       {
+//         id: "img2",
+//         link: "../test-img/2.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-02T15:30:00"),
+//     copiedDesigns: ["copiedDesign5", "copiedDesign6"],
+//     isRestored: true,
+//     isRestoredFrom: {
+//       designId: "originalDesign1",
+//       versionId: "version1",
+//       createdAt: new Date("2024-01-01T10:00:00"),
+//       displayDate: "Jan 1, 2024, 10:00 AM",
+//     },
+//     imagesLink: ["../test-img/2.png"],
+//     displayDate: "Jan 2, 2024, 3:30 PM",
+//   },
+//   {
+//     id: "version4",
+//     description: "Updated color scheme",
+//     images: [
+//       {
+//         id: "img2",
+//         link: "../test-img/2.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-02T15:30:00"),
+//     copiedDesigns: [],
+//     isRestored: true,
+//     isRestoredFrom: {
+//       designId: "originalDesign1",
+//       versionId: "version1",
+//       createdAt: new Date("2024-01-01T10:00:00"),
+//       displayDate: "Jan 1, 2024, 10:00 AM",
+//     },
+//     imagesLink: ["../test-img/2.png"],
+//     displayDate: "Jan 2, 2024, 3:30 PM",
+//   },
+// ];
 
-const dummyCopiedVersionDetails = [
-  {
-    id: "copiedVersion1",
-    description: "Copied from original design",
-    images: [
-      {
-        id: "imgCopy1",
-        link: "../test-img/3.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-03T09:15:00"),
-    copiedDesigns: [],
-    isRestored: false,
-    design: {
-      id: "copiedDesign1",
-      designName: "Copy of Living Room",
-      owner: "John Doe",
-    },
-    copiedFrom: "version1",
-    imagesLink: ["../test-img/3.png"],
-    displayDate: "Jan 3, 2024, 9:15 AM",
-  },
-  {
-    id: "copiedVersion2",
-    description: "Copied from original design",
-    images: [
-      {
-        id: "imgCopy1",
-        link: "../test-img/3.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-03T09:15:00"),
-    copiedDesigns: [],
-    isRestored: false,
-    design: {
-      id: "copiedDesign1",
-      designName: "Copy of Living Room",
-      owner: "John Doe",
-    },
-    copiedFrom: "version1",
-    imagesLink: ["../test-img/3.png"],
-    displayDate: "Jan 3, 2024, 9:15 AM",
-  },
-  {
-    id: "copiedVersion3",
-    description: "Copied from original design",
-    images: [
-      {
-        id: "imgCopy1",
-        link: "../test-img/3.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-03T09:15:00"),
-    copiedDesigns: [],
-    isRestored: false,
-    design: {
-      id: "copiedDesign1",
-      designName: "Copy of Living Room",
-      owner: "John Doe",
-    },
-    copiedFrom: "version1",
-    imagesLink: ["../test-img/3.png"],
-    displayDate: "Jan 3, 2024, 9:15 AM",
-  },
-  {
-    id: "copiedVersion4",
-    description: "Copied from original design",
-    images: [
-      {
-        id: "imgCopy1",
-        link: "../test-img/7.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-03T09:15:00"),
-    copiedDesigns: [],
-    isRestored: false,
-    design: {
-      id: "copiedDesign1",
-      designName: "Copy of Living Room",
-      owner: "John Doe",
-    },
-    copiedFrom: "version2",
-    imagesLink: ["../test-img/3.png"],
-    displayDate: "Jan 3, 2024, 9:15 AM",
-  },
-  {
-    id: "copiedVersion5",
-    description: "Copied from original design",
-    images: [
-      {
-        id: "imgCopy1",
-        link: "../test-img/7.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-03T09:15:00"),
-    copiedDesigns: [],
-    isRestored: false,
-    design: {
-      id: "copiedDesign1",
-      designName: "Copy of Living Room",
-      owner: "John Doe",
-    },
-    copiedFrom: "version3",
-    imagesLink: ["../test-img/3.png"],
-    displayDate: "Jan 3, 2024, 9:15 AM",
-  },
-  {
-    id: "copiedVersion6",
-    description: "Copied from original design",
-    images: [
-      {
-        id: "imgCopy1",
-        link: "../test-img/7.png",
-        comments: [],
-      },
-    ],
-    createdAt: new Date("2024-01-03T09:15:00"),
-    copiedDesigns: [],
-    isRestored: false,
-    design: {
-      id: "copiedDesign1",
-      designName: "Copy of Living Room",
-      owner: "John Doe",
-    },
-    copiedFrom: "version3",
-    imagesLink: ["../test-img/3.png"],
-    displayDate: "Jan 3, 2024, 9:15 AM",
-  },
-];
+// const dummyCopiedVersionDetails = [
+//   {
+//     id: "copiedVersion1",
+//     description: "Copied from original design",
+//     images: [
+//       {
+//         id: "imgCopy1",
+//         link: "../test-img/3.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-03T09:15:00"),
+//     copiedDesigns: [],
+//     isRestored: false,
+//     design: {
+//       id: "copiedDesign1",
+//       designName: "Copy of Living Room",
+//       owner: "John Doe",
+//     },
+//     copiedFrom: "version1",
+//     imagesLink: ["../test-img/3.png"],
+//     displayDate: "Jan 3, 2024, 9:15 AM",
+//   },
+//   {
+//     id: "copiedVersion2",
+//     description: "Copied from original design",
+//     images: [
+//       {
+//         id: "imgCopy1",
+//         link: "../test-img/3.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-03T09:15:00"),
+//     copiedDesigns: [],
+//     isRestored: false,
+//     design: {
+//       id: "copiedDesign1",
+//       designName: "Copy of Living Room",
+//       owner: "John Doe",
+//     },
+//     copiedFrom: "version1",
+//     imagesLink: ["../test-img/3.png"],
+//     displayDate: "Jan 3, 2024, 9:15 AM",
+//   },
+//   {
+//     id: "copiedVersion3",
+//     description: "Copied from original design",
+//     images: [
+//       {
+//         id: "imgCopy1",
+//         link: "../test-img/3.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-03T09:15:00"),
+//     copiedDesigns: [],
+//     isRestored: false,
+//     design: {
+//       id: "copiedDesign1",
+//       designName: "Copy of Living Room",
+//       owner: "John Doe",
+//     },
+//     copiedFrom: "version1",
+//     imagesLink: ["../test-img/3.png"],
+//     displayDate: "Jan 3, 2024, 9:15 AM",
+//   },
+//   {
+//     id: "copiedVersion4",
+//     description: "Copied from original design",
+//     images: [
+//       {
+//         id: "imgCopy1",
+//         link: "../test-img/7.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-03T09:15:00"),
+//     copiedDesigns: [],
+//     isRestored: false,
+//     design: {
+//       id: "copiedDesign1",
+//       designName: "Copy of Living Room",
+//       owner: "John Doe",
+//     },
+//     copiedFrom: "version2",
+//     imagesLink: ["../test-img/3.png"],
+//     displayDate: "Jan 3, 2024, 9:15 AM",
+//   },
+//   {
+//     id: "copiedVersion5",
+//     description: "Copied from original design",
+//     images: [
+//       {
+//         id: "imgCopy1",
+//         link: "../test-img/7.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-03T09:15:00"),
+//     copiedDesigns: [],
+//     isRestored: false,
+//     design: {
+//       id: "copiedDesign1",
+//       designName: "Copy of Living Room",
+//       owner: "John Doe",
+//     },
+//     copiedFrom: "version3",
+//     imagesLink: ["../test-img/3.png"],
+//     displayDate: "Jan 3, 2024, 9:15 AM",
+//   },
+//   {
+//     id: "copiedVersion6",
+//     description: "Copied from original design",
+//     images: [
+//       {
+//         id: "imgCopy1",
+//         link: "../test-img/7.png",
+//         comments: [],
+//       },
+//     ],
+//     createdAt: new Date("2024-01-03T09:15:00"),
+//     copiedDesigns: [],
+//     isRestored: false,
+//     design: {
+//       id: "copiedDesign1",
+//       designName: "Copy of Living Room",
+//       owner: "John Doe",
+//     },
+//     copiedFrom: "version3",
+//     imagesLink: ["../test-img/3.png"],
+//     displayDate: "Jan 3, 2024, 9:15 AM",
+//   },
+// ];
+
+const dummyVersionDetails = [];
+const dummyCopiedVersionDetails = [];

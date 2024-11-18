@@ -800,42 +800,42 @@ function Design() {
 
 export default Design;
 
-const dummyDesignVersionImages = [
-  {
-    id: "image123",
-    link: "../../img/Room1.png",
-    description: "Living room view 1",
-    comments: ["comment1"],
-  },
-  {
-    id: "image456",
-    link: "../../img/Room1.png",
-    description: "Living room view 2",
-    comments: ["comment2"],
-  },
-  {
-    id: "image789",
-    link: "../../img/Room1.png",
-    description: "Living room view 3",
-    comments: ["comment3", "comment4"],
-  },
-  {
-    id: "image101112",
-    link: "../../img/Room1.png",
-    description: "Living room view 4",
-    comments: "",
-  },
-];
+// const dummyDesignVersionImages = [
+//   {
+//     id: "image123",
+//     link: "../../img/Room1.png",
+//     description: "Living room view 1",
+//     comments: ["comment1"],
+//   },
+//   {
+//     id: "image456",
+//     link: "../../img/Room1.png",
+//     description: "Living room view 2",
+//     comments: ["comment2"],
+//   },
+//   {
+//     id: "image789",
+//     link: "../../img/Room1.png",
+//     description: "Living room view 3",
+//     comments: ["comment3", "comment4"],
+//   },
+//   {
+//     id: "image101112",
+//     link: "../../img/Room1.png",
+//     description: "Living room view 4",
+//     comments: "",
+//   },
+// ];
 
-const dummyDesignVersion = {
-  id: "designVersion1",
-  description: "Living room design concept",
-  images: dummyDesignVersionImages,
-  createdAt: new Date("2024-10-01T09:00:00Z"),
-  copiedDesigns: [],
-  isRestored: false,
-  isRestoredFrom: null,
-};
+// const dummyDesignVersion = {
+//   id: "designVersion1",
+//   description: "Living room design concept",
+//   images: dummyDesignVersionImages,
+//   createdAt: new Date("2024-10-01T09:00:00Z"),
+//   copiedDesigns: [],
+//   isRestored: false,
+//   isRestoredFrom: null,
+// };
 
-// const dummyDesignVersionImages = [];
-// const dummyDesignVersion = {};
+const dummyDesignVersionImages = [];
+const dummyDesignVersion = {};

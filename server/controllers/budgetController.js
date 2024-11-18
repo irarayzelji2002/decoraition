@@ -3,6 +3,7 @@ const { ref, uploadBytes, getDownloadURL } = require("firebase/storage");
 
 // Add, Edit, Remove Budget
 exports.updateBudget = async (req, res) => {
+  const updatedDocuments = [];
   try {
     const { budgetId } = req.params;
     const { amount, currency } = req.body;
@@ -14,6 +15,13 @@ exports.updateBudget = async (req, res) => {
 
     // Update the budget
     const budgetRef = db.collection("budgets").doc(budgetId);
+    const budgetDoc = await budgetRef.get();
+    updatedDocuments.push({
+      ref: budgetRef,
+      data: { budget: budgetDoc.data().budget },
+      collection: "budgets",
+      id: budgetRef.id,
+    });
     await budgetRef.update({
       budget: { amount: amount, currency: currency },
       modifiedAt: new Date(),
@@ -24,12 +32,23 @@ exports.updateBudget = async (req, res) => {
       .json({ message: "Budget updated successfully", amount: amount, currency: currency });
   } catch (error) {
     console.error("Error updating budget:", error);
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
     res.status(500).json({ message: "Failed to update budget", error: error.message });
   }
 };
 
 // Add Item
 exports.addItem = async (req, res) => {
+  const updatedDocuments = [];
+  const createdDocuments = [];
   try {
     const { budgetId, itemName, description, quantity, isUploadedImage } = req.body;
     const cost = JSON.parse(req.body.cost);
@@ -75,6 +94,12 @@ exports.addItem = async (req, res) => {
     const budgetData = budgetDoc.data();
     const currentItems = budgetData.items || [];
     const updatedItems = [...currentItems, itemRef.id];
+    updatedDocuments.push({
+      ref: budgetRef,
+      data: { items: currentItems },
+      collection: "budgets",
+      id: budgetRef.id,
+    });
     await budgetRef.update({ items: updatedItems, modifiedAt: new Date() });
 
     // Populate the item document
@@ -89,16 +114,41 @@ exports.addItem = async (req, res) => {
       modifiedAt: new Date(),
     };
     await itemRef.update(itemData);
+    createdDocuments.push({
+      ref: itemRef,
+      data: itemData,
+      collection: "items",
+      id: itemRef.id,
+    });
 
     res.status(200).json({ id: itemRef.id, ...itemData });
   } catch (error) {
     console.error("Error adding item:", error);
-    res.status(500).json({ error: "Failed to add item" });
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+    // Rollback creations (delete new docs)
+    for (const doc of createdDocuments) {
+      try {
+        await doc.ref.delete();
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+    res.status(500).json({ message: "Failed to add item", error: error.mesage });
   }
 };
 
 // Update Item
 exports.updateItem = async (req, res) => {
+  const updatedDocuments = [];
   try {
     const { itemId } = req.params;
     const { itemName, description, quantity, includedInTotal, isUploadedImage } = req.body;
@@ -141,25 +191,49 @@ exports.updateItem = async (req, res) => {
     // Find the budget containing this item to trigger an update
     const budgetsRef = db.collection("budgets");
     const budgetQuery = await budgetsRef.where("items", "array-contains", itemId).get();
+
     if (!budgetQuery.empty) {
       const budgetDoc = budgetQuery.docs[0];
-      await budgetDoc.ref.update({
+      const budgetRef = budgetDoc.ref;
+      updatedDocuments.push({
+        ref: budgetRef,
+        data: { modifiedAt: budgetDoc.data().modifiedAt },
+        collection: "budgets",
+        id: budgetRef.id,
+      });
+      await budgetRef.update({
         modifiedAt: new Date(),
       });
     }
 
     // Update the item
+    updatedDocuments.push({
+      ref: itemRef,
+      data: itemData,
+      collection: "items",
+      id: itemRef.id,
+    });
     await itemRef.update(itemData);
 
     res.status(200).json({ message: "Item updated successfully", ...itemData });
   } catch (error) {
     console.error("Error updating item:", error);
-    res.status(500).json({ error: "Failed to update item" });
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+    res.status(500).json({ message: "Failed to update item", error: error.message });
   }
 };
 
 // Update Item's includedInTotal
 exports.updateItemIncludedInTotal = async (req, res) => {
+  const updatedDocuments = [];
   try {
     const { itemId } = req.params;
     const { includedInTotal } = req.body;
@@ -173,6 +247,12 @@ exports.updateItemIncludedInTotal = async (req, res) => {
     if (!itemDoc.exists) {
       return res.status(404).json({ error: "Item not found" });
     }
+    updatedDocuments.push({
+      ref: itemRef,
+      data: { includedInTotal: itemDoc.data().includedInTotal },
+      collection: "items",
+      id: itemRef.id,
+    });
     await itemRef.update({
       includedInTotal: includedInTotal,
       modifiedAt: new Date(),
@@ -183,13 +263,23 @@ exports.updateItemIncludedInTotal = async (req, res) => {
       .json({ message: "Item updated successfully", includedInTotal: includedInTotal });
   } catch (error) {
     console.error("Error updating item:", error);
-    res.status(500).json({ error: "Failed to update item" });
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+    res.status(500).json({ message: "Failed to update item", error: error.message });
   }
 };
 
 // Delete Budget Item
 exports.deleteItem = async (req, res) => {
-  let deletedItem = null;
+  const updatedDocuments = [];
+  const deletedDocuments = [];
   let previousItems = null;
   try {
     const { itemId } = req.params;
@@ -201,7 +291,6 @@ exports.deleteItem = async (req, res) => {
     if (!itemDoc.exists) {
       return res.status(404).json({ error: "Item not found" });
     }
-    deletedItem = itemDoc.data();
 
     // Update budget first
     const budgetRef = db.collection("budgets").doc(budgetId);
@@ -210,11 +299,22 @@ exports.deleteItem = async (req, res) => {
       return res.status(404).json({ error: "Budget not found" });
     }
 
-    previousItems = budgetDoc.data().items || [];
-    const updatedItems = previousItems.filter((id) => id !== itemId);
-
     // Update the budget document with the new items array then delete the item from items collection
+    previousItems = budgetDoc.data().items || [];
+    updatedDocuments.push({
+      ref: budgetRef,
+      data: { items: previousItems },
+      collection: "budgets",
+      id: budgetRef.id,
+    });
+    const updatedItems = previousItems.filter((id) => id !== itemId);
     await budgetRef.update({ items: updatedItems });
+    deletedDocuments.push({
+      ref: itemRef,
+      data: itemDoc.data(),
+      collection: "items",
+      id: itemRef.id,
+    });
     await itemRef.delete();
 
     res.status(200).json({
@@ -224,31 +324,25 @@ exports.deleteItem = async (req, res) => {
   } catch (error) {
     console.error("Error deleting item:", error);
 
-    // Rollback mechanism
-    try {
-      const { itemId } = req.params;
-      const { budgetId } = req.body;
-
-      if (deletedItem) {
-        // Restore deleted item if it was deleted
-        await db.collection("items").doc(itemId).set(deletedItem);
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
       }
-
-      if (previousItems) {
-        // Restore budget's items array if it was updated
-        await db.collection("budgets").doc(budgetId).update({
-          items: previousItems,
-        });
+    }
+    // Rollback deletes
+    for (const doc of deletedDocuments) {
+      try {
+        await doc.ref.set(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
       }
-
-      console.log("Rollback completed successfully");
-    } catch (rollbackError) {
-      console.error("Error during rollback:", rollbackError);
     }
 
-    res.status(500).json({
-      error: "Failed to delete item",
-      details: error.message,
-    });
+    res.status(500).json({ message: "Failed to delete item", error: error.message });
   }
 };

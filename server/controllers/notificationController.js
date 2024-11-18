@@ -1,5 +1,75 @@
 const { db, auth } = require("../firebase");
 
+const createNotification = async (userId, type, title, content) => {
+  const notificationRef = db.collection("notifications").doc();
+  const notificationData = {
+    userId,
+    type,
+    title,
+    content,
+    isReadInApp: false,
+    createdAt: new Date(),
+  };
+  await notificationRef.set(notificationData);
+};
+
+exports.sendCommentNotifications = async (designDoc, commentUserId, action, mentions = []) => {
+  const designOwner = designDoc.data().owner;
+  const editors = designDoc.data().editors || [];
+  const commenters = designDoc.data().commenters || [];
+
+  // Get user settings
+  const userSettingsPromises = [
+    db.collection("users").doc(designOwner).get(),
+    ...editors.map((id) => db.collection("users").doc(id).get()),
+    ...commenters.map((id) => db.collection("users").doc(id).get()),
+    ...mentions.map((id) => db.collection("users").doc(id).get()),
+  ];
+
+  const userDocs = await Promise.all(userSettingsPromises);
+  const userSettings = userDocs.reduce((acc, doc) => {
+    if (doc.exists) acc[doc.id] = doc.data().notifSettings;
+    return acc;
+  }, {});
+
+  // Process notifications based on settings
+  for (const [userId, settings] of Object.entries(userSettings)) {
+    if (!settings.allowNotif) continue;
+
+    if (mentions.includes(userId) && settings.mentionedInComment) {
+      await createNotification(
+        userId,
+        "mention",
+        "Mentioned in Comment",
+        `You were mentioned in a comment on design "${designDoc.data().designName}"`
+      );
+    }
+
+    if (userId === designOwner && settings.newCommentReplyAsOwner) {
+      await createNotification(
+        userId,
+        "comment",
+        "New Comment on Your Design",
+        `A new comment was added to your design "${designDoc.data().designName}"`
+      );
+    }
+
+    if (
+      (editors.includes(userId) || commenters.includes(userId)) &&
+      settings.newCommentReplyAsCollab &&
+      userId !== commentUserId
+    ) {
+      await createNotification(
+        userId,
+        "comment",
+        "New Comment on Collaborated Design",
+        `A new comment was added to design "${designDoc.data().designName}"`
+      );
+    }
+  }
+};
+
+// OLD CODE
 // Create
 exports.createNotification = async (req, res) => {
   try {

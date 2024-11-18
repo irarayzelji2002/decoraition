@@ -1139,7 +1139,7 @@ export const addReply = async (
   try {
     const response = await axios.put(
       `/api/design/${designId}/comment/${commentId}/add-reply`,
-      { userId: userDoc.id, isReplyToReply, commentId, replyId, message, mentions },
+      { userId: userDoc.id, isReplyToReply, replyId, message, mentions },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }
@@ -1166,7 +1166,7 @@ export const editReply = async (
   try {
     const response = await axios.put(
       `/api/design/${designId}/comment/${commentId}/edit-reply`,
-      { userId: userDoc.id, isReplyToReply, commentId, replyId, message, mentions },
+      { userId: userDoc.id, isReplyToReply, replyId, message, mentions },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }

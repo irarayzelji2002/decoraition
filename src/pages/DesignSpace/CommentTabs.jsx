@@ -561,134 +561,134 @@ const createDummyDate = (stringDate) => {
 };
 
 // Comments for the design version
-const dummyUserDesignComments = [
-  {
-    id: "comment1",
-    designVersionImageId: "image123",
-    userId: dummyUser1.id,
-    message: `This is the first comment. @${dummyUser2.username} This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment. @${dummyUser3.username} This is the first comment.This is the first comment.`,
-    mentions: [dummyUser2.id, dummyUser3.id],
-    status: false,
-    createdAt: createDummyDate("2024-10-01T10:00:00Z"),
-    modifiedAt: createDummyDate("2024-10-01T12:00:00Z"),
-    replies: [
-      {
-        replyId: "reply1_1",
-        userId: dummyUser2.id,
-        message: `@${dummyUser1.username} mention in fornt. This is a reply to the first comment.`,
-        mentions: [dummyUser1.id],
-        createdAt: createDummyDate("2024-10-01T11:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-01T11:30:00Z"),
-        replies: ["reply1_1_1", "reply1_1_2"],
-      },
-      {
-        replyId: "reply1_1_1",
-        userId: dummyUser2.id,
-        message: `@${dummyUser1.username} mention in fornt. This is a 1st reply to the first reply.`,
-        mentions: [dummyUser1.id],
-        createdAt: createDummyDate("2024-10-02T11:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
-        replies: ["reply1_1_1_1"],
-      },
-      {
-        replyId: "reply1_1_1_1",
-        userId: dummyUser1.id,
-        message: `This is a 1st replt to the 1st reply of the first reply. @${dummyUser3.username}`,
-        mentions: [dummyUser3.id],
-        createdAt: createDummyDate("2024-10-02T11:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
-        replies: [],
-      },
-      {
-        replyId: "reply1_1_2",
-        userId: dummyUser1.id,
-        message: `@${dummyUser2.username} mention in fornt. This is a 2nd reply to the first reply.`,
-        mentions: [dummyUser2.id],
-        createdAt: createDummyDate("2024-10-02T11:50:00Z"),
-        modifiedAt: createDummyDate("2024-10-02T11:50:00Z"),
-        replies: [],
-      },
-      {
-        replyId: "reply1_2",
-        userId: dummyUser3.id,
-        message: "Another reply to the first comment.",
-        mentions: [],
-        createdAt: createDummyDate("2024-10-01T11:15:00Z"),
-        modifiedAt: createDummyDate("2024-10-01T11:45:00Z"),
-        replies: [],
-      },
-    ],
-  },
-  {
-    id: "comment2",
-    designVersionImageId: "image456",
-    userId: dummyUser2.id,
-    message: "This is the second comment.",
-    mentions: [],
-    status: true,
-    createdAt: createDummyDate("2024-10-02T09:30:00Z"),
-    modifiedAt: createDummyDate("2024-10-02T10:30:00Z"),
-    replies: [
-      {
-        replyId: "reply2_1",
-        userId: dummyUser1.id,
-        message: `Replying to the second comment. @${dummyUser2.username} message after mention.`,
-        mentions: [dummyUser2.id],
-        createdAt: createDummyDate("2024-10-02T10:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-02T10:20:00Z"),
-        replies: ["reply2_1_1"],
-      },
-      {
-        replyId: "reply2_1_1",
-        userId: dummyUser1.id,
-        message: `Replying to the second comment's reply. @${dummyUser1.username} message after mention.`,
-        mentions: [dummyUser1.id],
-        createdAt: createDummyDate("2024-10-03T10:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-03T10:20:00Z"),
-        replies: [],
-      },
-    ],
-  },
-  {
-    id: "comment3",
-    designVersionImageId: "image789",
-    userId: dummyUser3.id,
-    message: `This is the third comment. @${dummyUser1.username}`,
-    mentions: [dummyUser1.id],
-    status: false,
-    createdAt: createDummyDate("2024-10-03T14:00:00Z"),
-    modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
-    replies: [],
-  },
-  {
-    id: "comment4",
-    designVersionImageId: "image789",
-    userId: dummyUser1.id,
-    message: "This is the fourth comment.",
-    mentions: [],
-    status: false,
-    createdAt: createDummyDate("2024-10-03T14:00:00Z"),
-    modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
-    replies: [],
-  },
-];
+// const dummyUserDesignComments = [
+//   {
+//     id: "comment1",
+//     designVersionImageId: "image123",
+//     userId: dummyUser1.id,
+//     message: `This is the first comment. @${dummyUser2.username} This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment. @${dummyUser3.username} This is the first comment.This is the first comment.`,
+//     mentions: [dummyUser2.id, dummyUser3.id],
+//     status: false,
+//     createdAt: createDummyDate("2024-10-01T10:00:00Z"),
+//     modifiedAt: createDummyDate("2024-10-01T12:00:00Z"),
+//     replies: [
+//       {
+//         replyId: "reply1_1",
+//         userId: dummyUser2.id,
+//         message: `@${dummyUser1.username} mention in fornt. This is a reply to the first comment.`,
+//         mentions: [dummyUser1.id],
+//         createdAt: createDummyDate("2024-10-01T11:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-01T11:30:00Z"),
+//         replies: ["reply1_1_1", "reply1_1_2"],
+//       },
+//       {
+//         replyId: "reply1_1_1",
+//         userId: dummyUser2.id,
+//         message: `@${dummyUser1.username} mention in fornt. This is a 1st reply to the first reply.`,
+//         mentions: [dummyUser1.id],
+//         createdAt: createDummyDate("2024-10-02T11:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
+//         replies: ["reply1_1_1_1"],
+//       },
+//       {
+//         replyId: "reply1_1_1_1",
+//         userId: dummyUser1.id,
+//         message: `This is a 1st replt to the 1st reply of the first reply. @${dummyUser3.username}`,
+//         mentions: [dummyUser3.id],
+//         createdAt: createDummyDate("2024-10-02T11:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
+//         replies: [],
+//       },
+//       {
+//         replyId: "reply1_1_2",
+//         userId: dummyUser1.id,
+//         message: `@${dummyUser2.username} mention in fornt. This is a 2nd reply to the first reply.`,
+//         mentions: [dummyUser2.id],
+//         createdAt: createDummyDate("2024-10-02T11:50:00Z"),
+//         modifiedAt: createDummyDate("2024-10-02T11:50:00Z"),
+//         replies: [],
+//       },
+//       {
+//         replyId: "reply1_2",
+//         userId: dummyUser3.id,
+//         message: "Another reply to the first comment.",
+//         mentions: [],
+//         createdAt: createDummyDate("2024-10-01T11:15:00Z"),
+//         modifiedAt: createDummyDate("2024-10-01T11:45:00Z"),
+//         replies: [],
+//       },
+//     ],
+//   },
+//   {
+//     id: "comment2",
+//     designVersionImageId: "image456",
+//     userId: dummyUser2.id,
+//     message: "This is the second comment.",
+//     mentions: [],
+//     status: true,
+//     createdAt: createDummyDate("2024-10-02T09:30:00Z"),
+//     modifiedAt: createDummyDate("2024-10-02T10:30:00Z"),
+//     replies: [
+//       {
+//         replyId: "reply2_1",
+//         userId: dummyUser1.id,
+//         message: `Replying to the second comment. @${dummyUser2.username} message after mention.`,
+//         mentions: [dummyUser2.id],
+//         createdAt: createDummyDate("2024-10-02T10:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-02T10:20:00Z"),
+//         replies: ["reply2_1_1"],
+//       },
+//       {
+//         replyId: "reply2_1_1",
+//         userId: dummyUser1.id,
+//         message: `Replying to the second comment's reply. @${dummyUser1.username} message after mention.`,
+//         mentions: [dummyUser1.id],
+//         createdAt: createDummyDate("2024-10-03T10:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-03T10:20:00Z"),
+//         replies: [],
+//       },
+//     ],
+//   },
+//   {
+//     id: "comment3",
+//     designVersionImageId: "image789",
+//     userId: dummyUser3.id,
+//     message: `This is the third comment. @${dummyUser1.username}`,
+//     mentions: [dummyUser1.id],
+//     status: false,
+//     createdAt: createDummyDate("2024-10-03T14:00:00Z"),
+//     modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
+//     replies: [],
+//   },
+//   {
+//     id: "comment4",
+//     designVersionImageId: "image789",
+//     userId: dummyUser1.id,
+//     message: "This is the fourth comment.",
+//     mentions: [],
+//     status: false,
+//     createdAt: createDummyDate("2024-10-03T14:00:00Z"),
+//     modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
+//     replies: [],
+//   },
+// ];
 
-// User's own comments (assuming current user is dummyUser1.id)
-const dummyUserComments = dummyUserDesignComments.filter(
-  (comment) => comment.userId === dummyUser1.id
-);
+// // User's own comments (assuming current user is dummyUser1.id)
+// const dummyUserComments = dummyUserDesignComments.filter(
+//   (comment) => comment.userId === dummyUser1.id
+// );
 
-// User's own replies (assuming current user is dummyUser1.id)
-const dummyUserReplies = dummyUserDesignComments.flatMap((comment) =>
-  comment.replies
-    .filter((reply) => reply.userId === dummyUser1.id)
-    .map((reply) => ({
-      id: reply.replyId,
-      commentId: comment.id,
-      ...reply,
-    }))
-);
+// // User's own replies (assuming current user is dummyUser1.id)
+// const dummyUserReplies = dummyUserDesignComments.flatMap((comment) =>
+//   comment.replies
+//     .filter((reply) => reply.userId === dummyUser1.id)
+//     .map((reply) => ({
+//       id: reply.replyId,
+//       commentId: comment.id,
+//       ...reply,
+//     }))
+// );
 
-// const dummyUserDesignComments=[];
-// const dummyUserComments = [];
-// const dummyUserReplies = [];
+const dummyUserDesignComments = [];
+const dummyUserComments = [];
+const dummyUserReplies = [];

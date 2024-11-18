@@ -260,6 +260,25 @@ exports.createDesignProject = async (req, res) => {
   }
 };
 
+exports.fetchProjectDesigns = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const designsSnapshot = await db
+      .collection("designs")
+      .where("projectId", "==", projectId)
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const designs = designsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    res.status(200).json(designs);
+  } catch (error) {
+    console.error("Error fetching designs:", error);
+    res.status(500).json({ message: "Error fetching designs", error: error.message });
+  }
+};
+
 // Read
 exports.fetchUserProjects = async (req, res) => {
   try {

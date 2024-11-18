@@ -173,7 +173,7 @@ router.post(
 );
 
 // Project routes
-router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);
+// router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);
 router.post("/project/create", authenticateUser, projectController.createProject);
 router.post("/project/delete/:projectId", authenticateUser, projectController.deleteProject);
 router.put(

@@ -63,35 +63,30 @@ exports.deleteTimeline = async (req, res) => {
 // Create Event
 exports.createEvent = async (req, res) => {
   try {
-    const { title, description, startDate, endDate, timelineId } = req.body;
-
-    if (!title || !description || !startDate || !endDate || !timelineId) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-
-    const timelineRef = db.collection("timelines").doc(timelineId);
-    const timelineDoc = await timelineRef.get();
-
-    if (!timelineDoc.exists) {
-      return res.status(404).json({ error: "Timeline not found" });
-    }
+    const { timelineId, eventName, dateRange, repeating, repeatEvery, description, reminders } =
+      req.body;
 
     const eventData = {
-      title,
+      timelineId,
+      eventName,
+      dateRange: {
+        start: new Date(dateRange.start),
+        end: new Date(dateRange.end),
+      },
+      repeating,
+      repeatEvery,
       description,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      reminders,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    const timelineData = timelineDoc.data();
-    const events = timelineData.events || [];
-    events.push(eventData);
+    const eventRef = db.collection("events").doc();
+    await eventRef.set(eventData);
 
-    await timelineRef.update({ events, updatedAt: new Date() });
+    console.log(`Event added to database with ID: ${eventRef.id}`);
 
-    res.status(201).json({ id: timelineRef.id, ...eventData });
+    res.status(201).json({ id: eventRef.id, ...eventData });
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ error: "Failed to create event" });
@@ -103,9 +98,8 @@ exports.getEvents = async (req, res) => {
   try {
     const { timelineId } = req.params;
     const eventsSnapshot = await db
-      .collection("timelines")
-      .doc(timelineId)
       .collection("events")
+      .where("timelineId", "==", timelineId)
       .get();
     const events = eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     res.json(events);
@@ -137,8 +131,8 @@ exports.updateEvent = async (req, res) => {
 // Delete Event
 exports.deleteEvent = async (req, res) => {
   try {
-    const { timelineId, eventId } = req.params;
-    await db.collection("timelines").doc(timelineId).collection("events").doc(eventId).delete();
+    const { eventId } = req.params;
+    await db.collection("events").doc(eventId).delete();
     res.json({ message: "Event deleted successfully" });
   } catch (error) {
     console.error("Error deleting event:", error);

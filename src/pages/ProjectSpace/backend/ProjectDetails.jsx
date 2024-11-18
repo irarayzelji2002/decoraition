@@ -172,51 +172,29 @@ export const useProjectDetails = (projectId, setUserId, setProjectData, setNewNa
   }, [projectId, setUserId, setProjectData, setNewName]);
 };
 
-const saveData = async (projectId, formData) => {
-  const currentUser = auth.currentUser;
-  if (!currentUser) {
-    throw new Error("User is not authenticated");
-  }
-  const userId = currentUser.uid;
+export const fetchTasks = async (timelineId) => {
   try {
-    await addDoc(collection(db, "events"), {
-      userId: userId,
-      projectId,
-      taskName: formData.taskName,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      description: formData.description,
-      repeat: formData.repeat,
-      reminders: formData.reminders,
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.get(`/api/timeline/${timelineId}/events`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-    showToast("success", "Document successfully written!");
-  } catch (e) {
-    console.error("Error adding document: ", e);
-    showToast("error", "Error adding document! Please try again.");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    throw error;
   }
 };
 
-export { saveData };
-
-export const fetchTasks = (userId, projectId, setTasks) => {
-  const tasksRef = collection(db, "events");
-  const q = query(tasksRef, where("projectId", "==", projectId));
-
-  const unsubscribeTasks = onSnapshot(q, (querySnapshot) => {
-    const taskList = [];
-    querySnapshot.forEach((doc) => {
-      taskList.push({ id: doc.id, ...doc.data() });
-    });
-    setTasks(taskList);
-  });
-
-  return () => unsubscribeTasks();
-};
-
-export const deleteTask = async (taskId) => {
+export const deleteTask = async (userId, projectId, taskId) => {
   try {
-    const taskRef = doc(db, "events", taskId);
-    await deleteDoc(taskRef);
+    const token = await auth.currentUser.getIdToken();
+    await axios.delete(`/api/timeline/${projectId}/event/${taskId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     showToast("success", "Task successfully deleted!");
   } catch (e) {
     console.error("Error deleting document: ", e);
@@ -241,8 +219,13 @@ export const createEvent = async (timelineId, eventData) => {
     const response = await axios.post(
       `/api/timeline/${timelineId}/event`,
       {
-        eventData,
-        timelineId,
+        timelineId: eventData.timelineId,
+        eventName: eventData.eventName,
+        dateRange: eventData.dateRange,
+        repeating: eventData.repeating,
+        repeatEvery: eventData.repeatEvery,
+        description: eventData.description,
+        reminders: eventData.reminders,
       },
       {
         headers: {
@@ -250,6 +233,7 @@ export const createEvent = async (timelineId, eventData) => {
         },
       }
     );
+    console.log("Event created successfully");
     return response.data;
   } catch (error) {
     console.error("Error creating event:", error);

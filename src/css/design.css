@@ -895,7 +895,56 @@ textarea {
   border-left: 2px solid var(--borderInputBrighter);
   border-radius: 0;
   margin: 0;
+  padding-left: 20px;
 }
+
+.comment-container.reply-to-reply {
+  /* margin-left: 15px; */
+  border-left: 2px solid var(--borderInputBrighter);
+}
+
+.replies-container {
+  margin-left: 0;
+  position: relative;
+}
+
+.replies-container.nested {
+  margin-left: 0;
+}
+
+.editingMentionsCont {
+  display: flex;
+  width: 100%;
+  padding-top: 5px;
+}
+
+.editingMentionsText {
+  color: var(--greyText);
+  font-size: 0.875rem;
+  margin-right: 10px;
+  padding: 5px 0px;
+}
+
+.editingMentionsUsername {
+  color: var(--brightFont);
+  font-weight: bold;
+  margin-right: 10px;
+  font-size: 0.875rem;
+  padding: 5px 0px;
+}
+
+.editingMentionsUsername:hover {
+  color: var(--brightFontHover);
+}
+
+/* .comment-container.reply-to-reply:before {
+  content: " ";
+  position: absolute;
+  left: 0;
+  border-left: 2px solid var(--borderInputBrighter);
+  top: 0;
+  bottom: 0;
+} */
 
 .profile-status {
   margin-right: -5px;

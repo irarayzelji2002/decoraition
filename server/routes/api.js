@@ -135,6 +135,43 @@ router.post(
   designController.createDesignVersion
 );
 
+// Comment routes
+router.post(
+  "/design/:designId/comment/add-comment",
+  authenticateUser,
+  commentController.addComment
+);
+router.put(
+  "/design/:designId/comment/:commentId/edit-comment",
+  authenticateUser,
+  commentController.editComment
+);
+router.put(
+  "/design/:designId/comment/:commentId/edit-comment-status",
+  authenticateUser,
+  commentController.changeCommentStatus
+);
+router.post(
+  "/design/:designId/comment/:commentId/delete-comment",
+  authenticateUser,
+  commentController.deleteComment
+);
+router.put(
+  "/design/:designId/comment/:commentId/add-reply",
+  authenticateUser,
+  commentController.addReply
+);
+router.put(
+  "/design/:designId/comment/:commentId/edit-reply",
+  authenticateUser,
+  commentController.editReply
+);
+router.post(
+  "/design/:designId/comment/:commentId/delete-reply",
+  authenticateUser,
+  commentController.deleteReply
+);
+
 // Project routes
 router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);
 router.post("/project/create", authenticateUser, projectController.createProject);

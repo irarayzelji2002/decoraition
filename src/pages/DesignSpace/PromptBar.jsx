@@ -69,6 +69,7 @@ function PromptBar({
   numImageFrames,
   showPromptBar,
   setShowPromptBar,
+  showComments,
   setShowComments,
   width,
   setWidth,
@@ -1223,7 +1224,7 @@ function PromptBar({
               type="submit"
               fullWidth
               variant="contained"
-              disabled={disabled || !isOnline}
+              disabled={disabled || !isOnline || showComments}
               sx={{
                 color: "white",
                 mt: 3,
@@ -1232,10 +1233,11 @@ function PromptBar({
                 borderRadius: "20px",
                 textTransform: "none",
                 fontWeight: "bold",
-                opacity: disabled || !isOnline ? "0.5" : "1",
-                cursor: disabled || !isOnline ? "default" : "pointer",
+                opacity: disabled || !isOnline || showComments ? "0.5" : "1",
+                cursor: disabled || !isOnline || showComments ? "default" : "pointer",
                 "&:hover": {
-                  backgroundImage: !disabled && isOnline && "var(--gradientButtonHover)",
+                  backgroundImage:
+                    !disabled && isOnline && !showComments && "var(--gradientButtonHover)",
                 },
               }}
               onClick={handleGeneration}

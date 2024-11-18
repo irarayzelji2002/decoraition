@@ -30,6 +30,7 @@ const initialState = {
   userDesignVersions: [],
   userDesignsComments: [],
   userComments: [],
+  userReplies: [],
   userNotifications: [],
   userProjectBudgets: [],
   userBudgets: [],
@@ -65,6 +66,7 @@ export function SharedPropsProvider({ children }) {
   const setUserDesignsComments = (userDesignsComments) =>
     setState((prev) => ({ ...prev, userDesignsComments }));
   const setUserComments = (userComments) => setState((prev) => ({ ...prev, userComments }));
+  const setUserReplies = (userReplies) => setState((prev) => ({ ...prev, userReplies }));
   const setUserNotifications = (userNotifications) =>
     setState((prev) => ({ ...prev, userNotifications }));
   const setUserProjectBudgets = (userProjectBudgets) =>
@@ -116,6 +118,7 @@ export function SharedPropsProvider({ children }) {
     "userDesignVersions",
     "userDesignsComments",
     "userComments",
+    "userReplies",
     "userNotifications",
     "userProjectBudgets",
     "userBudgets",
@@ -147,6 +150,7 @@ export function SharedPropsProvider({ children }) {
     userDesignVersions: setUserDesignVersions,
     userDesignsComments: setUserDesignsComments,
     userComments: setUserComments,
+    userReplies: setUserReplies,
     userNotifications: setUserNotifications,
     userProjectBudgets: setUserProjectBudgets,
     userBudgets: setUserBudgets,
@@ -196,6 +200,7 @@ export function SharedPropsProvider({ children }) {
     setUserDesignVersions,
     setUserDesignsComments,
     setUserComments,
+    setUserReplies,
     setUserNotifications,
     setUserProjectBudgets,
     setUserBudgets,
@@ -264,6 +269,9 @@ export function SharedPropsProvider({ children }) {
   useEffect(() => {
     console.log("User Comments updated:", state.userComments);
   }, [state.userComments]);
+  useEffect(() => {
+    console.log("User Replies updated:", state.userReplies);
+  }, [state.userReplies]);
   useEffect(() => {
     console.log("User Notifications updated:", state.userNotifications);
   }, [state.userNotifications]);

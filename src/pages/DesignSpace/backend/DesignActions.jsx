@@ -1089,6 +1089,25 @@ export const editComment = async (designId, commentId, message, mentions, user, 
   }
 };
 
+export const changeCommentStatus = async (designId, commentId, status, user, userDoc) => {
+  // status: false for open, true for resolved
+  try {
+    const response = await axios.put(
+      `/api/design/${designId}/comment/${commentId}/edit-comment-status`,
+      { userId: userDoc.id, status },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: `Comment ${status ? "resolved" : "reopened"} successfully` };
+    }
+  } catch (error) {
+    console.error(`Error ${status ? "resolving" : "reopening"} comment:`, error);
+    return { success: false, message: `Failed to ${status ? "resolve" : "reopen"} comment` };
+  }
+};
+
 export const deleteComment = async (designId, commentId, user, userDoc) => {
   try {
     const response = await axios.post(
@@ -1109,7 +1128,7 @@ export const deleteComment = async (designId, commentId, user, userDoc) => {
 
 export const addReply = async (
   designId,
-  isReplyToComment,
+  isReplyToReply,
   commentId = "",
   replyId = "",
   message,
@@ -1118,9 +1137,9 @@ export const addReply = async (
   userDoc
 ) => {
   try {
-    const response = await axios.post(
+    const response = await axios.put(
       `/api/design/${designId}/comment/${commentId}/add-reply`,
-      { userId: userDoc.id, isReplyToComment, commentId, replyId, message, mentions },
+      { userId: userDoc.id, isReplyToReply, commentId, replyId, message, mentions },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }
@@ -1136,7 +1155,7 @@ export const addReply = async (
 
 export const editReply = async (
   designId,
-  isReplyToComment,
+  isReplyToReply,
   commentId = "",
   replyId = "",
   message,
@@ -1147,7 +1166,7 @@ export const editReply = async (
   try {
     const response = await axios.put(
       `/api/design/${designId}/comment/${commentId}/edit-reply`,
-      { userId: userDoc.id, isReplyToComment, commentId, replyId, message, mentions },
+      { userId: userDoc.id, isReplyToReply, commentId, replyId, message, mentions },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }

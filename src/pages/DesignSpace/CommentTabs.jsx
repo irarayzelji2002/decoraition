@@ -35,6 +35,7 @@ function CommentTabs({
   const [userOwnedComments, setUserOwnedComments] = useState([]);
   const [userOwnedReplies, setUserOwnedReplies] = useState([]);
   const [filteredAndSortedComments, setFilteredAndSortedComments] = useState([]);
+  const [expandedComments, setExpandedComments] = useState(new Set());
 
   const [isAddCommentOpen, setIsAddCommentOpen] = useState(false);
   // For option select
@@ -461,37 +462,20 @@ function CommentTabs({
         </div>
 
         {/* Comments container */}
-        {commentForTab
-          ? // All Comments tab
-            filteredAndSortedComments.map((comment) => (
-              <CommentContainer
-                key={comment.id}
-                commentId={comment.id}
-                comment={comment}
-                design={design}
-                optionsState={optionsState}
-                setOptionsState={setOptionsState}
-                selectedId={selectedId}
-                setSelectedId={setSelectedId}
-                activeComment={activeComment}
-                setActiveComment={setActiveComment}
-              />
-            ))
-          : // For You tab (user's comments, replies, and mentions)
-            filteredAndSortedComments.map((comment) => (
-              <CommentContainer
-                key={comment.id}
-                commentId={comment.id}
-                comment={comment}
-                design={design}
-                optionsState={optionsState}
-                setOptionsState={setOptionsState}
-                selectedId={selectedId}
-                setSelectedId={setSelectedId}
-                activeComment={activeComment}
-                setActiveComment={setActiveComment}
-              />
-            ))}
+        {filteredAndSortedComments.map((comment) => (
+          <RootCommentContainer
+            key={comment.id}
+            commentId={comment.id}
+            comment={comment}
+            design={design}
+            optionsState={optionsState}
+            setOptionsState={setOptionsState}
+            selectedId={selectedId}
+            setSelectedId={setSelectedId}
+            activeComment={activeComment}
+            setActiveComment={setActiveComment}
+          />
+        ))}
       </Box>
 
       {/* Add a comment button */}
@@ -553,6 +537,16 @@ const getPillTabStyle = (isWrapped, selectedTab, index) => {
   };
 };
 
+const RootCommentContainer = ({ ...props }) => {
+  const [replyTo, setReplyTo] = useState(null);
+
+  useEffect(() => {
+    console.log("reply to:", replyTo);
+  }, [replyTo]);
+
+  return <CommentContainer {...props} replyTo={replyTo} setReplyTo={setReplyTo} />;
+};
+
 const dummyUser1 = { id: "ub9S8LqLBXRFKPJCUQL8xGgCMkH2", username: "irarayzelji" }; // current user
 const dummyUser2 = { id: "qZjAWQkR1ShNfWhG6BQJkElEkQy1", username: "EmanuelRegister" };
 const dummyUser3 = { id: "VJbdZCvYn4hxiEpiT2d6pIzQq2P2", username: "irarayzelji2" };
@@ -585,7 +579,34 @@ const dummyUserDesignComments = [
         mentions: [dummyUser1.id],
         createdAt: createDummyDate("2024-10-01T11:00:00Z"),
         modifiedAt: createDummyDate("2024-10-01T11:30:00Z"),
-        replies: ["reply1_1_1"],
+        replies: ["reply1_1_1", "reply1_1_2"],
+      },
+      {
+        replyId: "reply1_1_1",
+        userId: dummyUser2.id,
+        message: `@${dummyUser1.username} mention in fornt. This is a 1st reply to the first reply.`,
+        mentions: [dummyUser1.id],
+        createdAt: createDummyDate("2024-10-02T11:00:00Z"),
+        modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
+        replies: ["reply1_1_1_1"],
+      },
+      {
+        replyId: "reply1_1_1_1",
+        userId: dummyUser1.id,
+        message: `This is a 1st replt to the 1st reply of the first reply. @${dummyUser3.username}`,
+        mentions: [dummyUser3.id],
+        createdAt: createDummyDate("2024-10-02T11:00:00Z"),
+        modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
+        replies: [],
+      },
+      {
+        replyId: "reply1_1_2",
+        userId: dummyUser1.id,
+        message: `@${dummyUser2.username} mention in fornt. This is a 2nd reply to the first reply.`,
+        mentions: [dummyUser2.id],
+        createdAt: createDummyDate("2024-10-02T11:50:00Z"),
+        modifiedAt: createDummyDate("2024-10-02T11:50:00Z"),
+        replies: [],
       },
       {
         replyId: "reply1_2",
@@ -616,6 +637,15 @@ const dummyUserDesignComments = [
         createdAt: createDummyDate("2024-10-02T10:00:00Z"),
         modifiedAt: createDummyDate("2024-10-02T10:20:00Z"),
         replies: ["reply2_1_1"],
+      },
+      {
+        replyId: "reply2_1_1",
+        userId: dummyUser1.id,
+        message: `Replying to the second comment's reply. @${dummyUser1.username} message after mention.`,
+        mentions: [dummyUser1.id],
+        createdAt: createDummyDate("2024-10-03T10:00:00Z"),
+        modifiedAt: createDummyDate("2024-10-03T10:20:00Z"),
+        replies: [],
       },
     ],
   },

@@ -5,7 +5,7 @@ import TopBar from "../../components/TopBar";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import { saveData, updateTask } from "./backend/ProjectDetails";
+import { saveData, updateTask, createEvent } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 import { CustomSwitch } from "./ProjectSettings.jsx";
@@ -30,6 +30,7 @@ function EditEvent() {
   const queryParams = new URLSearchParams(location.search);
   const selectedDate = queryParams.get("date");
   const taskDetails = queryParams.get("task");
+  const timelineId = queryParams.get("timelineId"); // Retrieve timelineId
   const [allowRepeat, setAllowRepeat] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
@@ -110,13 +111,21 @@ function EditEvent() {
   const handleSave = async () => {
     const currentUser = auth.currentUser;
     if (currentUser) {
+      const eventData = {
+        title: formData.taskName,
+        description: formData.description,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        timelineId: timelineId, // Add timelineId here
+        // Add other necessary fields if required
+      };
       if (taskDetails) {
         // Update existing task
         const taskId = JSON.parse(decodeURIComponent(taskDetails)).id;
-        await updateTask(currentUser.uid, projectId, taskId, formData);
+        await updateTask(currentUser.uid, projectId, taskId, eventData);
       } else {
         // Save new task
-        await saveData(projectId, formData);
+        await createEvent(timelineId, eventData); // Pass timelineId
       }
       navigate(-1); // Go back to the previous page
     }

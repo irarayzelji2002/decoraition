@@ -183,7 +183,7 @@ function PlanMap() {
             designs.map((design) => {
               return (
                 <>
-                  <MapPin title={design.name} />
+                  <MapPin title={design.designName} />
                 </>
               );
             })

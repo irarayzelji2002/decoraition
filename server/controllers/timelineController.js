@@ -1,4 +1,4 @@
-const { db, auth } = require("../firebase");
+const { db, auth, admin } = require("../firebase"); // Add admin import
 
 // Create Timeline
 exports.createTimeline = async (req, res) => {
@@ -63,19 +63,35 @@ exports.deleteTimeline = async (req, res) => {
 // Create Event
 exports.createEvent = async (req, res) => {
   try {
-    const { timelineId } = req.params;
-    const { title, description, startDate, endDate } = req.body;
-    const eventRef = db.collection("timelines").doc(timelineId).collection("events").doc();
+    const { title, description, startDate, endDate, timelineId } = req.body;
+
+    if (!title || !description || !startDate || !endDate || !timelineId) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const timelineRef = db.collection("timelines").doc(timelineId);
+    const timelineDoc = await timelineRef.get();
+
+    if (!timelineDoc.exists) {
+      return res.status(404).json({ error: "Timeline not found" });
+    }
+
     const eventData = {
       title,
       description,
-      startDate,
-      endDate,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    await eventRef.set(eventData);
-    res.status(201).json({ id: eventRef.id, ...eventData });
+
+    const timelineData = timelineDoc.data();
+    const events = timelineData.events || [];
+    events.push(eventData);
+
+    await timelineRef.update({ events, updatedAt: new Date() });
+
+    res.status(201).json({ id: timelineRef.id, ...eventData });
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ error: "Failed to create event" });
@@ -127,5 +143,27 @@ exports.deleteEvent = async (req, res) => {
   } catch (error) {
     console.error("Error deleting event:", error);
     res.status(500).json({ error: "Failed to delete event" });
+  }
+};
+
+// Fetch Timeline ID
+exports.fetchTimelineId = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const timelineSnapshot = await db
+      .collection("timelines")
+      .where("projectId", "==", projectId)
+      .limit(1)
+      .get();
+
+    if (timelineSnapshot.empty) {
+      return res.status(404).json({ error: "Timeline not found" });
+    }
+
+    const timelineId = timelineSnapshot.docs[0].id;
+    res.json({ timelineId });
+  } catch (error) {
+    console.error("Error fetching timeline ID:", error);
+    res.status(500).json({ error: "Failed to fetch timeline ID" });
   }
 };

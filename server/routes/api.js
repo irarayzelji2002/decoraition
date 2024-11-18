@@ -198,4 +198,8 @@ router.get("/health-check", (req, res) => {
   res.status(200).send("OK");
 });
 
+// Timeline routes
+router.post("/timeline/:timelineId/event", authenticateUser, timelineController.createEvent);
+router.get("/project/:projectId/timelineId", authenticateUser, timelineController.fetchTimelineId); // New route to fetch timeline
+
 module.exports = router;

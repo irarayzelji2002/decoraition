@@ -54,6 +54,8 @@ function Project() {
   });
   const [filteredDesignsForTable, setFilteredDesignsForTable] = useState([]);
   const [loadingDesigns, setLoadingDesigns] = useState(true);
+  const [sortBy, setSortBy] = useState("");
+  const [order, setOrder] = useState("");
 
   const handleVerticalClick = () => {
     setIsVertical(true);
@@ -63,6 +65,33 @@ function Project() {
   };
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
+  };
+
+  const handleSortByChange = (value) => {
+    setSortBy(value);
+    sortDesigns(value, order);
+  };
+
+  const handleOrderChange = (value) => {
+    setOrder(value);
+    sortDesigns(sortBy, value);
+  };
+
+  const sortDesigns = (sortBy, order) => {
+    const sortedDesigns = [...designs].sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === "name") {
+        comparison = a.designName.localeCompare(b.designName);
+      } else if (sortBy === "owner") {
+        comparison = a.owner.localeCompare(b.owner);
+      } else if (sortBy === "created") {
+        comparison = a.createdAtTimestamp - b.createdAtTimestamp;
+      } else if (sortBy === "modified") {
+        comparison = a.modifiedAtTimestamp - b.modifiedAtTimestamp;
+      }
+      return order === "ascending" ? comparison : -comparison;
+    });
+    setFilteredDesignsForTable(sortedDesigns);
   };
 
   useEffect(() => {
@@ -245,7 +274,12 @@ function Project() {
             inputProps={{ "aria-label": "search google maps" }}
           />
         </Paper>
-        <Dropdowns />
+        <Dropdowns
+          sortBy={sortBy}
+          order={order}
+          onSortByChange={handleSortByChange}
+          onOrderChange={handleOrderChange}
+        />
         <div
           style={{
             display: "flex",
@@ -325,8 +359,8 @@ function Project() {
                     setOptionsState={setOptionsState}
                   />
                 )
-              : designs.length > 0 &&
-                designs.slice(0, 6).map((design) => (
+              : filteredDesignsForTable.length > 0 &&
+                filteredDesignsForTable.slice(0, 6).map((design) => (
                   <DesignIcon
                     id={design.id}
                     name={design.designName}
@@ -345,7 +379,7 @@ function Project() {
                 ))}
           </div>
         </div>
-        {designs.length === 0 && (
+        {filteredDesignsForTable.length === 0 && (
           <div className="no-content">
             <img src="/img/design-placeholder.png" alt="No designs yet" />
             <p>No designs yet. Start creating.</p>

@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 import EditPen from "../DesignSpace/svg/EditPen";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import Trash from "../DesignSpace/svg/Trash";
-import { fetchTasks, deleteTask } from "./backend/ProjectDetails";
+import { fetchTasks, deleteTask, fetchTimelineId } from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 import { Button, IconButton } from "@mui/material";
@@ -33,6 +33,7 @@ function Timeline() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [viewMode, setViewMode] = useState("calendar"); // "calendar", "list", "single"
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  const [timelineId, setTimelineId] = useState(null); // Add state for timelineId
 
   const openDeleteModal = () => {
     setShowDeleteModal(true);
@@ -56,6 +57,19 @@ function Timeline() {
 
     return () => clearInterval(intervalId); // Clear interval on component unmount
   }, [projectId]);
+
+  useEffect(() => {
+    const fetchAndSetTimelineId = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const id = await fetchTimelineId(currentUser.uid, projectId);
+        setTimelineId(id);
+      }
+    };
+
+    fetchAndSetTimelineId(); // Fetch timelineId when the component mounts
+  }, [projectId]);
+
   const formatDate = (date) => {
     const options = { month: "short", day: "numeric", year: "numeric" };
     return date.toLocaleDateString(undefined, options);
@@ -76,7 +90,7 @@ function Timeline() {
 
   const handleEditClick = (task) => {
     const taskDetails = encodeURIComponent(JSON.stringify(task));
-    navigate(`/editEvent/${projectId}?task=${taskDetails}`, {
+    navigate(`/editEvent/${projectId}?task=${taskDetails}&timelineId=${timelineId}`, {
       state: { navigateFrom: navigateFrom },
     });
   };
@@ -85,7 +99,7 @@ function Timeline() {
     const formattedDate = new Date(date);
     formattedDate.setDate(formattedDate.getDate() + 1);
     const formattedDateString = formattedDate.toISOString().split("T")[0];
-    navigate(`/editEvent/${projectId}?date=${formattedDateString}`, {
+    navigate(`/editEvent/${projectId}?date=${formattedDateString}&timelineId=${timelineId}`, {
       state: { navigateFrom: navigateFrom },
     });
   };
@@ -192,7 +206,7 @@ function Timeline() {
                 </button>
               </div>
               <div className="tasks-list">
-                <h2>All Tasks</h2>
+                <h2 style={{ color: "var(--color-white)" }}>All Tasks</h2>
                 {tasks.length === 0 ? (
                   <p>No tasks available</p>
                 ) : (
@@ -231,7 +245,7 @@ function Timeline() {
                 <ArrowBackIosNew sx={{ color: "var(--color-white)" }} />
               </Button>
 
-              <h2>
+              <h2 style={{ color: "var(--color-white)" }}>
                 {date.toLocaleDateString(undefined, {
                   month: "short",
                   day: "numeric",
@@ -279,7 +293,7 @@ function Timeline() {
                 <ArrowBackIosNew sx={{ color: "var(--color-white)" }} />
               </Button>
 
-              <h2>
+              <h2 style={{ color: "var(--color-white)" }}>
                 Task {currentTaskIndex + 1} of {tasks.length}
               </h2>
 

@@ -231,7 +231,17 @@ export const formatDate = (timestamp) => {
 
 // For tiled view
 export const formatDateLong = (timestamp) => {
-  const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+  console.log("formatDateLong - timestamp:", timestamp); // Debug log
+
+  const seconds = timestamp.seconds || timestamp._seconds;
+  const nanoseconds = timestamp.nanoseconds || timestamp._nanoseconds;
+
+  if (seconds === undefined || nanoseconds === undefined) {
+    console.error("Invalid timestamp:", timestamp); // Debug log
+    return "Invalid date";
+  }
+
+  const date = new Date(seconds * 1000 + nanoseconds / 1000000);
 
   const dateAgo = formatDateAgo(date);
   if (dateAgo) return dateAgo;

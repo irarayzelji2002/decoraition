@@ -184,7 +184,6 @@ function PlanMap() {
               return (
                 <>
                   <MapPin title={design.name} />
-                  <div className="bottom-filler" />
                 </>
               );
             })
@@ -194,6 +193,7 @@ function PlanMap() {
               <p>No designs yet. Start creating.</p>
             </div>
           )}
+          <div className="bottom-filler" />
         </div>
       </div>
 

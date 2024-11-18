@@ -265,7 +265,6 @@ exports.fetchUserProjects = async (req, res) => {
 exports.fetchProjectDesigns = async (req, res) => {
   try {
     const { projectId } = req.params;
-    console.log(`Fetching designs for projectId: ${projectId}`); // Debug log
 
     const designsSnapshot = await db
       .collection("designs")
@@ -274,7 +273,6 @@ exports.fetchProjectDesigns = async (req, res) => {
       .get();
 
     const designs = designsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    console.log(`Fetched designs: ${JSON.stringify(designs)}`); // Debug log
 
     res.status(200).json(designs);
   } catch (error) {

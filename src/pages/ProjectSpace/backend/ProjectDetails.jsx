@@ -26,7 +26,6 @@ export const fetchProjectDesigns = async (projectId, setDesigns) => {
     if (response.status === 200) {
       console.log(`Fetched designs: ${JSON.stringify(response.data)}`); // Debug log
       setDesigns(response.data);
-      showToast("success", "Project designs fetched successfully!");
     } else {
       showToast("error", "Failed to fetch project designs.");
     }

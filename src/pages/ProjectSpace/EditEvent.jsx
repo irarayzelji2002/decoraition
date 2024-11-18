@@ -13,8 +13,7 @@ import { Box, Modal, TextField, Button } from "@mui/material";
 import { RepeatSelector } from "./svg/ExportIcon";
 import { ThemeProvider } from "@mui/system";
 import { theme } from "./ProjectSettings.jsx";
-import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import ReminderSpecific from "./ReminderSpecific";
 import { Typography, IconButton, InputBase, Select, MenuItem } from "@mui/material";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -26,7 +25,7 @@ function EditEvent() {
   const navigate = useNavigate();
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
-
+  const user = useSharedProps();
   const queryParams = new URLSearchParams(location.search);
   const selectedDate = queryParams.get("date");
   const taskDetails = queryParams.get("task");
@@ -112,22 +111,28 @@ function EditEvent() {
     const currentUser = auth.currentUser;
     if (currentUser) {
       const eventData = {
-        title: formData.taskName,
+        timelineId: timelineId,
+        eventName: formData.taskName,
+        dateRange: {
+          start: new Date(formData.startDate).toISOString(),
+          end: new Date(formData.endDate).toISOString(),
+        },
+        repeating: allowRepeat,
+        repeatEvery: formData.repeat.frequency ? parseInt(formData.repeat.frequency) : 0,
         description: formData.description,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        timelineId: timelineId, // Add timelineId here
-        // Add other necessary fields if required
+        reminders: formData.reminders.map((reminder) => ({
+          timeBeforeEvent: reminder.count * (reminder.unit === "day" ? 1440 : 60),
+          timeToRemind: new Date().toISOString(), // Placeholder, replace with actual reminder time logic
+        })),
       };
       if (taskDetails) {
-        // Update existing task
         const taskId = JSON.parse(decodeURIComponent(taskDetails)).id;
         await updateTask(currentUser.uid, projectId, taskId, eventData);
       } else {
-        // Save new task
-        await createEvent(timelineId, eventData); // Pass timelineId
+        console.log("Creating event:", JSON.parse(JSON.stringify(eventData)));
+        await createEvent(timelineId, JSON.parse(JSON.stringify(eventData))); // Ensure no circular references
       }
-      navigate(-1); // Go back to the previous page
+      navigate(-1);
     }
   };
 
@@ -143,12 +148,13 @@ function EditEvent() {
         <div className="edit-event">
           <div className="form-container">
             <div className="form-group">
-              <label htmlFor="taskName">Task / Event name</label>
+              <label htmlFor="taskName">Task / Event name </label>
               <input
                 type="text"
                 id="taskName"
                 name="taskName"
                 value={formData.taskName}
+                style={{ color: "var(--color-white) !important" }}
                 onChange={(e) => handleInputChange(e, "taskName")}
               />
             </div>

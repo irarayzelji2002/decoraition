@@ -172,32 +172,6 @@ export const useProjectDetails = (projectId, setUserId, setProjectData, setNewNa
   }, [projectId, setUserId, setProjectData, setNewName]);
 };
 
-const saveData = async (projectId, formData) => {
-  const currentUser = auth.currentUser;
-  if (!currentUser) {
-    throw new Error("User is not authenticated");
-  }
-  const userId = currentUser.uid;
-  try {
-    await addDoc(collection(db, "events"), {
-      userId: userId,
-      projectId,
-      taskName: formData.taskName,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      description: formData.description,
-      repeat: formData.repeat,
-      reminders: formData.reminders,
-    });
-    showToast("success", "Document successfully written!");
-  } catch (e) {
-    console.error("Error adding document: ", e);
-    showToast("error", "Error adding document! Please try again.");
-  }
-};
-
-export { saveData };
-
 export const fetchTasks = (userId, projectId, setTasks) => {
   const tasksRef = collection(db, "events");
   const q = query(tasksRef, where("projectId", "==", projectId));
@@ -241,8 +215,13 @@ export const createEvent = async (timelineId, eventData) => {
     const response = await axios.post(
       `/api/timeline/${timelineId}/event`,
       {
-        eventData,
-        timelineId,
+        timelineId: eventData.timelineId,
+        eventName: eventData.eventName,
+        dateRange: eventData.dateRange,
+        repeating: eventData.repeating,
+        repeatEvery: eventData.repeatEvery,
+        description: eventData.description,
+        reminders: eventData.reminders,
       },
       {
         headers: {
@@ -250,6 +229,7 @@ export const createEvent = async (timelineId, eventData) => {
         },
       }
     );
+    console.log("Event created successfully");
     return response.data;
   } catch (error) {
     console.error("Error creating event:", error);

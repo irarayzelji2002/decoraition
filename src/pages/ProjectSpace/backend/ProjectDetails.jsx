@@ -172,25 +172,29 @@ export const useProjectDetails = (projectId, setUserId, setProjectData, setNewNa
   }, [projectId, setUserId, setProjectData, setNewName]);
 };
 
-export const fetchTasks = (userId, projectId, setTasks) => {
-  const tasksRef = collection(db, "events");
-  const q = query(tasksRef, where("projectId", "==", projectId));
-
-  const unsubscribeTasks = onSnapshot(q, (querySnapshot) => {
-    const taskList = [];
-    querySnapshot.forEach((doc) => {
-      taskList.push({ id: doc.id, ...doc.data() });
+export const fetchTasks = async (timelineId) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.get(`/api/timeline/${timelineId}/events`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-    setTasks(taskList);
-  });
-
-  return () => unsubscribeTasks();
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    throw error;
+  }
 };
 
-export const deleteTask = async (taskId) => {
+export const deleteTask = async (userId, projectId, taskId) => {
   try {
-    const taskRef = doc(db, "events", taskId);
-    await deleteDoc(taskRef);
+    const token = await auth.currentUser.getIdToken();
+    await axios.delete(`/api/timeline/${projectId}/event/${taskId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     showToast("success", "Task successfully deleted!");
   } catch (e) {
     console.error("Error deleting document: ", e);

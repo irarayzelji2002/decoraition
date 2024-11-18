@@ -70,78 +70,113 @@ function Homepage() {
   const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
   const [isProjectButtonDisabled, setIsProjectButtonDisabled] = useState(false);
 
+  const usernameCache = new Map();
+
+  const fetchUsernamesBatch = async (userIds) => {
+    const uncachedUserIds = userIds.filter((id) => !usernameCache.has(id));
+    if (uncachedUserIds.length > 0) {
+      const usernames = await getUsernames(uncachedUserIds);
+      uncachedUserIds.forEach((id, index) => {
+        usernameCache.set(id, usernames[index]);
+      });
+    }
+    return userIds.map((id) => usernameCache.get(id));
+  };
+
+  const managerCache = new Map();
+
+  const fetchManagersBatch = async (managerIds) => {
+    const uncachedManagerIds = managerIds.filter((id) => !managerCache.has(id));
+    if (uncachedManagerIds.length > 0) {
+      const managers = await getUsernames(uncachedManagerIds);
+      uncachedManagerIds.forEach((id, index) => {
+        managerCache.set(id, managers[index]);
+      });
+    }
+    return managerIds.map((id) => managerCache.get(id));
+  };
+
   const loadDesignDataForView = async () => {
+    console.time("Loading Designs");
     setLoadingDesigns(true);
     if (userDesigns.length > 0) {
-      const designsByLatest = [...userDesigns].sort((a, b) => {
-        return b.modifiedAt.toMillis() - a.modifiedAt.toMillis();
-      });
+      console.time("Sorting Designs");
+      const designsByLatest = [...userDesigns].sort(
+        (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
+      );
+      console.timeEnd("Sorting Designs");
 
+      console.time("Filtering Designs");
       const filteredDesigns = designsByLatest.filter((design) =>
         design.designName.toLowerCase().includes(searchQuery.trim().toLowerCase())
       );
+      console.timeEnd("Filtering Designs");
       setFilteredDesigns(filteredDesigns);
 
-      const tableData = await Promise.all(
-        filteredDesigns.map(async (design) => {
-          const username = await getUsername(design.owner);
-          return {
-            ...design,
-            ownerId: design.owner,
-            owner: username,
-            formattedCreatedAt: formatDate(design.createdAt),
-            createdAtTimestamp: design.createdAt.toMillis(),
-            formattedModifiedAt: formatDate(design.modifiedAt),
-            modifiedAtTimestamp: design.modifiedAt.toMillis(),
-          };
-        })
-      );
+      console.time("Preparing Table Data for Designs");
+      const ownerIds = filteredDesigns.map((design) => design.owner);
+      const usernames = await fetchUsernamesBatch(ownerIds);
+
+      const tableData = filteredDesigns.map((design, index) => ({
+        ...design,
+        ownerId: design.owner,
+        owner: usernames[index],
+        formattedCreatedAt: formatDate(design.createdAt),
+        createdAtTimestamp: design.createdAt.toMillis(),
+        formattedModifiedAt: formatDate(design.modifiedAt),
+        modifiedAtTimestamp: design.modifiedAt.toMillis(),
+      }));
+      console.timeEnd("Preparing Table Data for Designs");
       setFilteredDesignsForTable(tableData);
     } else {
       setFilteredDesigns([]);
       setFilteredDesignsForTable([]);
     }
     setLoadingDesigns(false);
+    console.timeEnd("Loading Designs");
   };
 
   const loadProjectDataForView = async () => {
+    console.time("Loading Projects");
     setLoadingProjects(true);
     if (userProjects.length > 0) {
-      const projectsByLatest = [...userProjects].sort((a, b) => {
-        return b.modifiedAt.toMillis() - a.modifiedAt.toMillis();
-      });
+      console.time("Sorting Projects");
+      const projectsByLatest = [...userProjects].sort(
+        (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
+      );
+      console.timeEnd("Sorting Projects");
 
+      console.time("Filtering Projects");
       const filteredProjects = projectsByLatest.filter((project) =>
         project.projectName.toLowerCase().includes(searchQuery.trim().toLowerCase())
       );
+      console.timeEnd("Filtering Projects");
       setFilteredProjects(filteredProjects);
 
-      const tableData = await Promise.all(
-        filteredProjects.map(async (project) => {
-          const managersId = project.managers || [];
-          const managers = await Promise.all(
-            managersId.map(async (userId) => {
-              const username = await getUsername(userId);
-              return username;
-            })
-          );
-          return {
-            ...project,
-            managersId,
-            managers,
-            formattedCreatedAt: formatDate(project.createdAt),
-            createdAtTimestamp: project.createdAt.toMillis(),
-            formattedModifiedAt: formatDate(project.modifiedAt),
-            modifiedAtTimestamp: project.modifiedAt.toMillis(),
-          };
-        })
-      );
+      console.time("Preparing Table Data for Projects");
+      const managerIds = filteredProjects.flatMap((project) => project.managers || []);
+      const managers = await fetchManagersBatch(managerIds);
+
+      const tableData = filteredProjects.map((project) => {
+        const projectManagers = (project.managers || []).map((id) => managerCache.get(id));
+        return {
+          ...project,
+          managersId: project.managers,
+          managers: projectManagers,
+          formattedCreatedAt: formatDate(project.createdAt),
+          createdAtTimestamp: project.createdAt.toMillis(),
+          formattedModifiedAt: formatDate(project.modifiedAt),
+          modifiedAtTimestamp: project.modifiedAt.toMillis(),
+        };
+      });
+      console.timeEnd("Preparing Table Data for Projects");
       setFilteredProjectsForTable(tableData);
     } else {
       setFilteredProjects([]);
       setFilteredProjectsForTable([]);
     }
     setLoadingProjects(false);
+    console.timeEnd("Loading Projects");
   };
 
   const setThresholdAfterViewChange = (type) => {

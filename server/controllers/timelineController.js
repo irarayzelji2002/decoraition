@@ -98,9 +98,8 @@ exports.getEvents = async (req, res) => {
   try {
     const { timelineId } = req.params;
     const eventsSnapshot = await db
-      .collection("timelines")
-      .doc(timelineId)
       .collection("events")
+      .where("timelineId", "==", timelineId)
       .get();
     const events = eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     res.json(events);
@@ -132,8 +131,8 @@ exports.updateEvent = async (req, res) => {
 // Delete Event
 exports.deleteEvent = async (req, res) => {
   try {
-    const { timelineId, eventId } = req.params;
-    await db.collection("timelines").doc(timelineId).collection("events").doc(eventId).delete();
+    const { eventId } = req.params;
+    await db.collection("events").doc(eventId).delete();
     res.json({ message: "Event deleted successfully" });
   } catch (error) {
     console.error("Error deleting event:", error);

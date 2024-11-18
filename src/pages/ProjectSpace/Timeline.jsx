@@ -44,21 +44,6 @@ function Timeline() {
   };
 
   useEffect(() => {
-    const fetchAndSetTasks = async () => {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        await fetchTasks(currentUser.uid, projectId, setTasks);
-      }
-    };
-
-    fetchAndSetTasks(); // Fetch tasks immediately when the component mounts
-
-    const intervalId = setInterval(fetchAndSetTasks, 1000); // Refresh every 60 seconds
-
-    return () => clearInterval(intervalId); // Clear interval on component unmount
-  }, [projectId]);
-
-  useEffect(() => {
     const fetchAndSetTimelineId = async () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
@@ -69,6 +54,22 @@ function Timeline() {
 
     fetchAndSetTimelineId(); // Fetch timelineId when the component mounts
   }, [projectId]);
+
+  useEffect(() => {
+    const fetchAndSetTasks = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser && timelineId) {
+        const tasks = await fetchTasks(timelineId);
+        setTasks(tasks);
+      }
+    };
+
+    fetchAndSetTasks(); // Fetch tasks immediately when the component mounts
+
+    const intervalId = setInterval(fetchAndSetTasks, 1000); // Refresh every 60 seconds
+
+    return () => clearInterval(intervalId); // Clear interval on component unmount
+  }, [projectId, timelineId]);
 
   const formatDate = (date) => {
     const options = { month: "short", day: "numeric", year: "numeric" };
@@ -137,11 +138,14 @@ function Timeline() {
   };
 
   const filteredTasks = tasks.filter(
-    (task) => new Date(task.endDate).toDateString() === date.toDateString()
+    (task) => task.dateRange && new Date(task.dateRange.end).toDateString() === date.toDateString()
   );
 
   const hasTasks = (date) => {
-    return tasks.some((task) => new Date(task.endDate).toDateString() === date.toDateString());
+    return tasks.some(
+      (task) =>
+        task.dateRange && new Date(task.dateRange.end).toDateString() === date.toDateString()
+    );
   };
 
   return (
@@ -202,7 +206,6 @@ function Timeline() {
               <div className="add-event-button">
                 <button className="design-button" onClick={handleAddEventClick}>
                   Add Event for {formatDate(date)}
-                  {/* dummy */}
                 </button>
               </div>
               <div className="tasks-list">
@@ -213,14 +216,16 @@ function Timeline() {
                   tasks.map((task) => (
                     <div className="task-item" key={task.id}>
                       <div className="task-text">
-                        <h3>{task.taskName}</h3>
+                        <h3>{task.eventName}</h3>
                         <p>
                           Until{" "}
-                          {new Date(task.endDate).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {task.dateRange
+                            ? new Date(task.dateRange.end).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "N/A"}
                         </p>
                       </div>
                       <div className="task-actions">
@@ -236,6 +241,7 @@ function Timeline() {
                 )}
               </div>
             </div>
+            <div className="bottom-filler" />
           </>
         )}
         {viewMode === "list" && (
@@ -263,14 +269,16 @@ function Timeline() {
               filteredTasks.map((task) => (
                 <div className="task-item" key={task.id}>
                   <div className="task-text">
-                    <h3>{task.taskName}</h3>
+                    <h3>{task.eventName}</h3>
                     <p>
                       Until{" "}
-                      {new Date(task.endDate).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                      {task.dateRange
+                        ? new Date(task.dateRange.end).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "N/A"}
                     </p>
                   </div>
                   <div className="task-actions">
@@ -303,14 +311,19 @@ function Timeline() {
             </div>
             <div className="task-item" style={{ background: "none", marginBottom: "0px" }}>
               <div className="task-text">
-                <h3>{tasks[currentTaskIndex].taskName}</h3>
+                <h3>{tasks[currentTaskIndex].eventName}</h3>
                 <p>
                   Until{" "}
-                  {new Date(tasks[currentTaskIndex].endDate).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  {tasks[currentTaskIndex].dateRange
+                    ? new Date(tasks[currentTaskIndex].dateRange.end).toLocaleDateString(
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )
+                    : "N/A"}
                 </p>
               </div>
 

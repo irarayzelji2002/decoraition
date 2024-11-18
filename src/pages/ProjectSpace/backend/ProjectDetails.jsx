@@ -234,3 +234,40 @@ export const updateTask = async (userId, projectId, taskId, updatedData) => {
     showToast("error", "Error updating task! Please try again.");
   }
 };
+
+export const createEvent = async (timelineId, eventData) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.post(
+      `/api/timeline/${timelineId}/event`,
+      {
+        eventData,
+        timelineId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating event:", error);
+    throw error;
+  }
+};
+
+export const fetchTimelineId = async (userId, projectId) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.get(`/api/project/${projectId}/timelineId`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.timelineId;
+  } catch (error) {
+    console.error("Error fetching timelineId:", error);
+    throw error;
+  }
+};

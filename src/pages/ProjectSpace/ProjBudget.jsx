@@ -7,34 +7,33 @@ import ExportIcon from "./svg/ExportIcon";
 import { ToastContainer } from "react-toastify";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, doc, onSnapshot, getDoc } from "firebase/firestore";
-import { db, auth } from "../../firebase";
-import { fetchDesigns } from "./backend/ProjectDetails";
-import { onAuthStateChanged } from "firebase/auth";
+import { db } from "../../firebase";
+import { fetchProjectDesigns } from "./backend/ProjectDetails";
+import { toast } from "react-toastify";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function ProjBudget() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
   const [designs, setDesigns] = useState([]);
-  const [user, setUser] = useState(null);
+  const { user } = useSharedProps();
   const [designBudgetItems, setDesignBudgetItems] = useState({});
 
   useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (user) {
-    }
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    const fetchData = async () => {
       if (user) {
-        setUser(user);
-        fetchDesigns(currentUser.uid, projectId, setDesigns, setDesignBudgetItems);
-      } else {
-        setUser(null);
-        setDesigns([]);
+        try {
+          console.log(`Fetching designs for budget: ${projectId}`); // Debug log
+          await fetchProjectDesigns(projectId, setDesigns);
+        } catch (error) {
+          toast.error(`Error fetching project designs: ${error.message}`);
+        }
       }
-    });
+    };
 
-    return () => unsubscribeAuth();
-  }, [user]);
+    fetchData();
+  }, [user, projectId]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -94,7 +93,7 @@ function ProjBudget() {
             marginBottom: "20px",
           }}
         >
-          Total Project Budget: ₱ <strong>{totalProjectBudget.toFixed(2)}</strong>
+          Total Project Budget: ₱ <strong>{totalProjectBudget}</strong>
         </span>
         <div style={{ marginBottom: "10%" }}>
           {designs.length > 0 ? (
@@ -109,9 +108,9 @@ function ProjBudget() {
                   <div>
                     <div style={{ display: "flex", flexDirection: "column" }}>
                       <span className="SubtitleBudget" style={{ fontSize: "30px" }}>
-                        {design.name}
+                        {design.designName}
                       </span>
-                      <span className="SubtitlePrice">Total Cost: Php {totalCost.toFixed(2)}</span>
+                      <span className="SubtitlePrice">Total Cost: Php {totalCost}</span>
                     </div>
 
                     <div className="image-frame-project">

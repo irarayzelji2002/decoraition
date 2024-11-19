@@ -10,7 +10,7 @@ import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 import { CustomSwitch } from "./ProjectSettings.jsx";
 import { Box, Modal, TextField, Button } from "@mui/material";
-import { RepeatSelector } from "./svg/ExportIcon";
+import RepeatSelector from "./RepeatSelector.jsx";
 import { ThemeProvider } from "@mui/system";
 import { theme } from "./ProjectSettings.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
@@ -46,12 +46,15 @@ function EditEvent() {
           endDate: new Date(taskDetails.dateRange.end._seconds * 1000).toISOString().split("T")[0],
           description: taskDetails.description,
           repeat: {
-            frequency: taskDetails.repeatEvery,
-            unit: taskDetails.repeating ? "day" : "",
+            frequency: taskDetails.repeatEvery.frequency,
+            unit: taskDetails.repeatEvery.unit || "none", // Ensure unit is set to a valid option
           },
           reminders: taskDetails.reminders.map((reminder) => ({
             ...reminder,
-            count: reminder.timeBeforeEvent / (reminder.unit === "day" ? 1440 : 60),
+            count: reminder.timeBeforeEvent, // Save and retrieve in days directly
+            hours: reminder.hours || 0,
+            minutes: reminder.minutes || 0,
+            period: reminder.period || "AM",
           })),
           repeatEnabled: taskDetails.repeating,
         }
@@ -61,14 +64,20 @@ function EditEvent() {
           endDate: selectedDate || "",
           description: "",
           repeat: {
-            frequency: "",
-            unit: "day",
+            frequency: 0,
+            unit: "none", // Ensure unit is set to a valid option
           },
           reminders: [],
           repeatEnabled: true,
         };
 
   const [formData, setFormData] = useState(initialFormData);
+
+  useEffect(() => {
+    if (taskDetails.repeating) {
+      setAllowRepeat(true);
+    }
+  }, [taskDetails]);
 
   const handleInputChange = (e, fieldName, nestedField = null) => {
     const { value } = e.target;
@@ -111,18 +120,29 @@ function EditEvent() {
   };
 
   const saveReminder = (reminder) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      reminders: [...prevData.reminders, { ...reminder, id: Date.now() }],
-    }));
+    setFormData((prevData) => {
+      const existingReminderIndex = prevData.reminders.findIndex((r) => r.id === reminder.id);
+      if (existingReminderIndex !== -1) {
+        const updatedReminders = [...prevData.reminders];
+        updatedReminders[existingReminderIndex] = reminder;
+        return {
+          ...prevData,
+          reminders: updatedReminders,
+        };
+      } else {
+        return {
+          ...prevData,
+          reminders: [...prevData.reminders, { ...reminder, id: Date.now() }],
+        };
+      }
+    });
     setOpenModal(false);
   };
 
   const deleteReminder = (id) => {
-    const newReminders = formData.reminders.filter((reminder) => reminder.id !== id);
     setFormData((prevData) => ({
       ...prevData,
-      reminders: newReminders,
+      reminders: prevData.reminders.filter((reminder) => reminder.id !== id),
     }));
   };
 
@@ -145,12 +165,21 @@ function EditEvent() {
           end: endDate,
         },
         repeating: allowRepeat,
-        repeatEvery: formData.repeat.frequency ? parseInt(formData.repeat.frequency) : 0,
+        repeatEvery: {
+          frequency: formData.repeat.frequency,
+          unit: formData.repeat.unit,
+        },
         description: formData.description,
-        reminders: formData.reminders.map((reminder) => ({
-          timeBeforeEvent: reminder.count * (reminder.unit === "day" ? 1440 : 60),
-          timeToRemind: new Date().toISOString(), // Placeholder, replace with actual reminder time logic
-        })),
+        reminders: formData.reminders.map((reminder) => {
+          const reminderDate = new Date(startDate);
+          reminderDate.setDate(reminderDate.getDate() - reminder.count);
+          reminderDate.setHours(reminder.hours);
+          reminderDate.setMinutes(reminder.minutes);
+          return {
+            timeBeforeEvent: reminder.count, // Save in days directly
+            timeToRemind: reminderDate.toISOString(),
+          };
+        }),
       };
 
       if (taskDetails) {
@@ -170,6 +199,16 @@ function EditEvent() {
 
   const handleRepeatToggle = () => {
     setAllowRepeat((prev) => !prev);
+  };
+
+  const handleRepeatChange = (count, unit) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      repeat: {
+        frequency: count,
+        unit: unit,
+      },
+    }));
   };
 
   const today = new Date().toISOString().split("T")[0];
@@ -225,7 +264,13 @@ function EditEvent() {
             </div>
             <div className="form-group repeat">
               <CustomSwitch label="Repeat" checked={allowRepeat} onChange={handleRepeatToggle} />
-              {allowRepeat && <RepeatSelector />}
+              {allowRepeat && (
+                <RepeatSelector
+                  count={formData.repeat.frequency}
+                  unit={formData.repeat.unit}
+                  onRepeatChange={handleRepeatChange}
+                />
+              )}
             </div>
             <div className="reminders">
               <div className="reminders-header">

@@ -1,19 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Typography, IconButton, InputBase, Select, MenuItem } from "@mui/material";
 import { ArrowRight as ArrowRightIcon, ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
 
-const RepeatSelector = () => {
-  const [count, setCount] = useState(1);
-  const [unit, setUnit] = useState("week");
+const RepeatSelector = ({ count: initialCount, unit: initialUnit, onRepeatChange }) => {
+  const [count, setCount] = useState(initialCount);
+  const [unit, setUnit] = useState(initialUnit);
+
+  useEffect(() => {
+    onRepeatChange(count, unit);
+  }, [count, unit, onRepeatChange]);
+
   const handleIncrement = () => {
-    setCount((prevCount) => prevCount + 1);
+    setCount((prevCount) => {
+      switch (unit) {
+        case "day":
+          return prevCount < 6 ? prevCount + 1 : 6;
+        case "week":
+          return prevCount < 3 ? prevCount + 1 : 3;
+        case "month":
+          return prevCount < 11 ? prevCount + 1 : 11;
+        case "year":
+          return prevCount < 100 ? prevCount + 1 : 100;
+        default:
+          return prevCount + 1;
+      }
+    });
   };
+
   const handleDecrement = () => {
     setCount((prevCount) => (prevCount > 1 ? prevCount - 1 : 1));
   };
+
   const handleUnitChange = (event) => {
-    setUnit(event.target.value);
+    const value = event.target.value;
+    setUnit(value);
+    switch (value) {
+      case "none":
+        setCount(0);
+        break;
+      case "day":
+        setCount(1);
+        break;
+      case "week":
+        setCount(1);
+        break;
+      case "month":
+        setCount(1);
+        break;
+      case "year":
+        setCount(1);
+        break;
+      default:
+        setCount(1);
+    }
   };
+
   return (
     <Box
       display="flex"
@@ -62,6 +103,7 @@ const RepeatSelector = () => {
             color: "var(--color-white)",
           }}
         >
+          <MenuItem value="none">none</MenuItem>
           <MenuItem value="day">day</MenuItem>
           <MenuItem value="week">week</MenuItem>
           <MenuItem value="month">month</MenuItem>

@@ -335,6 +335,7 @@ export const RepeatSelector = () => {
             color: "var(--color-white)",
           }}
         >
+          <MenuItem value="day">none</MenuItem>
           <MenuItem value="day">day</MenuItem>
           <MenuItem value="week">week</MenuItem>
           <MenuItem value="month">month</MenuItem>

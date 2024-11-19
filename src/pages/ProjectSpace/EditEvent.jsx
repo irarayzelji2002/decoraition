@@ -28,7 +28,9 @@ function EditEvent() {
   const user = useSharedProps();
   const queryParams = new URLSearchParams(location.search);
   const selectedDate = queryParams.get("date");
-  const taskDetails = queryParams.get("task");
+  const taskDetails = queryParams.get("task")
+    ? JSON.parse(decodeURIComponent(queryParams.get("task")))
+    : null;
   const timelineId = queryParams.get("timelineId"); // Retrieve timelineId
   const [allowRepeat, setAllowRepeat] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -38,8 +40,10 @@ function EditEvent() {
     taskDetails && taskDetails.dateRange
       ? {
           taskName: taskDetails.eventName,
-          startDate: new Date(taskDetails.dateRange.start).toISOString().split("T")[0],
-          endDate: new Date(taskDetails.dateRange.end).toISOString().split("T")[0],
+          startDate: new Date(taskDetails.dateRange.start._seconds * 1000)
+            .toISOString()
+            .split("T")[0],
+          endDate: new Date(taskDetails.dateRange.end._seconds * 1000).toISOString().split("T")[0],
           description: taskDetails.description,
           repeat: {
             frequency: taskDetails.repeatEvery,
@@ -65,27 +69,6 @@ function EditEvent() {
         };
 
   const [formData, setFormData] = useState(initialFormData);
-
-  useEffect(() => {
-    if (taskDetails && taskDetails.dateRange) {
-      setFormData({
-        taskName: taskDetails.eventName,
-        startDate: new Date(taskDetails.dateRange.start).toISOString().split("T")[0],
-        endDate: new Date(taskDetails.dateRange.end).toISOString().split("T")[0],
-        description: taskDetails.description,
-        repeat: {
-          frequency: taskDetails.repeatEvery,
-          unit: taskDetails.repeating ? "day" : "",
-        },
-        reminders: taskDetails.reminders.map((reminder) => ({
-          ...reminder,
-          count: reminder.timeBeforeEvent / (reminder.unit === "day" ? 1440 : 60),
-        })),
-        repeatEnabled: taskDetails.repeating,
-      });
-      setAllowRepeat(taskDetails.repeating);
-    }
-  }, [taskDetails]);
 
   const handleInputChange = (e, fieldName, nestedField = null) => {
     const { value } = e.target;
@@ -146,12 +129,20 @@ function EditEvent() {
   const handleSave = async () => {
     const currentUser = auth.currentUser;
     if (currentUser) {
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+
+      if (isNaN(startDate) || isNaN(endDate)) {
+        console.error("Invalid date value");
+        return;
+      }
+
       const eventData = {
         timelineId: timelineId,
         eventName: formData.taskName,
         dateRange: {
-          start: new Date(formData.startDate).toISOString(),
-          end: new Date(formData.endDate).toISOString(),
+          start: startDate,
+          end: endDate,
         },
         repeating: allowRepeat,
         repeatEvery: formData.repeat.frequency ? parseInt(formData.repeat.frequency) : 0,
@@ -161,8 +152,9 @@ function EditEvent() {
           timeToRemind: new Date().toISOString(), // Placeholder, replace with actual reminder time logic
         })),
       };
+
       if (taskDetails) {
-        const taskId = JSON.parse(decodeURIComponent(taskDetails)).id;
+        const taskId = taskDetails.id;
         await updateTask(currentUser.uid, projectId, taskId, eventData);
       } else {
         console.log("Creating event:", JSON.parse(JSON.stringify(eventData)));

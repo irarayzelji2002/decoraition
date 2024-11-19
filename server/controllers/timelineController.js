@@ -66,12 +66,15 @@ exports.createEvent = async (req, res) => {
     const { timelineId, eventName, dateRange, repeating, repeatEvery, description, reminders } =
       req.body;
 
+    const startDate = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+
     const eventData = {
       timelineId,
       eventName,
       dateRange: {
-        start: new Date(dateRange.start),
-        end: new Date(dateRange.end),
+        start: startDate,
+        end: endDate,
       },
       repeating,
       repeatEvery,
@@ -80,6 +83,8 @@ exports.createEvent = async (req, res) => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    console.log("Creating event with data:", eventData);
 
     const eventRef = db.collection("events").doc();
     await eventRef.set(eventData);
@@ -90,6 +95,39 @@ exports.createEvent = async (req, res) => {
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ error: "Failed to create event" });
+  }
+};
+
+// Update Event
+exports.updateEvent = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { timelineId, eventName, dateRange, repeating, repeatEvery, description, reminders } =
+      req.body;
+
+    const startDate = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+
+    const updateData = {
+      timelineId,
+      eventName,
+      dateRange: {
+        start: startDate,
+        end: endDate,
+      },
+      repeating,
+      repeatEvery,
+      description,
+      reminders,
+      updatedAt: new Date(),
+    };
+
+    console.log("Updating event with data:", updateData);
+    await db.collection("events").doc(taskId).update(updateData);
+    res.json({ message: "Event updated successfully" });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ error: "Failed to update event" });
   }
 };
 
@@ -109,30 +147,11 @@ exports.getEvents = async (req, res) => {
   }
 };
 
-// Update Event
-exports.updateEvent = async (req, res) => {
-  try {
-    const { timelineId, eventId } = req.params;
-    const updateData = req.body;
-    updateData.updatedAt = new Date();
-    await db
-      .collection("timelines")
-      .doc(timelineId)
-      .collection("events")
-      .doc(eventId)
-      .update(updateData);
-    res.json({ message: "Event updated successfully" });
-  } catch (error) {
-    console.error("Error updating event:", error);
-    res.status(500).json({ error: "Failed to update event" });
-  }
-};
-
 // Delete Event
 exports.deleteEvent = async (req, res) => {
   try {
-    const { eventId } = req.params;
-    await db.collection("events").doc(eventId).delete();
+    const { taskId } = req.params;
+    await db.collection("events").doc(taskId).delete();
     res.json({ message: "Event deleted successfully" });
   } catch (error) {
     console.error("Error deleting event:", error);

@@ -231,8 +231,6 @@ export const formatDate = (timestamp) => {
 
 // For tiled view
 export const formatDateLong = (timestamp) => {
-  console.log("formatDateLong - timestamp:", timestamp); // Debug log
-
   const seconds = timestamp.seconds || timestamp._seconds;
   const nanoseconds = timestamp.nanoseconds || timestamp._nanoseconds;
 

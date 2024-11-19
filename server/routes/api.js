@@ -202,5 +202,6 @@ router.get("/health-check", (req, res) => {
 router.post("/timeline/:timelineId/event", authenticateUser, timelineController.createEvent);
 router.get("/timeline/:timelineId/events", authenticateUser, timelineController.getEvents);
 router.get("/project/:projectId/timelineId", authenticateUser, timelineController.fetchTimelineId); // New route to fetch timeline
+router.get("/timeline/event/:taskId", authenticateUser, timelineController.getEventDetails);
 
 module.exports = router;

@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Button,
-  IconButton,
-  InputBase,
-  Select,
-  MenuItem,
-} from "@mui/material";
-import {
-  ArrowRight as ArrowRightIcon,
-  ArrowLeft as ArrowLeftIcon,
-} from "@mui/icons-material";
+import { Box, Button, IconButton, InputBase, Select, MenuItem } from "@mui/material";
+import { ArrowRight as ArrowRightIcon, ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
 
 function ReminderSpecific({ reminder, onSave, onCancel }) {
   const [hours, setHours] = useState(reminder?.hours || 8);
@@ -82,8 +72,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
       }}
     >
       <label>
-        Repeat {count} {unit} before {hours}:
-        {minutes.toString().padStart(2, "0")} {period}
+        Repeat {count} {unit} before {hours}:{minutes.toString().padStart(2, "0")} {period}
       </label>
       <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
         <Box

@@ -1,12 +1,4 @@
-import {
-  doc,
-  collection,
-  query,
-  where,
-  onSnapshot,
-  setDoc,
-  deleteDoc,
-} from "firebase/firestore";
+import { doc, collection, query, where, onSnapshot, setDoc, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
 import { CheckCircle } from "@mui/icons-material";
@@ -25,13 +17,7 @@ export const searchProjects = (searchQuery, designs, setFilteredDesigns) => {
   }
 };
 
-export const handleKeyPress = (
-  event,
-  searchProjects,
-  searchQuery,
-  designs,
-  setFilteredDesigns
-) => {
+export const handleKeyPress = (event, searchProjects, searchQuery, designs, setFilteredDesigns) => {
   if (event.key === "Enter") {
     searchProjects(searchQuery, designs, setFilteredDesigns);
   }
@@ -107,52 +93,6 @@ export const handleSettings = (navigate) => {
 export const toggleDarkMode = (darkMode, setDarkMode) => {
   setDarkMode(!darkMode);
   document.body.classList.toggle("dark-mode", !darkMode);
-};
-
-export const handleCreateDesign = async (navigate) => {
-  try {
-    const currentUser = auth.currentUser;
-    const randomString = Math.random().toString(36).substring(2, 6);
-    const designId = new Date().getTime().toString() + randomString;
-
-    if (currentUser) {
-      const designRef = doc(db, "designs", designId);
-      await setDoc(designRef, {
-        name: "Untitled",
-        createdAt: new Date(),
-        createdBy: currentUser.uid,
-      });
-
-      toast.success("Design created successfully!", {
-        icon: <CheckCircle />,
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        style: {
-          color: "var(--color-white)",
-          backgroundColor: "var(--inputBg)",
-        },
-        progressStyle: {
-          backgroundColor: "var(--brightFont)",
-        },
-      });
-
-      setTimeout(() => navigate(`/design/${designId}`), 1500);
-    }
-  } catch (error) {
-    console.error("Error creating design: ", error);
-    toast.error("Error creating design! Please try again.", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-  }
 };
 
 export const handleCreateProject = async (navigate) => {

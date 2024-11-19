@@ -40,8 +40,9 @@ function CommentTabs({
   selectedImage,
   commentTypeTab,
   setCommentTypeTab,
+  setSelectedImage,
 }) {
-  const { user, userDoc, userComments, userReplies, userDesignComments } = useSharedProps();
+  const { user, userDoc, userComments, userReplies, userDesignsComments } = useSharedProps();
   const [commentForTab, setCommentForTab] = useState(true); // true for All Comments, false for For You
   const [userOwnedComments, setUserOwnedComments] = useState([]);
   const [userOwnedReplies, setUserOwnedReplies] = useState([]);
@@ -261,21 +262,27 @@ function CommentTabs({
       return;
     }
 
-    if (designVersion && userDesignComments) {
+    console.log("fetch comments - design", design);
+    console.log("fetch comments - designVersion", designVersion);
+    console.log("fetch comments - userDesignComments", userDesignsComments);
+    if (design && designVersion && userDesignsComments) {
       // Get all imageIds from the current designVersion
       const designVersionImageIds = designVersion?.images?.map((img) => img.imageId);
+      console.log("fetch comments - designVersionImageIds", designVersionImageIds);
 
       // Filter comments that belong to the current designVersion's images
-      const filteredDesignComments = userDesignComments.filter((comment) =>
+      const filteredDesignComments = userDesignsComments.filter((comment) =>
         designVersionImageIds.includes(comment.designVersionImageId)
       );
       setDesignComments(filteredDesignComments);
+      console.log("fetch comments - filteredDesignComments", filteredDesignComments);
 
       // Filter user's own comments from the filtered design comments
       const filteredUserComments = userComments.filter((comment) =>
         designVersionImageIds.includes(comment.designVersionImageId)
       );
       setUserOwnedComments(filteredUserComments);
+      console.log("fetch comments - filteredUserComments", filteredUserComments);
 
       // Filter user's replies that exist in any of the design comments
       const userRepliesInDesign = userReplies.filter((reply) => {
@@ -284,12 +291,13 @@ function CommentTabs({
         );
       });
       setUserOwnedReplies(userRepliesInDesign);
+      console.log("fetch comments - userRepliesInDesign", userRepliesInDesign);
     } else {
       setDesignComments([]);
       setUserOwnedComments([]);
       setUserOwnedReplies([]);
     }
-  }, [designVersion, userComments, userReplies, userDesignComments]);
+  }, [design, designVersion, userComments, userReplies, userDesignsComments]);
 
   useEffect(() => {
     if (commentForTab) {
@@ -311,6 +319,13 @@ function CommentTabs({
       if (filteredAndSortedComments.length > 0) {
         setSelectedId(filteredAndSortedComments[0].id);
         setFilteredAndSortedComments(filteredAndSortedComments);
+        console.log(
+          `filteredAndSortedComments - all comments ${commentTypeTab ? "(open)" : "(resolved)"}`,
+          filteredAndSortedComments
+        );
+      } else {
+        setSelectedId("");
+        setFilteredAndSortedComments([]);
       }
     } else {
       // For You tab (user's comments, replies, and mentions)
@@ -363,6 +378,10 @@ function CommentTabs({
       if (filteredAndSortedComments.length > 0) {
         setSelectedId(filteredAndSortedComments[0].id);
         setFilteredAndSortedComments(filteredAndSortedComments);
+        console.log("filteredAndSortedComments - for you", filteredAndSortedComments);
+      } else {
+        setSelectedId("");
+        setFilteredAndSortedComments([]);
       }
     }
   }, [
@@ -436,6 +455,7 @@ function CommentTabs({
           pinpointSelectedImage={pinpointSelectedImage}
           setPinpointSelectedImage={setPinpointSelectedImage}
           applyMinHeight={applyMinHeight}
+          setSelectedImage={setSelectedImage}
         />
       ) : (
         <Box
@@ -506,8 +526,30 @@ function CommentTabs({
           {filteredAndSortedComments.length === 0 && (
             <div className="placeholderDiv">
               <img src={"/img/design-placeholder.png"} style={{ width: "100px" }} alt="" />
-              <p className="grey-text">No comments added yet.</p>
-              <p className="grey-text">Start adding.</p>
+              {commentForTab && commentTypeTab && (
+                <>
+                  <p className="grey-text center">No opened comments yet.</p>
+                  <p className="grey-text center">Start adding.</p>
+                </>
+              )}
+              {commentForTab && !commentTypeTab && (
+                <>
+                  <p className="grey-text center">No resolved comments yet.</p>
+                  <p className="grey-text center">Start resolving.</p>
+                </>
+              )}
+              {!commentForTab && commentTypeTab && (
+                <p className="grey-text center">
+                  You don't have open comments yet or there are no open comments where you're
+                  mentioned.
+                </p>
+              )}
+              {!commentForTab && !commentTypeTab && (
+                <p className="grey-text center">
+                  You don't have resolved comments yet or there are no resolved comments where
+                  you're mentioned.
+                </p>
+              )}
             </div>
           )}
         </Box>

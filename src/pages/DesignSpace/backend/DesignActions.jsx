@@ -1117,9 +1117,9 @@ export const addComment = async (
       return { success: true, message: "Comment added successfully" };
     } // "Mentioned user not found"/"Mentioned users not found"
   } catch (error) {
-    console.error("Error adding comment:", error);
+    console.error("Error adding comment:", error?.response?.data?.error || error.message);
     // "Mentioned user not found"/"Mentioned users not found"
-    return { success: false, message: "Failed to add comment" };
+    return { success: false, message: error?.response?.data?.error || "Failed to add comment" };
   }
 };
 
@@ -1136,8 +1136,8 @@ export const editComment = async (designId, commentId, message, mentions, user, 
       return { success: true, message: "Comment edited successfully" };
     }
   } catch (error) {
-    console.error("Error editing comment:", error);
-    return { success: false, message: "Failed to edit comment" };
+    console.error("Error editing comment:", error?.response?.data?.error || error.message);
+    return { success: false, message: error?.response?.data?.error || "Failed to edit comment" };
   }
 };
 
@@ -1155,8 +1155,14 @@ export const changeCommentStatus = async (designId, commentId, status, user, use
       return { success: true, message: `Comment ${status ? "resolved" : "reopened"} successfully` };
     }
   } catch (error) {
-    console.error(`Error ${status ? "resolving" : "reopening"} comment:`, error);
-    return { success: false, message: `Failed to ${status ? "resolve" : "reopen"} comment` };
+    console.error(
+      `Error ${status ? "resolving" : "reopening"} comment:`,
+      error?.response?.data?.error || error.message
+    );
+    return {
+      success: false,
+      message: error?.response?.data?.error || `Failed to ${status ? "resolve" : "reopen"} comment`,
+    };
   }
 };
 
@@ -1173,25 +1179,27 @@ export const deleteComment = async (designId, commentId, user, userDoc) => {
       return { success: true, message: "Comment deleted successfully" };
     }
   } catch (error) {
-    console.error("Error deleting comment:", error);
-    return { success: false, message: "Failed to delete comment" };
+    console.error("Error deleting comment:", error?.response?.data?.error || error.message);
+    return { success: false, message: error?.response?.data?.error || "Failed to delete comment" };
   }
 };
 
 export const addReply = async (
   designId,
-  isReplyToReply,
   commentId = "",
-  replyId = "",
   message,
   mentions,
+  replyTo,
   user,
   userDoc
 ) => {
   try {
+    const apiLink = !replyTo
+      ? `/api/design/${designId}/comment/${commentId}/add-reply`
+      : `/api/design/${designId}/comment/${replyTo.commentId}/add-reply`;
     const response = await axios.put(
-      `/api/design/${designId}/comment/${commentId}/add-reply`,
-      { userId: userDoc.id, isReplyToReply, replyId, message, mentions },
+      apiLink,
+      { userId: userDoc.id, message, mentions, replyTo },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }
@@ -1200,14 +1208,13 @@ export const addReply = async (
       return { success: true, message: "Reply added successfully" };
     }
   } catch (error) {
-    console.error("Error adding reply:", error);
-    return { success: false, message: "Failed to add reply" };
+    console.error("Error adding reply:", error?.response?.data?.error || error.message);
+    return { success: false, message: error?.response?.data?.error || "Failed to add reply" };
   }
 };
 
 export const editReply = async (
   designId,
-  isReplyToReply,
   commentId = "",
   replyId = "",
   message,
@@ -1215,10 +1222,11 @@ export const editReply = async (
   user,
   userDoc
 ) => {
+  console.log("edit reply function");
   try {
     const response = await axios.put(
       `/api/design/${designId}/comment/${commentId}/edit-reply`,
-      { userId: userDoc.id, isReplyToReply, replyId, message, mentions },
+      { userId: userDoc.id, replyId, message, mentions },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }
@@ -1227,8 +1235,8 @@ export const editReply = async (
       return { success: true, message: "Reply edited successfully" };
     }
   } catch (error) {
-    console.error("Error editing reply:", error);
-    return { success: false, message: "Failed to edit reply" };
+    console.error("Error editing reply:", error?.response?.data?.error || error.message);
+    return { success: false, message: error?.response?.data?.error || "Failed to edit reply" };
   }
 };
 
@@ -1245,7 +1253,7 @@ export const deleteReply = async (designId, commentId, replyId, user, userDoc) =
       return { success: true, message: "Reply deleted successfully" };
     }
   } catch (error) {
-    console.error("Error deleting reply:", error);
-    return { success: false, message: "Failed to delete reply" };
+    console.error("Error deleting reply:", error?.response?.data?.error || error.message);
+    return { success: false, message: error?.response?.data?.error || "Failed to delete reply" };
   }
 };

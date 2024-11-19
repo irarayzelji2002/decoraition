@@ -55,6 +55,7 @@ exports.addComment = async (req, res) => {
     const commentRef = db.collection("comments").doc();
     const commentData = {
       designVersionImageId,
+      location,
       userId,
       message,
       mentions: mentions || [],
@@ -219,13 +220,11 @@ exports.changeCommentStatus = async (req, res) => {
 
     // Notification
     const designOwner = designDoc.data().owner;
-    const commentOwner = commentDoc.data().userId;
     const editors = designDoc.data().editors || [];
     const commenters = designDoc.data().commenters || [];
 
     const userDocs = await Promise.all([
       db.collection("users").doc(designOwner).get(),
-      db.collection("users").doc(commentOwner).get(),
       ...editors.map((id) => db.collection("users").doc(id).get()),
       ...commenters.map((id) => db.collection("users").doc(id).get()),
     ]);
@@ -235,21 +234,28 @@ exports.changeCommentStatus = async (req, res) => {
       const settings = userDoc.data().notifSettings;
       const isOwner = userDoc.id === designOwner;
       const isCollaborator = editors.includes(userDoc.id) || commenters.includes(userDoc.id);
-      if (isOwner && settings.commentStatusChangeAsOwner) {
+      if (isOwner && settings.commentStatusChangeAsOwner && userId !== designOwner) {
         await notifController.createNotification(
           userDoc.id,
           "comment",
           `Comment ${status ? "Resolved" : "Reopened"}`,
-          `A comment on your design "${designDoc.data().name}" was ${
+          `A comment on your design "${designDoc.data().designName}" was ${
             status ? "resolved" : "reopened"
           }`
         );
-      } else if (isCollaborator && settings.commentStatusChangeAsCollab) {
+      } else if (
+        isCollaborator &&
+        settings.commentStatusChangeAsCollab &&
+        !editors.includes(userId) &&
+        !commenters.includes(userId)
+      ) {
         await notifController.createNotification(
           userDoc.id,
           "comment",
           `Comment ${status ? "Resolved" : "Reopened"}`,
-          `A comment on design "${designDoc.data().name}" was ${status ? "resolved" : "reopened"}`
+          `A comment on design "${designDoc.data().designName}" was ${
+            status ? "resolved" : "reopened"
+          }`
         );
       }
     }
@@ -365,7 +371,7 @@ exports.addReply = async (req, res) => {
   const updatedDocuments = [];
   try {
     const { designId, commentId } = req.params;
-    const { userId, isReplyToReply, replyId, message, mentions } = req.body;
+    const { userId, message, mentions, replyTo } = req.body;
 
     // Get design and validate access
     const designRef = db.collection("designs").doc(designId);
@@ -378,16 +384,17 @@ exports.addReply = async (req, res) => {
       return res.status(403).json({ error: "User does not have permission to add a reply" });
     }
 
-    // 1. Get and validate comment
+    // Get and validate comment
     const commentRef = db.collection("comments").doc(commentId);
     const commentDoc = await commentRef.get();
     if (!commentDoc.exists) {
       return res.status(404).json({ error: "Comment not found" });
     }
 
-    // 2. Create new reply
-    const newReply = {
-      replyId: db.collection("_").doc().id, // Generate new ID
+    // Create new reply object
+    const replyId = db.collection("comments").doc().id;
+    const replyData = {
+      replyId,
       userId,
       message,
       mentions: mentions || [],
@@ -396,45 +403,48 @@ exports.addReply = async (req, res) => {
       replies: [],
     };
 
-    // 3. Update replies array
-    let replies = [...commentDoc.data().replies];
-    if (isReplyToReply) {
-      // Find parent reply and add replyId to its replies array
-      const updateReply = (replyArray) => {
-        for (let reply of replyArray) {
-          if (reply.replyId === replyId) {
-            reply.replies.push(newReply.replyId);
-            return true;
-          }
-        }
-        return false;
-      };
-      if (!updateReply(replies)) {
+    // Get current replies array
+    const currentReplies = commentDoc.data().replies || [];
+
+    if (replyTo) {
+      // If replying to another reply, find parent reply and Update parent reply's replies array
+      const parentReplyIndex = currentReplies.findIndex(
+        (reply) => reply.replyId === replyTo.replyId
+      );
+      if (parentReplyIndex === -1) {
         return res.status(404).json({ error: "Parent reply not found" });
       }
-    }
-    replies.push(newReply);
 
-    // 4. Update comment
+      // Update reply's replies field
+      currentReplies[parentReplyIndex].replies = [
+        ...(currentReplies[parentReplyIndex].replies || []),
+        replyId,
+      ];
+    }
+
+    // Add new reply to comment's replies array
+    const updatedReplies = [...currentReplies, replyData];
+
+    // Update comment
     updatedDocuments.push({
       ref: commentRef,
       data: commentDoc.data(),
       collection: "comments",
       id: commentRef.id,
     });
-    await commentRef.update({ replies });
+    await commentRef.update({ replies: updatedReplies });
 
-    // Notification
+    // Send notifications
     await notifController.sendCommentNotifications(designDoc, userId, "reply", mentions);
 
     res.status(200).json({
       success: true,
       message: "Reply added successfully",
-      reply: newReply,
+      reply: replyData,
     });
   } catch (error) {
     console.error("Error adding reply:", error);
-    // Rollback updates
+    // Rollback
     for (const doc of updatedDocuments) {
       try {
         await doc.ref.update(doc.data);
@@ -451,7 +461,7 @@ exports.editReply = async (req, res) => {
   const updatedDocuments = [];
   try {
     const { designId, commentId } = req.params;
-    const { userId, isReplyToReply, replyId, message, mentions } = req.body;
+    const { userId, replyId, message, mentions } = req.body;
 
     // Get design and validate access
     const designRef = db.collection("designs").doc(designId);
@@ -472,26 +482,17 @@ exports.editReply = async (req, res) => {
     }
 
     // 2. Find and update reply
-    let replies = [...commentDoc.data().replies];
-    const updateReplyContent = (replyArray) => {
-      for (let reply of replyArray) {
-        if (reply.replyId === replyId) {
-          if (reply.userId !== userId) {
-            throw new Error("Not authorized to edit this reply");
-          }
-          reply.message = message;
-          reply.mentions = mentions || [];
-          reply.modifiedAt = new Date();
-          return reply;
-        }
-      }
-      return null;
-    };
-
-    const updatedReply = updateReplyContent(replies);
-    if (!updatedReply) {
+    const currentReplies = commentDoc.data().replies || [];
+    const replyIndex = currentReplies.findIndex((reply) => reply.replyId === replyId);
+    if (replyIndex === -1) {
       return res.status(404).json({ error: "Reply not found" });
     }
+    if (currentReplies[replyIndex].userId !== userId) {
+      return res.status(403).json({ error: "Not authorized to edit this reply" });
+    }
+    currentReplies[replyIndex].message = message;
+    currentReplies[replyIndex].mentions = mentions;
+    currentReplies[replyIndex].modifiedAt = new Date();
 
     // 3. Update comment
     updatedDocuments.push({
@@ -500,12 +501,12 @@ exports.editReply = async (req, res) => {
       collection: "comments",
       id: commentRef.id,
     });
-    await commentRef.update({ replies });
+    await commentRef.update({ replies: currentReplies });
 
     res.status(200).json({
       success: true,
       message: "Reply edited successfully",
-      reply: updatedReply,
+      reply: currentReplies[replyIndex],
     });
   } catch (error) {
     console.error("Error editing reply:", error);

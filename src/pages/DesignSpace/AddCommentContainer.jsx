@@ -30,6 +30,7 @@ function AddCommentContainer({
   pinpointSelectedImage,
   setPinpointSelectedImage,
   applyMinHeight,
+  setSelectedImage,
 }) {
   const { designId } = useParams();
   const { user, users, userDoc } = useSharedProps();
@@ -313,6 +314,7 @@ function AddCommentContainer({
     }
     setIsAddingComment(false);
     handleCancelPinpoint();
+    setSelectedImage(null);
     showToast("success", result.message);
   };
 

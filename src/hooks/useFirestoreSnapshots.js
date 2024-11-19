@@ -483,7 +483,7 @@ const fetchUserDesignsComments = async (designVersionsSnapshot) => {
   const batches = batchIntoChunks(imageIds);
   const commentsSnapshots = await Promise.all(
     batches.map((batch) =>
-      getDocs(query(collection(db, "comments"), where(documentId(), "in", batch)))
+      getDocs(query(collection(db, "comments"), where("designVersionImageId", "in", batch)))
     )
   );
   const data = commentsSnapshots.flatMap((snapshot) =>

@@ -1,5 +1,18 @@
 const { db, auth } = require("../firebase");
 
+exports.createNotification = async (userId, type, title, content) => {
+  const notificationRef = db.collection("notifications").doc();
+  const notificationData = {
+    userId,
+    type,
+    title,
+    content,
+    isReadInApp: false,
+    createdAt: new Date(),
+  };
+  await notificationRef.set(notificationData);
+};
+
 const createNotification = async (userId, type, title, content) => {
   const notificationRef = db.collection("notifications").doc();
   const notificationData = {
@@ -34,7 +47,8 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
 
   // Process notifications based on settings
   for (const [userId, settings] of Object.entries(userSettings)) {
-    if (!settings.allowNotif) continue;
+    // Skip if user triggered the action or notifications are disabled
+    if (!settings.allowNotif || userId === commentUserId) continue;
 
     if (mentions.includes(userId) && settings.mentionedInComment) {
       await createNotification(
@@ -56,8 +70,7 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
 
     if (
       (editors.includes(userId) || commenters.includes(userId)) &&
-      settings.newCommentReplyAsCollab &&
-      userId !== commentUserId
+      settings.newCommentReplyAsCollab
     ) {
       await createNotification(
         userId,
@@ -70,27 +83,6 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
 };
 
 // OLD CODE
-// Create
-exports.createNotification = async (req, res) => {
-  try {
-    const { userId, message, type, relatedId } = req.body;
-    const notificationRef = db.collection("notifications").doc();
-    const notificationData = {
-      userId,
-      message,
-      type,
-      relatedId,
-      createdAt: new Date(),
-      read: false,
-    };
-    await notificationRef.set(notificationData);
-    res.status(201).json({ id: notificationRef.id, ...notificationData });
-  } catch (error) {
-    console.error("Error creating notification:", error);
-    res.status(500).json({ error: "Failed to create notification" });
-  }
-};
-
 // Read
 exports.getNotifications = async (req, res) => {
   try {

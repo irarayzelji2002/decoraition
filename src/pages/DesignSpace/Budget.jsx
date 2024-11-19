@@ -427,7 +427,7 @@ function Budget() {
               />
             </div>
           </div>
-          <div className="budgetSpaceImg" style={{ marginBottom: "10%" }}>
+          <div className="budgetSpaceImg">
             {designItems.length > 0 ? (
               designItems.map((item, index) => (
                 <Item
@@ -443,10 +443,10 @@ function Budget() {
                 />
               ))
             ) : (
-              <div>
+              <div className="placeholderDiv">
                 <img src={"../../img/design-placeholder.png"} style={{ width: "100px" }} alt="" />
-                <p className="grey-text">No items added yet.</p>
-                <p className="grey-text">Start adding.</p>
+                <p className="grey-text center">No items added yet.</p>
+                <p className="grey-text center">Start adding.</p>
               </div>
             )}
           </div>

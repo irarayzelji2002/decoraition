@@ -588,6 +588,7 @@ function Design() {
                     selectedImage={selectedImage}
                     commentTypeTab={commentTypeTab}
                     setCommentTypeTab={setCommentTypeTab}
+                    setSelectedImage={setSelectedImage}
                   />
                 </div>
               )}
@@ -1070,6 +1071,7 @@ function Design() {
                     selectedImage={selectedImage}
                     commentTypeTab={commentTypeTab}
                     setCommentTypeTab={setCommentTypeTab}
+                    setSelectedImage={setSelectedImage}
                   />
                 </div>
               </div>

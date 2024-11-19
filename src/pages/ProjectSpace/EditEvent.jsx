@@ -18,6 +18,7 @@ import ReminderSpecific from "./ReminderSpecific";
 import { Typography, IconButton, InputBase, Select, MenuItem } from "@mui/material";
 import DialogTitle from "@mui/material/DialogTitle";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { fetchTaskDetails } from "./backend/ProjectDetails";
 
 function EditEvent() {
   const { projectId } = useParams();
@@ -74,10 +75,47 @@ function EditEvent() {
   const [formData, setFormData] = useState(initialFormData);
 
   useEffect(() => {
-    if (taskDetails.repeating) {
+    if (taskDetails && taskDetails.repeating) {
       setAllowRepeat(true);
     }
   }, [taskDetails]);
+
+  useEffect(() => {
+    const fetchTask = async () => {
+      const taskId = queryParams.get("taskId");
+      if (taskId) {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const taskDetails = await fetchTaskDetails(currentUser.uid, taskId);
+          setFormData({
+            taskName: taskDetails.eventName,
+            startDate: new Date(taskDetails.dateRange.start._seconds * 1000)
+              .toISOString()
+              .split("T")[0],
+            endDate: new Date(taskDetails.dateRange.end._seconds * 1000)
+              .toISOString()
+              .split("T")[0],
+            description: taskDetails.description,
+            repeat: {
+              frequency: taskDetails.repeatEvery.frequency,
+              unit: taskDetails.repeatEvery.unit || "none",
+            },
+            reminders: taskDetails.reminders.map((reminder) => ({
+              ...reminder,
+              count: reminder.timeBeforeEvent,
+              hours: reminder.hours || 0,
+              minutes: reminder.minutes || 0,
+              period: reminder.period || "AM",
+            })),
+            repeatEnabled: taskDetails.repeating,
+          });
+          setAllowRepeat(taskDetails.repeating);
+        }
+      }
+    };
+
+    fetchTask();
+  }, [queryParams]);
 
   const handleInputChange = (e, fieldName, nestedField = null) => {
     const { value } = e.target;

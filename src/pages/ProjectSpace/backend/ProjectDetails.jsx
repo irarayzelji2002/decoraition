@@ -39,38 +39,6 @@ export const fetchDesigns = async (userId, projectId, setDesigns) => {
   await fetchProjectDesigns(projectId, setDesigns);
 };
 
-export const handleCreateDesign = async (projectId, navigate) => {
-  try {
-    const currentUser = auth.currentUser;
-    const randomString = Math.random().toString(36).substring(2, 6);
-    const designId = new Date().getTime().toString() + randomString;
-
-    if (currentUser) {
-      // Design reference within the specific project
-      const designRef = doc(db, "designs", designId);
-
-      await setDoc(designRef, {
-        name: "Untitled", // Default design name
-        createdAt: new Date(),
-        projectId: projectId, // Linking design to the project
-        createdBy: currentUser.uid,
-      });
-
-      // Show toast notification when the project is created
-      showToast("success", "Design created successfully!");
-
-      // Navigate to the newly created design
-      // setTimeout(
-      //   () => navigate(`/design/${designId}/${projectId}/project`),
-      //   1500
-      // );
-    }
-  } catch (error) {
-    console.error("Error creating design: ", error);
-    showToast("error", "Error creating design! Please try again.");
-  }
-};
-
 export const handleDeleteDesign = async (projectId, designId) => {
   try {
     const currentUser = auth.currentUser;
@@ -252,6 +220,21 @@ export const fetchTimelineId = async (userId, projectId) => {
     return response.data.timelineId;
   } catch (error) {
     console.error("Error fetching timelineId:", error);
+    throw error;
+  }
+};
+
+export const fetchTaskDetails = async (userId, taskId) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.get(`/api/timeline/event/${taskId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching task details:", error);
     throw error;
   }
 };

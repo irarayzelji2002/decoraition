@@ -158,6 +158,7 @@ exports.createProject = async (req, res) => {
 };
 
 exports.createDesignProject = async (req, res) => {
+  const updatedDocuments = [];
   const createdDocuments = [];
   try {
     const { projectId } = req.params;
@@ -166,6 +167,13 @@ exports.createDesignProject = async (req, res) => {
     // Validate input data
     if (!projectId || !userId || !designName) {
       return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Verify the existence of the project
+    const projectRef = db.collection("projects").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({ message: "Project not found" });
     }
 
     // Create design document
@@ -222,17 +230,23 @@ exports.createDesignProject = async (req, res) => {
     createdDocuments.push({ collection: "budgets", id: budgetId });
 
     // Update design document with budgetId
+    updatedDocuments.push({
+      ref: designRef,
+      data: { budgetId: null }, // Correctly reference the rollback data
+      collection: "designs",
+      id: designRef.id,
+    });
     await designRef.update({ budgetId });
 
     // Update user's designs array
     const userRef = db.collection("users").doc(userId);
     const userDoc = await userRef.get();
-    if (!userDoc.exists) {
-      throw new Error("User not found");
-    }
     const userData = userDoc.data();
     const updatedDesigns = userData.designs ? [...userData.designs] : [];
     updatedDesigns.push({ designId, role: 3 }); // 3 for owner
+    if (!userDoc.exists) {
+      throw new Error("User not found");
+    }
     await userRef.update({
       designs: updatedDesigns,
     });
@@ -245,6 +259,16 @@ exports.createDesignProject = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating design:", error);
+
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
 
     // Rollback: delete all created documents
     for (const doc of createdDocuments) {

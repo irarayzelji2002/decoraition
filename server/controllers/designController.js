@@ -67,9 +67,10 @@ exports.createDesign = async (req, res) => {
     createdDocuments.push({ collection: "budgets", id: budgetId });
 
     // Update design document with budgetId
+    const designSnapshot = await designRef.get();
     updatedDocuments.push({
       ref: designRef,
-      data: { budgetId: designRef.data().budgetId },
+      data: { budgetId: designSnapshot.data().budgetId },
       collection: "budgets",
       id: designRef.id,
     });

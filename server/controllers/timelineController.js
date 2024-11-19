@@ -161,3 +161,17 @@ exports.fetchTimelineId = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch timeline ID" });
   }
 };
+
+exports.getEventDetails = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const eventDoc = await db.collection("events").doc(taskId).get();
+    if (!eventDoc.exists) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+    res.json({ id: eventDoc.id, ...eventDoc.data() });
+  } catch (error) {
+    console.error("Error fetching event details:", error);
+    res.status(500).json({ error: "Failed to fetch event details" });
+  }
+};

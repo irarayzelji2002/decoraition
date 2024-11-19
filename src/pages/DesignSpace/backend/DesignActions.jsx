@@ -385,7 +385,8 @@ export const checkTaskStatus = async (
   setEta,
   setIsGenerating,
   setGeneratedImagesPreview,
-  setGeneratedImages
+  setGeneratedImages,
+  numberOfImages
 ) => {
   try {
     let running = false;
@@ -417,7 +418,8 @@ export const checkTaskStatus = async (
           setProgress,
           setEta,
           setIsGenerating,
-          setGeneratedImagesPreview
+          setGeneratedImagesPreview,
+          numberOfImages
         );
         if (!progressResult.success) {
           throw new Error(progressResult.message);
@@ -447,7 +449,8 @@ export const trackImageGenerationProgress = async (
   setProgress,
   setEta,
   setIsGenerating,
-  setGeneratedImagesPreview
+  setGeneratedImagesPreview,
+  numberOfImages
 ) => {
   try {
     let attempts = 0;
@@ -463,7 +466,7 @@ export const trackImageGenerationProgress = async (
     let status = "pending";
     let curr_step = 0;
     let prev_step = -1;
-    const number_of_images = window.number_of_images || 1;
+    const number_of_images = numberOfImages || 1;
 
     // Create image tags in the image container
     for (let i = 0; i < number_of_images; i++) {
@@ -958,7 +961,8 @@ export const generateNextImage = async (
       setEta,
       setIsGenerating,
       setGeneratedImagesPreview,
-      setGeneratedImages
+      setGeneratedImages,
+      numberOfImages
     );
     if (!taskResult.success) {
       throw new Error(taskResult.message);
@@ -1044,7 +1048,8 @@ export const generateFirstImage = async (
       setEta,
       setIsGenerating,
       setGeneratedImagesPreview,
-      setGeneratedImages
+      setGeneratedImages,
+      numberOfImages
     );
     if (!taskResult.success) {
       throw new Error(taskResult.message);
@@ -1094,19 +1099,16 @@ export const createDesignVersion = async (designId, generatedImages, prompt, use
 export const addComment = async (
   designId,
   designVersionImageId,
+  location,
   message,
   mentions,
   user,
   userDoc
 ) => {
-  if (!message && mentions.length === 0) {
-    // allow empty message if there's at least one mention
-    return { success: false, message: "Comment is required" };
-  }
   try {
     const response = await axios.post(
       `/api/design/${designId}/comment/add-comment`,
-      { userId: userDoc.id, designVersionImageId, message, mentions },
+      { userId: userDoc.id, designVersionImageId, location, message, mentions },
       {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       }

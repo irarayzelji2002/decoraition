@@ -506,7 +506,9 @@ const CommentContainer = ({
     if (nonExistentUsers.length > 0) {
       setErrors((prev) => ({
         ...prev,
-        editComment: `${nonExistentUsers.length} mentioned user not found`,
+        editComment: `${nonExistentUsers.length} mentioned user${
+          nonExistentUsers.length > 0 && "s"
+        } not found`,
       }));
     } else if (!updatedCommentContent && updatedMentions.length === 0) {
       setErrors((prev) => ({ ...prev, editComment: "Commment is required" }));
@@ -552,7 +554,9 @@ const CommentContainer = ({
     if (nonExistentUsers.length > 0) {
       setErrors((prev) => ({
         ...prev,
-        editReply: `${nonExistentUsers.length} mentioned user not found`,
+        editReply: `${nonExistentUsers.length} mentioned user${
+          nonExistentUsers.length > 0 && "s"
+        } not found`,
       }));
     } else if (!replyContent && replyMentions.length === 0) {
       setErrors((prev) => ({ ...prev, editReply: "Reply is required" }));
@@ -583,7 +587,9 @@ const CommentContainer = ({
     if (nonExistentUsers.length > 0) {
       setErrors((prev) => ({
         ...prev,
-        editReply: `${nonExistentUsers.length} mentioned user not found`,
+        editReply: `${nonExistentUsers.length} mentioned user${
+          nonExistentUsers.length > 0 && "s"
+        } not found`,
       }));
     } else if (!updatedCommentContent && updatedMentions.length === 0) {
       setErrors((prev) => ({ ...prev, editReply: "Reply is required" }));

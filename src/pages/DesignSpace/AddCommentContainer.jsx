@@ -26,7 +26,9 @@ function AddCommentContainer({
   isPinpointing,
   setIsPinpointing,
   pinpointLocation,
+  setPinpointLocation,
   pinpointSelectedImage,
+  setPinpointSelectedImage,
   applyMinHeight,
 }) {
   const { designId } = useParams();
@@ -234,45 +236,6 @@ function AddCommentContainer({
     };
   }, []);
 
-  const canvasRef = useRef(null);
-
-  const setCustomCursor = useCallback(
-    (brushSize) => {
-      if (!canvasRef.current) return;
-
-      const scale = window.devicePixelRatio;
-      const scaledSize = brushSize * scale;
-      const sizeOffset = Math.max(0, -1.1 * brushSize + 83);
-      const svgWidth = brushSize + sizeOffset;
-
-      const svgCursor = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgWidth}" viewBox="-10 -10 84 84">
-        <defs>
-          <filter id="dropshadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
-            <feOffset dx="0" dy="0" result="offsetblur"/>
-            <feFlood flood-color="rgba(0, 0, 0, 0.3)"/>
-            <feComposite in2="offsetblur" operator="in"/>
-            <feMerge>
-              <feMergeNode/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-        <circle cx="32" cy="32" r="${brushSize / 2}" 
-          fill="rgba(255,255,255,0.5)" 
-          stroke="rgb(255,255,255)" 
-          stroke-width="4" filter="url(#dropshadow)"/>
-      </svg>`;
-
-      const svgDataUrl = `data:image/svg+xml;base64,${btoa(
-        unescape(encodeURIComponent(svgCursor))
-      )}`;
-      canvasRef.current.style.cursor = `url('${svgDataUrl}') ${svgWidth / 2} ${svgWidth / 2}, auto`;
-    },
-    [canvasRef]
-  );
-
   useEffect(() => {
     console.log("comment:", commentContent);
   }, [commentContent]);
@@ -282,15 +245,28 @@ function AddCommentContainer({
   }, [mentions]);
 
   const handleCancelAddComment = () => {
+    handleCancelPinpoint();
     setCommentContent(commentContent);
     setMentions(mentions);
     setIsAddingComment(false);
     setOpenMentionOptions(false);
   };
 
+  const handleCancelPinpoint = () => {
+    if (isPinpointing) {
+      setIsPinpointing(false);
+      setPinpointLocation(null);
+      setPinpointSelectedImage(null);
+    }
+  };
+
   useEffect(() => {
-    if (!isAddingComment) return;
+    if (!isAddingComment) {
+      setIsPinpointing(false);
+      return;
+    }
     if (textFieldInputRef?.current) textFieldInputRef?.current?.focus();
+    setIsPinpointing(true);
     // handleCancelAddComment();
   }, [isAddingComment]);
 
@@ -309,25 +285,34 @@ function AddCommentContainer({
     // Validation
     const nonExistentUsers = validateMentions(mentions);
     if (nonExistentUsers.length > 0) {
-      setError(`${nonExistentUsers.length} mentioned user not found`);
+      setError(
+        `${nonExistentUsers.length} mentioned user${nonExistentUsers.length > 0 && "s"} not found`
+      );
+      return;
     } else if (!commentContent && mentions.length === 0) {
       setError("Comment is required");
+      return;
+    } else if (!pinpointSelectedImage || !pinpointLocation) {
+      showToast("error", "Please pinpoint which location in the image you're commenting on.");
+      return;
     }
 
     // Call addComment
     const result = await addComment(
       designId,
       pinpointSelectedImage.imageId, //designVersionImageId
+      pinpointLocation,
       commentContent,
       mentions,
       user,
       userDoc
     );
     if (!result.success) {
-      showToast("error", result.message);
+      if (result.message !== "Comment is required") showToast("error", result.message);
       return;
     }
     setIsAddingComment(false);
+    handleCancelPinpoint();
     showToast("success", result.message);
   };
 
@@ -349,7 +334,7 @@ function AddCommentContainer({
         >
           Adding comment
         </Typography>
-        <div className="comment-container add-comment">
+        <div className="comment-container add-comment" style={{ cursor: "auto" }}>
           <div className="profile-section">
             <div className="profile-info">
               <Box
@@ -396,11 +381,14 @@ function AddCommentContainer({
                   width: "auto",
                   textTransform: "none",
                   borderRadius: "20px",
+                  backgroundColor: "transparent",
+                  cursor: "auto",
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                  },
+                  //   backgroundColor: isPinpointing ? "var(--iconBgHover)" : "transparent",
                 }}
-                onClick={(e) => {
-                  // set cursor
-                  setIsPinpointing(true);
-                }}
+                // onClick={() => setIsPinpointing((prev) => !prev)}
               >
                 <Typography
                   sx={{
@@ -433,6 +421,7 @@ function AddCommentContainer({
                 const newValue = e.target.value;
                 const cursorPosition = e.target.selectionStart;
                 setCommentContent(newValue);
+                setError("");
 
                 // Get text before cursor and find the last @ before cursor
                 const textBeforeCursor = newValue.substring(0, cursorPosition);

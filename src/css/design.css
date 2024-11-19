@@ -199,6 +199,8 @@
 
 .transitionMinHeight {
   transition: min-height 100ms ease-in-out;
+  display: flex;
+  flex-direction: column;
 }
 
 /* .bump {
@@ -909,6 +911,35 @@ textarea {
   background-color: var(--iconBg);
 }
 
+.comment-pin {
+  position: absolute;
+  transform: translate(0%, -100%);
+  cursor: move;
+  z-index: 10;
+}
+
+.comment-pin.draggable {
+  height: 21px;
+  width: 21px;
+}
+
+.placeholderDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  height: 100%;
+}
+
+.placeholderDiv img {
+  padding: 15px;
+}
+
+.placeholderDiv p {
+  margin: 0px 10px;
+}
+
 .replies-container {
   margin-left: 0;
   position: relative;
@@ -941,6 +972,20 @@ textarea {
 
 .editingMentionsUsername:hover {
   color: var(--brightFontHover);
+}
+
+.pinpointing {
+  cursor: none !important;
+}
+
+.custom-cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  width: 24px;
+  height: 24px;
+  transform: translate(0%, -100%);
+  /* pointing on bottom left */
 }
 
 /* .comment-container.reply-to-reply:before {
@@ -1356,6 +1401,9 @@ textarea {
   }
   .promptBar {
     padding-right: 20px;
+  }
+  .placeholderDiv {
+    margin-top: 25Spx;
   }
 }
 @media (max-width: 480px) {

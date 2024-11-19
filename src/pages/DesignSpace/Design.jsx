@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
+import Draggable from "react-draggable";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { showToast } from "../../functions/utils";
 import SelectMaskCanvas from "./SelectMaskCanvas";
@@ -43,6 +44,7 @@ import { EditIcon } from "../../components/svg/DefaultMenuIcons";
 import EditDescModal from "./EditDescModal";
 import { handleEditDescription } from "./backend/DesignActions";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { SelectedComment, UnselectedComment } from "./svg/AddColor";
 
 function Design() {
   const { user, userDoc, designs, userDesigns, designVersions, userDesignVersions, comments } =
@@ -96,9 +98,17 @@ function Design() {
   const [samMasks, setSamMasks] = useState([]);
 
   // Comment
+  // userDesignComments & userComments for the designs's latest deisgn version
+  const [designComments, setDesignComments] = useState([]);
+  const [commentTypeTab, setCommentTypeTab] = useState(true); // true for Open, false for Resolved
   const [isPinpointing, setIsPinpointing] = useState(false);
   const [pinpointLocation, setPinpointLocation] = useState(null); // {x, y}
   const [pinpointSelectedImage, setPinpointSelectedImage] = useState(null);
+  // for selected in image pinpoint
+  const [activeComment, setActiveComment] = useState("");
+  const imageContainerRefs = useRef({});
+  const [imageWidth, setImageWidth] = useState(0);
+  const [imageHeight, setImageHeight] = useState(0);
 
   // Generation
   const [statusMessage, setStatusMessage] = useState("");
@@ -293,6 +303,9 @@ function Design() {
     }
 
     adjustImageFramesDefault();
+
+    setImageWidth(imageFrames[0].clientWidth);
+    setImageHeight(imageFrames[0].clientHeight);
   }, [
     showPromptBar,
     showComments,
@@ -336,9 +349,122 @@ function Design() {
       e.target === imagesWorkSpaceChildRef.current ||
       e.target === containerRef.current
     ) {
+      if (showComments && isPinpointing) setPinpointSelectedImage(null);
       setSelectedImage(null);
     }
   };
+
+  useEffect(() => {
+    if (isPinpointing) {
+      const cursor = document.createElement("div");
+      cursor.className = "custom-cursor";
+      cursor.innerHTML = `<svg
+          width="21"
+          height="21"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10 19C11.78 19 13.5201 18.4722 15.0001 17.4832C16.4802 16.4943 17.6337 15.0887 18.3149 13.4442C18.9961 11.7996 19.1743 9.99002 18.8271 8.24419C18.4798 6.49836 17.6226 4.89472 16.364 3.63604C15.1053 2.37737 13.5016 1.5202 11.7558 1.17294C10.01 0.82567 8.20038 1.0039 6.55585 1.68509C4.91131 2.36628 3.50571 3.51983 2.51677 4.99987C1.52784 6.47991 1 8.21997 1 10C1 11.488 1.36 12.89 2 14.127L1 19L5.873 18C7.109 18.639 8.513 19 10 19Z"
+            stroke="url(#paint0_linear_398_2887)"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            opacity="0.16"
+            d="M10 18C11.78 18 13.5201 17.4722 15.0001 16.4832C16.4802 15.4943 17.6337 14.0887 18.3149 12.4442C18.9961 10.7996 19.1743 8.99002 18.8271 7.24419C18.4798 5.49836 17.6226 3.89472 16.364 2.63604C15.1053 1.37737 13.5016 0.520203 11.7558 0.172937C10.01 -0.17433 8.20038 0.00389951 6.55585 0.685088C4.91131 1.36628 3.50571 2.51983 2.51677 3.99987C1.52784 5.47991 1 7.21997 1 9C1 10.488 1.36 11.89 2 13.127L1 18L5.873 17C7.109 17.639 8.513 18 10 18Z"
+            fill="url(#paint1_linear_398_2887)"
+          />
+          <defs>
+            <linearGradient
+              id="paint0_linear_398_2887"
+              x1="10"
+              y1="1"
+              x2="10"
+              y2="19"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stop-color="#F68244" />
+              <stop offset="0.5" stop-color="#EF4F56" />
+              <stop offset="1" stop-color="#EC2073" />
+            </linearGradient>
+            <linearGradient
+              id="paint1_linear_398_2887"
+              x1="10"
+              y1="0"
+              x2="10"
+              y2="18"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stop-color="#F68244" />
+              <stop offset="0.5" stop-color="#EF4F56" />
+              <stop offset="1" stop-color="#EC2073" />
+            </linearGradient>
+          </defs>
+        </svg>`;
+      document.body.appendChild(cursor);
+      cursor.style.display = "none";
+      const imageFrames = document.querySelectorAll(".image-frame-cont");
+      const draggablePins = document.querySelectorAll(".comment-pin.draggable");
+      const updateCursor = (e) => {
+        cursor.style.left = `${e.clientX}px`;
+        cursor.style.top = `${e.clientY}px`;
+      };
+
+      const handleMouseEnter = () => {
+        cursor.style.display = "block";
+      };
+
+      const handleMouseLeave = () => {
+        cursor.style.display = "none";
+      };
+
+      const handlePinMouseEnter = () => {
+        cursor.style.display = "none";
+      };
+
+      // Add listeners to each image frame
+      imageFrames.forEach((frame) => {
+        frame.addEventListener("mousemove", updateCursor);
+        frame.addEventListener("mouseenter", handleMouseEnter);
+        frame.addEventListener("mouseleave", handleMouseLeave);
+        frame.style.cursor = "none";
+      });
+
+      // Add listeners to draggable pins
+      draggablePins.forEach((pin) => {
+        pin.addEventListener("mouseenter", handlePinMouseEnter);
+        pin.addEventListener("mouseleave", handleMouseEnter);
+      });
+
+      return () => {
+        imageFrames.forEach((frame) => {
+          frame.removeEventListener("mousemove", updateCursor);
+          frame.removeEventListener("mouseenter", handleMouseEnter);
+          frame.removeEventListener("mouseleave", handleMouseLeave);
+          frame.style.cursor = "auto";
+        });
+        draggablePins.forEach((pin) => {
+          pin.removeEventListener("mouseenter", handlePinMouseEnter);
+          pin.removeEventListener("mouseleave", handleMouseEnter);
+        });
+        document.body.removeChild(cursor);
+      };
+    }
+  }, [isPinpointing]);
+
+  useEffect(() => {
+    console.log("pinpoint values", {
+      imageWidth,
+      imageHeight,
+      isPinpointing,
+      pinpointLocation,
+      pinpointSelectedImage,
+      selectedImage,
+    });
+  }, [isPinpointing, pinpointLocation, pinpointSelectedImage, selectedImage]);
 
   if (loading) {
     return <Loading />;
@@ -448,11 +574,20 @@ function Design() {
                     design={design}
                     designVersion={designVersion}
                     designVersionImages={designVersionImages}
+                    activeComment={activeComment}
+                    setActiveComment={setActiveComment}
                     showPromptBar={showPromptBar}
                     isPinpointing={isPinpointing}
                     setIsPinpointing={setIsPinpointing}
                     pinpointLocation={pinpointLocation}
+                    setPinpointLocation={setPinpointLocation}
                     pinpointSelectedImage={pinpointSelectedImage}
+                    setPinpointSelectedImage={setPinpointSelectedImage}
+                    designComments={designComments}
+                    setDesignComments={setDesignComments}
+                    selectedImage={selectedImage}
+                    commentTypeTab={commentTypeTab}
+                    setCommentTypeTab={setCommentTypeTab}
                   />
                 </div>
               )}
@@ -696,18 +831,41 @@ function Design() {
                             className="image-frame-cont"
                             style={{
                               background:
-                                selectedImage && selectedImage.imageId === image.imageId
+                                showComments && isPinpointing
+                                  ? pinpointSelectedImage &&
+                                    pinpointSelectedImage.imageId === image.imageId
+                                    ? "var(--gradientButton)"
+                                    : "transparent"
+                                  : selectedImage && selectedImage.imageId === image.imageId
                                   ? "var(--gradientButton)"
                                   : "transparent",
                             }}
-                            onClick={() =>
-                              !isGenerating && !showComments ? setSelectedImage(image) : {}
-                            }
+                            onClick={(e) => {
+                              console.log(showComments && isPinpointing);
+                              if (showComments && isPinpointing) {
+                                console.log("clicked pinpoint");
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const cursorHeight = 21;
+                                const offset = 2;
+                                // Calculate percentages
+                                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                                const y =
+                                  ((e.clientY - rect.top - (cursorHeight + offset)) / rect.height) *
+                                  100;
+                                setPinpointLocation({ x, y });
+                                // setIsPinpointing(false);
+                                setSelectedImage(image);
+                                setPinpointSelectedImage(image);
+                              } else {
+                                setSelectedImage(image);
+                              }
+                            }}
                           >
                             <div
                               className="image-frame"
                               style={{
-                                cursor: !isGenerating && !showComments ? "pointer" : "auto",
+                                cursor: isPinpointing ? "none" : !isGenerating ? "pointer" : "auto",
+                                position: "relative",
                               }}
                             >
                               {!isGenerating &&
@@ -804,6 +962,66 @@ function Design() {
                                 alt=""
                                 className="image-preview"
                               />
+                              {/* Show comment pins */}
+                              {showComments &&
+                                !isPinpointing &&
+                                designComments
+                                  .filter(
+                                    (comment) => comment.designVersionImageId === image.imageId
+                                  )
+                                  .map(
+                                    (comment) =>
+                                      comment.designVersionImageId === image.imageId &&
+                                      comment.status === !commentTypeTab &&
+                                      comment.location && (
+                                        <div
+                                          key={comment.id}
+                                          className="comment-pin"
+                                          style={{
+                                            position: "absolute",
+                                            left: `${comment.location.x}%`,
+                                            top: `${comment.location.y}%`,
+                                            transform: "translate(0%, -10%)",
+                                            cursor: "pointer",
+                                            zIndex: 10,
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveComment(comment.id);
+                                          }}
+                                        >
+                                          {activeComment === comment.id ? (
+                                            <SelectedComment />
+                                          ) : (
+                                            <UnselectedComment />
+                                          )}
+                                        </div>
+                                      )
+                                  )}
+
+                              {/* Show current pinpoint when adding comment */}
+                              {showComments &&
+                                isPinpointing &&
+                                pinpointSelectedImage?.imageId === image.imageId &&
+                                pinpointLocation && (
+                                  <Draggable
+                                    bounds="parent"
+                                    position={{
+                                      x: (pinpointLocation.x * imageWidth) / 100,
+                                      y: (pinpointLocation.y * imageHeight) / 100,
+                                    }}
+                                    onDrag={(e, data) => {
+                                      setPinpointLocation({
+                                        x: (data.x * 100) / imageWidth,
+                                        y: (data.y * 100) / imageHeight,
+                                      });
+                                    }}
+                                  >
+                                    <div className="comment-pin draggable">
+                                      <SelectedComment />
+                                    </div>
+                                  </Draggable>
+                                )}
                             </div>
                           </div>
                         ))}
@@ -838,11 +1056,20 @@ function Design() {
                     design={design}
                     designVersion={designVersion}
                     designVersionImages={designVersionImages}
+                    activeComment={activeComment}
+                    setActiveComment={setActiveComment}
                     showPromptBar={showPromptBar}
                     isPinpointing={isPinpointing}
                     setIsPinpointing={setIsPinpointing}
                     pinpointLocation={pinpointLocation}
+                    setPinpointLocation={setPinpointLocation}
                     pinpointSelectedImage={pinpointSelectedImage}
+                    setPinpointSelectedImage={setPinpointSelectedImage}
+                    designComments={designComments}
+                    setDesignComments={setDesignComments}
+                    selectedImage={selectedImage}
+                    commentTypeTab={commentTypeTab}
+                    setCommentTypeTab={setCommentTypeTab}
                   />
                 </div>
               </div>

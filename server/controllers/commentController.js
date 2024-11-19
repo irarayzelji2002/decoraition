@@ -29,7 +29,7 @@ exports.addComment = async (req, res) => {
   const createdDocuments = [];
   try {
     const { designId } = req.params;
-    const { userId, designVersionImageId, message, mentions } = req.body;
+    const { userId, designVersionImageId, location, message, mentions } = req.body;
 
     // 1. Get design and validate access
     const designRef = db.collection("designs").doc(designId);

@@ -26,17 +26,23 @@ function CommentTabs({
   design,
   designVersion,
   designVersionImages,
+  activeComment,
+  setActiveComment,
   showPromptBar,
   isPinpointing,
   setIsPinpointing,
   pinpointLocation,
+  setPinpointLocation,
   pinpointSelectedImage,
+  setPinpointSelectedImage,
+  designComments,
+  setDesignComments,
+  selectedImage,
+  commentTypeTab,
+  setCommentTypeTab,
 }) {
   const { user, userDoc, userComments, userReplies, userDesignComments } = useSharedProps();
   const [commentForTab, setCommentForTab] = useState(true); // true for All Comments, false for For You
-  const [commentTypeTab, setCommentTypeTab] = useState(true); // true for Open, false for Resolved
-  // userDesignComments & userComments for the designs's latest deisgn version
-  const [designComments, setDesignComments] = useState([]);
   const [userOwnedComments, setUserOwnedComments] = useState([]);
   const [userOwnedReplies, setUserOwnedReplies] = useState([]);
   const [filteredAndSortedComments, setFilteredAndSortedComments] = useState([]);
@@ -48,8 +54,6 @@ function CommentTabs({
     showOptions: false,
     selectedId: null,
   });
-  // for selected in image pinpoint
-  const [activeComment, setActiveComment] = useState("");
 
   const [isLess600, setIsLess600] = useState(false);
 
@@ -257,7 +261,7 @@ function CommentTabs({
       return;
     }
 
-    if (designVersion) {
+    if (designVersion && userDesignComments) {
       // Get all imageIds from the current designVersion
       const designVersionImageIds = designVersion?.images?.map((img) => img.imageId);
 
@@ -280,6 +284,10 @@ function CommentTabs({
         );
       });
       setUserOwnedReplies(userRepliesInDesign);
+    } else {
+      setDesignComments([]);
+      setUserOwnedComments([]);
+      setUserOwnedReplies([]);
     }
   }, [designVersion, userComments, userReplies, userDesignComments]);
 
@@ -424,7 +432,9 @@ function CommentTabs({
           isPinpointing={isPinpointing}
           setIsPinpointing={setIsPinpointing}
           pinpointLocation={pinpointLocation}
+          setPinpointLocation={setPinpointLocation}
           pinpointSelectedImage={pinpointSelectedImage}
+          setPinpointSelectedImage={setPinpointSelectedImage}
           applyMinHeight={applyMinHeight}
         />
       ) : (
@@ -474,7 +484,12 @@ function CommentTabs({
             </div>
           </div>
           {/* Comments container */}
-          {filteredAndSortedComments.map((comment) => (
+          {(!selectedImage
+            ? filteredAndSortedComments
+            : filteredAndSortedComments.filter(
+                (comment) => comment.designVersionImageId === selectedImage.imageId
+              )
+          ).map((comment) => (
             <RootCommentContainer
               key={comment.id}
               commentId={comment.id}
@@ -488,6 +503,13 @@ function CommentTabs({
               setActiveComment={setActiveComment}
             />
           ))}
+          {filteredAndSortedComments.length === 0 && (
+            <div className="placeholderDiv">
+              <img src={"/img/design-placeholder.png"} style={{ width: "100px" }} alt="" />
+              <p className="grey-text">No comments added yet.</p>
+              <p className="grey-text">Start adding.</p>
+            </div>
+          )}
         </Box>
       )}
 
@@ -566,6 +588,11 @@ const dummyUser1 = { id: "ub9S8LqLBXRFKPJCUQL8xGgCMkH2", username: "irarayzelji"
 const dummyUser2 = { id: "qZjAWQkR1ShNfWhG6BQJkElEkQy1", username: "EmanuelRegister" };
 const dummyUser3 = { id: "VJbdZCvYn4hxiEpiT2d6pIzQq2P2", username: "irarayzelji2" };
 
+const dummyImageId1 = "GUP5ws7igBBA3MP3I4Wz";
+const dummyImageId2 = "NvHHm4EhATzWXjRz6mdi";
+const dummyImageId3 = "pKvVjtljK7jaQG5DQDpp";
+const dummyImageId4 = "UedR33oDACgvMgJA8z2Y";
+
 const createDummyDate = (stringDate) => {
   const date = new Date(stringDate); // ex: "2024-11-15T10:00:00Z"
   const seconds = Math.floor(date.getTime() / 1000);
@@ -576,134 +603,138 @@ const createDummyDate = (stringDate) => {
 };
 
 // Comments for the design version
-const dummyUserDesignComments = [
-  {
-    id: "comment1",
-    designVersionImageId: "image123",
-    userId: dummyUser1.id,
-    message: `This is the first comment. @${dummyUser2.username} This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment. @${dummyUser3.username} This is the first comment.This is the first comment.`,
-    mentions: [dummyUser2.id, dummyUser3.id],
-    status: false,
-    createdAt: createDummyDate("2024-10-01T10:00:00Z"),
-    modifiedAt: createDummyDate("2024-10-01T12:00:00Z"),
-    replies: [
-      {
-        replyId: "reply1_1",
-        userId: dummyUser2.id,
-        message: `@${dummyUser1.username} mention in fornt. This is a reply to the first comment.`,
-        mentions: [dummyUser1.id],
-        createdAt: createDummyDate("2024-10-01T11:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-01T11:30:00Z"),
-        replies: ["reply1_1_1", "reply1_1_2"],
-      },
-      {
-        replyId: "reply1_1_1",
-        userId: dummyUser2.id,
-        message: `@${dummyUser1.username} mention in fornt. This is a 1st reply to the first reply.`,
-        mentions: [dummyUser1.id],
-        createdAt: createDummyDate("2024-10-02T11:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
-        replies: ["reply1_1_1_1"],
-      },
-      {
-        replyId: "reply1_1_1_1",
-        userId: dummyUser1.id,
-        message: `This is a 1st replt to the 1st reply of the first reply. @${dummyUser3.username}`,
-        mentions: [dummyUser3.id],
-        createdAt: createDummyDate("2024-10-02T11:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
-        replies: [],
-      },
-      {
-        replyId: "reply1_1_2",
-        userId: dummyUser1.id,
-        message: `@${dummyUser2.username} mention in fornt. This is a 2nd reply to the first reply.`,
-        mentions: [dummyUser2.id],
-        createdAt: createDummyDate("2024-10-02T11:50:00Z"),
-        modifiedAt: createDummyDate("2024-10-02T11:50:00Z"),
-        replies: [],
-      },
-      {
-        replyId: "reply1_2",
-        userId: dummyUser3.id,
-        message: "Another reply to the first comment.",
-        mentions: [],
-        createdAt: createDummyDate("2024-10-01T11:15:00Z"),
-        modifiedAt: createDummyDate("2024-10-01T11:45:00Z"),
-        replies: [],
-      },
-    ],
-  },
-  {
-    id: "comment2",
-    designVersionImageId: "image456",
-    userId: dummyUser2.id,
-    message: "This is the second comment.",
-    mentions: [],
-    status: true,
-    createdAt: createDummyDate("2024-10-02T09:30:00Z"),
-    modifiedAt: createDummyDate("2024-10-02T10:30:00Z"),
-    replies: [
-      {
-        replyId: "reply2_1",
-        userId: dummyUser1.id,
-        message: `Replying to the second comment. @${dummyUser2.username} message after mention.`,
-        mentions: [dummyUser2.id],
-        createdAt: createDummyDate("2024-10-02T10:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-02T10:20:00Z"),
-        replies: ["reply2_1_1"],
-      },
-      {
-        replyId: "reply2_1_1",
-        userId: dummyUser1.id,
-        message: `Replying to the second comment's reply. @${dummyUser1.username} message after mention.`,
-        mentions: [dummyUser1.id],
-        createdAt: createDummyDate("2024-10-03T10:00:00Z"),
-        modifiedAt: createDummyDate("2024-10-03T10:20:00Z"),
-        replies: [],
-      },
-    ],
-  },
-  {
-    id: "comment3",
-    designVersionImageId: "image789",
-    userId: dummyUser3.id,
-    message: `This is the third comment. @${dummyUser1.username}`,
-    mentions: [dummyUser1.id],
-    status: false,
-    createdAt: createDummyDate("2024-10-03T14:00:00Z"),
-    modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
-    replies: [],
-  },
-  {
-    id: "comment4",
-    designVersionImageId: "image789",
-    userId: dummyUser1.id,
-    message: "This is the fourth comment.",
-    mentions: [],
-    status: false,
-    createdAt: createDummyDate("2024-10-03T14:00:00Z"),
-    modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
-    replies: [],
-  },
-];
+// const dummyUserDesignComments = [
+//   {
+//     id: "comment1",
+//     designVersionImageId: dummyImageId1,
+//     location: { x: 69.23076923076923, y: 5.279034690799397 },
+//     userId: dummyUser1.id,
+//     message: `This is the first comment. @${dummyUser2.username} This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment.This is the first comment. @${dummyUser3.username} This is the first comment.This is the first comment.`,
+//     mentions: [dummyUser2.id, dummyUser3.id],
+//     status: false,
+//     createdAt: createDummyDate("2024-10-01T10:00:00Z"),
+//     modifiedAt: createDummyDate("2024-10-01T12:00:00Z"),
+//     replies: [
+//       {
+//         replyId: "reply1_1",
+//         userId: dummyUser2.id,
+//         message: `@${dummyUser1.username} mention in fornt. This is a reply to the first comment.`,
+//         mentions: [dummyUser1.id],
+//         createdAt: createDummyDate("2024-10-01T11:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-01T11:30:00Z"),
+//         replies: ["reply1_1_1", "reply1_1_2"],
+//       },
+//       {
+//         replyId: "reply1_1_1",
+//         userId: dummyUser2.id,
+//         message: `@${dummyUser1.username} mention in fornt. This is a 1st reply to the first reply.`,
+//         mentions: [dummyUser1.id],
+//         createdAt: createDummyDate("2024-10-02T11:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
+//         replies: ["reply1_1_1_1"],
+//       },
+//       {
+//         replyId: "reply1_1_1_1",
+//         userId: dummyUser1.id,
+//         message: `This is a 1st replt to the 1st reply of the first reply. @${dummyUser3.username}`,
+//         mentions: [dummyUser3.id],
+//         createdAt: createDummyDate("2024-10-02T11:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-02T11:30:00Z"),
+//         replies: [],
+//       },
+//       {
+//         replyId: "reply1_1_2",
+//         userId: dummyUser1.id,
+//         message: `@${dummyUser2.username} mention in fornt. This is a 2nd reply to the first reply.`,
+//         mentions: [dummyUser2.id],
+//         createdAt: createDummyDate("2024-10-02T11:50:00Z"),
+//         modifiedAt: createDummyDate("2024-10-02T11:50:00Z"),
+//         replies: [],
+//       },
+//       {
+//         replyId: "reply1_2",
+//         userId: dummyUser3.id,
+//         message: "Another reply to the first comment.",
+//         mentions: [],
+//         createdAt: createDummyDate("2024-10-01T11:15:00Z"),
+//         modifiedAt: createDummyDate("2024-10-01T11:45:00Z"),
+//         replies: [],
+//       },
+//     ],
+//   },
+//   {
+//     id: "comment2",
+//     designVersionImageId: dummyImageId2,
+//     location: { x: 20, y: 30 },
+//     userId: dummyUser2.id,
+//     message: "This is the second comment.",
+//     mentions: [],
+//     status: true,
+//     createdAt: createDummyDate("2024-10-02T09:30:00Z"),
+//     modifiedAt: createDummyDate("2024-10-02T10:30:00Z"),
+//     replies: [
+//       {
+//         replyId: "reply2_1",
+//         userId: dummyUser1.id,
+//         message: `Replying to the second comment. @${dummyUser2.username} message after mention.`,
+//         mentions: [dummyUser2.id],
+//         createdAt: createDummyDate("2024-10-02T10:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-02T10:20:00Z"),
+//         replies: ["reply2_1_1"],
+//       },
+//       {
+//         replyId: "reply2_1_1",
+//         userId: dummyUser1.id,
+//         message: `Replying to the second comment's reply. @${dummyUser1.username} message after mention.`,
+//         mentions: [dummyUser1.id],
+//         createdAt: createDummyDate("2024-10-03T10:00:00Z"),
+//         modifiedAt: createDummyDate("2024-10-03T10:20:00Z"),
+//         replies: [],
+//       },
+//     ],
+//   },
+//   {
+//     id: "comment3",
+//     designVersionImageId: dummyImageId3,
+//     location: { x: 80, y: 40 },
+//     userId: dummyUser3.id,
+//     message: `This is the third comment.`,
+//     mentions: [],
+//     status: false,
+//     createdAt: createDummyDate("2024-10-03T14:00:00Z"),
+//     modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
+//     replies: [],
+//   },
+//   {
+//     id: "comment4",
+//     designVersionImageId: dummyImageId4,
+//     location: { x: 45, y: 20 },
+//     userId: dummyUser1.id,
+//     message: "This is the fourth comment.",
+//     mentions: [],
+//     status: false,
+//     createdAt: createDummyDate("2024-10-03T14:00:00Z"),
+//     modifiedAt: createDummyDate("2024-10-03T14:30:00Z"),
+//     replies: [],
+//   },
+// ];
 
-// User's own comments (assuming current user is dummyUser1.id)
-const dummyUserComments = dummyUserDesignComments.filter(
-  (comment) => comment.userId === dummyUser1.id
-);
+// // User's own comments (assuming current user is dummyUser1.id)
+// const dummyUserComments = dummyUserDesignComments.filter(
+//   (comment) => comment.userId === dummyUser1.id
+// );
 
-// User's own replies (assuming current user is dummyUser1.id)
-const dummyUserReplies = dummyUserDesignComments.flatMap((comment) =>
-  comment.replies
-    .filter((reply) => reply.userId === dummyUser1.id)
-    .map((reply) => ({
-      id: reply.replyId,
-      commentId: comment.id,
-      ...reply,
-    }))
-);
+// // User's own replies (assuming current user is dummyUser1.id)
+// const dummyUserReplies = dummyUserDesignComments.flatMap((comment) =>
+//   comment.replies
+//     .filter((reply) => reply.userId === dummyUser1.id)
+//     .map((reply) => ({
+//       id: reply.replyId,
+//       commentId: comment.id,
+//       ...reply,
+//     }))
+// );
 
-// const dummyUserDesignComments = [];
-// const dummyUserComments = [];
-// const dummyUserReplies = [];
+const dummyUserDesignComments = [];
+const dummyUserComments = [];
+const dummyUserReplies = [];

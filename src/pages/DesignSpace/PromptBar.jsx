@@ -1369,6 +1369,7 @@ function PromptBar({
               onClick={() => {
                 setGenerationErrors({});
                 resetStateVariables();
+                setShowComments(false);
                 handleGeneration();
               }}
             >

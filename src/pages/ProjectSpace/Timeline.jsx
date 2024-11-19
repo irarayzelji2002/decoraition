@@ -7,7 +7,7 @@ import ProjectHead from "./ProjectHead";
 import BottomBarDesign from "./BottomBarProject";
 import { useParams } from "react-router-dom";
 import EditPen from "../DesignSpace/svg/EditPen";
-import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
+import SimpleDeleteConfirmation from "../../components/SimpleDeleteConfirmation";
 import Trash from "../DesignSpace/svg/Trash";
 import {
   fetchTasks,
@@ -15,17 +15,13 @@ import {
   fetchTimelineId,
   fetchTaskDetails,
 } from "./backend/ProjectDetails";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import { auth } from "../../firebase";
 import { Button, IconButton } from "@mui/material";
-import {
-  CalendarIcon,
-  HorizontalIcon,
-  ListIconTimeline,
-  SingleIconTimeline,
-} from "./svg/ExportIcon";
+import { CalendarIcon, ListIconTimeline, SingleIconTimeline } from "./svg/ExportIcon";
 import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import "react-toastify/dist/ReactToastify.css";
 
 function Timeline() {
   const navigate = useNavigate();
@@ -39,13 +35,16 @@ function Timeline() {
   const [viewMode, setViewMode] = useState("calendar"); // "calendar", "list", "single"
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [timelineId, setTimelineId] = useState(null); // Add state for timelineId
+  const [taskIdToDelete, setTaskIdToDelete] = useState(null); // Add state for taskId to delete
 
-  const openDeleteModal = () => {
+  const openDeleteModal = (taskId) => {
+    setTaskIdToDelete(taskId);
     setShowDeleteModal(true);
   };
 
   const closeDeleteModal = () => {
     setShowDeleteModal(false);
+    setTaskIdToDelete(null);
   };
 
   useEffect(() => {
@@ -61,9 +60,11 @@ function Timeline() {
   }, [projectId]);
 
   useEffect(() => {
+    if (!timelineId) return;
+
     const fetchAndSetTasks = async () => {
       const currentUser = auth.currentUser;
-      if (currentUser && timelineId) {
+      if (currentUser) {
         const tasks = await fetchTasks(timelineId);
         setTasks(tasks);
       }
@@ -71,10 +72,10 @@ function Timeline() {
 
     fetchAndSetTasks(); // Fetch tasks immediately when the component mounts
 
-    const intervalId = setInterval(fetchAndSetTasks, 1000); // Refresh every 60 seconds
+    const intervalId = setInterval(fetchAndSetTasks, 10000); // Refresh every 60 seconds
 
     return () => clearInterval(intervalId); // Clear interval on component unmount
-  }, [projectId, timelineId]);
+  }, [timelineId]);
 
   const formatDate = (date) => {
     const options = { month: "short", day: "numeric", year: "numeric" };
@@ -94,15 +95,18 @@ function Timeline() {
     )}`;
   };
 
-  const handleDelete = async (taskId) => {
-    console.log("handleDelete called with taskId:", taskId); // Debugging statement
+  const handleDelete = async () => {
+    console.log("handleDelete called with taskId:", taskIdToDelete); // Debugging statement
     const currentUser = auth.currentUser;
-    if (currentUser) {
+    if (currentUser && taskIdToDelete) {
       try {
-        await deleteTask(currentUser.uid, projectId, taskId);
+        await deleteTask(currentUser.uid, projectId, taskIdToDelete);
         console.log("Task deleted successfully"); // Debugging statement
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskIdToDelete));
+        closeDeleteModal();
       } catch (error) {
         console.error("Error deleting task:", error); // Debugging statement
+        toast.error("Error deleting task! Please try again.");
       }
     }
   };
@@ -110,8 +114,10 @@ function Timeline() {
   const handleEditClick = async (taskId) => {
     const currentUser = auth.currentUser;
     if (currentUser) {
+      console.log("handlEdit called with taskId:", taskId); // Debugging statement
       const taskDetails = await fetchTaskDetails(currentUser.uid, taskId);
       const encodedTaskDetails = encodeURIComponent(JSON.stringify(taskDetails));
+      console.log("taskDetails:", taskDetails); // Debugging statement
       navigate(`/editEvent/${projectId}?task=${encodedTaskDetails}&timelineId=${timelineId}`, {
         state: { navigateFrom: navigateFrom },
       });
@@ -266,7 +272,7 @@ function Timeline() {
                         <div onClick={() => handleEditClick(task.id)}>
                           <EditPen />
                         </div>
-                        <div onClick={openDeleteModal}>
+                        <div onClick={() => openDeleteModal(task.id)}>
                           <Trash />
                         </div>
                       </div>
@@ -314,7 +320,7 @@ function Timeline() {
                     <div onClick={() => handleEditClick(task.id)}>
                       <EditPen />
                     </div>
-                    <div onClick={openDeleteModal}>
+                    <div onClick={() => openDeleteModal(task.id)}>
                       <Trash />
                     </div>
                   </div>
@@ -355,7 +361,7 @@ function Timeline() {
                 <div onClick={() => handleEditClick(tasks[currentTaskIndex].id)}>
                   <EditPen />
                 </div>
-                <div onClick={openDeleteModal}>
+                <div onClick={() => openDeleteModal(tasks[currentTaskIndex].id)}>
                   <Trash />
                 </div>
               </div>
@@ -372,10 +378,10 @@ function Timeline() {
             </div>
           </div>
         )}
-        <DeleteConfirmationModal
-          isOpen={showDeleteModal}
-          onClose={closeDeleteModal}
-          onDelete={handleDelete}
+        <SimpleDeleteConfirmation
+          open={showDeleteModal}
+          handleClose={closeDeleteModal}
+          handleDelete={handleDelete}
         />
       </div>
       <div className="bottom-filler" />

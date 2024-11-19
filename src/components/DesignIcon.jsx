@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../css/homepage.css";
 import HomepageOptions from "../pages/Homepage/HomepageOptions";
+import { useSharedProps } from "../contexts/SharedPropsContext";
 
 function DesignIcon({
   id,
@@ -13,6 +14,8 @@ function DesignIcon({
   design = {},
   setOptionsState = () => {},
 }) {
+  const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
+    useSharedProps();
   const [clickedId, setClickedId] = useState("");
 
   const toggleOptions = (id) => {
@@ -31,6 +34,32 @@ function DesignIcon({
     toggleOptions(clickedId);
   }, [clickedId]);
 
+  const getDesignImage = (designId) => {
+    // Get the design
+    const fetchedDesign =
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
+    if (!fetchedDesign || !fetchedDesign.history || fetchedDesign.history.length === 0) {
+      return "";
+    }
+
+    // Get the latest designVersionId
+    const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
+    const fetchedLatestDesignVersion =
+      userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
+      designVersions.find((designVer) => designVer.id === latestDesignVersionId);
+    if (
+      !fetchedLatestDesignVersion ||
+      !fetchedLatestDesignVersion.images ||
+      fetchedLatestDesignVersion.images.length === 0
+    ) {
+      return "";
+    }
+
+    // Return the first image's link from the fetched design version
+    return fetchedLatestDesignVersion.images[0].link;
+  };
+
   return (
     <div className="iconFrame">
       <HomepageOptions
@@ -47,7 +76,7 @@ function DesignIcon({
       {/* Design image */}
       <div className="homepage-thumbnail" onClick={onOpen}>
         <img
-          src={"/img/Room1.png"}
+          src={getDesignImage(design.id)}
           className="pic"
           alt=""
           style={{ objectFit: "cover", objectPosition: "center" }}

@@ -54,6 +54,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
     handleLogout,
     designs,
     userDesigns,
+    designVersions,
     userDesignVersions,
     projects,
     userProjects,
@@ -81,16 +82,18 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
 
   const getDesignImage = (designId) => {
     // Get the design
-    const fetchedDesign = userDesigns.find((design) => design.id === designId);
+    const fetchedDesign =
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
     if (!fetchedDesign || !fetchedDesign.history || fetchedDesign.history.length === 0) {
       return "";
     }
 
     // Get the latest designVersionId
     const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
-    const fetchedLatestDesignVersion = userDesignVersions.find(
-      (designVer) => designVer.id === latestDesignVersionId
-    );
+    const fetchedLatestDesignVersion =
+      userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
+      designVersions.find((designVer) => designVer.id === latestDesignVersionId);
     if (
       !fetchedLatestDesignVersion ||
       !fetchedLatestDesignVersion.images ||
@@ -105,7 +108,9 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
 
   const getProjectImage = (projectId) => {
     // Get the project
-    const fetchedProject = userProjects.find((project) => project.id === projectId);
+    const fetchedProject =
+      userProjects.find((project) => project.id === projectId) ||
+      projects.find((project) => project.id === projectId);
     if (!fetchedProject || fetchedProject.designs.length === 0) {
       return "";
     }

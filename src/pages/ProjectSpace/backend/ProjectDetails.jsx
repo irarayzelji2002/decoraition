@@ -177,10 +177,8 @@ export const updateTask = async (userId, projectId, taskId, updatedData) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    showToast("success", "Task updated successfully!");
   } catch (error) {
     console.error("Error updating task:", error);
-    showToast("error", "Error updating task! Please try again.");
   }
 };
 

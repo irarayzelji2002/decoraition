@@ -53,6 +53,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
 
   const handleSave = () => {
     onSave({
+      ...reminder,
       hours,
       minutes,
       period,

@@ -216,6 +216,14 @@ h2 {
   justify-items: center;
   align-items: start;
 }
+.layout > * {
+  overflow: hidden; /* Prevent content from spilling */
+  text-overflow: ellipsis; /* Optional: Handles long text */
+  white-space: nowrap; /* Optional: Prevent text from wrapping */
+  width: 100%;
+  box-sizing: border-box;
+}
+
 tr:hover td {
   background-color: var(--table-rows-hover) !important;
 }
@@ -358,6 +366,8 @@ tr:hover td {
   color: var(--color-white);
   margin-bottom: 2px;
   cursor: pointer;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .pic {

@@ -96,7 +96,7 @@ function ProjectOptionsHome({
         <img
           src={getProjectImage(project.id)}
           className="pic"
-          alt="Design"
+          alt=""
           style={{ objectFit: "cover", objectPosition: "center" }}
         />
       </div>

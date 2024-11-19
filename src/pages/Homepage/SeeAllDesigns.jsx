@@ -342,7 +342,7 @@ export default function SeeAllDesigns() {
             {/* Previous Page Button */}
             <IconButton onClick={handlePreviousPage} disabled={page === 1} sx={iconButtonStyles}>
               <ArrowBackIosRoundedIcon
-                sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+                sx={{ color: page === 1 ? "var(--inputBg)" : "var(--color-white)" }}
               />
             </IconButton>
 

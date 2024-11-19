@@ -34,22 +34,58 @@ function EditEvent() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
 
-  const initialFormData = taskDetails
-    ? JSON.parse(decodeURIComponent(taskDetails))
-    : {
-        taskName: "",
-        startDate: selectedDate || "",
-        endDate: selectedDate || "",
-        description: "",
-        repeat: {
-          frequency: "",
-          unit: "day",
-        },
-        reminders: [],
-        repeatEnabled: true,
-      };
+  const initialFormData =
+    taskDetails && taskDetails.dateRange
+      ? {
+          taskName: taskDetails.eventName,
+          startDate: new Date(taskDetails.dateRange.start).toISOString().split("T")[0],
+          endDate: new Date(taskDetails.dateRange.end).toISOString().split("T")[0],
+          description: taskDetails.description,
+          repeat: {
+            frequency: taskDetails.repeatEvery,
+            unit: taskDetails.repeating ? "day" : "",
+          },
+          reminders: taskDetails.reminders.map((reminder) => ({
+            ...reminder,
+            count: reminder.timeBeforeEvent / (reminder.unit === "day" ? 1440 : 60),
+          })),
+          repeatEnabled: taskDetails.repeating,
+        }
+      : {
+          taskName: "",
+          startDate: selectedDate || "",
+          endDate: selectedDate || "",
+          description: "",
+          repeat: {
+            frequency: "",
+            unit: "day",
+          },
+          reminders: [],
+          repeatEnabled: true,
+        };
 
   const [formData, setFormData] = useState(initialFormData);
+
+  useEffect(() => {
+    if (taskDetails && taskDetails.dateRange) {
+      setFormData({
+        taskName: taskDetails.eventName,
+        startDate: new Date(taskDetails.dateRange.start).toISOString().split("T")[0],
+        endDate: new Date(taskDetails.dateRange.end).toISOString().split("T")[0],
+        description: taskDetails.description,
+        repeat: {
+          frequency: taskDetails.repeatEvery,
+          unit: taskDetails.repeating ? "day" : "",
+        },
+        reminders: taskDetails.reminders.map((reminder) => ({
+          ...reminder,
+          count: reminder.timeBeforeEvent / (reminder.unit === "day" ? 1440 : 60),
+        })),
+        repeatEnabled: taskDetails.repeating,
+      });
+      setAllowRepeat(taskDetails.repeating);
+    }
+  }, [taskDetails]);
 
   const handleInputChange = (e, fieldName, nestedField = null) => {
     const { value } = e.target;
@@ -140,6 +176,12 @@ function EditEvent() {
     setOpenModal(false);
   };
 
+  const handleRepeatToggle = () => {
+    setAllowRepeat((prev) => !prev);
+  };
+
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <ThemeProvider theme={theme}>
       <div style={{ overflowX: "hidden" }}>
@@ -165,6 +207,7 @@ function EditEvent() {
                 id="startDate"
                 name="startDate"
                 value={formData.startDate}
+                min={today}
                 onChange={(e) => handleInputChange(e, "startDate")}
               />
             </div>
@@ -175,6 +218,7 @@ function EditEvent() {
                 id="endDate"
                 name="endDate"
                 value={formData.endDate}
+                min={formData.startDate}
                 onChange={(e) => handleInputChange(e, "endDate")}
               />
             </div>
@@ -188,7 +232,7 @@ function EditEvent() {
               />
             </div>
             <div className="form-group repeat">
-              <CustomSwitch label="Repeat" checked={allowRepeat} onChange={setAllowRepeat} />
+              <CustomSwitch label="Repeat" checked={allowRepeat} onChange={handleRepeatToggle} />
               {allowRepeat && <RepeatSelector />}
             </div>
             <div className="reminders">

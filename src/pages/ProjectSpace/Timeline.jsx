@@ -9,7 +9,12 @@ import { useParams } from "react-router-dom";
 import EditPen from "../DesignSpace/svg/EditPen";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import Trash from "../DesignSpace/svg/Trash";
-import { fetchTasks, deleteTask, fetchTimelineId } from "./backend/ProjectDetails";
+import {
+  fetchTasks,
+  deleteTask,
+  fetchTimelineId,
+  fetchTaskDetails,
+} from "./backend/ProjectDetails";
 import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 import { Button, IconButton } from "@mui/material";
@@ -76,6 +81,19 @@ function Timeline() {
     return date.toLocaleDateString(undefined, options);
   };
 
+  const formatDateRange = (start, end) => {
+    const startDate = new Date(start._seconds * 1000);
+    const endDate = new Date(end._seconds * 1000);
+    const options = { month: "short", day: "numeric", year: "numeric" };
+    if (startDate.toDateString() === endDate.toDateString()) {
+      return `Until ${endDate.toLocaleDateString(undefined, options)}`;
+    }
+    return `${startDate.toLocaleDateString(undefined, options)} Until ${endDate.toLocaleDateString(
+      undefined,
+      options
+    )}`;
+  };
+
   const handleDelete = async (taskId) => {
     console.log("handleDelete called with taskId:", taskId); // Debugging statement
     const currentUser = auth.currentUser;
@@ -89,11 +107,15 @@ function Timeline() {
     }
   };
 
-  const handleEditClick = (task) => {
-    const taskDetails = encodeURIComponent(JSON.stringify(task));
-    navigate(`/editEvent/${projectId}?task=${taskDetails}&timelineId=${timelineId}`, {
-      state: { navigateFrom: navigateFrom },
-    });
+  const handleEditClick = async (taskId) => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const taskDetails = await fetchTaskDetails(currentUser.uid, taskId);
+      const encodedTaskDetails = encodeURIComponent(JSON.stringify(taskDetails));
+      navigate(`/editEvent/${projectId}?task=${encodedTaskDetails}&timelineId=${timelineId}`, {
+        state: { navigateFrom: navigateFrom },
+      });
+    }
   };
 
   const handleAddEventClick = () => {
@@ -137,15 +159,32 @@ function Timeline() {
     setCurrentTaskIndex((prevIndex) => (prevIndex < tasks.length - 1 ? prevIndex + 1 : 0));
   };
 
-  const filteredTasks = tasks.filter(
-    (task) => task.dateRange && new Date(task.dateRange.end).toDateString() === date.toDateString()
-  );
+  const filteredTasks = tasks.filter((task) => {
+    if (task.dateRange) {
+      const startDate = new Date(task.dateRange.start._seconds * 1000);
+      const endDate = new Date(task.dateRange.end._seconds * 1000);
+      return (
+        date.toDateString() === startDate.toDateString() ||
+        date.toDateString() === endDate.toDateString() ||
+        (date >= startDate && date <= endDate)
+      );
+    }
+    return false;
+  });
 
   const hasTasks = (date) => {
-    return tasks.some(
-      (task) =>
-        task.dateRange && new Date(task.dateRange.end).toDateString() === date.toDateString()
-    );
+    return tasks.some((task) => {
+      if (task.dateRange) {
+        const startDate = new Date(task.dateRange.start._seconds * 1000);
+        const endDate = new Date(task.dateRange.end._seconds * 1000);
+        return (
+          date.toDateString() === startDate.toDateString() ||
+          date.toDateString() === endDate.toDateString() ||
+          (date >= startDate && date <= endDate)
+        );
+      }
+      return false;
+    });
   };
 
   return (
@@ -218,18 +257,13 @@ function Timeline() {
                       <div className="task-text">
                         <h3>{task.eventName}</h3>
                         <p>
-                          Until{" "}
                           {task.dateRange
-                            ? new Date(task.dateRange.end).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })
+                            ? formatDateRange(task.dateRange.start, task.dateRange.end)
                             : "N/A"}
                         </p>
                       </div>
                       <div className="task-actions">
-                        <div onClick={() => handleEditClick(task)}>
+                        <div onClick={() => handleEditClick(task.id)}>
                           <EditPen />
                         </div>
                         <div onClick={openDeleteModal}>
@@ -271,18 +305,13 @@ function Timeline() {
                   <div className="task-text">
                     <h3>{task.eventName}</h3>
                     <p>
-                      Until{" "}
                       {task.dateRange
-                        ? new Date(task.dateRange.end).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
+                        ? formatDateRange(task.dateRange.start, task.dateRange.end)
                         : "N/A"}
                     </p>
                   </div>
                   <div className="task-actions">
-                    <div onClick={() => handleEditClick(task)}>
+                    <div onClick={() => handleEditClick(task.id)}>
                       <EditPen />
                     </div>
                     <div onClick={openDeleteModal}>
@@ -313,22 +342,17 @@ function Timeline() {
               <div className="task-text">
                 <h3>{tasks[currentTaskIndex].eventName}</h3>
                 <p>
-                  Until{" "}
                   {tasks[currentTaskIndex].dateRange
-                    ? new Date(tasks[currentTaskIndex].dateRange.end).toLocaleDateString(
-                        undefined,
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        }
+                    ? formatDateRange(
+                        tasks[currentTaskIndex].dateRange.start,
+                        tasks[currentTaskIndex].dateRange.end
                       )
                     : "N/A"}
                 </p>
               </div>
 
               <div className="task-actions">
-                <div onClick={() => handleEditClick(tasks[currentTaskIndex])}>
+                <div onClick={() => handleEditClick(tasks[currentTaskIndex].id)}>
                   <EditPen />
                 </div>
                 <div onClick={openDeleteModal}>
@@ -344,11 +368,7 @@ function Timeline() {
               <p>Every week</p>
 
               <p className="label-item">Description</p>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-              </p>
+              <p>{tasks[currentTaskIndex].description}</p>
             </div>
           </div>
         )}

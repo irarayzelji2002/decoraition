@@ -97,23 +97,18 @@ function Homepage() {
   };
 
   const loadDesignDataForView = async () => {
-    console.time("Loading Designs");
     setLoadingDesigns(true);
     if (userDesigns.length > 0) {
-      console.time("Sorting Designs");
       const designsByLatest = [...userDesigns].sort(
         (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
       );
-      console.timeEnd("Sorting Designs");
 
-      console.time("Filtering Designs");
       const filteredDesigns = designsByLatest.filter((design) =>
         design.designName.toLowerCase().includes(searchQuery.trim().toLowerCase())
       );
-      console.timeEnd("Filtering Designs");
+
       setFilteredDesigns(filteredDesigns);
 
-      console.time("Preparing Table Data for Designs");
       const ownerIds = filteredDesigns.map((design) => design.owner);
       const usernames = await fetchUsernamesBatch(ownerIds);
 
@@ -126,34 +121,27 @@ function Homepage() {
         formattedModifiedAt: formatDate(design.modifiedAt),
         modifiedAtTimestamp: design.modifiedAt.toMillis(),
       }));
-      console.timeEnd("Preparing Table Data for Designs");
+
       setFilteredDesignsForTable(tableData);
     } else {
       setFilteredDesigns([]);
       setFilteredDesignsForTable([]);
     }
     setLoadingDesigns(false);
-    console.timeEnd("Loading Designs");
   };
 
   const loadProjectDataForView = async () => {
-    console.time("Loading Projects");
     setLoadingProjects(true);
     if (userProjects.length > 0) {
-      console.time("Sorting Projects");
       const projectsByLatest = [...userProjects].sort(
         (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
       );
-      console.timeEnd("Sorting Projects");
 
-      console.time("Filtering Projects");
       const filteredProjects = projectsByLatest.filter((project) =>
         project.projectName.toLowerCase().includes(searchQuery.trim().toLowerCase())
       );
-      console.timeEnd("Filtering Projects");
-      setFilteredProjects(filteredProjects);
 
-      console.time("Preparing Table Data for Projects");
+      setFilteredProjects(filteredProjects);
       const managerIds = filteredProjects.flatMap((project) => project.managers || []);
       const managers = await fetchManagersBatch(managerIds);
 
@@ -169,14 +157,13 @@ function Homepage() {
           modifiedAtTimestamp: project.modifiedAt.toMillis(),
         };
       });
-      console.timeEnd("Preparing Table Data for Projects");
+
       setFilteredProjectsForTable(tableData);
     } else {
       setFilteredProjects([]);
       setFilteredProjectsForTable([]);
     }
     setLoadingProjects(false);
-    console.timeEnd("Loading Projects");
   };
 
   const setThresholdAfterViewChange = (type) => {
@@ -279,6 +266,9 @@ function Homepage() {
               onClick={() => {
                 setIsDesignButtonDisabled(true);
                 handleCreateDesign(user, userDoc.id, navigate);
+                setTimeout(() => {
+                  setIsDesignButtonDisabled(false);
+                }, 6000);
               }}
               disabled={isDesignButtonDisabled}
               sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
@@ -302,6 +292,9 @@ function Homepage() {
               onClick={() => {
                 setIsProjectButtonDisabled(true);
                 handleCreateProject(user, userDoc.id, navigate);
+                setTimeout(() => {
+                  setIsProjectButtonDisabled(false);
+                }, 6000);
               }}
               disabled={isProjectButtonDisabled}
               sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}

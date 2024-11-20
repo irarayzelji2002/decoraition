@@ -348,34 +348,38 @@ function Project() {
               flexDirection: "column",
             }}
           >
-            {isVertical
-              ? designs.length > 0 && (
-                  <HomepageTable
-                    isDesign={true}
-                    data={filteredDesignsForTable}
-                    isHomepage={false}
-                    optionsState={optionsState}
-                    setOptionsState={setOptionsState}
-                  />
-                )
-              : filteredDesignsForTable.length > 0 &&
-                filteredDesignsForTable.slice(0, 6).map((design) => (
-                  <DesignIcon
-                    id={design.id}
-                    name={design.designName}
-                    design={design}
-                    onOpen={() =>
-                      navigate(`/design/${design.id}`, {
-                        state: { designId: design.id },
-                      })
-                    }
-                    owner={getUsername(design.owner)}
-                    createdAt={formatDateLong(design.createdAt)}
-                    modifiedAt={formatDateLong(design.modifiedAt)}
-                    optionsState={optionsState}
-                    setOptionsState={setOptionsState}
-                  />
-                ))}
+            {loadingDesigns ? (
+              <Loading />
+            ) : isVertical ? (
+              designs.length > 0 && (
+                <HomepageTable
+                  isDesign={true}
+                  data={filteredDesignsForTable}
+                  isHomepage={false}
+                  optionsState={optionsState}
+                  setOptionsState={setOptionsState}
+                />
+              )
+            ) : (
+              designs.length > 0 &&
+              designs.slice(0, 6).map((design) => (
+                <DesignIcon
+                  id={design.id}
+                  name={design.designName}
+                  design={design}
+                  onOpen={() =>
+                    navigate(`/design/${design.id}`, {
+                      state: { designId: design.id },
+                    })
+                  }
+                  owner={getUsername(design.owner)}
+                  createdAt={formatDateLong(design.createdAt)}
+                  modifiedAt={formatDateLong(design.modifiedAt)}
+                  optionsState={optionsState}
+                  setOptionsState={setOptionsState}
+                />
+              ))
+            )}
           </div>
         </div>
         {filteredDesignsForTable.length === 0 && (

@@ -17,19 +17,38 @@ import { ChromePicker } from "react-color";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ImageFrame from "../../components/ImageFrame";
+import { fetchProjectDesigns } from "./backend/ProjectDetails";
 
 function AddPin({ EditMode }) {
   const location = useLocation();
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
+  const projectId = location.state?.projectId;
 
   const [owner, setOwner] = React.useState("");
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [pins, setPins] = useState([]);
+  const [designs, setDesigns] = useState([]);
+
+  useEffect(() => {
+    addPin();
+    if (projectId) {
+      fetchProjectDesigns(projectId, setDesigns);
+    }
+  }, [projectId]);
 
   const handleColorChange = (color) => {
     setSelectedColor(color.hex); // Update the selected color
+    setPins((prevPins) => {
+      const updatedPins = [...prevPins];
+      const currentPinIndex = updatedPins.length - 1;
+      if (currentPinIndex >= 0) {
+        updatedPins[currentPinIndex].color = color.hex;
+      }
+      return updatedPins;
+    });
   };
+
   const StyledMenu = styled(Menu)(({ theme }) => ({
     "& .MuiPaper-root": {
       backgroundColor: "#2c2c2e",
@@ -117,12 +136,13 @@ function AddPin({ EditMode }) {
             alt="design preview"
             pins={pins}
             setPins={setPins}
+            color={selectedColor}
           />
         </div>
         <div className="budgetSpaceImg">
           <div style={{ width: "100%" }}>
             {" "}
-            <label style={{ marginLeft: "12px" }}>Pin number: {pins.length + 1}</label>
+            <label style={{ marginLeft: "12px" }}>Pin number: {pins.length}</label>
             <br />
             <br />
             <label style={{ marginLeft: "12px" }}>Associated Design</label>
@@ -134,7 +154,6 @@ function AddPin({ EditMode }) {
                 label="Owner"
                 value={owner}
                 onChange={(e) => setOwner(e.target.value)}
-                MenuComponent={StyledMenu}
                 MenuProps={{
                   PaperProps: {
                     sx: {
@@ -150,15 +169,11 @@ function AddPin({ EditMode }) {
                 <MenuItem value="" sx={menuItemStyles}>
                   <em>&nbsp;</em>
                 </MenuItem>
-                <MenuItem sx={menuItemStyles} value="Alice">
-                  Alice
-                </MenuItem>
-                <MenuItem sx={menuItemStyles} value="Bob">
-                  Bob
-                </MenuItem>
-                <MenuItem sx={menuItemStyles} value="Charlie">
-                  Charlie
-                </MenuItem>
+                {designs.map((design) => (
+                  <MenuItem key={design.id} sx={menuItemStyles} value={design.id}>
+                    {design.designName}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <label style={{ marginLeft: "12px" }}>Pin Color</label>
@@ -205,7 +220,7 @@ function AddPin({ EditMode }) {
                   }}
                 />
                 <div className="rightBeside">
-                  <Button fullWidth variant="contained" className="confirm-button">
+                  <Button fullWidth variant="contained" className="confirm-button" onClose>
                     Save Color
                   </Button>
 
@@ -219,11 +234,7 @@ function AddPin({ EditMode }) {
                 </div>
               </div>
             </Modal>
-            <button
-              className="add-item-btn"
-              style={{ width: "100%", margin: "8px" }}
-              onClick={addPin}
-            >
+            <button className="add-item-btn" style={{ width: "100%", margin: "8px" }}>
               Add Pin
             </button>
           </div>

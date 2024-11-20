@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../../firebase";
-import { fetchDesigns } from "./backend/ProjectDetails";
+import { fetchDesigns, fetchPins } from "./backend/ProjectDetails";
 import ProjectHead from "./ProjectHead";
 import MapPin from "./MapPin";
 import BottomBarDesign from "./BottomBarProject";
@@ -13,7 +13,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import "../../css/project.css";
 import "../../css/seeAll.css";
 import "../../css/budget.css";
-import { ToastContainer } from "react-toastify";
 import { AddPin, AdjustPin, ChangeOrder, ChangePlan } from "../DesignSpace/svg/AddImage";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -38,9 +37,7 @@ function PlanMap() {
   const location = useLocation();
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
-
   const [pins, setPins] = useState([]);
-
   const [menuOpen, setMenuOpen] = useState(false);
   const [designs, setDesigns] = useState([]);
   const [user, setUser] = useState(null);
@@ -56,10 +53,10 @@ function PlanMap() {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
-        fetchDesigns(currentUser.uid, projectId, setDesigns);
+        fetchPins(projectId, setPins);
       } else {
         setUser(null);
-        setDesigns([]);
+        setPins([]);
       }
     });
     return () => unsubscribeAuth();
@@ -101,7 +98,7 @@ function PlanMap() {
 
   const navigateToAddPin = () => {
     navigate("/addPin/", {
-      state: { navigateFrom: navigateFrom },
+      state: { navigateFrom: navigateFrom, projectId: projectId },
     });
   };
   const navigateToPinLayout = () => {

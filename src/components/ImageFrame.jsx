@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 
-const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true }) => {
+const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) => {
   const frameRef = useRef(null);
   const imageRef = useRef(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
@@ -21,18 +21,6 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true }) => {
       window.removeEventListener("resize", updateImageSize);
     };
   }, [imageRef]);
-
-  useEffect(() => {
-    if (pins.length === 0) {
-      const defaultPins = [
-        { id: 1, x: 25, y: -20, color: "#FF0000" },
-        { id: 2, x: 30, y: -50, color: "#00FF00" },
-        { id: 3, x: 50, y: -50, color: "#0000FF" },
-        { id: 4, x: 70, y: -90, color: "#FFFF00" },
-      ];
-      setPins(defaultPins);
-    }
-  }, [pins, setPins]);
 
   const updatePinPosition = (id, x, y) => {
     const rect = imageRef.current.getBoundingClientRect();
@@ -69,7 +57,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true }) => {
             onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
           >
             <div className="pin" style={{ position: "absolute" }}>
-              <MapPinIcon number={pin.id} fill={pin.color} />
+              <MapPinIcon number={pin.id} fill={pin.color || color} />
             </div>
           </Draggable>
         );
@@ -109,7 +97,7 @@ function MapPinIcon({ number, fill }) {
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
             result="hardAlpha"
           />
           <feMorphology
@@ -125,7 +113,7 @@ function MapPinIcon({ number, fill }) {
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.127 0"
             result="hardAlpha"
           />
           <feOffset dy="1" />

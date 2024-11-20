@@ -192,6 +192,7 @@ router.post(
   projectController.createDesignProject
 );
 router.get("/project/:projectId/designs", authenticateUser, projectController.fetchProjectDesigns);
+router.get("/project/:projectId/pins", authenticateUser, planMapController.getPins);
 
 // Network check
 router.get("/health-check", (req, res) => {

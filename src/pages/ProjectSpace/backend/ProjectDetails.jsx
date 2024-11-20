@@ -239,3 +239,23 @@ export const fetchTaskDetails = async (userId, taskId) => {
     throw error;
   }
 };
+
+export const fetchPins = async (projectId, setPins) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.get(`/api/project/${projectId}/pins`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 200) {
+      setPins(response.data);
+    } else {
+      showToast("error", "Failed to fetch pins.");
+    }
+  } catch (error) {
+    console.error("Error fetching pins:", error);
+    showToast("error", "Failed to fetch pins");
+  }
+};

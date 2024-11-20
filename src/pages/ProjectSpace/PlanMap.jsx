@@ -97,8 +97,10 @@ function PlanMap() {
   };
 
   const navigateToAddPin = () => {
+    const totalPins = pins.length; // Assuming `pins` is an array containing the existing pins
+    console.log("Total Pins:", totalPins);
     navigate("/addPin/", {
-      state: { navigateFrom: navigateFrom, projectId: projectId },
+      state: { navigateFrom: navigateFrom, projectId: projectId, totalPins: totalPins },
     });
   };
   const navigateToPinLayout = () => {
@@ -166,7 +168,7 @@ function PlanMap() {
       <ProjectHead />
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
       <div className="sectionBudget" style={{ background: "none" }}>
-        <div className="budgetSpaceImg">
+        <div className="budgetSpaceImg" style={{ background: "none", height: "100%" }}>
           <ImageFrame
             src="../../img/floorplan.png"
             alt="design preview"
@@ -178,13 +180,19 @@ function PlanMap() {
         </div>
         <div className="budgetSpaceImg">
           {pins.length > 0 ? (
-            pins.map((design) => {
-              return (
-                <>
-                  <MapPin title={design.designName} pinColor={design.color} pinNo={design.order} />
-                </>
-              );
-            })
+            pins
+              .sort((a, b) => a.order - b.order) // Sort pins by design.order
+              .map((design) => {
+                return (
+                  <>
+                    <MapPin
+                      title={design.designName}
+                      pinColor={design.color}
+                      pinNo={design.order}
+                    />
+                  </>
+                );
+              })
           ) : (
             <div className="no-content" style={{ height: "80vh" }}>
               <img src="/img/design-placeholder.png" alt="No designs yet" />

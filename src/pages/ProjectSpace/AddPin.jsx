@@ -16,12 +16,14 @@ import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ImageFrame from "../../components/ImageFrame";
 import { fetchProjectDesigns, addPinToDatabase, fetchPins } from "./backend/ProjectDetails";
+import { CurrencyExchange } from "@mui/icons-material";
 
 function AddPin({ EditMode }) {
   const location = useLocation();
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
   const projectId = location.state?.projectId;
+  const CurrentPin = (location.state?.totalPins || 0) + 1;
   const navigate = useNavigate();
 
   const [owner, setOwner] = React.useState("");
@@ -59,14 +61,14 @@ function AddPin({ EditMode }) {
     setModalOpen(false);
   };
   const addPin = async () => {
-    const highestId = pins.length > 0 ? Math.max(...pins.map((pin) => pin.id)) : 0;
     const newPin = {
-      id: highestId + 1,
+      id: CurrentPin,
       location: { x: 10, y: -20 },
       color: selectedColor,
+      order: CurrentPin,
       designName: designs.find((design) => design.id === owner)?.designName || "",
     };
-    setPins([...pins, newPin]);
+    setPins([newPin]);
   };
 
   const handleSavePin = async () => {
@@ -100,7 +102,7 @@ function AddPin({ EditMode }) {
         <div className="budgetSpaceImg">
           <div style={{ width: "100%" }}>
             {" "}
-            <label style={{ marginLeft: "12px" }}>Pin number: {pins.length}</label>
+            <label style={{ marginLeft: "12px" }}>Pin number: {CurrentPin}</label>
             <br />
             <br />
             <label style={{ marginLeft: "12px" }}>Associated Design</label>

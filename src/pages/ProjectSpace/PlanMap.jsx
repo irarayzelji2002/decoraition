@@ -171,6 +171,7 @@ function PlanMap() {
             src="../../img/floorplan.png"
             alt="design preview"
             pins={pins}
+            projectId={projectId}
             setPins={setPins}
             draggable={false} // Ensure this line is present
           />

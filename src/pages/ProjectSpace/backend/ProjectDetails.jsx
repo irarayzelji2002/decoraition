@@ -259,3 +259,17 @@ export const fetchPins = async (projectId, setPins) => {
     showToast("error", "Failed to fetch pins");
   }
 };
+
+export const addPinToDatabase = async (projectId, pinData) => {
+  try {
+    const pinRef = collection(db, "pins");
+    await addDoc(pinRef, {
+      projectId,
+      ...pinData,
+    });
+    showToast("success", "Pin added successfully");
+  } catch (error) {
+    console.error("Error adding pin: ", error);
+    showToast("error", "Failed to add pin");
+  }
+};

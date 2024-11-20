@@ -17,7 +17,7 @@ import { ChromePicker } from "react-color";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ImageFrame from "../../components/ImageFrame";
-import { fetchProjectDesigns } from "./backend/ProjectDetails";
+import { fetchProjectDesigns, addPinToDatabase } from "./backend/ProjectDetails";
 
 function AddPin({ EditMode }) {
   const location = useLocation();
@@ -31,10 +31,10 @@ function AddPin({ EditMode }) {
   const [designs, setDesigns] = useState([]);
 
   useEffect(() => {
-    addPin();
     if (projectId) {
       fetchProjectDesigns(projectId, setDesigns);
     }
+    addPin(); // Ensure a pin is added when the component mounts
   }, [projectId]);
 
   const handleColorChange = (color) => {
@@ -123,7 +123,20 @@ function AddPin({ EditMode }) {
 
   const addPin = () => {
     const highestId = pins.length > 0 ? Math.max(...pins.map((pin) => pin.id)) : 0;
-    setPins([...pins, { id: highestId + 1, x: 0, y: 0, color: selectedColor }]);
+    setPins([...pins, { id: highestId + 1, x: 10, y: -20, color: selectedColor }]);
+  };
+
+  const handleSavePin = async () => {
+    const currentPin = pins[pins.length - 1];
+    if (currentPin) {
+      const pinData = {
+        designId: owner,
+        location: { x: currentPin.x, y: currentPin.y },
+        color: currentPin.color,
+        order: currentPin.id,
+      };
+      await addPinToDatabase(projectId, pinData);
+    }
   };
 
   return (
@@ -220,7 +233,12 @@ function AddPin({ EditMode }) {
                   }}
                 />
                 <div className="rightBeside">
-                  <Button fullWidth variant="contained" className="confirm-button" onClose>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    className="confirm-button"
+                    onClick={handleSavePin}
+                  >
                     Save Color
                   </Button>
 
@@ -234,7 +252,11 @@ function AddPin({ EditMode }) {
                 </div>
               </div>
             </Modal>
-            <button className="add-item-btn" style={{ width: "100%", margin: "8px" }}>
+            <button
+              className="add-item-btn"
+              style={{ width: "100%", margin: "8px" }}
+              onClick={addPin}
+            >
               Add Pin
             </button>
           </div>

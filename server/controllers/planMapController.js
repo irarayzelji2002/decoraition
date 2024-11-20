@@ -136,3 +136,23 @@ exports.deletePin = async (req, res) => {
     res.status(500).json({ error: "Failed to delete pin" });
   }
 };
+
+exports.savePinOrder = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { pins } = req.body;
+
+    const batch = db.batch();
+
+    pins.forEach((pin) => {
+      const pinRef = db.collection("pins").doc(pin.id);
+      batch.update(pinRef, { order: pin.order });
+    });
+
+    await batch.commit();
+    res.json({ message: "Pin order saved successfully" });
+  } catch (error) {
+    console.error("Error saving pin order:", error);
+    res.status(500).json({ error: "Failed to save pin order" });
+  }
+};

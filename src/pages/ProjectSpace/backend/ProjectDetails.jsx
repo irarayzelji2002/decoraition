@@ -273,3 +273,20 @@ export const addPinToDatabase = async (projectId, pinData) => {
     showToast("error", "Failed to add pin");
   }
 };
+
+export const savePinOrder = async (projectId, pins) => {
+  try {
+    const response = await fetch(`/api/projects/${projectId}/pins/order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ pins }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to save pin order");
+    }
+  } catch (error) {
+    console.error("Error saving pin order:", error);
+  }
+};

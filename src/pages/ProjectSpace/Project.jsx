@@ -161,7 +161,7 @@ function Project() {
         const modifiedAtB = b.modifiedAt.toDate ? b.modifiedAt.toDate() : new Date(b.modifiedAt);
         return modifiedAtB - modifiedAtA;
       });
-
+      setLoadingDesigns(false);
       const tableData = await Promise.all(
         designsByLatest.map(async (design) => {
           const username = await getUsername(design.owner);
@@ -190,7 +190,6 @@ function Project() {
     } else {
       setFilteredDesignsForTable([]);
     }
-    setLoadingDesigns(false);
   };
 
   useEffect(() => {

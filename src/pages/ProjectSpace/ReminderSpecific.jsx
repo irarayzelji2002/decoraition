@@ -20,7 +20,12 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
   }, [reminder]);
 
   const handleIncrement = () => {
-    setCount((prevCount) => prevCount + 1);
+    setCount((prevCount) => {
+      if (unit === "day" && prevCount >= 6) return 6;
+      if (unit === "week" && prevCount >= 3) return 3;
+      if (unit === "month" && prevCount >= 11) return 11;
+      return prevCount + 1;
+    });
   };
 
   const handleDecrement = () => {
@@ -29,6 +34,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
 
   const handleUnitChange = (event) => {
     setUnit(event.target.value);
+    setCount(1); // Reset count when unit changes
   };
 
   const handleIncrementHours = () => {
@@ -52,6 +58,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
   };
 
   const handleSave = () => {
+    const time = `${hours}:${minutes.toString().padStart(2, "0")} ${period}`;
     onSave({
       ...reminder,
       hours,
@@ -59,6 +66,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
       period,
       count,
       unit,
+      time, // Save the formatted time
     });
   };
 
@@ -113,8 +121,8 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
             color: "var(--color-white)",
           }}
         >
-          <MenuItem value="week">Week</MenuItem>
           <MenuItem value="day">Day</MenuItem>
+          <MenuItem value="week">Week</MenuItem>
           <MenuItem value="month">Month</MenuItem>
         </Select>
       </div>

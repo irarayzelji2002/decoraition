@@ -54,7 +54,9 @@ function Homepage() {
   const [viewForDesigns, setViewForDesigns] = useState(0); //0 for tiled view, 1 for list view
   const [viewForProjects, setViewForProjects] = useState(0);
   const [loadingDesigns, setLoadingDesigns] = useState(true);
+  const [loadingDesignsTable, setLoadingDesignsTable] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [loadingProjectsTable, setLoadingProjectsTable] = useState(true);
 
   const [numToShowMoreDesign, setNumToShowMoreDesign] = useState(0);
   const [numToShowMoreProject, setNumToShowMoreProject] = useState(0);
@@ -97,8 +99,9 @@ function Homepage() {
   };
 
   const loadDesignDataForView = async () => {
-    setLoadingDesigns(true);
     if (userDesigns.length > 0) {
+      setLoadingDesigns(true);
+      setLoadingDesignsTable(true);
       const designsByLatest = [...userDesigns].sort(
         (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
       );
@@ -108,7 +111,10 @@ function Homepage() {
       );
 
       setFilteredDesigns(filteredDesigns);
+      console.log("filteredDesigns", filteredDesigns);
+      setLoadingDesigns(false);
 
+      console.log("filteredDesigns", filteredDesigns);
       const ownerIds = filteredDesigns.map((design) => design.owner);
       const usernames = await fetchUsernamesBatch(ownerIds);
 
@@ -127,12 +133,14 @@ function Homepage() {
       setFilteredDesigns([]);
       setFilteredDesignsForTable([]);
     }
-    setLoadingDesigns(false);
+
+    setLoadingDesignsTable(false);
   };
 
   const loadProjectDataForView = async () => {
-    setLoadingProjects(true);
     if (userProjects.length > 0) {
+      setLoadingProjects(true);
+      setLoadingProjectsTable(true);
       const projectsByLatest = [...userProjects].sort(
         (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
       );
@@ -142,6 +150,8 @@ function Homepage() {
       );
 
       setFilteredProjects(filteredProjects);
+      setLoadingProjects(false);
+
       const managerIds = filteredProjects.flatMap((project) => project.managers || []);
       const managers = await fetchManagersBatch(managerIds);
 
@@ -159,11 +169,11 @@ function Homepage() {
       });
 
       setFilteredProjectsForTable(tableData);
+      setLoadingProjectsTable(false);
     } else {
       setFilteredProjects([]);
       setFilteredProjectsForTable([]);
     }
-    setLoadingProjects(false);
   };
 
   const setThresholdAfterViewChange = (type) => {
@@ -414,14 +424,18 @@ function Homepage() {
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
-                      <HomepageTable
-                        isDesign={true}
-                        data={filteredDesignsForTable}
-                        isHomepage={true}
-                        numToShowMore={numToShowMoreDesign}
-                        optionsState={optionsState}
-                        setOptionsState={setOptionsState}
-                      />
+                      {!loadingDesignsTable ? (
+                        <HomepageTable
+                          isDesign={true}
+                          data={filteredDesignsForTable}
+                          isHomepage={true}
+                          numToShowMore={numToShowMoreDesign}
+                          optionsState={optionsState}
+                          setOptionsState={setOptionsState}
+                        />
+                      ) : (
+                        <Loading />
+                      )}
                     </div>
                   )
                 ) : (
@@ -554,14 +568,18 @@ function Homepage() {
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
-                      <HomepageTable
-                        isDesign={false}
-                        data={filteredProjectsForTable}
-                        isHomepage={true}
-                        numToShowMore={numToShowMoreProject}
-                        optionsState={optionsState}
-                        setOptionsState={setOptionsState}
-                      />
+                      {!loadingProjectsTable ? (
+                        <HomepageTable
+                          isDesign={false}
+                          data={filteredProjectsForTable}
+                          isHomepage={true}
+                          numToShowMore={numToShowMoreProject}
+                          optionsState={optionsState}
+                          setOptionsState={setOptionsState}
+                        />
+                      ) : (
+                        <Loading />
+                      )}
                     </div>
                   )
                 ) : (

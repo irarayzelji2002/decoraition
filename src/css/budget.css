@@ -37,7 +37,7 @@
   align-items: center;
   padding: 16px;
   width: 100%;
-  min-height: calc(100vh - 186px);
+  /* min-height: calc(100vh - 186px); */
 }
 .budgetSpace {
   display: flex;

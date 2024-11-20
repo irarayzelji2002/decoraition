@@ -4,12 +4,27 @@ import ExportIcon, { Draggable } from "./svg/ExportIcon";
 import Trash from "../DesignSpace/svg/Trash";
 import { IconButton, Modal, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChromePicker } from "react-color";
 
-const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor = "grey" }) => {
+const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [value, setValue] = useState("#ffffff");
+  const [textColor, setTextColor] = useState("#000000");
+
+  useEffect(() => {
+    const isBright = (color) => {
+      const hex = color.replace("#", "");
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 155;
+    };
+
+    setTextColor(isBright(pinColor) ? "#000000" : "#ffffff");
+  }, [pinColor]);
+
   const handleChange = (color) => {
     setValue(color.hex);
   };
@@ -21,7 +36,11 @@ const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor = "grey"
   };
   return (
     <div className="pinHolder" style={{ width: "100%" }}>
-      <div className="pinColor" style={{ backgroundColor: pinColor }} onClick={handleOpenModal}>
+      <div
+        className="pinColor"
+        style={{ backgroundColor: pinColor, color: textColor }}
+        onClick={handleOpenModal}
+      >
         {pinNo}
       </div>
       {editMode && (

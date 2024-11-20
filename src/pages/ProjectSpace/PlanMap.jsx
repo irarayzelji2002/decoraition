@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../../firebase";
-import { fetchDesigns } from "./backend/ProjectDetails";
+import { fetchDesigns, fetchPins } from "./backend/ProjectDetails";
 import ProjectHead from "./ProjectHead";
 import MapPin from "./MapPin";
 import BottomBarDesign from "./BottomBarProject";
@@ -13,7 +13,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import "../../css/project.css";
 import "../../css/seeAll.css";
 import "../../css/budget.css";
-import { ToastContainer } from "react-toastify";
 import { AddPin, AdjustPin, ChangeOrder, ChangePlan } from "../DesignSpace/svg/AddImage";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -38,9 +37,7 @@ function PlanMap() {
   const location = useLocation();
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
-
   const [pins, setPins] = useState([]);
-
   const [menuOpen, setMenuOpen] = useState(false);
   const [designs, setDesigns] = useState([]);
   const [user, setUser] = useState(null);
@@ -56,10 +53,10 @@ function PlanMap() {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
-        fetchDesigns(currentUser.uid, projectId, setDesigns);
+        fetchPins(projectId, setPins);
       } else {
         setUser(null);
-        setDesigns([]);
+        setPins([]);
       }
     });
     return () => unsubscribeAuth();
@@ -100,8 +97,10 @@ function PlanMap() {
   };
 
   const navigateToAddPin = () => {
+    const totalPins = pins.length; // Assuming `pins` is an array containing the existing pins
+    console.log("Total Pins:", totalPins);
     navigate("/addPin/", {
-      state: { navigateFrom: navigateFrom },
+      state: { navigateFrom: navigateFrom, projectId: projectId, totalPins: totalPins },
     });
   };
   const navigateToPinLayout = () => {
@@ -169,24 +168,31 @@ function PlanMap() {
       <ProjectHead />
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
       <div className="sectionBudget" style={{ background: "none" }}>
-        <div className="budgetSpaceImg">
+        <div className="budgetSpaceImg" style={{ background: "none", height: "100%" }}>
           <ImageFrame
             src="../../img/floorplan.png"
             alt="design preview"
             pins={pins}
+            projectId={projectId}
             setPins={setPins}
             draggable={false} // Ensure this line is present
           />
         </div>
         <div className="budgetSpaceImg">
-          {designs.length > 0 ? (
-            designs.map((design) => {
-              return (
-                <>
-                  <MapPin title={design.designName} />
-                </>
-              );
-            })
+          {pins.length > 0 ? (
+            pins
+              .sort((a, b) => a.order - b.order) // Sort pins by design.order
+              .map((design) => {
+                return (
+                  <>
+                    <MapPin
+                      title={design.designName}
+                      pinColor={design.color}
+                      pinNo={design.order}
+                    />
+                  </>
+                );
+              })
           ) : (
             <div className="no-content" style={{ height: "80vh" }}>
               <img src="/img/design-placeholder.png" alt="No designs yet" />

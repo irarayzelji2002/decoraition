@@ -32,57 +32,29 @@ function EditEvent() {
   const taskDetails = queryParams.get("task")
     ? JSON.parse(decodeURIComponent(queryParams.get("task")))
     : null;
+  const taskId = queryParams.get("taskId");
   const timelineId = queryParams.get("timelineId"); // Retrieve timelineId
   const [allowRepeat, setAllowRepeat] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
 
-  const initialFormData =
-    taskDetails && taskDetails.dateRange
-      ? {
-          taskName: taskDetails.eventName,
-          startDate: new Date(taskDetails.dateRange.start._seconds * 1000)
-            .toISOString()
-            .split("T")[0],
-          endDate: new Date(taskDetails.dateRange.end._seconds * 1000).toISOString().split("T")[0],
-          description: taskDetails.description,
-          repeat: {
-            frequency: taskDetails.repeatEvery.frequency,
-            unit: taskDetails.repeatEvery.unit || "none", // Ensure unit is set to a valid option
-          },
-          reminders: taskDetails.reminders.map((reminder) => ({
-            ...reminder,
-            count: reminder.timeBeforeEvent, // Save and retrieve in days directly
-            hours: reminder.hours || 0,
-            minutes: reminder.minutes || 0,
-            period: reminder.period || "AM",
-          })),
-          repeatEnabled: taskDetails.repeating,
-        }
-      : {
-          taskName: "",
-          startDate: selectedDate || "",
-          endDate: selectedDate || "",
-          description: "",
-          repeat: {
-            frequency: 0,
-            unit: "none", // Ensure unit is set to a valid option
-          },
-          reminders: [],
-          repeatEnabled: true,
-        };
+  const initialFormData = {
+    taskName: "",
+    startDate: selectedDate || "",
+    endDate: selectedDate || "",
+    description: "",
+    repeat: {
+      frequency: 0,
+      unit: "none", // Ensure unit is set to a valid option
+    },
+    reminders: [],
+    repeatEnabled: true,
+  };
 
   const [formData, setFormData] = useState(initialFormData);
 
   useEffect(() => {
-    if (taskDetails && taskDetails.repeating) {
-      setAllowRepeat(true);
-    }
-  }, [taskDetails]);
-
-  useEffect(() => {
     const fetchTask = async () => {
-      const taskId = queryParams.get("taskId");
       if (taskId) {
         const currentUser = auth.currentUser;
         if (currentUser) {
@@ -100,13 +72,27 @@ function EditEvent() {
               frequency: taskDetails.repeatEvery.frequency,
               unit: taskDetails.repeatEvery.unit || "none",
             },
-            reminders: taskDetails.reminders.map((reminder) => ({
-              ...reminder,
-              count: reminder.timeBeforeEvent,
-              hours: reminder.hours || 0,
-              minutes: reminder.minutes || 0,
-              period: reminder.period || "AM",
-            })),
+            reminders: taskDetails.reminders.map((reminder, index) => {
+              let hours = 0,
+                minutes = 0,
+                period = "AM";
+              if (reminder.time) {
+                const [hoursPart, minutesPeriod] = reminder.time.split(":");
+                const [minutesPart, periodPart] = minutesPeriod.split(" ");
+                hours = parseInt(hoursPart, 10);
+                minutes = parseInt(minutesPart, 10);
+                period = periodPart;
+              }
+              return {
+                ...reminder,
+                id: index, // Assign an id to each reminder
+                count: reminder.timeBeforeEvent,
+                hours,
+                minutes,
+                period,
+                time: reminder.time, // Retrieve the formatted time
+              };
+            }),
             repeatEnabled: taskDetails.repeating,
           });
           setAllowRepeat(taskDetails.repeating);
@@ -115,7 +101,7 @@ function EditEvent() {
     };
 
     fetchTask();
-  }, [queryParams]);
+  }, [taskId]);
 
   const handleInputChange = (e, fieldName, nestedField = null) => {
     const { value } = e.target;
@@ -208,20 +194,14 @@ function EditEvent() {
           unit: formData.repeat.unit,
         },
         description: formData.description,
-        reminders: formData.reminders.map((reminder) => {
-          const reminderDate = new Date(startDate);
-          reminderDate.setDate(reminderDate.getDate() - reminder.count);
-          reminderDate.setHours(reminder.hours);
-          reminderDate.setMinutes(reminder.minutes);
-          return {
-            timeBeforeEvent: reminder.count, // Save in days directly
-            timeToRemind: reminderDate.toISOString(),
-          };
-        }),
+        reminders: formData.reminders.map((reminder) => ({
+          timeBeforeEvent: reminder.count,
+          time: reminder.time, // Save the formatted time
+          unit: reminder.unit,
+        })),
       };
 
-      if (taskDetails) {
-        const taskId = taskDetails.id;
+      if (taskId) {
         await updateTask(currentUser.uid, projectId, taskId, eventData);
       } else {
         console.log("Creating event:", JSON.parse(JSON.stringify(eventData)));

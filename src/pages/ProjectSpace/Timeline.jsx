@@ -111,17 +111,10 @@ function Timeline() {
     }
   };
 
-  const handleEditClick = async (taskId) => {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      console.log("handlEdit called with taskId:", taskId); // Debugging statement
-      const taskDetails = await fetchTaskDetails(currentUser.uid, taskId);
-      const encodedTaskDetails = encodeURIComponent(JSON.stringify(taskDetails));
-      console.log("taskDetails:", taskDetails); // Debugging statement
-      navigate(`/editEvent/${projectId}?task=${encodedTaskDetails}&timelineId=${timelineId}`, {
-        state: { navigateFrom: navigateFrom },
-      });
-    }
+  const handleEditClick = (taskId) => {
+    navigate(`/editEvent/${projectId}?taskId=${taskId}&timelineId=${timelineId}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   const handleAddEventClick = () => {

@@ -36,7 +36,7 @@ const RepeatSelector = ({ count: initialCount, unit: initialUnit, onRepeatChange
     setUnit(value);
     switch (value) {
       case "none":
-        setCount(0);
+        setCount(null);
         break;
       case "day":
         setCount(1);
@@ -80,7 +80,7 @@ const RepeatSelector = ({ count: initialCount, unit: initialUnit, onRepeatChange
             <ArrowLeftIcon fontSize="small" />
           </IconButton>
           <InputBase
-            value={count}
+            value={unit === "none" ? "" : count}
             readOnly
             sx={{
               width: "50px",

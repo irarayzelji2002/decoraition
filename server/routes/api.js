@@ -134,6 +134,16 @@ router.post(
   authenticateUser,
   designController.createDesignVersion
 );
+router.post(
+  "/design/:designId/design-version/:designVersionId/update-sam-masks",
+  authenticateUser,
+  designController.updateDesignVersionSamMask
+);
+router.post(
+  "/design/:designId/design-version/:designVersionId/update-combined-mask",
+  authenticateUser,
+  designController.updateDesignVersionCombinedMask
+);
 
 // Comment routes
 router.post(

@@ -5,6 +5,7 @@ import json
 import uuid
 import base64
 import requests
+import validators
 import thecolorapi
 import numpy as np
 from PIL import Image
@@ -22,7 +23,8 @@ CORS(app, resources={
             r"http://localhost:\d+", 
             "https://decoraition.onrender.com", 
             "https://decoraition.org", 
-            "https://www.decoraition.org"
+            "https://www.decoraition.org",
+            "https://ai-api.decoraition.org"
     ]}
 })
 
@@ -101,6 +103,7 @@ def decode_base64_image(base64_str):
 
         return image
     except Exception as e:
+        print(f"base64_str", base64_str)
         print(f"Error decoding base64 image: {e}")
         return None
 
@@ -188,15 +191,28 @@ def fix_base64_padding(base64_string):
 def make_black_transparent(image_path):
     """Convert black pixels to transparent in the image at the given path."""
     try:
-        # Open the image from the file path
-        if image_path and allowed_file(image_path):
+        if allowed_file(image_path):
+            # Input is a valid file path
             image_path = os.path.join(app.root_path, image_path.lstrip('/'))
+            if os.path.exists(image_path):
+                img = Image.open(image_path).convert("RGBA")
+        elif isinstance(image_path, str):
+            if image_path.strip().startswith("data:image"):
+                # Input is base64 with a header
+                header, encoded = image_path.split(",", 1)
+                img_bytes = base64.b64decode(encoded)
+            else:
+                # Input is raw base64s
+                try:
+                    img_bytes = base64.b64decode(image_path)
+                except Exception:
+                    print("Invalid base64 input.")
+                    return None
+            # Load image from bytes
+            img = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
         else:
-            print(f"image_path does not exist/ extension not allowed.")
+            print("Invalid image input: not base64 or a valid file path.")
             return None
-
-        # Open the image
-        img = Image.open(image_path).convert("RGBA")
 
         # Convert the image to a NumPy array
         image_np = np.array(img)
@@ -742,13 +758,15 @@ def generate_sam_mask_route():
             if isinstance(init_image, str):  # If it's a URL string
                 print(f"Init image received.")
                 init_image_encoded = load_and_encode_image(init_image, from_url=True)
-                print(f"Init image successfully loaded.")
             elif allowed_file(init_image.filename):  # If it's an uploaded file
                 print(f"Init image received.")
                 init_image_encoded = load_and_encode_image(init_image)
-                print(f"Init image successfully loaded.")
             elif not allowed_file(init_image.filename):
+                init_image_encoded = None
+            if init_image_encoded is None:
+                print(f"Invalid base image")
                 return jsonify({"error": "Invalid base image"}), 400
+            print(f"Init image successfully loaded.")
         else:
             return jsonify({"error": "Invalid base image"}), 400
 
@@ -792,18 +810,21 @@ def validate_preview_mask(data):
             #     sam_mask_img_path = sam_mask['mask']
             # SAM mask (new)
             sam_mask_path = data.get('sam_mask', '')
-            if sam_mask_path and allowed_file(sam_mask_path):
-                print(f"SAM mask received: {sam_mask_path}")
-                sam_mask_img_path = sam_mask_path
-                sam_mask_img_path_whole = os.path.join(app.root_path, sam_mask_img_path.lstrip('/'))
-                if not os.path.exists(sam_mask_img_path_whole):
-                    return None, None, None, None, f"File not found: {sam_mask_img_path_whole}", 400
-                with open(sam_mask_img_path_whole, 'rb') as mask_img_file:
-                    sam_mask_encoded = load_and_encode_image(mask_img_file)
-                print(f"SAM mask successfully loaded and encoded.")
+            if sam_mask_path:
+                if validators.url(sam_mask_path):
+                    print(f"SAM mask URL received: {sam_mask_path}")
+                    sam_mask_img_path_whole = sam_mask_path
+                elif allowed_file(sam_mask_path):
+                    print(f"SAM mask path received: {sam_mask_path}")
+                    sam_mask_img_path = sam_mask_path
+                    sam_mask_img_path_whole = os.path.join(app.root_path, sam_mask_img_path.lstrip('/'))
+                    if not os.path.exists(sam_mask_img_path_whole):
+                        return None, None, None, None, f"File not found: {sam_mask_img_path_whole}", 400
+                else:
+                    print(f"SAM mask Base64/string received: {sam_mask_path}")
+                    sam_mask_img_path_whole = sam_mask_path
             else:
                 print(f"No valid SAM mask received or file extension not allowed.")
-                sam_mask_encoded = None            
             # User mask (Add)
             user_mask_add = data.get('user_mask_add', '')
             if user_mask_add:
@@ -851,16 +872,22 @@ def validate_preview_mask(data):
         return None, None, None, None, f"Validation error: {str(e)}", 400
 
 def combine_masks(sam_mask_input, user_mask_base64):
-    # Check if sam_mask_input is a base64 string or file path
-    if sam_mask_input and allowed_file(sam_mask_input):
-        sam_mask_input = os.path.join(app.root_path, sam_mask_input.lstrip('/'))
-    
-    if os.path.exists(sam_mask_input):
+    # Check if sam_mask_input is a valid URL or file path
+    if sam_mask_input and validators.url(sam_mask_input):
+        try:
+            # Fetch the image from the URL
+            response = requests.get(sam_mask_input, timeout=10)
+            response.raise_for_status()
+            sam_mask = cv2.imdecode(np.frombuffer(response.content, np.uint8), cv2.IMREAD_GRAYSCALE)
+        except Exception as e:
+            print(f"Error fetching SAM mask from URL: {e}")
+            return None, f"Error fetching SAM mask from URL: {e}", 400
+    elif sam_mask_input and os.path.exists(sam_mask_input):
         # Load SAM mask from file path
         sam_mask = cv2.imread(sam_mask_input, cv2.IMREAD_GRAYSCALE)
     else:
         # Decode SAM mask from base64
-        print("path doesn't exist")
+        print("SAM mask path doesn't exist; trying to decode base64.")
         sam_mask = decode_base64_image(sam_mask_input)
     
     if sam_mask is None:
@@ -873,7 +900,12 @@ def combine_masks(sam_mask_input, user_mask_base64):
     # Check if user_mask_base64 is provided
     if not user_mask_base64:
         print("No user mask provided; returning SAM mask only.")
-        return sam_mask_input, None, None
+        if validators.url(sam_mask_input):
+            return sam_mask_input, None, None
+        elif os.path.exists(sam_mask_input):
+            return sam_mask_input, None, None
+        else:
+            return save_image_from_base64(sam_mask_input, "masks"), None, None
 
     # Decode user mask from base64
     user_mask = decode_base64_image(user_mask_base64)
@@ -881,8 +913,13 @@ def combine_masks(sam_mask_input, user_mask_base64):
     # Check if user_mask is valid
     if user_mask is None or np.count_nonzero(user_mask) == 0:
         print("User mask is all black or invalid; returning SAM mask.")
-        return sam_mask_input, None, None
-
+        if validators.url(sam_mask_input):
+            return sam_mask_input, None, None
+        elif os.path.exists(sam_mask_input):
+            return sam_mask_input, None, None
+        else:
+            return save_image_from_base64(sam_mask_input, "masks"), None, None
+        
     # Resize user mask to match SAM mask dimensions
     user_mask = cv2.resize(user_mask, (sam_mask.shape[1], sam_mask.shape[0]))
 
@@ -910,17 +947,24 @@ def combine_masks(sam_mask_input, user_mask_base64):
     return combined_mask_path, None, None
 
 def subtract_masks(sam_mask_input, user_mask_base64):
-    # Check if sam_mask_input is a base64 string or file path
-    if sam_mask_input and allowed_file(sam_mask_input):
-        sam_mask_input = os.path.join(app.root_path, sam_mask_input.lstrip('/'))
-    if os.path.exists(sam_mask_input):
+    # Check if sam_mask_input is a valid URL or file path
+    if sam_mask_input and validators.url(sam_mask_input):
+        try:
+            # Fetch the image from the URL
+            response = requests.get(sam_mask_input, timeout=10)
+            response.raise_for_status()
+            sam_mask = cv2.imdecode(np.frombuffer(response.content, np.uint8), cv2.IMREAD_GRAYSCALE)
+        except Exception as e:
+            print(f"Error fetching SAM mask from URL: {e}")
+            return None, f"Error fetching SAM mask from URL: {e}", 400
+    elif sam_mask_input and os.path.exists(sam_mask_input):
         # Load SAM mask from file path
         sam_mask = cv2.imread(sam_mask_input, cv2.IMREAD_GRAYSCALE)
     else:
         # Decode SAM mask from base64
-        print("path doesn't exist")
+        print("SAM mask path doesn't exist; trying to decode base64.")
         sam_mask = decode_base64_image(sam_mask_input)
-    
+        
     if sam_mask is None:
         print("Error: SAM mask could not be loaded or decoded.")
         return None
@@ -931,15 +975,25 @@ def subtract_masks(sam_mask_input, user_mask_base64):
     # Check if user_mask_base64 is provided
     if not user_mask_base64:
         print("No user mask provided; returning SAM mask only.")
-        return sam_mask_input, None, None
+        if validators.url(sam_mask_input):
+            return sam_mask_input, None, None
+        elif os.path.exists(sam_mask_input):
+            return sam_mask_input, None, None
+        else:
+            return save_image_from_base64(sam_mask_input, "masks"), None, None
 
     # Decode user mask from base64
     user_mask = decode_base64_image(user_mask_base64)
     
-    # Check if user_mask is valid
+    # Check if user_mask is valid and return path
     if user_mask is None or np.count_nonzero(user_mask) == 0:
         print("User mask is all black or invalid; returning SAM mask.")
-        return sam_mask_input, None, None
+        if validators.url(sam_mask_input):
+            return sam_mask_input, None, None
+        elif os.path.exists(sam_mask_input):
+            return sam_mask_input, None, None
+        else:
+            return save_image_from_base64(sam_mask_input, "masks"), None, None
 
     # Resize user mask to match SAM mask dimensions
     user_mask = cv2.resize(user_mask, (sam_mask.shape[1], sam_mask.shape[0]))
@@ -972,12 +1026,18 @@ def preview_mask(refine_option, sam_mask, user_mask_add, user_mask_remove):
     try:
         if refine_option == 0:  # Add then remove
             combined_1, error_message, error_status = combine_masks(sam_mask, user_mask_add)
-            combined_2, error_message, error_status = subtract_masks(combined_1, user_mask_remove)
+            if combined_1 and validators.url(combined_1):
+                print(f"Combined Mask is SAM URL: {combined_1}")
+                combined_1_updated = combined_1
+            else:
+                combined_1_updated = image_path_to_base64(combined_1)
+            combined_2, error_message, error_status = subtract_masks(combined_1_updated, user_mask_remove)
             if combined_2 is None:
                 print("Error: combined_2 is None.")
                 return {"error_message": error_message, "error_status": error_status}
 
             # Convert combined_2 to have transparency for black parts
+            print("combined_2", combined_2)
             combined_2_png = make_black_transparent(combined_2)
             if combined_2_png:
                 print(f"Modified image saved at: {combined_2_png}")
@@ -986,7 +1046,12 @@ def preview_mask(refine_option, sam_mask, user_mask_add, user_mask_remove):
         
         elif refine_option == 1:  # Remove then add
             combined_1, error_message, error_status = subtract_masks(sam_mask, user_mask_remove)
-            combined_2, error_message, error_status = combine_masks(combined_1, user_mask_add)
+            if combined_1 and validators.url(combined_1):
+                print(f"Combined Mask is SAM URL: {combined_1}")
+                combined_1_updated = combined_1
+            else:
+                combined_1_updated = image_path_to_base64(combined_1)
+            combined_2, error_message, error_status = combine_masks(combined_1_updated, user_mask_add)
             if combined_2 is None:
                 print("Error: combined_2 is None.")
                 return {"error_message": error_message, "error_status": error_status}
@@ -1010,6 +1075,8 @@ def preview_mask_route():
         data = request.form if request.content_type.startswith('multipart/form-data') else request.json
         refine_option, sam_mask_path, user_mask_add_encoded, user_mask_remove_encoded, error_message, error_status = validate_preview_mask(data)
         
+        print(f"sam_mask_path in route", sam_mask_path)
+
         if error_message:
             return jsonify({"error": error_message}), error_status
 

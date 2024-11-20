@@ -5,9 +5,11 @@ export const useSamCanvas = (
   previewCanvasRef,
   color,
   opacity,
+  samMaskModalOpen,
   setConfirmSamMaskChangeModalOpen,
   selectedSamMask,
   samMasks,
+  samMaskMask,
   setSamMaskImage,
   samMaskImage,
   setSamMaskMask,
@@ -84,29 +86,38 @@ export const useSamCanvas = (
 
   const useSelectedMask = useCallback(
     (selectedSamMask) => {
-      if (selectedSamMask) {
-        const masks = samMasks.map((samMask) => samMask["mask"]);
+      if (selectedSamMask && samMasks) {
+        if (samMaskMask !== selectedSamMask?.masked || samMaskImage !== selectedSamMask?.mask) {
+          const masks = samMasks.map((samMask) => samMask["mask"]);
 
-        // Check if the input value is not empty
-        if (samMaskImage) {
-          // Check if the value does not match any mask in the masks array
-          const isValueInMasks = masks.includes(samMaskImage);
-          console.log("Masks:", masks);
-          console.log("samMaskImage:", samMaskImage);
-          console.log("Is Value in Masks:", isValueInMasks);
+          // Check if the input value is not empty
+          if (samMaskImage) {
+            // Check if the value does not match any mask in the masks array
+            const isValueInMasks = masks.includes(samMaskImage);
+            console.log("Masks:", masks);
+            console.log("samMaskImage:", samMaskImage);
+            console.log("Is Value in Masks:", isValueInMasks);
 
-          // If the current value is not in masks, show confirmation dialog
-          if (!isValueInMasks) {
-            setConfirmSamMaskChangeModalOpen(true);
-            return;
+            // If the current value is not in masks, show confirmation dialog
+            if (!isValueInMasks && samMaskModalOpen) {
+              setConfirmSamMaskChangeModalOpen(true);
+              return;
+            }
           }
+          actualUseSelectedMask(selectedSamMask); // also if yes in modal
         }
-        actualUseSelectedMask(selectedSamMask); // also if yes in modal
       } else {
         console.log("No selected SAM mask found.");
       }
     },
-    [actualUseSelectedMask, samMaskImage, samMasks, setConfirmSamMaskChangeModalOpen]
+    [
+      actualUseSelectedMask,
+      samMaskImage,
+      samMaskMask,
+      samMasks,
+      setConfirmSamMaskChangeModalOpen,
+      samMaskModalOpen,
+    ]
   );
 
   return {

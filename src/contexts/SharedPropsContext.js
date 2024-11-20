@@ -8,6 +8,7 @@ import {
   browserLocalPersistence,
 } from "firebase/auth";
 import Loading from "../components/Loading.jsx";
+import LoadingPage from "../components/LoadingPage.jsx";
 
 const SharedPropsContext = createContext();
 
@@ -306,7 +307,7 @@ export function SharedPropsProvider({ children }) {
   if (!isCollectionLoaded || loading) {
     return (
       <SharedPropsContext.Provider value={sharedProps}>
-        <Loading />
+        <LoadingPage />
       </SharedPropsContext.Provider>
     );
   }

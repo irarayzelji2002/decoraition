@@ -46,6 +46,7 @@ import {
 } from "../../components/RenameModal";
 import { set } from "lodash";
 import deepEqual from "deep-equal";
+import naughtyWords from "naughty-words";
 import {
   generateFirstImage,
   generateNextImage,
@@ -53,6 +54,7 @@ import {
 } from "./backend/DesignActions";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 import { checkValidServiceWorker } from "../../serviceWorkerRegistration";
+import { AutoTokenizer } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.5.0";
 
 const theme = extendTheme({
   components: {
@@ -119,6 +121,9 @@ function PromptBar({
   setSamMasks,
   setBase64ImageAdd,
   setBase64ImageRemove,
+  setIsPreviewingMask,
+  design,
+  designVersion,
 }) {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
   const isOnline = useNetworkStatus();
@@ -149,6 +154,56 @@ function PromptBar({
 
   const [isSmallWidth, setIsSmallWidth] = useState(false);
   const [isLess600, setIsLess600] = useState(false);
+
+  const customWordList = new Set([
+    ...Object.values(naughtyWords).flat(),
+    "naked",
+    "unclothed",
+    "sexual",
+    "sex",
+    "nudity",
+    "nude",
+    "erotic",
+    "inappropriate",
+    "offensive",
+    "pornography",
+    "porn",
+    "explicit",
+    "violence",
+    "penis",
+    "vagina",
+    "fuck",
+    "fucking",
+  ]);
+
+  const regexList = [
+    /\b(?:naked|nude|sexual|p[o0]rn(?:ography)?)\b/i, // Creative spelling
+    /\b(?:explicit|erotic|violence|offensive|x-rated)\b/i,
+    /\b(?:adult(?: content| entertainment)?|18\+|nsfw)\b/i, // Implicit terms
+    /\b(?:v[i1]olence|[s$][e3]xual|[s$][e3]x|n[0o]dity)\b/i, // Leetspeak
+  ];
+
+  // Function to check if a prompt is clean
+  const isCleanPrompt = (input) => {
+    const words = input.toLowerCase().split(/\s+/);
+    const explicitMatch = words.some((word) => customWordList.has(word));
+    const regexMatch = regexList.some((regex) => regex.test(input));
+    return !(explicitMatch || regexMatch);
+  };
+
+  const initializeTokenizer = async () => {
+    const tokenizer = await AutoTokenizer.from_pretrained("Xenova/t5-small");
+    return tokenizer;
+  };
+
+  const validateTokenCount = async (prompt) => {
+    const tokenizer = await initializeTokenizer();
+    const { input_ids } = tokenizer(prompt);
+    if (input_ids.length > 75) {
+      return `Prompt exceeds the token limit of 75. Current count: ${input_ids.length}`;
+    }
+    return null;
+  };
 
   const handleSliderChange = (event, newValue) => {
     setNumberOfImages(newValue);
@@ -469,14 +524,33 @@ function PromptBar({
     });
   };
 
-  const handleFirstImageValidation = () => {
+  // Open/closing select area to edit
+  const toggleSelectAreaToEdit = () => {
+    setIsSelectingMask(!isSelectingMask);
+    setPrevWidth(width);
+    setPrevHeight(height);
+    if (!isSelectingMask) {
+      setShowPromptBar(false);
+      setShowComments(false);
+    } else {
+      setShowPromptBar(true);
+    }
+  };
+
+  const handleFirstImageValidation = async () => {
     let formErrors = {};
     let colorPalettePassed = "";
     if (!prompt) {
-      formErrors.prompt = "Prompt is required.";
+      formErrors.prompt = "Prompt is required";
+    } else if (!isCleanPrompt(prompt)) {
+      formErrors.prompt = "Prompt contains inappropriate content";
+      console.log("Prompt contains inappropriate content");
+    } else {
+      const tokenError = await validateTokenCount(prompt);
+      if (tokenError) formErrors.prompt = tokenError;
     }
     if (!numberOfImages || numberOfImages < 1 || numberOfImages > 4) {
-      formErrors.numberOfImages = "Only 1 - 4 number of images allowed.";
+      formErrors.numberOfImages = "Only 1 - 4 number of images allowed";
     }
     if (baseImage) {
       const validExtensions = ["jpg", "jpeg", "png"];
@@ -519,7 +593,7 @@ function PromptBar({
     };
   };
 
-  const handleNextImageValidation = () => {
+  const handleNextImageValidation = async () => {
     const initImage = selectedImage.link;
     const combinedMaskImg = samMaskMask;
     let formErrors = {};
@@ -528,6 +602,7 @@ function PromptBar({
     if (!selectedSamMask) {
       if (!initImage && !maskPrompt) {
         formErrors.general = "Generate a mask first with mask prompt and your selected image";
+        toggleSelectAreaToEdit();
         return {
           success: false,
           message: "Invalid inputs.",
@@ -537,6 +612,7 @@ function PromptBar({
         if (!maskPrompt) {
           errMessage = "Mask prompt is required to generate a mask";
           formErrors.maskPrompt = errMessage;
+          toggleSelectAreaToEdit();
         }
         if (!initImage) {
           errMessage = "Select an image first to generate a mask";
@@ -569,6 +645,11 @@ function PromptBar({
     }
     if (!prompt) {
       formErrors.prompt = "Prompt is required";
+    } else if (!isCleanPrompt(prompt)) {
+      formErrors.prompt = "Prompt contains inappropriate content";
+    } else {
+      const tokenError = await validateTokenCount(prompt);
+      if (tokenError) formErrors.prompt = tokenError;
     }
     if (!numberOfImages || numberOfImages < 1 || numberOfImages > 4) {
       formErrors.numberOfImages = "Only 1 - 4 number of images allowed";
@@ -611,7 +692,7 @@ function PromptBar({
       if (!isNextGeneration) {
         console.log("Validating - first image");
         let colorPalettePassed = "";
-        const validationResult = handleFirstImageValidation();
+        const validationResult = await handleFirstImageValidation();
         if (!validationResult.success) {
           setGenerationErrors(validationResult.formErrors);
           console.log("Errors: ", validationResult.formErrors);
@@ -641,6 +722,13 @@ function PromptBar({
             link: path,
             description: "",
             comments: [],
+            masks: {
+              samMasks: [],
+              combinedMask: {
+                samMaskImage: "",
+                samMaskMask: "",
+              },
+            },
           }));
           setGeneratedImages(generatedImageData);
           // Create design version with local data
@@ -676,7 +764,8 @@ function PromptBar({
       } else {
         console.log("Validating - next image");
         let colorPalettePassed = "";
-        const validationResult = handleNextImageValidation();
+        const validationResult = await handleNextImageValidation();
+        console.log("validationResult", validationResult);
         if (!validationResult.success) {
           setGenerationErrors(validationResult.formErrors);
           return;
@@ -697,14 +786,7 @@ function PromptBar({
           setIsGenerating,
           setGeneratedImagesPreview,
           setGeneratedImages,
-          setMaskErrors, // applyMask args
-          samDrawing,
-          setSamMaskMask,
-          pickedColorSam,
-          opacitySam,
-          setSamMaskImage,
-          setCombinedMask,
-          handleClearAllCanvas,
+          setMaskErrors, // previewMask args
           setPreviewMask,
           samMaskImage,
           base64ImageAdd,
@@ -712,14 +794,27 @@ function PromptBar({
           selectedSamMask,
           refineMaskOption,
           showPreview,
-          setIsSelectingMask
+          setIsSelectingMask,
+          setIsPreviewingMask,
+          design,
+          designVersion,
+          user,
+          userDoc
         );
         if (result.success) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
           // Store result data locally
           const generatedImageData = result.data.map((path) => ({
             link: path,
             description: "",
             comments: [],
+            masks: {
+              samMasks: [],
+              combinedMask: {
+                samMaskImage: "",
+                samMaskMask: "",
+              },
+            },
           }));
           setGeneratedImages(generatedImageData);
           // Create design version with local data
@@ -1067,17 +1162,7 @@ function PromptBar({
                         backgroundImage: "var(--gradientCircleHover)",
                       },
                     }}
-                    onClick={() => {
-                      setIsSelectingMask(!isSelectingMask);
-                      setPrevWidth(width);
-                      setPrevHeight(height);
-                      if (!isSelectingMask) {
-                        setShowPromptBar(false);
-                        setShowComments(false);
-                      } else {
-                        setShowPromptBar(true);
-                      }
-                    }}
+                    onClick={toggleSelectAreaToEdit}
                   >
                     {isSelectingMask ? <DeselectMask /> : <SelectMask />}
                   </Button>
@@ -1338,6 +1423,9 @@ function PromptBar({
               if (disabled) showToast("info", "Please select an image first");
               else if (!isOnline)
                 showToast("info", "You are offline. Please check your internet connection.");
+              else if (showComments) showToast("info", "Please hide the comments tab");
+              else if (isNextGeneration && !isSelectingMask)
+                showToast("info", "Please select a mask before generating");
               else e.stopPropagation();
             }}
           >
@@ -1350,7 +1438,9 @@ function PromptBar({
               type="submit"
               fullWidth
               variant="contained"
-              disabled={disabled || !isOnline || showComments}
+              disabled={
+                disabled || !isOnline || showComments || (isNextGeneration && !isSelectingMask)
+              }
               sx={{
                 color: "white",
                 mt: 3,
@@ -1359,11 +1449,21 @@ function PromptBar({
                 borderRadius: "20px",
                 textTransform: "none",
                 fontWeight: "bold",
-                opacity: disabled || !isOnline || showComments ? "0.5" : "1",
-                cursor: disabled || !isOnline || showComments ? "default" : "pointer",
+                opacity:
+                  disabled || !isOnline || showComments || (isNextGeneration && !isSelectingMask)
+                    ? "0.5"
+                    : "1",
+                cursor:
+                  disabled || !isOnline || showComments || (isNextGeneration && !isSelectingMask)
+                    ? "default"
+                    : "pointer",
                 "&:hover": {
                   backgroundImage:
-                    !disabled && isOnline && !showComments && "var(--gradientButtonHover)",
+                    !disabled &&
+                    isOnline &&
+                    !showComments &&
+                    !(isNextGeneration && !isSelectingMask) &&
+                    "var(--gradientButtonHover)",
                 },
               }}
               onClick={() => {

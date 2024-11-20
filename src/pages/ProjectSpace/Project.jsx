@@ -227,11 +227,7 @@ function Project() {
   };
 
   if (!projectData) {
-    return (
-      <>
-        <LoadingPage />
-      </>
-    );
+    return <LoadingPage />;
   }
   return (
     <>

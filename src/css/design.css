@@ -1103,6 +1103,11 @@ textarea {
   margin-left: 10px;
 }
 
+.content.sam-masks img {
+  height: 150px;
+  width: 150px;
+}
+
 .css-6hp17o-MuiList-root-MuiMenu-list {
   background-color: var(--nav-card-modal);
   color: var(--color-grey);

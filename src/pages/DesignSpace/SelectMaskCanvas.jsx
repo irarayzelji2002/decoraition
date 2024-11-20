@@ -27,6 +27,7 @@ import {
   ArrowBackIosRounded as ArrowBackIosRoundedIcon,
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
   ColorizeRounded as ColorizeRoundedIcon,
+  Tune,
 } from "@mui/icons-material";
 import {
   ViewIconWhite,
@@ -53,6 +54,7 @@ import {
 import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { ChromePicker } from "react-color";
+import { GeneratingOverlay } from "./Design";
 import { huePickerEncodedSvg } from "./svg/AddColor";
 import { showToast, getContrastingTextColor } from "../../functions/utils";
 import { debounce, set } from "lodash";
@@ -66,8 +68,11 @@ import {
   generateMask,
   previewMask as previewMaskAction,
   applyMask,
+  updateDesignVersionSamMask,
+  updateDesignVersionCombinedMask,
 } from "./backend/DesignActions";
 import { togglePromptBar } from "./backend/DesignActions";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function SelectMaskCanvas({
   selectedImage,
@@ -111,7 +116,13 @@ function SelectMaskCanvas({
   setCanvasMode,
   samMasks,
   setSamMasks,
+  design,
+  designVersion,
+  designVersionImages,
+  isPreviewingMask,
+  setIsPreviewingMask,
 }) {
+  const { user, userDoc, designVersions, userDesignVersions } = useSharedProps();
   // Canvas/Container refs
   const addCanvasRef = useRef(null);
   const removeCanvasRef = useRef(null);
@@ -136,6 +147,7 @@ function SelectMaskCanvas({
   const [confirmSamMaskChangeModalOpen, setConfirmSamMaskChangeModalOpen] = useState(false);
 
   // Mask Prompt & Preview
+  const [isGeneratingMask, setIsGeneratingMask] = useState(false); // for loading
   const [statusMessage, setStatusMessage] = useState("");
   const [isChangingMask, setIsChangingMask] = useState(false);
   // passed form parent:
@@ -520,9 +532,11 @@ function SelectMaskCanvas({
     previewCanvasRef,
     pickedColorSam,
     opacitySam,
+    samMaskModalOpen,
     setConfirmSamMaskChangeModalOpen,
     selectedSamMask,
     samMasks,
+    samMaskMask,
     setSamMaskImage,
     samMaskImage,
     setSamMaskMask,
@@ -611,10 +625,10 @@ function SelectMaskCanvas({
   // Update SAM mask when selected mask changes
   useEffect(() => {
     console.log("Selected SAM mask changed:", selectedSamMask);
-    if (samDrawing && selectedSamMask) {
+    if (samDrawing && selectedSamMask && !isPreviewingMask && !combinedMask) {
       samDrawing.useSelectedMask(selectedSamMask);
     }
-  }, [selectedSamMask]);
+  }, [selectedSamMask, combinedMask]);
 
   useEffect(() => {
     if (!maskVisibilityAdd) {
@@ -703,11 +717,44 @@ function SelectMaskCanvas({
     setBase64ImageAdd(base64ImageAdd);
     const base64ImageRemove = await removeDrawing.userMaskBase64BAW();
     setBase64ImageRemove(base64ImageRemove);
+    // console.log("base64: base64ImageAdd", base64ImageAdd);
+    // console.log("base64: base64ImageRemove", base64ImageRemove);
+    return { base64ImageAdd, base64ImageRemove };
+  };
+
+  // Remove only the specified field error
+  const clearFieldError = (field) => {
+    setErrors((prevErrors) => {
+      if (prevErrors && prevErrors[field]) {
+        const { [field]: _, ...remainingErrors } = prevErrors;
+        return remainingErrors;
+      }
+      return prevErrors;
+    });
+  };
+
+  const handleCancelSelectMask = (isChangingMask, initSelectedSamMask) => {
+    if (!isChangingMask) {
+      setSamMasks([]);
+      setSelectedSamMask(null);
+      setSamMaskImage(null);
+      setSamMaskMask(null);
+    } else {
+      setSelectedSamMask(initSelectedSamMask);
+      samDrawing.setNeedsRedraw(true);
+      setIsChangingMask(false);
+    }
+    setSamMaskModalOpen(false);
   };
 
   const handleGenerateMask = async () => {
     setErrors((prev) => ({ ...prev, maskPrompt: "", initImage: "" }));
-    if (dummySamMasks) {
+    setCombinedMask(null);
+    setPreviewMask(null);
+    setSamMaskImage(null);
+    setSamMaskMask(null);
+    if (handleClearAllCanvas) handleClearAllCanvas();
+    if (dummySamMasks && dummySamMasks.length > 0) {
       // Validation
       let formErrors = {};
       const mask_prompt = maskPrompt.trim();
@@ -742,105 +789,262 @@ function SelectMaskCanvas({
         selectedImage.link,
         setErrors,
         setStatusMessage,
-        setSamMasks,
-        selectedSamMask,
-        setSelectedSamMask,
-        setSamMaskImage,
-        setSamMaskMask,
-        samDrawing
+        setIsGeneratingMask
       );
       if (result.success) {
         await Promise.resolve();
-        samDrawing.setNeedsRedraw(true);
+        if (!result.data) throw new Error("Failed to generate mask");
+        const { blended_images, masks, masked_images } = result.data;
+        const samMasks = blended_images.map((blended_image, index) => ({
+          id: index,
+          blended: blended_images[index],
+          mask: masks[index],
+          masked: masked_images[index],
+        }));
+        // Upload SAM masks
+        setStatusMessage("Uploading masks");
+        const resultUpdateSamMasks = await updateDesignVersionSamMask(
+          design.id,
+          designVersion.id, //designVersionId,
+          selectedImage.imageId, //designVersionImageId,
+          samMasks,
+          user,
+          userDoc
+        );
+        if (!resultUpdateSamMasks.success) {
+          showToast("error", "Failed to generate mask");
+          return;
+        }
+        setStatusMessage("Upload masks completed");
+        const images = resultUpdateSamMasks?.data || designVersionImages;
+        const imageId = selectedImage?.imageId;
+        const image = images.find((i) => i.imageId === imageId) ?? null;
+        const newSamMasks = image?.masks?.samMasks ?? null;
+        setSamMasks(newSamMasks);
+        setSelectedSamMask(newSamMasks?.[0] ?? null);
+        if (samDrawing) await samDrawing.useSelectedMask(newSamMasks?.[0] ?? null);
+        setSamMaskImage(newSamMasks?.[0]?.mask);
+        setSamMaskMask(newSamMasks?.[0]?.masked);
+        if (samDrawing) samDrawing.setNeedsRedraw(true);
         setSamMaskModalOpen(true);
       } else {
         console.log(result.message);
         if (result.message !== "Invalid inputs.") showToast("error", result.message);
       }
     } catch (error) {
-      setErrors((prev) => ({ ...prev, general: "Failed to generate mask" }));
+      console.log("Error generating masks: ", error.message);
+      showToast("error", "Failed to generate mask");
+      setIsGeneratingMask(false);
+      setStatusMessage("");
+    } finally {
+      setIsGeneratingMask(false);
+      setStatusMessage("");
     }
   };
 
-  const handleCancelSelectMask = (isChangingMask, initSelectedSamMask) => {
-    if (!isChangingMask) {
-      setSamMasks([]);
-      setSelectedSamMask(null);
-      setSamMaskImage(null);
-      setSamMaskMask(null);
-    } else {
-      setSelectedSamMask(initSelectedSamMask);
-      samDrawing.setNeedsRedraw(true);
-      setIsChangingMask(false);
-    }
-    setSamMaskModalOpen(false);
-  };
-
-  const handlePreviewMask = async () => {
+  const validatePreviewMask = async () => {
     const isAddCanvasEmpty = addDrawing.isCanvasEmpty();
     const isRemoveCanvasEmpty = removeDrawing.isCanvasEmpty();
     if (isAddCanvasEmpty && isRemoveCanvasEmpty) {
       console.log("Both canvases are empty");
       setPreviewMask(samMaskMask);
-      return;
+      return null;
     }
+    const masks = await getUserMasks();
+    return masks;
+  };
+
+  const handlePreviewMask = async () => {
     try {
-      console.log("combining masks");
-      await getUserMasks();
-      console.log(`sam mask path: ${samMaskImage ? "true" : "false"}`);
-      console.log(`user mask add: ${base64ImageAdd ? "true" : "false"}`);
-      console.log(`user mask remove: ${base64ImageRemove ? "true" : "false"}`);
+      const masks = await validatePreviewMask();
+      if (!masks) {
+        console.log("previewing mask - Using SAM mask only");
+      } else {
+        setBase64ImageAdd(masks.base64ImageAdd);
+        setBase64ImageRemove(masks.base64ImageRemove);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      console.log("previewing mask - combining masks");
+      console.log(`previewing mask - sam mask path: ${samMaskImage ? "true" : "false"}`);
+      console.log(`previewing mask - user mask add: ${base64ImageAdd ? "true" : "false"}`);
+      console.log(`previewing mask - user mask remove: ${base64ImageRemove ? "true" : "false"}`);
       const result = await previewMaskAction(
         samMaskImage,
-        base64ImageAdd,
-        base64ImageRemove,
+        masks?.base64ImageAdd || base64ImageAdd,
+        masks?.base64ImageRemove || base64ImageRemove,
         selectedSamMask,
         setErrors,
         refineMaskOption,
         showPreview,
-        setPreviewMask
+        setPreviewMask,
+        setStatusMessage,
+        setIsPreviewingMask,
+        setCombinedMask
       );
       if (!result.success) {
         console.log(result.message);
         if (result.message !== "Invalid inputs.") showToast("error", result.message);
       }
     } catch (error) {
-      console.log("Error previewing masks: ", error);
-      setErrors((prev) => ({ ...prev, general: "Failed to preview mask" }));
+      console.log("Error previewing masks: ", error.message);
+      showToast("error", "Failed to preview mask");
+    } finally {
+      setIsPreviewingMask(false);
+      setStatusMessage("");
     }
   };
 
-  const handleApplyMask = async () => {
+  const validateApplyMask = async () => {
     const isAddCanvasEmpty = addDrawing.isCanvasEmpty();
     const isRemoveCanvasEmpty = removeDrawing.isCanvasEmpty();
     if (isAddCanvasEmpty && isRemoveCanvasEmpty) {
-      setCombinedMask({ samMaskImage, samMaskMask });
       setPreviewMask(null);
       if (handleClearAllCanvas) handleClearAllCanvas();
-      return;
+      return null;
     }
+    const masks = await getUserMasks();
+    return masks;
+  };
+
+  const handleApplyMask = async () => {
+    console.log("Before apply mask - selectedSamMask:", selectedSamMask);
+    const masks = await validateApplyMask();
+    if (!masks) {
+      console.log("Using SAM mask only");
+    } else {
+      setBase64ImageAdd(masks.base64ImageAdd);
+      setBase64ImageRemove(masks.base64ImageRemove);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     try {
-      await applyMask(
-        setErrors,
-        samDrawing,
-        setSamMaskMask,
-        pickedColorSam,
-        opacitySam,
-        setSamMaskImage,
-        setCombinedMask,
-        handleClearAllCanvas,
-        setPreviewMask,
-        samMaskImage,
-        base64ImageAdd,
-        base64ImageRemove,
-        selectedSamMask,
-        refineMaskOption,
-        showPreview
+      let combinedMaskData;
+      if (!combinedMask) {
+        console.log("applying mask - inside if");
+        const result = await previewMaskAction(
+          samMaskImage,
+          masks?.base64ImageAdd || base64ImageAdd,
+          masks?.base64ImageRemove || base64ImageRemove,
+          selectedSamMask,
+          setErrors,
+          refineMaskOption,
+          false, // showPreview to not set previewMask
+          setPreviewMask,
+          setStatusMessage,
+          setIsPreviewingMask,
+          setCombinedMask
+        );
+        if (result.success) {
+          // Upload Combined masks
+          setStatusMessage("Uploading images");
+          combinedMaskData = {
+            samMaskImage: result?.data?.mask?.url || "",
+            samMaskMask: result?.data?.masked_image?.url || "",
+          };
+          console.log("combinedMaskData", combinedMaskData);
+        } else {
+          console.log(result.message);
+          if (result.message !== "Invalid inputs.") showToast("error", result.message);
+        }
+      } else {
+        console.log("applying mask - inside else");
+        setIsPreviewingMask(true);
+        setStatusMessage("Uploading images");
+        combinedMaskData = {
+          samMaskImage: combinedMask?.mask?.url || "",
+          samMaskMask: combinedMask?.masked_image?.url || "",
+        };
+        console.log("applying mask - combinedMaskData", combinedMaskData);
+      }
+      console.log("After preview mask - selectedSamMask:", selectedSamMask);
+      const resultUpdateCombinedMask = await updateDesignVersionCombinedMask(
+        design.id,
+        designVersion.id, //designVersionId,
+        selectedImage.imageId, //designVersionImageId,
+        combinedMaskData,
+        user,
+        userDoc
       );
+      if (!resultUpdateCombinedMask.success) {
+        showToast("error", "Failed to apply mask");
+        return;
+      }
+      console.log("After updating combined mask - selectedSamMask:", selectedSamMask);
+      setStatusMessage("Upload complete");
+      const images = resultUpdateCombinedMask?.data || designVersionImages;
+      const imageId = selectedImage?.imageId;
+      const image = images.find((i) => i.imageId === imageId) ?? null;
+      const newSamMaskImage =
+        image?.masks?.combinedMask?.samMaskImage ?? samMasks?.[0]?.mask ?? null;
+      const newSamMaskMask =
+        image?.masks?.combinedMask?.samMaskMask ??
+        samMasks?.[0]?.masked ??
+        "/img/transparent-image.png";
+      console.log("applying mask - setSamMaskImage", newSamMaskImage);
+      console.log("applying mask - newSamMaskMask", newSamMaskMask);
+      setSamMaskImage(newSamMaskImage);
+      setSamMaskMask(newSamMaskMask);
+      setCombinedMask(null);
+      setPreviewMask(null);
+      if (samDrawing) samDrawing.setNeedsRedraw(true);
+      if (handleClearAllCanvas) handleClearAllCanvas();
+      console.log("After setting combined mask states - selectedSamMask:", selectedSamMask);
     } catch (error) {
-      setErrors((prev) => ({ ...prev, general: "Failed to apply mask" }));
+      console.log("Error applying masks: ", error.message);
+      showToast("error", "Failed to apply mask");
+    } finally {
+      setIsPreviewingMask(false);
+      setStatusMessage("");
     }
   };
+
+  useEffect(() => {
+    // Do not update if generating, previewing, or applying becaus eit's already handled and avoid overriding
+    if (isPreviewingMask || isGeneratingMask) return;
+    console.log("select mask canvas - designVersion", designVersion);
+    console.log("select mask canvas - designVersionImages", designVersionImages);
+    console.log("select mask canvas - selectedImage", selectedImage);
+    if (!designVersion && !designVersionImages && !selectedImage) return;
+    const imageId = selectedImage?.imageId;
+    if (!imageId) {
+      console.warn("selectedImage.imageId is missing.");
+      return;
+    }
+
+    // Populate SAM mask variables
+    const image = designVersionImages.find((i) => i.imageId === imageId) ?? null;
+    const samMasks = image?.masks?.samMasks ?? null;
+    setSamMasks(samMasks);
+    setSelectedSamMask(samMasks?.[0] ?? null);
+    console.log("select mask canvas - image", image);
+    console.log("select mask canvas - samMasks", samMasks);
+    console.log("select mask canvas - samMasks[0]", samMasks?.[0] ?? null);
+
+    // Populate combined mask variables
+    const samMaskImage = image?.masks?.combinedMask?.samMaskImage ?? samMasks?.[0]?.mask ?? null;
+    const samMaskMask =
+      image?.masks?.combinedMask?.samMaskMask ??
+      samMasks?.[0]?.masked ??
+      "/img/transparent-image.png";
+    setSamMaskImage(samMaskImage);
+    setSamMaskMask(samMaskMask);
+    if (samDrawing) samDrawing.setNeedsRedraw(true);
+    console.log("select mask canvas - samMaskImage", samMaskImage);
+    console.log("select mask canvas - samMaskMask", samMaskMask);
+  }, [designVersion, designVersionImages]);
+
+  useEffect(() => {
+    if (showPreview && previewMask && samDrawing) {
+      samDrawing.setNeedsRedraw(true);
+    }
+  }, [showPreview, previewMask]);
+
+  // useEffect(() => {
+  //   if (showPreview && samMaskMask && samMaskImage) {
+  //     samDrawing.setNeedsRedraw(true);
+  //   }
+  // }, [samMaskMask]);
 
   return (
     <Box sx={canvasStyles.canvasContainer} ref={containerRef}>
@@ -852,7 +1056,10 @@ function SelectMaskCanvas({
             <DelayedTooltip title="Type objects in the image to mask" delay={1000}>
               <TextField
                 value={maskPrompt}
-                onChange={(e) => setMaskPrompt(e.target.value)}
+                onChange={(e) => {
+                  setMaskPrompt(e.target.value);
+                  clearFieldError("maskPrompt");
+                }}
                 placeholder="Type objects in the image to mask"
                 size="small"
                 helperText={errors?.maskPrompt || generationErrors?.maskPrompt}
@@ -1397,7 +1604,7 @@ function SelectMaskCanvas({
               </Typography>
               <Button
                 variant="contained"
-                onClick={() => {
+                onClick={async () => {
                   setShowPreview(true);
                   handlePreviewMask();
                 }}
@@ -1467,7 +1674,10 @@ function SelectMaskCanvas({
                 </Typography>
                 <Button
                   variant="contained"
-                  onClick={handleApplyMask}
+                  onClick={async () => {
+                    setShowPreview(true);
+                    handleApplyMask();
+                  }}
                   sx={{
                     ...gradientButtonStyles,
                     width: "125px",
@@ -1540,6 +1750,10 @@ function SelectMaskCanvas({
             samDrawing ? samDrawing.actualUseSelectedMask(selectedSamMask) : {}
           }
         />
+      )}
+
+      {(isGeneratingMask || isPreviewingMask) && (
+        <GeneratingOverlay statusMessage={statusMessage} progress="" eta="" />
       )}
     </Box>
   );
@@ -2081,7 +2295,7 @@ const SamMaskModal = ({
           <CloseRoundedIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent sx={dialogContentStyles}>
+      <DialogContent sx={{ ...dialogContentStyles, width: "auto" }}>
         <Typography variant="body1" sx={{ marginBottom: "20px", textAlign: "center" }}>
           Select a mask generated from your prompt to apply to the image
         </Typography>
@@ -2116,10 +2330,10 @@ const SamMaskModal = ({
               >
                 {index + 1}
               </Typography>
-              <div className="content">
-                <img src={option.blended} alt="" />
-                <img src={option.mask} alt="" />
-                <img src={option.masked} alt="" />
+              <div className="content sam-masks">
+                <img src={`${option.blended}`} alt="" />
+                <img src={`${option.mask}`} alt="" />
+                <img src={`${option.masked}`} alt="" />
               </div>
             </Box>
           ))}

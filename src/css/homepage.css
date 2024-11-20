@@ -13,6 +13,10 @@
   margin: -2px 10px 0px 10px;
   width: auto;
 }
+.navName.loader {
+  font-size: 1.5rem !important;
+  margin: -2px 10px 0px 10px;
+}
 .headerPlace {
   position: relative;
   background-image: var(--bg-full);
@@ -66,8 +70,9 @@
 h2 {
   text-align: left;
   text-wrap: nowrap;
-  margin-top: 6px;
-  margin-bottom: 6px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin: 0;
 }
 
 .header {

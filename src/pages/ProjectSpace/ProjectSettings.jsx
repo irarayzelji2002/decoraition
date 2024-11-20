@@ -31,6 +31,7 @@ import {
 } from "./svg/ProjectAccessIcons";
 import { set } from "lodash";
 import { switchStyles } from "../DesignSpace/DesignSettings";
+import LoadingPage from "../../components/LoadingPage";
 
 export const theme = createTheme({
   components: {
@@ -314,7 +315,7 @@ const ProjectSettings = () => {
   };
 
   if (loading) {
-    return <Loading />;
+    return <LoadingPage />;
   }
 
   if (!project) {

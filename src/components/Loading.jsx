@@ -1,6 +1,6 @@
 import "../css/loading.css";
 
-function Loading() {
+function Loading({ fullScreen = false }) {
   return (
     <div
       style={{
@@ -10,8 +10,11 @@ function Loading() {
         height: "100%",
       }}
     >
-      <div className="loader">
-        <h1 className="navName drawer" style={{ fontSize: "10px !important" }}>
+      <div
+        className="loader"
+        style={{ height: fullScreen ? "100%" : "auto", width: fullScreen ? "100%" : "auto" }}
+      >
+        <h1 className="navName loader" style={{ fontSize: "10px !important" }}>
           Loading...
         </h1>
         <div className="dot-spinner">

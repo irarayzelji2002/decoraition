@@ -6,8 +6,9 @@
   /* background-color: var(--bgMain); */
   align-items: center;
   flex-direction: column;
-  gap: 30px;
+  gap: 0px;
   height: 100%;
+  margin: 20px;
 }
 .loaders {
   display: flex;
@@ -49,6 +50,7 @@
   justify-content: flex-start;
   height: var(--uib-size);
   width: var(--uib-size);
+  transform: scale(0.8);
 }
 
 .dot-spinner__dot {

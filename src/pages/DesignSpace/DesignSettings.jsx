@@ -28,6 +28,7 @@ import {
   RestrictedIcon,
   AnyoneWithLinkIcon,
 } from "./svg/DesignAccessIcons";
+import LoadingPage from "../../components/LoadingPage";
 
 export const theme = createTheme({
   components: {
@@ -190,11 +191,13 @@ const DesignSettings = () => {
   };
 
   if (loading) {
-    return <Loading />;
+    return <LoadingPage />;
   }
 
   if (!design) {
-    return <div>Design not found. Please reload or navigate to this design again.</div>;
+    return (
+      <LoadingPage message="Design not found. Please reload or navigate to this design again." />
+    );
   }
 
   return (

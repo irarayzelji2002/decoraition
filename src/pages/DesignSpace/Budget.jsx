@@ -28,6 +28,7 @@ import { query, where } from "firebase/firestore";
 import CommentTabs from "./CommentTabs";
 import { AddBudget, AddItem, BlankImage } from "./svg/AddImage";
 import { getDesignImage, handleNameChange } from "./backend/DesignActions";
+import LoadingPage from "../../components/LoadingPage";
 
 const style = {
   position: "absolute",
@@ -243,7 +244,7 @@ function Budget() {
   }, [designItems]);
 
   if (loading) {
-    return <Loading />;
+    return <LoadingPage />;
   }
 
   if (!design) {

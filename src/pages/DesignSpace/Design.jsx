@@ -16,35 +16,21 @@ import {
   ArrowBackIosRounded as ArrowBackIosRoundedIcon,
   KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
 } from "@mui/icons-material";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../../firebase"; // Assuming you have firebase setup
 import DesignSpace from "./DesignSpace";
-import DesignHead from "../../components/DesignHead";
-import { getAuth } from "firebase/auth";
 import PromptBar from "./PromptBar";
-import BottomBar from "./BottomBar";
 import Loading from "../../components/Loading";
 import CommentTabs from "./CommentTabs";
-import { ToastContainer, toast } from "react-toastify";
-import Version from "./Version";
 import "../../css/design.css";
 import TwoFrames from "./svg/TwoFrames";
 import FourFrames from "./svg/FourFrames";
-import CommentContainer from "./CommentContainer";
-import { onSnapshot } from "firebase/firestore";
-import { Tabs, Tab } from "@mui/material";
-import {
-  toggleComments,
-  togglePromptBar,
-  handleSidebarEffect,
-  handleNameChange,
-} from "./backend/DesignActions"; // Import the functions from the backend file
+import { toggleComments, togglePromptBar } from "./backend/DesignActions";
 import { UnviewInfoIcon, ViewInfoIcon } from "../../components/svg/SharedIcons";
 import { EditIcon } from "../../components/svg/DefaultMenuIcons";
 import EditDescModal from "./EditDescModal";
 import { handleEditDescription } from "./backend/DesignActions";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { SelectedComment, UnselectedComment } from "./svg/AddColor";
+import LoadingPage from "../../components/LoadingPage";
 
 function Design() {
   const { user, userDoc, designs, userDesigns, designVersions, userDesignVersions, comments } =
@@ -96,6 +82,7 @@ function Design() {
   const [showPreview, setShowPreview] = useState(false);
   const [canvasMode, setCanvasMode] = useState(true); // true for Add to Mask, false for Remove form Mask
   const [samMasks, setSamMasks] = useState([]);
+  const [isPreviewingMask, setIsPreviewingMask] = useState(false); // for loading
 
   // Comment
   // userDesignComments & userComments for the designs's latest deisgn version
@@ -208,7 +195,7 @@ function Design() {
       setDesignVersionImages([]);
       setIsNextGeneration(false);
     }
-    setLoading(false);
+    // setLoading(false);
   }, [design, designVersions, userDesignVersions]);
 
   useEffect(() => {
@@ -467,11 +454,13 @@ function Design() {
   }, [isPinpointing, pinpointLocation, pinpointSelectedImage, selectedImage]);
 
   if (loading) {
-    return <Loading />;
+    return <LoadingPage message="Please wait, we're loading your design." />;
   }
 
   if (!design) {
-    return <div>Design not found. Please reload or navigate to this design again.</div>;
+    return (
+      <LoadingPage message="Design not found. Please reload or navigate to this design again." />
+    );
   }
 
   return (
@@ -548,6 +537,9 @@ function Design() {
                     setSamMasks={setSamMasks}
                     setBase64ImageAdd={setBase64ImageAdd}
                     setBase64ImageRemove={setBase64ImageRemove}
+                    setIsPreviewingMask={setIsPreviewingMask}
+                    design={design}
+                    designVersion={designVersion}
                   />
                 </div>
               )}
@@ -795,6 +787,11 @@ function Design() {
                   setCanvasMode={setCanvasMode}
                   samMasks={samMasks}
                   setSamMasks={setSamMasks}
+                  design={design}
+                  designVersion={designVersion}
+                  designVersionImages={designVersionImages}
+                  isPreviewingMask={isPreviewingMask}
+                  setIsPreviewingMask={setIsPreviewingMask}
                 />
               ) : (isGenerating && generatedImagesPreview.length > 0) ||
                 designVersionImages.length > 0 ? (
@@ -957,9 +954,13 @@ function Design() {
                                   </IconButton>
                                 ))}
                               <img
-                                src={
-                                  isGenerating && generatedImagesPreview ? image.src : image.link
-                                }
+                                src={(() => {
+                                  const source =
+                                    isGenerating && generatedImagesPreview ? image.src : image.link;
+                                  return source && source !== ""
+                                    ? source
+                                    : "/img/transparent-image.png";
+                                })()}
                                 alt=""
                                 className="image-preview"
                               />
@@ -1038,7 +1039,12 @@ function Design() {
                 </div>
               )}
               {isGenerating && (
-                <GeneratingOverlay statusMessage={statusMessage} progress={progress} eta={eta} />
+                <GeneratingOverlay
+                  statusMessage={statusMessage}
+                  progress={progress}
+                  eta={eta}
+                  transparent={true}
+                />
               )}
             </div>
             {/* Default location on desktop screen */}
@@ -1095,10 +1101,13 @@ function Design() {
 
 export default Design;
 
-export const GeneratingOverlay = ({ statusMessage, progress, eta }) => {
+export const GeneratingOverlay = ({ statusMessage, progress, eta, transparent = false }) => {
   const { isDarkMode } = useSharedProps();
   return (
-    <div className="generatingOverlayBox">
+    <div
+      className="generatingOverlayBox"
+      style={{ backgroundColor: transparent ? "rgba(0, 0, 0, 0)" : "rgba(0, 0, 0, 0.4)" }}
+    >
       <div className="generatingOverlayContent">
         <div className="gradientCircleDiv">
           <GradientCircularProgress statusMessage={statusMessage} value={progress} />

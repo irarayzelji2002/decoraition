@@ -5,9 +5,7 @@ import "../../css/budget.css";
 import TopBar from "../../components/TopBar";
 import Select from "@mui/material/Select";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { styled } from "@mui/material/styles";
-import Menu from "@mui/material/Menu";
-import InputLabel from "@mui/material/InputLabel";
+import { useNavigate } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
@@ -24,6 +22,7 @@ function AddPin({ EditMode }) {
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
   const projectId = location.state?.projectId;
+  const navigate = useNavigate();
 
   const [owner, setOwner] = React.useState("");
   const [selectedColor, setSelectedColor] = useState("#ffffff");
@@ -48,33 +47,6 @@ function AddPin({ EditMode }) {
       return updatedPins;
     });
   };
-
-  const StyledMenu = styled(Menu)(({ theme }) => ({
-    "& .MuiPaper-root": {
-      backgroundColor: "#2c2c2e",
-      color: "var(--color-white)",
-      borderRadius: "12px",
-      padding: 0,
-      margin: 0,
-      border: "none",
-      overflow: "hidden",
-    },
-    "& .MuiList-root": {
-      padding: 0,
-    },
-    "& .MuiMenuItem-root": {
-      "&.Mui-selected": {
-        backgroundColor: "transparent", // Custom background color for selected item
-        "&:hover": {
-          backgroundColor: "transparent", // Custom hover color for selected item
-        },
-      },
-      "&:focus": {
-        outline: "none",
-        boxShadow: "none", // Remove blue outline effect
-      },
-    },
-  }));
 
   const formControlStyles = {
     m: 1,
@@ -136,6 +108,7 @@ function AddPin({ EditMode }) {
         order: currentPin.id,
       };
       await addPinToDatabase(projectId, pinData);
+      navigate(`/planMap/${projectId}`);
     }
   };
 
@@ -234,10 +207,10 @@ function AddPin({ EditMode }) {
                 />
                 <div className="rightBeside">
                   <Button
+                    onClick={handleCloseModal}
                     fullWidth
                     variant="contained"
                     className="confirm-button"
-                    onClick={handleSavePin}
                   >
                     Save Color
                   </Button>
@@ -255,7 +228,7 @@ function AddPin({ EditMode }) {
             <button
               className="add-item-btn"
               style={{ width: "100%", margin: "8px" }}
-              onClick={addPin}
+              onClick={handleSavePin}
             >
               Add Pin
             </button>

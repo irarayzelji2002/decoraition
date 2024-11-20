@@ -7,7 +7,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
 import { ChromePicker } from "react-color";
 
-const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor = "grey" }) => {
+const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [value, setValue] = useState("#ffffff");
   const handleChange = (color) => {

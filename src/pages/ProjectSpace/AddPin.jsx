@@ -64,6 +64,7 @@ function AddPin({ EditMode }) {
       id: highestId + 1,
       location: { x: 10, y: -20 },
       color: selectedColor,
+      designName: designs.find((design) => design.id === owner)?.designName || "",
     };
     setPins([...pins, newPin]);
   };
@@ -73,6 +74,7 @@ function AddPin({ EditMode }) {
     if (currentPin) {
       const pinData = {
         designId: owner,
+        designName: currentPin.designName,
         location: { x: currentPin.location.x, y: currentPin.location.y },
         color: currentPin.color,
         order: currentPin.id,
@@ -109,7 +111,20 @@ function AddPin({ EditMode }) {
                 id="owner-select"
                 label="Owner"
                 value={owner}
-                onChange={(e) => setOwner(e.target.value)}
+                onChange={(e) => {
+                  setOwner(e.target.value);
+                  const selectedDesign = designs.find((design) => design.id === e.target.value);
+                  if (selectedDesign) {
+                    setPins((prevPins) => {
+                      const updatedPins = [...prevPins];
+                      const currentPinIndex = updatedPins.length - 1;
+                      if (currentPinIndex >= 0) {
+                        updatedPins[currentPinIndex].designName = selectedDesign.designName;
+                      }
+                      return updatedPins;
+                    });
+                  }
+                }}
                 MenuProps={{
                   PaperProps: {
                     sx: {

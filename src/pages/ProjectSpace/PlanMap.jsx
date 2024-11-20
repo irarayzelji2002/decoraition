@@ -177,11 +177,11 @@ function PlanMap() {
           />
         </div>
         <div className="budgetSpaceImg">
-          {designs.length > 0 ? (
-            designs.map((design) => {
+          {pins.length > 0 ? (
+            pins.map((design) => {
               return (
                 <>
-                  <MapPin title={design.designName} />
+                  <MapPin title={design.designName} pinColor={design.color} pinNo={design.order} />
                 </>
               );
             })

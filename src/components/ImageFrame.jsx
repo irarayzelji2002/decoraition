@@ -1,16 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 
 const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) => {
   const frameRef = useRef(null);
   const imageRef = useRef(null);
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const updateImageSize = () => {
       if (imageRef.current) {
         const rect = imageRef.current.getBoundingClientRect();
-        setImageSize({ width: rect.width, height: rect.height });
       }
     };
 
@@ -26,14 +24,18 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) =
     const rect = imageRef.current.getBoundingClientRect();
     const relativeX = (x / rect.width) * 100;
     const relativeY = (y / rect.height) * 100;
-    setPins(pins.map((pin) => (pin.id === id ? { ...pin, x: relativeX, y: relativeY } : pin)));
+    setPins(
+      pins.map((pin) =>
+        pin.id === id ? { ...pin, location: { x: relativeX, y: relativeY } } : pin
+      )
+    );
   };
 
   const getPinPosition = (pin) => {
     const rect = imageRef.current.getBoundingClientRect();
     return {
-      x: (pin.x / 100) * rect.width,
-      y: (pin.y / 100) * rect.height,
+      x: (pin.location.x / 100) * rect.width,
+      y: (pin.location.y / 100) * rect.height,
     };
   };
 
@@ -53,11 +55,11 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) =
             key={pin.id}
             bounds="parent"
             disabled={!draggable}
-            position={{ x: position.x, y: position.y }}
+            defaultPosition={{ x: position.x, y: position.y }}
             onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
           >
             <div className="pin" style={{ position: "absolute" }}>
-              <MapPinIcon number={pin.id} fill={pin.color || color} />
+              <MapPinIcon number={pin.order} fill={pin.color || color} />
             </div>
           </Draggable>
         );

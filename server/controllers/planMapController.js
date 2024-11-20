@@ -87,16 +87,23 @@ exports.createPin = async (req, res) => {
 exports.getPins = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const planMapSnapshot = await db
-      .collection("planMaps")
-      .where("projectId", "==", projectId)
-      .get();
+    console.log("Project ID:", projectId);
+
+    const planMapSnapshot = await db.collection("pins").where("projectId", "==", projectId).get();
+
     if (planMapSnapshot.empty) {
-      return res.status(404).json({ error: "Plan map not found" });
+      console.log("No matching documents found.");
+      return res.status(404).json({ error: "No pins found for the specified projectId." });
     }
-    const planMapDoc = planMapSnapshot.docs[0];
-    const planMapData = planMapDoc.data();
-    const pins = planMapData.pins || [];
+
+    const pins = [];
+    planMapSnapshot.forEach((doc) => {
+      const planMapData = doc.data();
+      console.log("Document data:", planMapData);
+      pins.push(planMapData);
+    });
+
+    console.log("Pins:", pins);
     res.json(pins);
   } catch (error) {
     console.error("Error fetching pins:", error);

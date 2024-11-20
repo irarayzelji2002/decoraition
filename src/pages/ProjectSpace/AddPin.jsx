@@ -15,7 +15,7 @@ import { ChromePicker } from "react-color";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ImageFrame from "../../components/ImageFrame";
-import { fetchProjectDesigns, addPinToDatabase } from "./backend/ProjectDetails";
+import { fetchProjectDesigns, addPinToDatabase, fetchPins } from "./backend/ProjectDetails";
 
 function AddPin({ EditMode }) {
   const location = useLocation();
@@ -32,8 +32,9 @@ function AddPin({ EditMode }) {
   useEffect(() => {
     if (projectId) {
       fetchProjectDesigns(projectId, setDesigns);
+      // fetchPins(projectId, setPins); // Fetch pins from the database
+      addPin(); // Add a new pin
     }
-    addPin(); // Ensure a pin is added when the component mounts
   }, [projectId]);
 
   const handleColorChange = (color) => {
@@ -48,41 +49,6 @@ function AddPin({ EditMode }) {
     });
   };
 
-  const formControlStyles = {
-    m: 1,
-    minWidth: 200,
-    backgroundColor: "transparent",
-    color: "var(--color-white)",
-    width: "100%",
-    borderRadius: "8px",
-    "& .MuiOutlinedInput-notchedOutline": {
-      borderColor: "var( --borderInput)",
-    },
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "var(--bright-grey) !important",
-    },
-    "& .MuiSvgIcon-root": {
-      color: "var(--color-white)", // Set the arrow color to white
-    },
-  };
-
-  const menuItemStyles = {
-    color: "var(--color-white)",
-    backgroundColor: "var(--dropdown)",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      backgroundColor: "var(--dropdownHover)",
-    },
-    "&.Mui-selected": {
-      backgroundColor: "var(--dropdownSelected)",
-      color: "#d1d1d1",
-      fontWeight: "bold",
-    },
-    "&.Mui-selected:hover": {
-      backgroundColor: "var(--dropdownHover)",
-    },
-  };
-
   const [modalOpen, setModalOpen] = React.useState(false);
 
   const handleOpenModal = () => {
@@ -92,10 +58,14 @@ function AddPin({ EditMode }) {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
-
-  const addPin = () => {
+  const addPin = async () => {
     const highestId = pins.length > 0 ? Math.max(...pins.map((pin) => pin.id)) : 0;
-    setPins([...pins, { id: highestId + 1, x: 10, y: -20, color: selectedColor }]);
+    const newPin = {
+      id: highestId + 1,
+      location: { x: 10, y: -20 },
+      color: selectedColor,
+    };
+    setPins([...pins, newPin]);
   };
 
   const handleSavePin = async () => {
@@ -103,7 +73,7 @@ function AddPin({ EditMode }) {
     if (currentPin) {
       const pinData = {
         designId: owner,
-        location: { x: currentPin.x, y: currentPin.y },
+        location: { x: currentPin.location.x, y: currentPin.location.y },
         color: currentPin.color,
         order: currentPin.id,
       };
@@ -240,3 +210,38 @@ function AddPin({ EditMode }) {
 }
 
 export default AddPin;
+
+const formControlStyles = {
+  m: 1,
+  minWidth: 200,
+  backgroundColor: "transparent",
+  color: "var(--color-white)",
+  width: "100%",
+  borderRadius: "8px",
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var( --borderInput)",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--bright-grey) !important",
+  },
+  "& .MuiSvgIcon-root": {
+    color: "var(--color-white)", // Set the arrow color to white
+  },
+};
+
+const menuItemStyles = {
+  color: "var(--color-white)",
+  backgroundColor: "var(--dropdown)",
+  transition: "all 0.3s ease",
+  "&:hover": {
+    backgroundColor: "var(--dropdownHover)",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "var(--dropdownSelected)",
+    color: "#d1d1d1",
+    fontWeight: "bold",
+  },
+  "&.Mui-selected:hover": {
+    backgroundColor: "var(--dropdownHover)",
+  },
+};

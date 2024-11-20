@@ -45,7 +45,7 @@ sdxl_styles = [
     {
         "name": "3D Model",
         "prompt": "professional 3d model of {prompt} . octane render, highly detailed, volumetric, dramatic lighting",
-        "negative_prompt": "ugly, deformed, noisy, low poly, blurry, painting, person, people, face, hands, legs, feet"
+        "negative_prompt": "ugly, deformed, noisy, low poly, blurry, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature, naked, unclothed, sexual, nudity, pornography, erotic,inappropriate, explicit, offensive, violence"
     }
 ]
 task_queue = []
@@ -1138,9 +1138,14 @@ def validate_next_generation_request(data):
                 style_reference_encoded = None
             # Combined mask
             combined_mask = data.get('combined_mask', '')
-            if combined_mask and allowed_file(combined_mask):
-                print(f"Combined mask received.")
-                combined_mask_encoded = image_path_to_base64(combined_mask)
+            if combined_mask:
+                if isinstance(combined_mask, str):  # If it's a URL string
+                    print(f"Combined mask received.")
+                    combined_mask_encoded = load_and_encode_image(combined_mask, from_url=True)
+                    print(f"Combined mask successfully loaded.")
+                elif allowed_file(combined_mask):
+                    print(f"Combined mask received.")
+                    combined_mask_encoded = image_path_to_base64(combined_mask)
                 if combined_mask_encoded is not None:
                     print(f"Combined mask successfully loaded and encoded.")
                 else:

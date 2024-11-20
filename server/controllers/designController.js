@@ -1354,6 +1354,13 @@ exports.updateDesignVersionSamMask = async (req, res) => {
 
     // Perform action
     updatedDocuments.push({
+      collection: "designs",
+      id: designId,
+      field: "modifiedAt",
+      previousValue: designDoc.data().modifiedAt,
+    });
+    await designRef.update({ modifiedAt: new Date() });
+    updatedDocuments.push({
       collection: "designVersions",
       id: designVersionId,
       field: "images",
@@ -1449,6 +1456,13 @@ exports.updateDesignVersionCombinedMask = async (req, res) => {
     };
 
     // Perform action
+    updatedDocuments.push({
+      collection: "designs",
+      id: designId,
+      field: "modifiedAt",
+      previousValue: designDoc.data().modifiedAt,
+    });
+    await designRef.update({ modifiedAt: new Date() });
     updatedDocuments.push({
       collection: "designVersions",
       id: designVersionId,

@@ -83,6 +83,7 @@ function Design() {
   const [canvasMode, setCanvasMode] = useState(true); // true for Add to Mask, false for Remove form Mask
   const [samMasks, setSamMasks] = useState([]);
   const [isPreviewingMask, setIsPreviewingMask] = useState(false); // for loading
+  const [validateApplyMask, setValidateApplyMask] = useState(null);
 
   // Comment
   // userDesignComments & userComments for the designs's latest deisgn version
@@ -242,7 +243,10 @@ function Design() {
     const imageGrid = containerRef.current;
     const imageFrames = containerRef.current?.querySelectorAll(".image-frame");
 
-    if (!imageGrid || !imageFrames) return;
+    if (!imageGrid || !imageFrames || imageFrames.length === 0) {
+      console.log("No image frames found, returning early");
+      return;
+    }
     console.log("adjusting image frames");
 
     // Calculate thresholds based on viewport height
@@ -291,8 +295,8 @@ function Design() {
 
     adjustImageFramesDefault();
 
-    setImageWidth(imageFrames[0].clientWidth);
-    setImageHeight(imageFrames[0].clientHeight);
+    setImageWidth(imageFrames?.[0].clientWidth);
+    setImageHeight(imageFrames?.[0].clientHeight);
   }, [
     showPromptBar,
     showComments,
@@ -496,6 +500,7 @@ function Design() {
                     prevHeight={heightPromptBar}
                     setPrevHeight={setHeightPromptBar}
                     selectedImage={selectedImage}
+                    setSelectedImage={setSelectedImage}
                     isNextGeneration={isNextGeneration}
                     isSelectingMask={isSelectingMask}
                     setIsSelectingMask={setIsSelectingMask}
@@ -540,6 +545,8 @@ function Design() {
                     setIsPreviewingMask={setIsPreviewingMask}
                     design={design}
                     designVersion={designVersion}
+                    samMasks={samMasks}
+                    validateApplyMask={validateApplyMask}
                   />
                 </div>
               )}
@@ -792,6 +799,8 @@ function Design() {
                   designVersionImages={designVersionImages}
                   isPreviewingMask={isPreviewingMask}
                   setIsPreviewingMask={setIsPreviewingMask}
+                  validateApplyMask={validateApplyMask}
+                  setValidateApplyMask={setValidateApplyMask}
                 />
               ) : (isGenerating && generatedImagesPreview.length > 0) ||
                 designVersionImages.length > 0 ? (

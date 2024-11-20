@@ -80,6 +80,7 @@ function PromptBar({
   prevHeight,
   setPrevHeight,
   selectedImage,
+  setSelectedImage,
   isNextGeneration,
   isSelectingMask,
   setIsSelectingMask,
@@ -124,6 +125,8 @@ function PromptBar({
   setIsPreviewingMask,
   design,
   designVersion,
+  samMasks,
+  validateApplyMask,
 }) {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
   const isOnline = useNetworkStatus();
@@ -751,6 +754,7 @@ function PromptBar({
             setStatusMessage("Upload complete");
             showToast("success", designVersionResult.message);
             clearAllFields();
+            setGenerationErrors({});
           } else {
             console.error("create design ver - error: ", designVersionResult.message);
             console.error("create design ver - error status: ", designVersionResult.status);
@@ -762,6 +766,19 @@ function PromptBar({
           showToast("error", result.message);
         }
       } else {
+        await setShowPreview(true);
+        let isSamMaskOnly = false;
+        if (!validateApplyMask) return;
+        const masks = await validateApplyMask();
+        if (!masks) {
+          console.log("Using SAM mask only");
+          isSamMaskOnly = true;
+        } else {
+          setBase64ImageAdd(masks.base64ImageAdd);
+          setBase64ImageRemove(masks.base64ImageRemove);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
         console.log("Validating - next image");
         let colorPalettePassed = "";
         const validationResult = await handleNextImageValidation();
@@ -777,7 +794,6 @@ function PromptBar({
           numberOfImages,
           colorPalettePassed,
           selectedImage,
-          samMaskMask,
           styleRef,
           setGenerationErrors,
           setStatusMessage, // checkTaskStatus args
@@ -786,20 +802,26 @@ function PromptBar({
           setIsGenerating,
           setGeneratedImagesPreview,
           setGeneratedImages,
-          setMaskErrors, // previewMask args
-          setPreviewMask,
-          samMaskImage,
+          samMaskImage, // previewMask args
           base64ImageAdd,
           base64ImageRemove,
           selectedSamMask,
+          setMaskErrors,
           refineMaskOption,
-          showPreview,
-          setIsSelectingMask,
-          setIsPreviewingMask,
+          setPreviewMask,
+          setCombinedMask,
+          combinedMask,
           design,
           designVersion,
           user,
-          userDoc
+          userDoc,
+          samMasks,
+          setSamMaskImage,
+          setSamMaskMask,
+          samDrawing,
+          handleClearAllCanvas,
+          setIsSelectingMask,
+          isSamMaskOnly
         );
         if (result.success) {
           await new Promise((resolve) => setTimeout(resolve, 100));
@@ -837,6 +859,7 @@ function PromptBar({
             setStatusMessage("Upload complete");
             showToast("success", designVersionResult.message);
             clearAllFields();
+            setGenerationErrors({});
           } else {
             console.error("create design ver - error: ", designVersionResult.message);
             console.error("create design ver - error status: ", designVersionResult.status);
@@ -849,11 +872,16 @@ function PromptBar({
         }
       }
     } catch (error) {
+      console.error("Error generating image", error.message);
       setGenerationErrors((prev) => ({ ...prev, general: "Failed to generate image" }));
     } finally {
       resetStateVariables();
     }
   };
+
+  useEffect(() => {
+    console.log("generation errors:", generationErrors);
+  }, [generationErrors]);
 
   const resetStateVariables = () => {
     setStatusMessage("");
@@ -881,7 +909,7 @@ function PromptBar({
       setBase64ImageAdd(null);
       setBase64ImageRemove(null);
       setCombinedMask(null);
-      selectedImage(null);
+      setSelectedImage(null);
       setSamMasks([]);
       setSamMaskMask(null);
       setSamMaskImage(null);

@@ -121,6 +121,8 @@ function SelectMaskCanvas({
   designVersionImages,
   isPreviewingMask,
   setIsPreviewingMask,
+  validateApplyMask,
+  setValidateApplyMask,
 }) {
   const { user, userDoc, designVersions, userDesignVersions } = useSharedProps();
   // Canvas/Container refs
@@ -543,6 +545,20 @@ function SelectMaskCanvas({
       removeDrawing.clearCanvas();
     };
     setHandleClearAllCanvas(() => clearAllCanvas);
+
+    const validateApplyMask = async () => {
+      const isAddCanvasEmpty = addDrawing.isCanvasEmpty();
+      const isRemoveCanvasEmpty = removeDrawing.isCanvasEmpty();
+      if (isAddCanvasEmpty && isRemoveCanvasEmpty) {
+        setPreviewMask(null);
+        if (handleClearAllCanvas) handleClearAllCanvas();
+        return null;
+      }
+      const masks = await getUserMasks();
+      return masks;
+    };
+
+    setValidateApplyMask(() => validateApplyMask);
   }, [addDrawing, removeDrawing]);
 
   // Initialize canvases
@@ -830,6 +846,7 @@ function SelectMaskCanvas({
         setSamMaskMask(newSamMasks?.[0]?.masked);
         if (samDrawing) samDrawing.setNeedsRedraw(true);
         setSamMaskModalOpen(true);
+        setMaskPrompt("");
       } else {
         console.log(result.message);
         if (result.message !== "Invalid inputs.") showToast("error", result.message);
@@ -863,6 +880,7 @@ function SelectMaskCanvas({
       const masks = await validatePreviewMask();
       if (!masks) {
         console.log("previewing mask - Using SAM mask only");
+        return;
       } else {
         setBase64ImageAdd(masks.base64ImageAdd);
         setBase64ImageRemove(masks.base64ImageRemove);
@@ -902,23 +920,13 @@ function SelectMaskCanvas({
     }
   };
 
-  const validateApplyMask = async () => {
-    const isAddCanvasEmpty = addDrawing.isCanvasEmpty();
-    const isRemoveCanvasEmpty = removeDrawing.isCanvasEmpty();
-    if (isAddCanvasEmpty && isRemoveCanvasEmpty) {
-      setPreviewMask(null);
-      if (handleClearAllCanvas) handleClearAllCanvas();
-      return null;
-    }
-    const masks = await getUserMasks();
-    return masks;
-  };
-
   const handleApplyMask = async () => {
     await setShowPreview(true);
+    if (!validateApplyMask) return;
     const masks = await validateApplyMask();
     if (!masks) {
       console.log("Using SAM mask only");
+      return;
     } else {
       setBase64ImageAdd(masks.base64ImageAdd);
       setBase64ImageRemove(masks.base64ImageRemove);
@@ -981,10 +989,10 @@ function SelectMaskCanvas({
       const imageId = selectedImage?.imageId;
       const image = images.find((i) => i.imageId === imageId) ?? null;
       const newSamMaskImage =
-        image?.masks?.combinedMask?.samMaskImage ?? samMasks?.[0]?.mask ?? null;
+        image?.masks?.combinedMask?.samMaskImage || samMasks?.[0]?.mask || null;
       const newSamMaskMask =
-        image?.masks?.combinedMask?.samMaskMask ??
-        samMasks?.[0]?.masked ??
+        image?.masks?.combinedMask?.samMaskMask ||
+        samMasks?.[0]?.masked ||
         "/img/transparent-image.png";
       console.log("applying mask - setSamMaskImage", newSamMaskImage);
       console.log("applying mask - newSamMaskMask", newSamMaskMask);
@@ -1633,9 +1641,18 @@ function SelectMaskCanvas({
             className="actualCanvas"
             ref={canvasStackRef}
           >
-            <img ref={initImageRef} src={selectedImage.link} style={styles.baseImage} alt="" />
+            <img
+              ref={initImageRef ?? "/img/transparent-image.png"}
+              src={selectedImage.link}
+              style={styles.baseImage}
+              alt=""
+            />
             <div ref={samCanvasRef} style={styles.samCanvas}>
-              <img src={samMaskMask} alt="" style={styles.samMaskImage} />
+              <img
+                src={samMaskMask ?? "/img/transparent-image.png"}
+                alt=""
+                style={styles.samMaskImage}
+              />
             </div>
             <canvas
               ref={removeCanvasRef}
@@ -1707,9 +1724,17 @@ function SelectMaskCanvas({
               }}
               className="actualCanvas"
             >
-              <img src={selectedImage.link} style={styles.previewBaseImage} alt="" />
+              <img
+                src={selectedImage.link ?? "/img/transparent-image.png"}
+                style={styles.previewBaseImage}
+                alt=""
+              />
               <div ref={previewCanvasRef} style={styles.previewMask}>
-                <img src={previewMask ?? ""} style={styles.previewMaskImage} alt="" />
+                <img
+                  src={previewMask ?? "/img/transparent-image.png"}
+                  style={styles.previewMaskImage}
+                  alt=""
+                />
               </div>
             </Box>
           </div>

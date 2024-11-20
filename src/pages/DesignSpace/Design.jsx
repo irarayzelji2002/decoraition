@@ -79,7 +79,7 @@ function Design() {
   const [base64ImageRemove, setBase64ImageRemove] = useState(null);
   const [selectedSamMask, setSelectedSamMask] = useState(null);
   const [refineMaskOption, setRefineMaskOption] = useState(true); // true for Add first then remove, false for Remove first then add
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
   const [canvasMode, setCanvasMode] = useState(true); // true for Add to Mask, false for Remove form Mask
   const [samMasks, setSamMasks] = useState([]);
   const [isPreviewingMask, setIsPreviewingMask] = useState(false); // for loading

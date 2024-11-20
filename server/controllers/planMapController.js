@@ -86,9 +86,24 @@ exports.createPin = async (req, res) => {
 // Read Pins
 exports.getPins = async (req, res) => {
   try {
-    const { planMapId } = req.params;
-    const pinsSnapshot = await db.collection("planMaps").doc(planMapId).collection("pins").get();
-    const pins = pinsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const { projectId } = req.params;
+    console.log("Project ID:", projectId);
+
+    const planMapSnapshot = await db.collection("pins").where("projectId", "==", projectId).get();
+
+    if (planMapSnapshot.empty) {
+      console.log("No matching documents found.");
+      return res.status(404).json({ error: "No pins found for the specified projectId." });
+    }
+
+    const pins = [];
+    planMapSnapshot.forEach((doc) => {
+      const planMapData = doc.data();
+      console.log("Document data:", planMapData);
+      pins.push(planMapData);
+    });
+
+    console.log("Pins:", pins);
     res.json(pins);
   } catch (error) {
     console.error("Error fetching pins:", error);
@@ -119,5 +134,25 @@ exports.deletePin = async (req, res) => {
   } catch (error) {
     console.error("Error deleting pin:", error);
     res.status(500).json({ error: "Failed to delete pin" });
+  }
+};
+
+exports.savePinOrder = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { pins } = req.body;
+
+    const batch = db.batch();
+
+    pins.forEach((pin) => {
+      const pinRef = db.collection("pins").doc(pin.id);
+      batch.update(pinRef, { order: pin.order });
+    });
+
+    await batch.commit();
+    res.json({ message: "Pin order saved successfully" });
+  } catch (error) {
+    console.error("Error saving pin order:", error);
+    res.status(500).json({ error: "Failed to save pin order" });
   }
 };

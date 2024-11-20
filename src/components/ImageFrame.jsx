@@ -1,16 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 
-const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true }) => {
+const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) => {
   const frameRef = useRef(null);
   const imageRef = useRef(null);
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const updateImageSize = () => {
       if (imageRef.current) {
         const rect = imageRef.current.getBoundingClientRect();
-        setImageSize({ width: rect.width, height: rect.height });
       }
     };
 
@@ -22,30 +20,22 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true }) => {
     };
   }, [imageRef]);
 
-  useEffect(() => {
-    if (pins.length === 0) {
-      const defaultPins = [
-        { id: 1, x: 25, y: -20, color: "#FF0000" },
-        { id: 2, x: 30, y: -50, color: "#00FF00" },
-        { id: 3, x: 50, y: -50, color: "#0000FF" },
-        { id: 4, x: 70, y: -90, color: "#FFFF00" },
-      ];
-      setPins(defaultPins);
-    }
-  }, [pins, setPins]);
-
   const updatePinPosition = (id, x, y) => {
     const rect = imageRef.current.getBoundingClientRect();
     const relativeX = (x / rect.width) * 100;
     const relativeY = (y / rect.height) * 100;
-    setPins(pins.map((pin) => (pin.id === id ? { ...pin, x: relativeX, y: relativeY } : pin)));
+    setPins(
+      pins.map((pin) =>
+        pin.id === id ? { ...pin, location: { x: relativeX, y: relativeY } } : pin
+      )
+    );
   };
 
   const getPinPosition = (pin) => {
     const rect = imageRef.current.getBoundingClientRect();
     return {
-      x: (pin.x / 100) * rect.width,
-      y: (pin.y / 100) * rect.height,
+      x: (pin.location.x / 100) * rect.width,
+      y: (pin.location.y / 100) * rect.height,
     };
   };
 
@@ -65,11 +55,11 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true }) => {
             key={pin.id}
             bounds="parent"
             disabled={!draggable}
-            position={{ x: position.x, y: position.y }}
+            defaultPosition={{ x: position.x, y: position.y }}
             onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
           >
             <div className="pin" style={{ position: "absolute" }}>
-              <MapPinIcon number={pin.id} fill={pin.color} />
+              <MapPinIcon number={pin.order} fill={pin.color || color} />
             </div>
           </Draggable>
         );
@@ -125,7 +115,7 @@ function MapPinIcon({ number, fill }) {
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.127 0"
             result="hardAlpha"
           />
           <feOffset dy="1" />

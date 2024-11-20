@@ -36,6 +36,7 @@ function Timeline() {
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [timelineId, setTimelineId] = useState(null); // Add state for timelineId
   const [taskIdToDelete, setTaskIdToDelete] = useState(null); // Add state for taskId to delete
+  const [loadingTasks, setLoadingTasks] = useState(true); // Add loading state for tasks
 
   const openDeleteModal = (taskId) => {
     setTaskIdToDelete(taskId);
@@ -63,10 +64,12 @@ function Timeline() {
     if (!timelineId) return;
 
     const fetchAndSetTasks = async () => {
+      setLoadingTasks(true); // Set loading to true before fetching tasks
       const currentUser = auth.currentUser;
       if (currentUser) {
         const tasks = await fetchTasks(timelineId);
         setTasks(tasks);
+        setLoadingTasks(false); // Set loading to false after tasks are fetched
       }
     };
 
@@ -248,7 +251,9 @@ function Timeline() {
               </div>
               <div className="tasks-list">
                 <h2 style={{ color: "var(--color-white)" }}>All Tasks</h2>
-                {tasks.length === 0 ? (
+                {loadingTasks ? (
+                  <p>Loading tasks...</p>
+                ) : tasks.length === 0 ? (
                   <p>No tasks available</p>
                 ) : (
                   tasks.map((task) => (
@@ -296,7 +301,9 @@ function Timeline() {
               </Button>
             </div>
 
-            {filteredTasks.length === 0 ? (
+            {loadingTasks ? (
+              <p>Loading tasks...</p>
+            ) : filteredTasks.length === 0 ? (
               <p>No tasks available</p>
             ) : (
               filteredTasks.map((task) => (
@@ -361,10 +368,13 @@ function Timeline() {
             </div>{" "}
             <div style={{ padding: "1rem", paddingTop: "0px" }}>
               <p className="label-item">Reminders before the event</p>
-              <p>1 day, 6:00AM 2 days, 10:00AM</p>
-
+              {tasks[currentTaskIndex].reminders.map((reminder, index) => (
+                <p key={index}>
+                  {reminder.timeBeforeEvent} {reminder.unit}, {reminder.time}
+                </p>
+              ))}
               <p className="label-item">Repetition</p>
-              <p>Every week</p>
+              <p>{tasks[currentTaskIndex].repeatEvery.unit}</p>
 
               <p className="label-item">Description</p>
               <p>{tasks[currentTaskIndex].description}</p>

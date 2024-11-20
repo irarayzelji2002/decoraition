@@ -239,3 +239,54 @@ export const fetchTaskDetails = async (userId, taskId) => {
     throw error;
   }
 };
+
+export const fetchPins = async (projectId, setPins) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.get(`/api/project/${projectId}/pins`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 200) {
+      setPins(response.data);
+    } else {
+      showToast("error", "Failed to fetch pins.");
+    }
+  } catch (error) {
+    console.error("Error fetching pins:", error);
+    showToast("error", "Failed to fetch pins");
+  }
+};
+
+export const addPinToDatabase = async (projectId, pinData) => {
+  try {
+    const pinRef = collection(db, "pins");
+    await addDoc(pinRef, {
+      projectId,
+      ...pinData,
+    });
+    showToast("success", "Pin added successfully");
+  } catch (error) {
+    console.error("Error adding pin: ", error);
+    showToast("error", "Failed to add pin");
+  }
+};
+
+export const savePinOrder = async (projectId, pins) => {
+  try {
+    const response = await fetch(`/api/projects/${projectId}/pins/order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ pins }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to save pin order");
+    }
+  } catch (error) {
+    console.error("Error saving pin order:", error);
+  }
+};

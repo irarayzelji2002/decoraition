@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -6,6 +6,8 @@ import { TouchBackend } from "react-dnd-touch-backend";
 import update from "immutability-helper";
 import TopBar from "../../components/TopBar";
 import MapPin from "./MapPin";
+import { fetchPins, savePinOrder } from "./backend/ProjectDetails";
+import { useParams } from "react-router-dom";
 
 const ItemType = {
   PIN: "pin",
@@ -41,21 +43,34 @@ function PinOrder() {
   const location = useLocation();
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
+  const { projectId } = useParams();
+  const [pins, setPins] = useState([]);
 
-  const [pins, setPins] = useState([
-    { id: 1, title: "Pin 1", pinNo: 1, color: "red" },
-    { id: 2, title: "Pin 2", pinNo: 2, color: "blue" },
-    { id: 3, title: "Pin 3", pinNo: 3, color: "green" },
-  ]);
+  useEffect(() => {
+    if (projectId) {
+      fetchPins(projectId, (fetchedPins) => {
+        const sortedPins = fetchedPins.sort((a, b) => a.order - b.order);
+        setPins(sortedPins);
+      });
+    }
+  }, [projectId]);
 
   const movePin = (fromIndex, toIndex) => {
+    const movedPin = pins[fromIndex];
     const updatedPins = update(pins, {
       $splice: [
         [fromIndex, 1],
-        [toIndex, 0, pins[fromIndex]],
+        [toIndex, 0, movedPin],
       ],
-    });
+    }).map((pin, index) => ({
+      ...pin,
+      order: index + 1,
+    }));
     setPins(updatedPins);
+  };
+
+  const handleSave = () => {
+    savePinOrder(projectId, pins);
   };
 
   const isMobile = window.innerWidth <= 768;
@@ -65,8 +80,6 @@ function PinOrder() {
       backend={isMobile ? TouchBackend : HTML5Backend}
       options={isMobile ? { enableMouseEvents: true } : undefined}
     >
-      {/* dummy */}
-
       <TopBar state={"Change pins order"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div style={{ width: "95%" }}>
         <div className="pinSpace">
@@ -76,13 +89,14 @@ function PinOrder() {
               id={pin.id}
               index={index}
               movePin={movePin}
-              title={pin.title}
+              title={pin.designName}
               editMode={true}
-              pinNo={pin.pinNo}
+              pinNo={pin.order}
               color={pin.color}
             />
           ))}
           <button className="add-item-btn">Save pins order and color</button>
+          {/* onClick={handleSave}  */}
         </div>
       </div>
     </DndProvider>

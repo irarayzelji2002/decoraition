@@ -150,6 +150,8 @@ function SelectMaskCanvas({
   const [isGeneratingMask, setIsGeneratingMask] = useState(false); // for loading
   const [statusMessage, setStatusMessage] = useState("");
   const [isChangingMask, setIsChangingMask] = useState(false);
+  const [hasCombinedMask, setHasCombinedMask] = useState(false);
+  const [option, setOption] = useState(null);
   // passed form parent:
   // - samMasks, setSamMasks
   // - maskPrompt, setMaskPrompt,
@@ -173,7 +175,6 @@ function SelectMaskCanvas({
   const [pickedColorAdd, setPickedColorAdd] = useState("var(--addMask)");
   const [brushSizeAdd, setBrushSizeAdd] = useState(40);
   const [opacityAdd, setOpacityAdd] = useState(0.5);
-  const [clickedPreviewOption, setClickedPreviewOption] = useState(null);
 
   // Canvas controls for remove mask
   const [brushModeRemove, setBrushModeRemove] = useState(true);
@@ -623,6 +624,16 @@ function SelectMaskCanvas({
   }, [selectedSamMask, combinedMask]);
 
   useEffect(() => {
+    console.log("SAM Mask change from modal1");
+    if (selectedSamMask && (samMaskModalOpen || confirmSamMaskChangeModalOpen)) {
+      console.log("SAM Mask change from modal2");
+      setSamMaskImage(selectedSamMask["mask"]);
+      setSamMaskMask(selectedSamMask["masked"]);
+      if (samDrawing) samDrawing.setNeedsRedraw(true);
+    }
+  }, [selectedSamMask]);
+
+  useEffect(() => {
     if (!maskVisibilityAdd) {
       addDrawing.redrawCanvasVisibility(false);
     } else {
@@ -1015,17 +1026,28 @@ function SelectMaskCanvas({
     console.log("select mask canvas - samMasks[0]", samMasks?.[0] ?? null);
 
     // Populate combined mask variables
-    const samMaskImage = image?.masks?.combinedMask?.samMaskImage ?? samMasks?.[0]?.mask ?? null;
+    if (image?.masks?.combinedMask?.samMaskImage && image?.masks?.combinedMask?.samMaskMask)
+      setHasCombinedMask(true);
+    else setHasCombinedMask(false);
+    const samMaskImage =
+      image?.masks?.combinedMask?.samMaskImage?.trim() || samMasks?.[0]?.mask?.trim() || null;
     const samMaskMask =
-      image?.masks?.combinedMask?.samMaskMask ??
-      samMasks?.[0]?.masked ??
+      image?.masks?.combinedMask?.samMaskMask?.trim() ||
+      samMasks?.[0]?.masked?.trim() ||
       "/img/transparent-image.png";
+    console.log("select mask canvas - samMasks?.[0]?.masked", samMasks?.[0]?.masked);
+    console.log("select mask canvas - samMasks?.[0]?.mask", samMasks?.[0]?.mask);
     setSamMaskImage(samMaskImage);
     setSamMaskMask(samMaskMask);
     if (samDrawing) samDrawing.setNeedsRedraw(true);
     console.log("select mask canvas - samMaskImage", samMaskImage);
     console.log("select mask canvas - samMaskMask", samMaskMask);
   }, [designVersion, designVersionImages]);
+
+  useEffect(() => {
+    console.log("changing - samMaskMask", samMaskMask);
+    console.log("changing - samMaskImage", samMaskImage);
+  }, [samMaskMask, samMaskImage]);
 
   useEffect(() => {
     if (showPreview && previewMask && samDrawing) {
@@ -1706,6 +1728,11 @@ function SelectMaskCanvas({
           setSelectedSamMask={setSelectedSamMask}
           setSamMaskMask={setSamMaskMask}
           isChangingMask={isChangingMask}
+          hasCombinedMask={hasCombinedMask}
+          setConfirmSamMaskChangeModalOpen={setConfirmSamMaskChangeModalOpen}
+          option={option}
+          setOption={setOption}
+          setSamMaskImage={setSamMaskImage}
         />
       )}
 
@@ -1736,6 +1763,10 @@ function SelectMaskCanvas({
           handleSelectedMask={() =>
             samDrawing ? samDrawing.actualUseSelectedMask(selectedSamMask) : {}
           }
+          closeSamMaskModal={() => setSamMaskModalOpen(false)}
+          setSelectedSamMask={setSelectedSamMask}
+          option={option}
+          setSamMaskImage={setSamMaskImage}
         />
       )}
 
@@ -2134,14 +2165,25 @@ const ClearCanvasModal = ({ isOpen, onClose, handleClear, canvas }) => {
   );
 };
 
-const ConfirmSamMaskChangeModal = ({ isOpen, onClose, handleSelectedMask }) => {
+const ConfirmSamMaskChangeModal = ({
+  isOpen,
+  onClose,
+  handleSelectedMask,
+  closeSamMaskModal,
+  setSelectedSamMask,
+  option,
+  setSamMaskImage,
+}) => {
   const onSubmit = () => {
+    setSelectedSamMask(option);
+    setSamMaskImage(option.mask);
     handleSelectedMask();
+    closeSamMaskModal();
     onClose();
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} sx={dialogStyles}>
+    <Dialog open={isOpen} onClose={onClose} sx={{ ...dialogStyles, alignItems: "center" }}>
       <DialogTitle sx={dialogTitleStyles}>
         <Typography
           variant="body1"
@@ -2153,7 +2195,7 @@ const ConfirmSamMaskChangeModal = ({ isOpen, onClose, handleSelectedMask }) => {
             whiteSpace: "normal",
           }}
         >
-          Confirm Change the generated mask
+          Confirm change of the generated mask
         </Typography>
         <IconButton
           onClick={onClose}
@@ -2172,7 +2214,7 @@ const ConfirmSamMaskChangeModal = ({ isOpen, onClose, handleSelectedMask }) => {
           the canvas.
         </Typography>
       </DialogContent>
-      <DialogActions sx={dialogActionsStyles}>
+      <DialogActions sx={{ ...dialogActionsStyles, width: "90%" }}>
         <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
           Yes
         </Button>
@@ -2205,13 +2247,21 @@ const SamMaskModal = ({
   setSelectedSamMask,
   setSamMaskMask,
   isChangingMask,
+  hasCombinedMask,
+  setConfirmSamMaskChangeModalOpen,
+  option,
+  setOption,
+  setSamMaskImage,
 }) => {
   const [initSelectedSamMask, setInitSelectedSamMask] = useState(null);
-  const [option, setOption] = useState(selectedSamMask);
 
   const onSubmit = () => {
-    setSelectedSamMask(option);
-    onClose();
+    if (hasCombinedMask) {
+      setConfirmSamMaskChangeModalOpen(true);
+    } else {
+      setSelectedSamMask(option);
+      onClose();
+    }
   };
 
   const handleClose = () => {
@@ -2221,10 +2271,12 @@ const SamMaskModal = ({
   const handleSelectOption = useCallback((option) => {
     setOption(option);
     setSamMaskMask(option.masked);
+    setSamMaskImage(option.mask);
   }, []);
 
   useEffect(() => {
     setInitSelectedSamMask(selectedSamMask);
+    setOption(selectedSamMask);
   }, []);
 
   return (

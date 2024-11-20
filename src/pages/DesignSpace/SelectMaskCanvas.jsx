@@ -539,6 +539,43 @@ function SelectMaskCanvas({
     setSamDrawing(initSamDrawing);
   }, []);
 
+  // useEffect(() => {
+  //   const handleResize = (canvasRef) => {
+  //     if (!canvasRef.current || !containerRef.current) return;
+
+  //     // Store current drawing data
+  //     const tempCanvas = document.createElement("canvas");
+  //     const tempCtx = tempCanvas.getContext("2d");
+  //     tempCanvas.width = canvasRef.current.width;
+  //     tempCanvas.height = canvasRef.current.height;
+  //     tempCtx.drawImage(canvasRef.current, 0, 0);
+
+  //     // Resize canvas
+  //     const container = containerRef.current;
+  //     const newWidth = container.offsetWidth;
+  //     const newHeight = container.offsetHeight;
+
+  //     canvasRef.current.width = newWidth;
+  //     canvasRef.current.height = newHeight;
+
+  //     // Restore drawing with proper scaling
+  //     const ctx = canvasRef.current.getContext("2d");
+  //     ctx.drawImage(tempCanvas, 0, 0, newWidth, newHeight);
+
+  //     // Trigger redraw
+  //     if (addDrawing) addDrawing.setNeedsRedraw(true);
+  //     if (removeDrawing) removeDrawing.setNeedsRedraw(true);
+  //   };
+
+  //   const handleResizeAllCanvas = () => {
+  //     handleResize(addCanvasRef);
+  //     handleResize(removeCanvasRef);
+  //   };
+
+  //   window.addEventListener("resize", handleResizeAllCanvas);
+  //   return () => window.removeEventListener("resize", handleResizeAllCanvas);
+  // }, [addDrawing, removeDrawing]);
+
   useEffect(() => {
     const clearAllCanvas = () => {
       addDrawing.clearCanvas();
@@ -571,6 +608,33 @@ function SelectMaskCanvas({
     };
     [addCanvasRef, removeCanvasRef].forEach(initCanvas);
   }, [selectedImage]);
+
+  // Resizing logic
+  // useEffect(() => {
+  //   if (
+  //     !selectedImage ||
+  //     !canvasStackRef.current ||
+  //     !addCanvasRef.current ||
+  //     !removeCanvasRef.current
+  //   )
+  //     return;
+
+  //   const updateCanvasSize = () => {
+  //     // Account for device pixel ratio for sharp rendering
+  //     const scale = window.devicePixelRatio;
+  //     console.log("window.devicePixelRatio", scale);
+  //     [(addCanvasRef, removeCanvasRef)].forEach((ref) => {
+  //       if (!ref.current) return;
+  //       // Scale context
+  //       const ctx = ref.current.getContext("2d");
+  //       ctx.scale(scale, scale);
+  //     });
+  //   };
+
+  //   updateCanvasSize();
+  //   window.addEventListener("resize", updateCanvasSize);
+  //   return () => window.removeEventListener("resize", updateCanvasSize);
+  // }, [selectedImage]);
 
   useEffect(() => {
     if (

@@ -992,6 +992,16 @@ textarea {
   /* pointing on bottom left */
 }
 
+.brush-cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  /* pointing on center */
+}
+
 /* .comment-container.reply-to-reply:before {
   content: " ";
   position: absolute;

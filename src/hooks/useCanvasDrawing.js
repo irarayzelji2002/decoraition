@@ -12,15 +12,26 @@ export const useCanvasDrawing = (canvasRef, color, opacity, brushMode) => {
     (brushSize) => {
       if (!canvasRef.current) return;
 
-      const scale = window.devicePixelRatio;
-      const scaledSize = brushSize * scale;
-      const sizeOffset = Math.max(0, -1.1 * brushSize + 83);
-      const svgWidth = brushSize + sizeOffset;
+      // Create cursor div
+      let cursor = document.querySelector(".brush-cursor");
+      if (!cursor) {
+        cursor = document.createElement("div");
+        cursor.className = "brush-cursor";
+        document.body.appendChild(cursor);
+      }
 
-      const svgCursor = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgWidth}" viewBox="-10 -10 84 84">
+      // Create SVG for brush cursor
+      const zoomLevel = window.devicePixelRatio;
+      const scaledBrushSize = brushSize * zoomLevel;
+      const strokeWidth = 4;
+      const shadowBlur = 5;
+      const padding = Math.max(strokeWidth, shadowBlur * 2);
+      const circleRadius = scaledBrushSize / 2 - strokeWidth / 2;
+      const svgSize = scaledBrushSize + padding * 2;
+      cursor.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${svgSize}" height="${svgSize}" viewBox="0 0 ${svgSize} ${svgSize}">
         <defs>
-          <filter id="dropshadow" x="-30%" y="-30%" width="160%" height="160%">
+          <filter id="dropshadow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
             <feOffset dx="0" dy="0" result="offsetblur"/>
             <feFlood flood-color="rgba(0, 0, 0, 0.3)"/>
@@ -31,16 +42,46 @@ export const useCanvasDrawing = (canvasRef, color, opacity, brushMode) => {
             </feMerge>
           </filter>
         </defs>
-        <circle cx="32" cy="32" r="${brushSize / 2}" 
+        <circle cx="${svgSize / 2}" cy="${svgSize / 2}" r="${circleRadius}" 
           fill="rgba(255,255,255,0.5)" 
           stroke="rgb(255,255,255)" 
           stroke-width="4" filter="url(#dropshadow)"/>
       </svg>`;
 
-      const svgDataUrl = `data:image/svg+xml;base64,${btoa(
-        unescape(encodeURIComponent(svgCursor))
-      )}`;
-      canvasRef.current.style.cursor = `url('${svgDataUrl}') ${svgWidth / 2} ${svgWidth / 2}, auto`;
+      // Add event listeners to canvas
+      const updateCursor = (e) => {
+        cursor.style.display = "block";
+        cursor.style.left = `${e.clientX}px`;
+        cursor.style.top = `${e.clientY}px`;
+        cursor.style.marginTop = `-${brushSize / 2 - 2}px`;
+        cursor.style.marginLeft = `-${brushSize / 2 - 2}px`;
+      };
+
+      const handleMouseEnter = () => {
+        cursor.style.display = "block";
+        canvasRef.current.style.cursor = "none";
+      };
+
+      const handleMouseLeave = () => {
+        cursor.style.display = "none";
+        canvasRef.current.style.cursor = "auto";
+      };
+
+      canvasRef.current.addEventListener("mousemove", updateCursor);
+      canvasRef.current.addEventListener("mouseenter", handleMouseEnter);
+      canvasRef.current.addEventListener("mouseleave", handleMouseLeave);
+
+      // Cleanup function
+      return () => {
+        if (canvasRef.current) {
+          canvasRef.current.removeEventListener("mousemove", updateCursor);
+          canvasRef.current.removeEventListener("mouseenter", handleMouseEnter);
+          canvasRef.current.removeEventListener("mouseleave", handleMouseLeave);
+        }
+        if (cursor && document.body.contains(cursor)) {
+          document.body.removeChild(cursor);
+        }
+      };
     },
     [canvasRef]
   );
@@ -73,19 +114,21 @@ export const useCanvasDrawing = (canvasRef, color, opacity, brushMode) => {
 
       const context = canvasRef.current.getContext("2d");
       const rect = canvasRef.current.getBoundingClientRect();
-      const scaleX = canvasRef.current.width / rect.width;
-      const scaleY = canvasRef.current.height / rect.height;
+      const zoomLevel = window.devicePixelRatio;
+      const scaleX = (canvasRef.current.width / rect.width) * zoomLevel;
+      const scaleY = (canvasRef.current.height / rect.height) * zoomLevel;
       const x = (event.clientX - rect.left) * scaleX;
       const y = (event.clientY - rect.top) * scaleY;
 
       const strokePath = new Path2D();
       strokePath.arc(x, y, brushSize / 2, 0, 2 * Math.PI);
+      const scaledBrushSize = brushSize * zoomLevel;
 
       if (brushMode) {
         let isErased = false;
         for (let i = 0; i < erasedRegions.length; i++) {
           const erasedRegion = erasedRegions[i];
-          const checkPoints = getBrushArcPoints(x, y, brushSize / 2);
+          const checkPoints = getBrushArcPoints(x, y, scaledBrushSize / 2);
           for (const point of checkPoints) {
             if (context.isPointInPath(erasedRegion, point.x, point.y)) {
               isErased = true;

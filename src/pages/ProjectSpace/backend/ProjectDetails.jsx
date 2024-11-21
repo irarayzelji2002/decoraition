@@ -310,3 +310,22 @@ export const deleteProjectPin = async (projectId, pinId) => {
     showToast("error", "Failed to delete pin");
   }
 };
+
+export const updatePinLocation = async (projectId, pinId, location) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    await axios.put(
+      `/api/project/${projectId}/pin/${pinId}`,
+      { location },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    showToast("success", "Pin location updated successfully");
+  } catch (error) {
+    console.error("Error updating pin location:", error);
+    showToast("error", "Failed to update pin location");
+  }
+};

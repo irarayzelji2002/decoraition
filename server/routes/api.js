@@ -205,6 +205,7 @@ router.get("/project/:projectId/designs", authenticateUser, projectController.fe
 router.get("/project/:projectId/pins", authenticateUser, planMapController.getPins);
 router.post("/projects/:projectId/pins/order", authenticateUser, planMapController.savePinOrder);
 router.delete("/project/:projectId/pin/:pinId", authenticateUser, planMapController.deletePin);
+router.put("/project/:projectId/pin/:pinId", authenticateUser, planMapController.updatePin);
 
 // Network check
 router.get("/health-check", (req, res) => {

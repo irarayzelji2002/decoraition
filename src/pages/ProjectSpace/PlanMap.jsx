@@ -74,7 +74,7 @@ function PlanMap() {
   };
   const navigateToAdjustPin = () => {
     navigate(`/adjustPin/${projectId}`, {
-      state: { navigateFrom: navigateFrom },
+      state: { navigateFrom: navigateFrom, projectId: projectId },
     });
   };
 

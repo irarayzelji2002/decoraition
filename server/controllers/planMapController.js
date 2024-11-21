@@ -112,10 +112,10 @@ exports.getPins = async (req, res) => {
 // Update Pin
 exports.updatePin = async (req, res) => {
   try {
-    const { planMapId, pinId } = req.params;
+    const { pinId } = req.params;
     const updateData = req.body;
     updateData.updatedAt = new Date();
-    await db.collection("planMaps").doc(planMapId).collection("pins").doc(pinId).update(updateData);
+    await db.collection("pins").doc(pinId).update(updateData);
     res.json({ message: "Pin updated successfully" });
   } catch (error) {
     console.error("Error updating pin:", error);

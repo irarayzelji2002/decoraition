@@ -252,11 +252,9 @@ export const fetchPins = async (projectId, setPins) => {
     if (response.status === 200) {
       setPins(response.data);
     } else {
-      showToast("error", "Failed to fetch pins.");
     }
   } catch (error) {
     console.error("Error fetching pins:", error);
-    showToast("error", "Failed to fetch pins");
   }
 };
 
@@ -329,5 +327,20 @@ export const updatePinLocation = async (projectId, pinId, location) => {
   } catch (error) {
     console.error("Error updating pin location:", error);
     showToast("error", "Failed to update pin location");
+  }
+};
+
+export const updatePinInDatabase = async (projectId, pinId, pinData) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    await axios.put(`/api/project/${projectId}/pin/${pinId}`, pinData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    showToast("success", "Pin updated successfully");
+  } catch (error) {
+    console.error("Error updating pin: ", error);
+    showToast("error", "Failed to update pin");
   }
 };

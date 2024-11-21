@@ -78,6 +78,13 @@ function PlanMap() {
     });
   };
 
+  const navigateToEditPin = (pinId) => {
+    const pinToEdit = pins.find((pin) => pin.id === pinId);
+    navigate("/addPin/", {
+      state: { navigateFrom: navigateFrom, projectId: projectId, pinToEdit: pinToEdit },
+    });
+  };
+
   const handleStyleRefModalOpen = () => {
     setStyleRefModalOpen(true);
   };
@@ -171,6 +178,7 @@ function PlanMap() {
                       pinNo={design.order}
                       pinId={design.id}
                       deletePin={() => deletePin(design.id)} // Pass design.id to deletePin
+                      editPin={() => navigateToEditPin(design.id)} // Pass design.id to editPin
                     />
                   </>
                 );

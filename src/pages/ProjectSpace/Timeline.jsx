@@ -103,7 +103,7 @@ function Timeline() {
     if (currentUser && taskIdToDelete) {
       try {
         await deleteTask(currentUser.uid, projectId, taskIdToDelete);
-        console.log("Task deleted successfully"); // Debugging statement
+        showToast("success", "Task deleted successfully"); // Debugging statement
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskIdToDelete));
         closeDeleteModal();
       } catch (error) {

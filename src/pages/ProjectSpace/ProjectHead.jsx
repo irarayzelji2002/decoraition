@@ -225,13 +225,10 @@ function ProjectHead({ project }) {
     if (!isEditingName) {
       return;
     }
-    if (project.projectName === newName.trim()) {
-      setIsEditingName(false);
-      return;
-    }
-    const result = await handleNameChange(project.id, newName, user, userDoc, setIsEditingName);
+    const result = await handleRename(newName);
     if (!result.success) showToast("error", result.message);
     else showToast("success", result.message);
+    setIsEditingName(false);
   };
 
   // Add Collaborators Modal Action
@@ -309,8 +306,7 @@ function ProjectHead({ project }) {
     }
     const result = await handleNameChange(projectId, newName, user, userDoc, setIsEditingName);
     if (result.success) {
-      handleClose();
-      handleCloseRenameModal();
+      setNewName(newName);
       return { success: true, message: "Project name updated successfully" };
     } else {
       return { success: false, message: "Failed to update project name" };
@@ -362,46 +358,54 @@ function ProjectHead({ project }) {
         </IconButton>
         <div className="design-name-section">
           {isEditingName ? (
-            <TextField
-              placeholder="Project Name"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  e.target.blur();
-                }
-              }}
-              autoFocus
-              onBlur={handleBlur}
-              variant="outlined"
-              className="headTitleInput headTitle"
-              fullWidth
-              sx={{
-                backgroundColor: "transparent",
-                input: { color: "var(--color-white)" },
-                padding: "0px",
-                marginTop: "3px",
-                "& .MuiOutlinedInput-root": {
-                  fontSize: "1.5rem",
-                  fontWeight: "bold",
-                  padding: "8px 15px",
-                  borderRadius: "8px",
-                  "& fieldset": {
-                    borderColor: "var( --borderInput)",
+            <>
+              <TextField
+                placeholder="Project Name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.target.blur();
+                  }
+                }}
+                autoFocus
+                onBlur={handleBlur}
+                variant="outlined"
+                className="headTitleInput headTitle"
+                fullWidth
+                inputProps={{ maxLength: 20 }}
+                sx={{
+                  backgroundColor: "transparent",
+                  input: { color: "var(--color-white)" },
+                  padding: "0px",
+                  marginTop: "3px",
+                  "& .MuiOutlinedInput-root": {
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    padding: "8px 15px",
+                    borderRadius: "8px",
+                    "& fieldset": {
+                      borderColor: "var( --borderInput)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "var( --borderInput)",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "var(--borderInputBrighter)",
+                    },
+                    "& input": {
+                      padding: 0,
+                    },
                   },
-                  "&:hover fieldset": {
-                    borderColor: "var( --borderInput)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "var(--borderInputBrighter)",
-                  },
-                  "& input": {
-                    padding: 0,
-                  },
-                },
-              }}
-            />
+                }}
+              />
+              {newName?.length >= 20 && (
+                <div style={{ color: "var(--errorText)", fontSize: "0.8rem", marginTop: "5px" }}>
+                  Character limit reached!
+                </div>
+              )}
+            </>
           ) : (
             <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
               {project?.projectName || "Untitled Project"}

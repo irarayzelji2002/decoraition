@@ -3,16 +3,16 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "../../css/editEvent.css";
 import TopBar from "../../components/TopBar";
 import { AddIcon, EditIcon, DeleteIcon } from "../../components/svg/DefaultMenuIcons.jsx";
-import { saveData, updateTask, createEvent } from "./backend/ProjectDetails";
+import { updateTask, createEvent } from "./backend/ProjectDetails";
 import { auth } from "../../firebase";
 import { CustomSwitch } from "./ProjectSettings.jsx";
-import { Box, Modal, TextField, Button } from "@mui/material";
+import { Box, Modal } from "@mui/material";
 import RepeatSelector from "./RepeatSelector.jsx";
 import { ThemeProvider } from "@mui/system";
 import { theme } from "./ProjectSettings.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import ReminderSpecific from "./ReminderSpecific";
-import { Typography, IconButton, InputBase, Select, MenuItem } from "@mui/material";
+import { Typography, IconButton } from "@mui/material";
 import DialogTitle from "@mui/material/DialogTitle";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { fetchTaskDetails } from "./backend/ProjectDetails";
@@ -34,6 +34,7 @@ function EditEvent() {
   const [allowRepeat, setAllowRepeat] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
+  const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(false);
 
   const initialFormData = {
     taskName: "",
@@ -208,6 +209,12 @@ function EditEvent() {
     }
   };
 
+  const handleSaveWithLoading = async () => {
+    setIsSaveButtonDisabled(true);
+    await handleSave();
+    setIsSaveButtonDisabled(false);
+  };
+
   const handleCancel = () => {
     setOpenModal(false);
   };
@@ -328,7 +335,15 @@ function EditEvent() {
               ))}
             </div>
 
-            <button className="edit-event-button" onClick={handleSave}>
+            <button
+              className="edit-event-button"
+              onClick={handleSaveWithLoading}
+              disabled={isSaveButtonDisabled}
+              style={{
+                opacity: isSaveButtonDisabled ? "0.5" : "1",
+                cursor: isSaveButtonDisabled ? "default" : "pointer",
+              }}
+            >
               Save event
             </button>
           </div>

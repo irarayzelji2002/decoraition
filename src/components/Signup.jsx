@@ -70,6 +70,7 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -83,10 +84,17 @@ const Signup = () => {
     let formErrors = {};
 
     if (!firstName.trim()) formErrors.firstName = "First name is required";
+    else if (firstName.trim().length > 50)
+      formErrors.firstName = "First name cannot exceed 50 characters";
     if (!lastName.trim()) formErrors.lastName = "Last name is required";
+    else if (lastName.trim().length > 50)
+      formErrors.lastName = "Last name cannot exceed 50 characters";
     if (!username.trim()) formErrors.username = "Username is required";
+    else if (username.trim().length > 20)
+      formErrors.username = "Username cannot exceed 20 characters";
     else if (/\s/.test(username.trim())) formErrors.username = "No spaces allowed";
     if (!email.trim()) formErrors.email = "Email is required";
+    else if (email.trim().length > 254) formErrors.email = "Email cannot exceed 254 characters";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) formErrors.email = "Invalid email format";
     if (!password) formErrors.password = "Password is required";
     else if (password.length < 6)
@@ -102,10 +110,12 @@ const Signup = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const formErrors = handleValidation();
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
+      setIsSubmitting(false);
       return;
     }
 
@@ -135,6 +145,8 @@ const Signup = () => {
       } else {
         showToast("error", errMessage || "An error occurred during registration");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -163,9 +175,11 @@ const Signup = () => {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               error={!!errors.firstName}
-              helperText={errors.firstName}
+              helperText={
+                errors.firstName || (firstName.length >= 50 ? "Character limit reached!" : "")
+              }
+              inputProps={{ ...textFieldInputProps, maxLength: 50 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
-              inputProps={textFieldInputProps}
             />
             <span className="formLabels">
               Last name
@@ -179,9 +193,11 @@ const Signup = () => {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               error={!!errors.lastName}
-              helperText={errors.lastName}
+              helperText={
+                errors.lastName || (lastName.length >= 50 ? "Character limit reached!" : "")
+              }
+              inputProps={{ ...textFieldInputProps, maxLength: 50 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
-              inputProps={textFieldInputProps}
             />
             <span className="formLabels">
               Username
@@ -195,9 +211,11 @@ const Signup = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               error={!!errors.username}
-              helperText={errors.username}
+              helperText={
+                errors.username || (username.length >= 20 ? "Character limit reached!" : "")
+              }
+              inputProps={{ ...textFieldInputProps, maxLength: 20 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
-              inputProps={textFieldInputProps}
             />
             <span className="formLabels">
               Email address
@@ -211,9 +229,9 @@ const Signup = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               error={!!errors.email}
-              helperText={errors.email}
+              helperText={errors.email || (email.length >= 254 ? "Character limit reached!" : "")}
+              inputProps={{ ...textFieldInputProps, maxLength: 254 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
-              inputProps={textFieldInputProps}
             />
 
             <span className="formLabels">
@@ -233,7 +251,9 @@ const Signup = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={!!errors.password}
-              helperText={errors.password}
+              helperText={
+                errors.password || (password.length >= 50 ? "Character limit reached!" : "")
+              }
               InputProps={{
                 style: { color: "var(--color-white)" },
                 endAdornment: (
@@ -252,6 +272,7 @@ const Signup = () => {
                     </IconButton>
                   </InputAdornment>
                 ),
+                maxLength: 50,
               }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
@@ -269,7 +290,10 @@ const Signup = () => {
               value={confirmPassword} // Changed from password to confirmPassword
               onChange={(e) => setConfirmPassword(e.target.value)} // Update handler
               error={!!errors.confirmPassword} // Updated error reference
-              helperText={errors.confirmPassword} // Updated helper text reference
+              helperText={
+                errors.confirmPassword ||
+                (confirmPassword.length >= 50 ? "Character limit reached!" : "")
+              } // Updated helper text reference
               InputProps={{
                 style: { color: "var(--color-white)" },
                 endAdornment: (
@@ -288,6 +312,7 @@ const Signup = () => {
                     </IconButton>
                   </InputAdornment>
                 ),
+                maxLength: 50,
               }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
@@ -301,7 +326,11 @@ const Signup = () => {
                 borderRadius: "20px",
                 textTransform: "none",
                 fontWeight: "bold",
+                opacity: isSubmitting ? "0.5" : "1",
+                cursor: isSubmitting ? "default" : "pointer",
+                color: "var(--always-white)", // Ensure text color remains white
               }}
+              disabled={isSubmitting}
             >
               Register
             </Button>

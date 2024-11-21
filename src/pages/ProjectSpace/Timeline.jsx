@@ -103,7 +103,7 @@ function Timeline() {
     if (currentUser && taskIdToDelete) {
       try {
         await deleteTask(currentUser.uid, projectId, taskIdToDelete);
-        console.log("Task deleted successfully"); // Debugging statement
+        showToast("success", "Task deleted successfully"); // Debugging statement
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskIdToDelete));
         closeDeleteModal();
       } catch (error) {
@@ -120,6 +120,12 @@ function Timeline() {
   };
 
   const handleAddEventClick = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to midnight to compare only dates
+    if (date < today) {
+      showToast("error", "Cannot add event for a past date!");
+      return;
+    }
     const formattedDate = new Date(date);
     formattedDate.setDate(formattedDate.getDate() + 1);
     const formattedDateString = formattedDate.toISOString().split("T")[0];

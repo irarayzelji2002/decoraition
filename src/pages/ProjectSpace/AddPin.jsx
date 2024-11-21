@@ -15,8 +15,11 @@ import { ChromePicker } from "react-color";
 import Button from "@mui/material/Button";
 import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
 import ImageFrame from "../../components/ImageFrame";
-import { fetchProjectDesigns, addPinToDatabase, fetchPins } from "./backend/ProjectDetails";
-import { CurrencyExchange } from "@mui/icons-material";
+import {
+  fetchProjectDesigns,
+  addPinToDatabase,
+  updatePinInDatabase,
+} from "./backend/ProjectDetails";
 
 function AddPin({ EditMode }) {
   const location = useLocation();
@@ -30,14 +33,20 @@ function AddPin({ EditMode }) {
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [pins, setPins] = useState([]);
   const [designs, setDesigns] = useState([]);
+  const pinToEdit = location.state?.pinToEdit || null;
 
   useEffect(() => {
     if (projectId) {
       fetchProjectDesigns(projectId, setDesigns);
-      // fetchPins(projectId, setPins); // Fetch pins from the database
-      addPin(); // Add a new pin
+      if (pinToEdit) {
+        setPins([pinToEdit]);
+        setSelectedColor(pinToEdit.color);
+        setOwner(pinToEdit.designId);
+      } else {
+        addPin();
+      }
     }
-  }, [projectId]);
+  }, [projectId, pinToEdit]);
 
   const handleColorChange = (color) => {
     setSelectedColor(color.hex); // Update the selected color
@@ -79,9 +88,14 @@ function AddPin({ EditMode }) {
         designName: currentPin.designName,
         location: { x: currentPin.location.x, y: currentPin.location.y },
         color: currentPin.color,
-        order: currentPin.id,
+        // Remove order property when updating
+        ...(pinToEdit ? {} : { order: currentPin.id }),
       };
-      await addPinToDatabase(projectId, pinData);
+      if (pinToEdit) {
+        await updatePinInDatabase(projectId, pinToEdit.id, pinData);
+      } else {
+        await addPinToDatabase(projectId, pinData);
+      }
       navigate(`/planMap/${projectId}`);
     }
   };

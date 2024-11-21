@@ -730,7 +730,6 @@ textarea {
   justify-content: center;
   align-items: center;
   transition: opacity 0.3s ease;
-  cursor: pointer;
 }
 
 /* Flex container to hold both text and button */

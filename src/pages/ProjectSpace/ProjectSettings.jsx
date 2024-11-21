@@ -112,6 +112,7 @@ const ProjectSettings = () => {
   const [activeTab, setActiveTab] = useState("Project"); // Default active tab
   const [loading, setLoading] = useState(true);
   const [allowEdit, setAllowEdit] = useState(false);
+  const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(false);
 
   // Effect to set the project once userProjects are loaded
   useEffect(() => {
@@ -322,6 +323,12 @@ const ProjectSettings = () => {
     }
   };
 
+  const handleSaveProjectSettingsWithLoading = async () => {
+    setIsSaveButtonDisabled(true);
+    await handleSaveProjectSettings();
+    setIsSaveButtonDisabled(false);
+  };
+
   if (loading) {
     return <LoadingPage />;
   }
@@ -469,17 +476,20 @@ const ProjectSettings = () => {
             >
               <Button
                 variant="contained"
-                onClick={handleSaveProjectSettings}
+                onClick={handleSaveProjectSettingsWithLoading}
+                disabled={isSaveButtonDisabled}
                 sx={{
                   background: "var(--gradientButton)",
                   borderRadius: "20px",
-                  color: "var(--always-white)",
+                  color: "var(--always-white) !important",
                   fontWeight: "bold",
                   textTransform: "none",
                   width: "230px",
                   margin: "0px 10px",
+                  opacity: isSaveButtonDisabled ? "0.5" : "1",
+                  cursor: isSaveButtonDisabled ? "default" : "pointer",
                   "&:hover": {
-                    background: "var(--gradientButtonHover)",
+                    background: !isSaveButtonDisabled && "var(--gradientButtonHover)",
                   },
                 }}
               >

@@ -9,6 +9,7 @@ import { query, where, setDoc, deleteDoc, getDocs } from "firebase/firestore";
 import { CheckCircle } from "@mui/icons-material";
 import { DeleteIcon } from "../../../components/svg/DefaultMenuIcons";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 // Adjust the import path as necessary
 
@@ -24,7 +25,6 @@ export const fetchProjectDesigns = async (projectId, setDesigns) => {
     });
 
     if (response.status === 200) {
-      console.log(`Fetched designs: ${JSON.stringify(response.data)}`); // Debug log
       setDesigns(response.data);
     } else {
       showToast("error", "Failed to fetch project designs.");
@@ -252,11 +252,9 @@ export const fetchPins = async (projectId, setPins) => {
     if (response.status === 200) {
       setPins(response.data);
     } else {
-      showToast("error", "Failed to fetch pins.");
     }
   } catch (error) {
     console.error("Error fetching pins:", error);
-    showToast("error", "Failed to fetch pins");
   }
 };
 
@@ -276,18 +274,74 @@ export const addPinToDatabase = async (projectId, pinData) => {
 
 export const savePinOrder = async (projectId, pins) => {
   try {
-    const response = await fetch(`/api/projects/${projectId}/pins/order`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ pins }),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to save pin order");
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.post(
+      `/api/project/${projectId}/pins/order`,
+      { pins },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      showToast("Saved Pin");
     }
   } catch (error) {
     console.error("Error saving pin order:", error);
+  }
+};
+
+export const deleteProjectPin = async (projectId, pinId) => {
+  try {
+    console.log(`Deleting pin ${pinId} from project ${projectId}`); // Debug log
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.delete(`/api/project/${projectId}/pin/${pinId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.status === 200) {
+      showToast("success", "Pin deleted successfully");
+    } else {
+      showToast("error", "Failed to delete pin");
+    }
+  } catch (error) {
+    console.error("Error deleting pin:", error);
+    showToast("error", "Failed to delete pin");
+  }
+};
+
+export const updatePinLocation = async (projectId, pinId, location) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    await axios.put(
+      `/api/project/${projectId}/pin/${pinId}`,
+      { location },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Error updating pin location:", error);
+    showToast("error", "Failed to update pin location");
+  }
+};
+
+export const updatePinInDatabase = async (projectId, pinId, pinData) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    await axios.put(`/api/project/${projectId}/pin/${pinId}`, pinData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    showToast("success", "Pin updated successfully");
+  } catch (error) {
+    console.error("Error updating pin: ", error);
+    showToast("error", "Failed to update pin");
   }
 };
 

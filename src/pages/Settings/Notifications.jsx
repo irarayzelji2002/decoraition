@@ -41,7 +41,7 @@ const theme = createTheme({
   },
 });
 
-export default function Notifications() {
+export default function Notifications({ onCancel }) {
   const { user, userDoc } = useSharedProps();
   const [allowNotif, setAllowNotif] = useState(userDoc?.notifSettings?.allowNotif ?? true);
   const [deleteNotif, setDeleteNotif] = useState(userDoc?.notifSettings?.deleteNotif ?? true);
@@ -73,6 +73,7 @@ export default function Notifications() {
     deletedProject: userDoc?.notifSettings?.deletedProject ?? false,
     changeRoleInProject: userDoc?.notifSettings?.changeRoleInProject ?? false,
   });
+  const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(false);
 
   useEffect(() => {
     if (userDoc) {
@@ -178,6 +179,12 @@ export default function Notifications() {
       console.error("Error updating notification settings:", error.response?.data || error.message);
       showToast("error", "Error updating notification settings. Please try again.");
     }
+  };
+
+  const handleSaveChangesWithLoading = async () => {
+    setIsSaveButtonDisabled(true);
+    await handleSaveChanges();
+    setIsSaveButtonDisabled(false);
   };
 
   return (
@@ -568,15 +575,22 @@ export default function Notifications() {
           >
             <Button
               fullWidth
-              sx={{ ...gradientButtonStyles, height: "fit-content" }}
-              onClick={handleSaveChanges}
+              sx={{
+                ...gradientButtonStyles,
+                height: "fit-content",
+                opacity: isSaveButtonDisabled ? "0.5" : "1",
+                cursor: isSaveButtonDisabled ? "default" : "pointer",
+                color: "var(--always-white) !important",
+              }}
+              onClick={handleSaveChangesWithLoading}
+              disabled={isSaveButtonDisabled}
             >
               Save Settings
             </Button>
             <Button
               fullWidth
               variant="contained"
-              onClick={() => {}}
+              onClick={onCancel}
               sx={{ ...outlinedButtonStyles, height: "fit-content" }}
               onMouseOver={(e) =>
                 (e.target.style.backgroundImage =

@@ -25,7 +25,12 @@ export default function SelectSmall({
           IconComponent={(props) => (
             <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
           )}
-          sx={selectStyles}
+          sx={{
+            ...selectStyles,
+            "& .MuiInputBase-input": {
+              WebkitTextFillColor: sortBy === "none" ? "var(--greyText)" : "var(--color-white)",
+            },
+          }}
           MenuProps={{
             PaperProps: {
               sx: {
@@ -84,7 +89,12 @@ export default function SelectSmall({
           IconComponent={(props) => (
             <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
           )}
-          sx={selectStyles}
+          sx={{
+            ...selectStyles,
+            "& .MuiInputBase-input": {
+              WebkitTextFillColor: order === "none" ? "var(--greyText)" : "var(--color-white)",
+            },
+          }}
           MenuProps={{
             PaperProps: {
               sx: {

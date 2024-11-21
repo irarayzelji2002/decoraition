@@ -219,6 +219,10 @@
 
 @media (max-width: 768px) {
   .scrollable-div {
-    justify-content: start;
+    /* justify-content: start; */
+  }
+  .dropdown-container {
+    margin-bottom: 15px;
+    margin-top: 4px;
   }
 }

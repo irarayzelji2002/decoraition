@@ -316,7 +316,7 @@ export default function SeeAllProjects() {
                   view === 0 ? (
                     <div className="layout">
                       {displayedProjects.map((project) => (
-                        <div key={project.id} style={{ width: "100%" }}>
+                        <div key={project.id} className="layoutBox">
                           <ProjectOptionsHome
                             id={project.id}
                             name={project.projectName}

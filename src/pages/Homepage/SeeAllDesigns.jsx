@@ -298,10 +298,7 @@ export default function SeeAllDesigns() {
                   view === 0 ? (
                     <div className="layout">
                       {displayedDesigns.map((design) => (
-                        <div
-                          key={design.id}
-                          style={{ width: "100%", display: "flex", justifyContent: "center" }}
-                        >
+                        <div key={design.id} className="layoutBox">
                           <DesignIcon
                             id={design.id}
                             name={design.designName}

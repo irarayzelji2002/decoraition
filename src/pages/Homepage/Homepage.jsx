@@ -412,10 +412,7 @@ function Homepage() {
                   viewForDesigns === 0 ? (
                     <div className="layout">
                       {filteredDesigns.slice(0, 6 + numToShowMoreDesign).map((design) => (
-                        <div
-                          key={design.id}
-                          style={{ width: "100%", display: "flex", justifyContent: "center" }}
-                        >
+                        <div key={design.id} className="layoutBox">
                           <DesignIcon
                             id={design.id}
                             name={design.designName}

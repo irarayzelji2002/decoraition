@@ -8,7 +8,15 @@ import { useState, useEffect } from "react";
 import { ChromePicker } from "react-color";
 import SimpleDeleteConfirmation from "../../components/SimpleDeleteConfirmation";
 
-const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor, pinId, deletePin }) => {
+const MapPin = ({
+  title = "Untitled",
+  editMode = false,
+  pinNo,
+  pinColor,
+  pinId,
+  deletePin,
+  editPin,
+}) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [value, setValue] = useState("#ffffff");
   const [textColor, setTextColor] = useState("#000000");
@@ -133,7 +141,7 @@ const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor, pinId, 
               <div aria-label="delete">
                 <ExportIcon />
               </div>
-              <div aria-label="delete">
+              <div aria-label="edit" onClick={editPin}>
                 <EditPen />
               </div>
 

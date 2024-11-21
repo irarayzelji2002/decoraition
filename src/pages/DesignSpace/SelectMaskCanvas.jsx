@@ -154,6 +154,9 @@ function SelectMaskCanvas({
   const [isChangingMask, setIsChangingMask] = useState(false);
   const [hasCombinedMask, setHasCombinedMask] = useState(false);
   const [option, setOption] = useState(null);
+  const [isGenerateMaskBtnDisabled, setIsGenerateMaskBtnDisabled] = useState(false);
+  const [isPreviewMaskBtnDisabled, setIsPreviewMaskBtnDisabled] = useState(false);
+  const [isApplyMaskBtnDisabled, setIsApplyMaskBtnDisabled] = useState(false);
   // passed form parent:
   // - samMasks, setSamMasks
   // - maskPrompt, setMaskPrompt,
@@ -831,6 +834,7 @@ function SelectMaskCanvas({
   };
 
   const handleGenerateMask = async () => {
+    setIsGenerateMaskBtnDisabled(true);
     setErrors((prev) => ({ ...prev, maskPrompt: "", initImage: "" }));
     setCombinedMask(null);
     setPreviewMask(null);
@@ -923,6 +927,7 @@ function SelectMaskCanvas({
     } finally {
       setIsGeneratingMask(false);
       setStatusMessage("");
+      setIsGenerateMaskBtnDisabled(false);
     }
   };
 
@@ -940,6 +945,7 @@ function SelectMaskCanvas({
 
   const handlePreviewMask = async () => {
     try {
+      setIsPreviewMaskBtnDisabled(true);
       await setShowPreview(true);
       const masks = await validatePreviewMask();
       if (!masks) {
@@ -981,10 +987,12 @@ function SelectMaskCanvas({
     } finally {
       setIsPreviewingMask(false);
       setStatusMessage("");
+      setIsPreviewMaskBtnDisabled(false);
     }
   };
 
   const handleApplyMask = async () => {
+    setIsApplyMaskBtnDisabled(true);
     await setShowPreview(true);
     if (!validateApplyMask) return;
     const masks = await validateApplyMask();
@@ -1072,6 +1080,7 @@ function SelectMaskCanvas({
     } finally {
       setIsPreviewingMask(false);
       setStatusMessage("");
+      setIsApplyMaskBtnDisabled(false);
     }
   };
 
@@ -1172,6 +1181,7 @@ function SelectMaskCanvas({
             <Button
               variant="contained"
               onClick={handleGenerateMask}
+              disabled={isGenerateMaskBtnDisabled}
               sx={{
                 ...gradientButtonStyles,
                 minWidth: "133px",
@@ -1179,6 +1189,11 @@ function SelectMaskCanvas({
                 borderRadius: "0px 8px 8px 0px",
                 marginLeft: "-145px !important",
                 marginTop: "2.5px !important",
+                opacity: isGenerateMaskBtnDisabled ? "0.5" : "1",
+                cursor: isGenerateMaskBtnDisabled ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: !isGenerateMaskBtnDisabled && "var(--gradientButtonHover)",
+                },
                 "@media (max-width: 600px)": {
                   borderRadius: "35px",
                   // marginLeft: "0px !important",
@@ -1691,8 +1706,14 @@ function SelectMaskCanvas({
                 }}
                 sx={{
                   ...gradientButtonStyles,
-                  width: "125px",
+                  width: "128px",
                   borderRadius: "8px",
+                  padding: "4px 16px 8px 12px",
+                  opacity: isPreviewMaskBtnDisabled ? "0.5" : "1",
+                  cursor: isPreviewMaskBtnDisabled ? "default" : "pointer",
+                  "&:hover": {
+                    backgroundImage: !isPreviewMaskBtnDisabled && "var(--gradientButtonHover)",
+                  },
                 }}
               >
                 Preview mask
@@ -1768,10 +1789,17 @@ function SelectMaskCanvas({
                     setShowPreview(true);
                     handleApplyMask();
                   }}
+                  disabled={isApplyMaskBtnDisabled}
                   sx={{
                     ...gradientButtonStyles,
-                    width: "125px",
+                    width: "128px",
                     borderRadius: "8px",
+                    padding: "4px 16px 8px 12px",
+                    opacity: isApplyMaskBtnDisabled ? "0.5" : "1",
+                    cursor: isApplyMaskBtnDisabled ? "default" : "pointer",
+                    "&:hover": {
+                      backgroundImage: !isApplyMaskBtnDisabled && "var(--gradientButtonHover)",
+                    },
                   }}
                 >
                   Apply mask
@@ -1915,7 +1943,7 @@ const ToggleButton = ({
               <span className="toggleButtonTextLabel">{label}</span>
               <span
                 className="toggleButtonTextValue"
-                style={{ marginTop: isOneLine ? "-6px" : "" }}
+                style={{ marginTop: isOneLine ? "-4px" : "" }}
               >
                 {valuesMap[value]?.label || ""}
               </span>
@@ -1927,7 +1955,7 @@ const ToggleButton = ({
         <div className="toggleButtonContent">
           <div className="toggleButtonText">
             <span className="toggleButtonTextLabel">{label}</span>
-            <span className="toggleButtonTextValue" style={{ marginTop: isOneLine ? "-6px" : "" }}>
+            <span className="toggleButtonTextValue" style={{ marginTop: isOneLine ? "-4px" : "" }}>
               {valuesMap[value]?.label || ""}
             </span>
           </div>

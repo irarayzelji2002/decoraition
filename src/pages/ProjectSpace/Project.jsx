@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { onSnapshot, doc, getDoc } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { Paper, IconButton, InputBase, List } from "@mui/material";
+import { getAuth } from "firebase/auth";
+import { Paper, IconButton, InputBase, Button } from "@mui/material";
 import {
   Search as SearchIcon,
   CloseRounded as CloseRoundedIcon,
@@ -18,18 +18,13 @@ import BottomBarDesign from "./BottomBarProject";
 import Loading from "../../components/Loading";
 import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import { fetchDesigns, handleDeleteDesign, fetchProjectDesigns } from "./backend/ProjectDetails";
-import { Button } from "@mui/material";
+import { fetchProjectDesigns } from "./backend/ProjectDetails";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, VerticalIcon } from "./svg/ExportIcon";
-import { Typography } from "@mui/material";
 import { ListIcon } from "./svg/ExportIcon";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
-import ItemList from "./ItemList";
-import DesignSvg from "../Homepage/svg/DesignSvg";
 import LoadingPage from "../../components/LoadingPage";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { formatDateLong, getUsername } from "../Homepage/backend/HomepageActions";
@@ -45,7 +40,7 @@ function Project() {
   const [projectData, setProjectData] = useState(null);
   const [designs, setDesigns] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user } = useSharedProps();
+  const { user, userDesign } = useSharedProps();
   const [isVertical, setIsVertical] = useState(false);
   const navigate = useNavigate();
   const [optionsState, setOptionsState] = useState({
@@ -57,6 +52,8 @@ function Project() {
   const [sortBy, setSortBy] = useState("");
   const [order, setOrder] = useState("");
   const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
+  const [numToShowMoreDesign, setNumToShowMoreDesign] = useState(0);
+  const [thresholdDesign, setThresholdDesign] = useState(6);
 
   const handleVerticalClick = () => {
     setIsVertical(true);
@@ -88,7 +85,7 @@ function Project() {
       } else if (sortBy === "created") {
         comparison = a.createdAtTimestamp - b.createdAtTimestamp;
       } else if (sortBy === "modified") {
-        comparison = a.modifiedAtTimestamp - b.modifiedAtTimestamp;
+        comparison = b.modifiedAtTimestamp - a.modifiedAtTimestamp; // Modified latest first
       }
       return order === "ascending" ? comparison : -comparison;
     });
@@ -109,7 +106,7 @@ function Project() {
     };
 
     fetchData();
-  }, [user, projectId]);
+  }, [user, projectId, userDesign]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -161,7 +158,7 @@ function Project() {
       const designsByLatest = [...designs].sort((a, b) => {
         const modifiedAtA = a.modifiedAt.toDate ? a.modifiedAt.toDate() : new Date(a.modifiedAt);
         const modifiedAtB = b.modifiedAt.toDate ? b.modifiedAt.toDate() : new Date(b.modifiedAt);
-        return modifiedAtB - modifiedAtA;
+        return modifiedAtB - modifiedAtA; // Modified latest first
       });
       setLoadingDesigns(false);
       const tableData = await Promise.all(
@@ -220,7 +217,8 @@ function Project() {
         }
       );
       if (response.status === 200) {
-        showToast("success", "Project created successfully");
+        showToast("success", "Design created successfully");
+        await fetchProjectDesigns(projectId, setDesigns); // Refresh designs list
       }
     } catch (error) {
       console.error("Error creating design:", error);
@@ -366,8 +364,9 @@ function Project() {
               )
             ) : (
               designs.length > 0 &&
-              designs.slice(0, 6).map((design) => (
+              designs.slice(0, 6 + numToShowMoreDesign).map((design) => (
                 <DesignIcon
+                  key={design.id}
                   id={design.id}
                   name={design.designName}
                   design={design}
@@ -385,6 +384,23 @@ function Project() {
               ))
             )}
           </div>
+        </div>
+        <div
+          className="center-me"
+          style={{ display: "inline-flex", marginTop: "20px", position: "relative" }}
+        >
+          {designs.length > thresholdDesign && numToShowMoreDesign < designs.length && (
+            <Button
+              variant="contained"
+              onClick={() => setNumToShowMoreDesign(numToShowMoreDesign + thresholdDesign)}
+              className="cancel-button"
+              sx={{
+                width: "200px",
+              }}
+            >
+              Show more
+            </Button>
+          )}
         </div>
         {filteredDesignsForTable.length === 0 && (
           <div className="no-content">
@@ -436,5 +452,5 @@ function Project() {
     </>
   );
 }
-//
+
 export default Project;

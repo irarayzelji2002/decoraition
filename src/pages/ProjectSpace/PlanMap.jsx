@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase";
-import { fetchPins, deleteProjectPin } from "./backend/ProjectDetails";
+import { fetchPins, deleteProjectPin, savePinOrder } from "./backend/ProjectDetails";
 import ProjectHead from "./ProjectHead";
 import MapPin from "./MapPin";
 import BottomBarDesign from "./BottomBarProject";
@@ -113,8 +113,15 @@ function PlanMap() {
   const deletePin = async (pinId) => {
     try {
       await deleteProjectPin(projectId, pinId);
-      console.log("Deleting pin lol", pinId);
-      setPins((prevPins) => prevPins.filter((pin) => pin.id !== pinId));
+      console.log("Deleting pin", pinId);
+      const updatedPins = pins
+        .filter((pin) => pin.id !== pinId)
+        .map((pin, index) => ({
+          ...pin,
+          order: index + 1,
+        }));
+      setPins(updatedPins);
+      await savePinOrder(projectId, updatedPins);
     } catch (error) {
       console.error("Error deleting pin:", error);
     }

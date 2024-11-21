@@ -8,8 +8,7 @@ import ProjectHead from "./ProjectHead";
 import MapPin from "./MapPin";
 import BottomBarDesign from "./BottomBarProject";
 import { useParams } from "react-router-dom";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
+import { AddIcon } from "../../components/svg/DefaultMenuIcons";
 import "../../css/project.css";
 import "../../css/seeAll.css";
 import "../../css/budget.css";
@@ -234,7 +233,7 @@ function PlanMap() {
           </div>
         )}
         <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
-          {menuOpen ? <CloseIcon /> : <AddIcon />}
+          {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
       </div>
       <BottomBarDesign PlanMap={true} projId={projectId} />

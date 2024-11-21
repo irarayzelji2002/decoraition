@@ -15,13 +15,12 @@ import {
   fetchTimelineId,
   fetchTaskDetails,
 } from "./backend/ProjectDetails";
-import { ToastContainer, toast } from "react-toastify";
+import { showToast } from "../../functions/utils";
 import { auth } from "../../firebase";
 import { Button, IconButton } from "@mui/material";
 import { CalendarIcon, ListIconTimeline, SingleIconTimeline } from "./svg/ExportIcon";
 import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
-import "react-toastify/dist/ReactToastify.css";
 
 function Timeline() {
   const navigate = useNavigate();
@@ -109,7 +108,7 @@ function Timeline() {
         closeDeleteModal();
       } catch (error) {
         console.error("Error deleting task:", error); // Debugging statement
-        toast.error("Error deleting task! Please try again.");
+        showToast("error", "Error deleting task! Please try again.");
       }
     }
   };
@@ -192,7 +191,6 @@ function Timeline() {
   return (
     <>
       <ProjectHead />
-      <ToastContainer />
       <div className="timeline-container">
         <div className="center-me" style={{ flexDirection: "row", marginBottom: "20px" }}>
           <IconButton

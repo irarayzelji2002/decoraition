@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Chip, TextField, Box, InputAdornment, Divider, Typography } from "@mui/material";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { AddCollaborators } from "../pages/DesignSpace/svg/AddImage";
 
 const EmailInput = ({ emails, setEmails, error, setError }) => {

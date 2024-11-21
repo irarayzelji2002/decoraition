@@ -8,24 +8,14 @@ import { showToast } from "../../functions/utils";
 
 import Item from "./Item";
 import IconButton from "@mui/material/IconButton";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CloseIcon from "@mui/icons-material/Close";
+import { AddIcon, EditIcon, DeleteIcon } from "../../components/svg/DefaultMenuIcons";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import DesignSpace from "./DesignSpace";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { Divider } from "@mui/material";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
-import { onSnapshot } from "firebase/firestore";
 import "../../css/budget.css";
-import { db } from "../../firebase"; // Assuming you have firebase setup
-import { ToastContainer, toast } from "react-toastify";
-import { collection, updateDoc, doc, deleteDoc, getDoc } from "firebase/firestore";
-import Loading from "../../components/Loading";
-import { getAuth, prodErrorMap } from "firebase/auth";
-import { query, where } from "firebase/firestore";
-import CommentTabs from "./CommentTabs";
 import { AddBudget, AddItem, BlankImage } from "./svg/AddImage";
 import { getDesignImage, handleNameChange } from "./backend/DesignActions";
 import LoadingPage from "../../components/LoadingPage";
@@ -143,7 +133,9 @@ function Budget() {
   // Initialize
   useEffect(() => {
     if (Object.keys(design).length > 0) return;
-    const fetchedDesign = userDesigns.find((design) => design.id === designId);
+    const fetchedDesign =
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
     setDesign(fetchedDesign || {});
     setDesignName(fetchedDesign?.designName ?? "Untitled Design");
 
@@ -152,12 +144,15 @@ function Budget() {
       return;
     }
 
-    const fetchedBudget = userBudgets.find((budget) => budget.designId === designId);
+    const fetchedBudget =
+      userBudgets.find((budget) => budget.designId === designId) ||
+      budgets.find((budget) => budget.designId === designId);
     setBudget(fetchedBudget || {});
 
     const fetchedItems =
       fetchedBudget && fetchedBudget.items
-        ? userItems.filter((item) => fetchedBudget.items.includes(item.id))
+        ? userItems.filter((item) => fetchedBudget.items.includes(item.id)) ||
+          items.filter((item) => fetchedBudget.items.includes(item.id))
         : [];
     setDesignItems(fetchedItems);
 
@@ -165,12 +160,14 @@ function Budget() {
       computeTotalCostAndExceededBudget(fetchedItems, fetchedBudget.budget?.amount);
     }
     setLoading(false);
-  }, [userBudgets, userDesigns, userItems]);
+  }, [budgets, userBudgets, designs, userDesigns, items, userItems]);
 
   // Updates on Real-time changes on shared props
   useEffect(() => {
     if (Object.keys(design).length === 0) return;
-    const fetchedDesign = userDesigns.find((design) => design.id === designId);
+    const fetchedDesign =
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
 
     if (!fetchedDesign) {
       console.error("Design not found");
@@ -178,7 +175,7 @@ function Budget() {
       setDesign(fetchedDesign);
       setDesignName(fetchedDesign?.designName ?? "Untitled Design");
     }
-  }, [designs, userDesigns]);
+  }, [designs, designs, userDesigns]);
 
   const updateItems = () => {
     if (budget && budget.items) {
@@ -215,7 +212,9 @@ function Budget() {
   };
 
   useEffect(() => {
-    const fetchedBudget = userBudgets.find((budget) => budget.designId === designId);
+    const fetchedBudget =
+      userBudgets.find((budget) => budget.designId === designId) ||
+      budgets.find((budget) => budget.designId === designId);
 
     if (fetchedBudget && !deepEqual(budget, fetchedBudget)) {
       setBudget(fetchedBudget);
@@ -496,7 +495,7 @@ function Budget() {
             </div>
           )}
           <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
-            {menuOpen ? <CloseIcon /> : <AddIcon />}
+            {menuOpen ? <AddIcon /> : <AddIcon />}
           </div>
         </div>
 
@@ -507,7 +506,7 @@ function Budget() {
               <h2 style={{ color: "var(--color-white)" }}>
                 {setIsEditingBudget ? "Edit the budget" : "Add a Budget"}
               </h2>
-              <CloseIcon
+              <CloseRoundedIcon
                 className="close-icon"
                 onClick={() => toggleBudgetModal(false, isEditingBudget)}
               />
@@ -552,7 +551,7 @@ function Budget() {
                   <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
                     {isEditingBudget ? "Edit the budget" : "Add a Budget"}
                   </span>{" "}
-                  <CloseIcon
+                  <CloseRoundedIcon
                     sx={{ marginLeft: "auto" }}
                     onClick={() => toggleBudgetModal(false, isEditingBudget)}
                     cursor={"pointer"}
@@ -645,7 +644,7 @@ function Budget() {
                   <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
                     Confirm budget removal
                   </span>
-                  <CloseIcon
+                  <CloseRoundedIcon
                     sx={{ marginLeft: "auto" }}
                     onClick={() => setIsRemoveBudgetModalOpen(false)}
                     cursor={"pointer"}

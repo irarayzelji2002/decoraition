@@ -21,8 +21,7 @@ import {
 
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
+import { AddIcon } from "../../components/svg/DefaultMenuIcons.jsx";
 import FolderIcon from "@mui/icons-material/Folder";
 import ImageIcon from "@mui/icons-material/Image";
 import KeyboardDoubleArrowUpRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowUpRounded";
@@ -694,7 +693,7 @@ function Homepage() {
             className={`circle-button ${menuOpen ? "rotate" : ""}`}
             onClick={() => toggleMenu(menuOpen, setMenuOpen)}
           >
-            {menuOpen ? <CloseIcon /> : <AddIcon />}
+            {menuOpen ? <AddIcon /> : <AddIcon />}
           </div>
         </div>
       </div>

@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../../firebase"; // Adjust the import path as necessary
-import { toast } from "react-toastify";
+import { showToast } from "../../../functions/utils";
 import { collection, addDoc } from "firebase/firestore";
 
 import { query, where, setDoc, deleteDoc, getDocs } from "firebase/firestore";
-import { CheckCircle, Delete } from "@mui/icons-material";
-import { showToast } from "../../../functions/utils";
+import { CheckCircle } from "@mui/icons-material";
+import { DeleteIcon } from "../../../components/svg/DefaultMenuIcons";
 import axios from "axios";
 
 // Adjust the import path as necessary
@@ -165,7 +165,7 @@ export const deleteTask = async (userId, projectId, taskId) => {
     });
   } catch (e) {
     console.error("Error deleting document: ", e);
-    toast.error("Error deleting task! Please try again.");
+    showToast("error", "Error deleting task! Please try again.");
   }
 };
 

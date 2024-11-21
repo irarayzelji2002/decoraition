@@ -4,12 +4,11 @@ import BottomBarDesign from "./BottomBarProject";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ExportIcon from "./svg/ExportIcon";
-import { ToastContainer } from "react-toastify";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, doc, onSnapshot, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { fetchProjectDesigns } from "./backend/ProjectDetails";
-import { toast } from "react-toastify";
+import { showToast } from "../../functions/utils";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function ProjBudget() {
@@ -27,7 +26,7 @@ function ProjBudget() {
           console.log(`Fetching designs for budget: ${projectId}`); // Debug log
           await fetchProjectDesigns(projectId, setDesigns);
         } catch (error) {
-          toast.error(`Error fetching project designs: ${error.message}`);
+          showToast("error", `Error fetching project designs: ${error.message}`);
         }
       }
     };
@@ -83,7 +82,6 @@ function ProjBudget() {
 
   return (
     <>
-      <ToastContainer />
       <ProjectHead />
       <div className="budgetHolder">
         <span

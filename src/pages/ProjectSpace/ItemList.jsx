@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { Typography, IconButton } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import DeleteIcon from "@mui/icons-material/Delete";
-import LinkIcon from "@mui/icons-material/Link";
-import DriveFileRenameOutlineRoundedIcon from "@mui/icons-material/DriveFileRenameOutlineRounded";
-import InfoIcon from "@mui/icons-material/Info";
+import {
+  DeleteIcon,
+  RenameIcon,
+  DetailsIcon,
+  CopyLinkIcon,
+} from "../../components/svg/DefaultMenuIcons";
 import { useNavigate } from "react-router-dom";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import CopyLinkModal from "../../components/CopyLinkModal";
@@ -116,15 +118,15 @@ const ItemList = ({ design, projectId, handleDeleteDesign }) => {
               Delete
             </div>
             <div className="dropdown-item" onClick={openCopyLinkModal}>
-              <LinkIcon style={{ fontSize: 20 }} className="icon" />
+              <CopyLinkIcon style={{ fontSize: 20 }} className="icon" />
               Copy Link
             </div>
             <div className="dropdown-item" onClick={openRenameModal}>
-              <DriveFileRenameOutlineRoundedIcon style={{ fontSize: 20 }} className="icon" />
+              <RenameIcon style={{ fontSize: 20 }} className="icon" />
               Rename
             </div>
             <div className="dropdown-item">
-              <InfoIcon style={{ fontSize: 20 }} className="icon" />
+              <DetailsIcon style={{ fontSize: 20 }} className="icon" />
               Details
             </div>
           </div>

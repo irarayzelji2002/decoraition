@@ -10,8 +10,7 @@ import ProjectOptionsHome from "../../components/ProjectOptionsHome.jsx";
 import HomepageTable from "./HomepageTable.jsx";
 import { Button, IconButton } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
+import { AddIcon } from "../../components/svg/DefaultMenuIcons.jsx";
 import {
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
   ArrowBackIosRounded as ArrowBackIosRoundedIcon,
@@ -412,7 +411,7 @@ export default function SeeAllProjects() {
           </div>
         )}
         <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
-          {menuOpen ? <CloseIcon /> : <AddIcon />}
+          {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
       </div>
     </>

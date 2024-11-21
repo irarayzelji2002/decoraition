@@ -9,8 +9,7 @@ import Dropdowns from "../../components/Dropdowns.jsx";
 import DesignIcon from "../../components/DesignIcon.jsx";
 import HomepageTable from "./HomepageTable.jsx";
 import ImageIcon from "@mui/icons-material/Image";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
+import { AddIcon } from "../../components/svg/DefaultMenuIcons.jsx";
 import {
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
   ArrowBackIosRounded as ArrowBackIosRoundedIcon,
@@ -407,7 +406,7 @@ export default function SeeAllDesigns() {
           </div>
         )}
         <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
-          {menuOpen ? <CloseIcon /> : <AddIcon />}
+          {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
       </div>
     </>

@@ -149,7 +149,8 @@ function Design() {
 
   useEffect(() => {
     if (designId && userDesigns.length > 0) {
-      const fetchedDesign = userDesigns.find((d) => d.id === designId);
+      const fetchedDesign =
+        userDesigns.find((d) => d.id === designId) || designs.find((d) => d.id === designId);
 
       if (!fetchedDesign) {
         console.error("Design not found.");
@@ -158,8 +159,8 @@ function Design() {
         console.log("current design:", fetchedDesign);
       }
     }
-    setLoading(false);
-  }, [designId, userDesigns]);
+    // setLoading(false);
+  }, [designId, design, userDesigns]);
 
   useEffect(() => {
     if (
@@ -196,7 +197,7 @@ function Design() {
       setDesignVersionImages([]);
       setIsNextGeneration(false);
     }
-    // setLoading(false);
+    setLoading(false);
   }, [design, designVersions, userDesignVersions]);
 
   useEffect(() => {

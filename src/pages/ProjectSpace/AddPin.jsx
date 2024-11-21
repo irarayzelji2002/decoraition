@@ -4,7 +4,7 @@ import "../../css/addItem.css";
 import "../../css/budget.css";
 import TopBar from "../../components/TopBar";
 import Select from "@mui/material/Select";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { useNavigate } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
@@ -13,7 +13,7 @@ import ColorizeIcon from "@mui/icons-material/Colorize";
 import { Modal } from "@mui/material";
 import { ChromePicker } from "react-color";
 import Button from "@mui/material/Button";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
 import ImageFrame from "../../components/ImageFrame";
 import { fetchProjectDesigns, addPinToDatabase, fetchPins } from "./backend/ProjectDetails";
 import { CurrencyExchange } from "@mui/icons-material";
@@ -136,7 +136,9 @@ function AddPin({ EditMode }) {
                     },
                   },
                 }}
-                IconComponent={ArrowDropDownIcon}
+                IconComponent={(props) => (
+                  <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+                )}
                 className="custom-select"
               >
                 <MenuItem value="" sx={menuItemStyles}>

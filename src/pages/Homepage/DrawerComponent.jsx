@@ -34,13 +34,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import NotifTab from "./NotifTab";
-import { auth } from "../../firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
 import { ArrowBackIosRounded as ArrowBackIosRoundedIcon } from "@mui/icons-material";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import DeleteIcon from "@mui/icons-material/Delete";
-import LinkIcon from "@mui/icons-material/Link";
-import { fetchUserData, fetchDesigns, fetchProjects } from "./backend/HomepageFunctions.jsx";
 import { DesignIcn, FAQ, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/DesignSvg.jsx";
 
 const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {

@@ -5,10 +5,6 @@ import TopBar from "../../components/TopBar";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../css/budget.css";
-import { db } from "../../firebase"; // Assuming you have firebase setup
-import { collection, addDoc, getDocs } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { ToastContainer, toast } from "react-toastify";
 import { InputAdornment } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
@@ -38,25 +34,18 @@ const AddItem = () => {
 
   const [errors, setErrors] = useState({});
 
-  // Initialize
-  useEffect(() => {
-    const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
-    setDesign(fetchedDesign || {});
-    if (!fetchedDesign) {
-      console.error("Design not found.");
-    }
-  }, []);
-
   // Updates on Real-time changes on shared props
   useEffect(() => {
-    const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
+    const fetchedDesign =
+      userDesigns.find((design) => design.budgetId === budgetId) ||
+      designs.find((design) => design.budgetId === budgetId);
 
     if (!fetchedDesign) {
       console.error("Design not found");
     } else if (!deepEqual(design, fetchedDesign)) {
       setDesign(fetchedDesign);
     }
-  }, [designs, userDesigns]);
+  }, [designs, designs, userDesigns]);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -193,7 +182,10 @@ const AddItem = () => {
     } catch (error) {
       console.error("Error adding item:", error);
       if (error.response) {
-        showToast("error", error?.response?.data?.message || "Failed to add item. Please try again.");
+        showToast(
+          "error",
+          error?.response?.data?.message || "Failed to add item. Please try again."
+        );
       } else if (error.request) {
         showToast("error", "Network error. Please check your connection.");
       } else {

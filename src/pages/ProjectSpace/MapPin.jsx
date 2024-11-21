@@ -3,7 +3,7 @@ import EditPen from "../DesignSpace/svg/EditPen";
 import ExportIcon, { Draggable } from "./svg/ExportIcon";
 import Trash from "../DesignSpace/svg/Trash";
 import { IconButton, Modal, Button } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
 import { useState, useEffect } from "react";
 import { ChromePicker } from "react-color";
 

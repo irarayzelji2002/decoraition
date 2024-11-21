@@ -1,9 +1,5 @@
 import React from "react";
 import { TextField, InputAdornment, IconButton } from "@mui/material";
-import LinkIcon from "@mui/icons-material/Link";
-import UnlinkIcon from "@mui/icons-material/LinkOff";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import LightModeIcon from "@mui/icons-material/LightMode";
 import {
   LinkIconSmallGradient,
   UnlinkIconSmallGradient,

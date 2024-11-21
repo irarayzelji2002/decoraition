@@ -2,12 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
-import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firebase Firestore methods
-import { db } from "../../firebase"; // Your Firebase config file
 import "../../css/addItem.css";
 import TopBar from "../../components/TopBar";
-import { getAuth } from "firebase/auth";
-import { ToastContainer, toast } from "react-toastify";
 import NoImage from "./svg/NoImage";
 import { showToast } from "../../functions/utils";
 import { useSharedProps } from "../../contexts/SharedPropsContext";

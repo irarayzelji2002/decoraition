@@ -706,7 +706,7 @@ textarea {
 }
 
 .circle-button.rotate {
-  transform: rotate(45deg);
+  transform: rotate(135deg);
 }
 
 /* Container for the smaller buttons */

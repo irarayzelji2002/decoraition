@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, IconButton, InputBase, Select, MenuItem } from "@mui/material";
-import { ArrowRight as ArrowRightIcon, ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
+import {
+  KeyboardArrowRightRounded as KeyboardArrowRightRoundedIcon,
+  KeyboardArrowLeftRounded as KeyboardArrowLeftRoundedIcon,
+} from "@mui/icons-material";
 
 function ReminderSpecific({ reminder, onSave, onCancel }) {
   const [hours, setHours] = useState(reminder?.hours || 8);
@@ -94,7 +97,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
           }}
         >
           <IconButton onClick={handleDecrement} size="small">
-            <ArrowLeftIcon fontSize="small" />
+            <KeyboardArrowLeftRoundedIcon fontSize="small" />
           </IconButton>
           <InputBase
             value={count}
@@ -107,7 +110,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
             }}
           />
           <IconButton onClick={handleIncrement} size="small">
-            <ArrowRightIcon fontSize="small" />
+            <KeyboardArrowRightRoundedIcon fontSize="small" />
           </IconButton>
         </Box>
 
@@ -137,7 +140,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
           }}
         >
           <IconButton onClick={handleDecrementHours} size="small">
-            <ArrowLeftIcon fontSize="small" />
+            <KeyboardArrowLeftRoundedIcon fontSize="small" />
           </IconButton>
           <InputBase
             value={hours}
@@ -150,7 +153,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
             }}
           />
           <IconButton onClick={handleIncrementHours} size="small">
-            <ArrowRightIcon fontSize="small" />
+            <KeyboardArrowRightRoundedIcon fontSize="small" />
           </IconButton>
         </Box>
 
@@ -164,7 +167,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
           }}
         >
           <IconButton onClick={handleDecrementMinutes} size="small">
-            <ArrowLeftIcon fontSize="small" />
+            <KeyboardArrowLeftRoundedIcon fontSize="small" />
           </IconButton>
           <InputBase
             value={minutes.toString().padStart(2, "0")}
@@ -177,7 +180,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
             }}
           />
           <IconButton onClick={handleIncrementMinutes} size="small">
-            <ArrowRightIcon fontSize="small" />
+            <KeyboardArrowRightRoundedIcon fontSize="small" />
           </IconButton>
         </Box>
 

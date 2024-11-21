@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { TextField, InputAdornment, IconButton, Box } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
+import { EditIcon } from "../../components/svg/DefaultMenuIcons";
+import { SaveIcon } from "../DesignSpace/svg/AddImage";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { handleSetError, getHasError, getErrMessage, toCamelCase } from "../../functions/utils";

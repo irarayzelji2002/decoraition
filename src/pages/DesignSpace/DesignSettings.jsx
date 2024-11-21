@@ -56,7 +56,7 @@ export const theme = createTheme({
 });
 
 const DesignSettings = () => {
-  const { user, userDoc, userDesigns } = useSharedProps();
+  const { user, userDoc, designs, userDesigns } = useSharedProps();
   const { designId } = useParams({}); // Get the designId parameter from the URL
   const location = useLocation();
   const navigateTo = location.state?.navigateFrom || "/";
@@ -82,7 +82,9 @@ const DesignSettings = () => {
 
   useEffect(() => {
     if (designId && userDesigns.length > 0) {
-      const fetchedDesign = userDesigns.find((design) => design.id === designId);
+      const fetchedDesign =
+        userDesigns.find((design) => design.id === designId) ||
+        designs.find((design) => design.id === designId);
 
       if (!fetchedDesign) {
         console.error("Design not found.");
@@ -104,7 +106,7 @@ const DesignSettings = () => {
       }
     }
     setLoading(false);
-  }, [designId, userDesigns]);
+  }, [designId, designs, userDesigns]);
 
   useEffect(() => {
     if (!design || !user || !userDoc) return;
@@ -722,6 +724,7 @@ export const switchStyles = {
 
 // Styles for Select
 export const selectStyles = {
+  fontFamily: '"Inter", sans-serif !important',
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: "var(--borderInput)",
     borderWidth: 2,
@@ -747,6 +750,7 @@ export const selectStyles = {
 };
 
 export const selectStylesDisabled = {
+  fontFamily: '"Inter", sans-serif !important',
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: "transparent",
     borderWidth: 2,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MenuItem, ListItemIcon, ListItemText, styled } from "@mui/material";
-import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import {
   CommentIcon,
   ShareIcon,
@@ -84,7 +84,7 @@ const DefaultMenu = ({
           <ShareIcon sx={{ color: "var(--color-white)" }} />
         </ListItemIcon>
         <ListItemText primary="Share" sx={{ color: "var(--color-white)" }} />
-        <ChevronRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
+        <KeyboardArrowRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
       </CustomMenuItem>
       <CustomMenuItem onClick={onCopyLink}>
         <ListItemIcon>
@@ -110,7 +110,7 @@ const DefaultMenu = ({
         <CustomMenuItem onClick={onChangeMode} sx={{ paddingRight: "10px" }}>
           <ListItemIcon>{changeModeIcon}</ListItemIcon>
           <ListItemText primary="Change Mode" sx={{ color: "var(--color-white)" }} />
-          <ChevronRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
+          <KeyboardArrowRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
         </CustomMenuItem>
       )}
       {((isDesign && designSettingsVisibility.isDownloadVisible) ||

@@ -612,7 +612,7 @@ const getPillTabStyle = (isWrapped, selectedTab, index) => {
       color: isSelected ? "var(--color-white)" : "var(--color-white)",
     },
     minHeight: "40px",
-    width: "110px", // Ensures tabs are the same size
+    width: "112px", // Ensures tabs are the same size
   };
 };
 

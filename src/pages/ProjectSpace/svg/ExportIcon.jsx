@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Box, Typography, IconButton, InputBase, Select, MenuItem } from "@mui/material";
-import { ArrowRight as ArrowRightIcon, ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
+import {
+  KeyboardArrowRightRounded as KeyboardArrowRightRoundedIcon,
+  KeyboardArrowLeftRounded as KeyboardArrowLeftRoundedIcon,
+} from "@mui/icons-material";
 
 function ExportIcon() {
   return (
@@ -308,7 +311,7 @@ export const RepeatSelector = () => {
           }}
         >
           <IconButton onClick={handleDecrement} size="small">
-            <ArrowLeftIcon fontSize="small" />
+            <KeyboardArrowLeftRoundedIcon fontSize="small" />
           </IconButton>
           <InputBase
             value={count}
@@ -321,7 +324,7 @@ export const RepeatSelector = () => {
             }}
           />
           <IconButton onClick={handleIncrement} size="small">
-            <ArrowRightIcon fontSize="small" />
+            <KeyboardArrowRightRoundedIcon fontSize="small" />
           </IconButton>
         </Box>
 

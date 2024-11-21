@@ -16,9 +16,7 @@ import {
 } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider, DatePicker, TimePicker } from "@mui/x-date-pickers";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import { AddIcon, EditIcon, DeleteIcon } from "../../components/svg/DefaultMenuIcons";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { gradientButtonStyles, outlinedButtonStyles } from "../DesignSpace/PromptBar";

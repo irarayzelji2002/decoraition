@@ -5,12 +5,12 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Paper, IconButton, InputBase, List } from "@mui/material";
 import {
   Search as SearchIcon,
-  Add as AddIcon,
-  Close as CloseIcon,
+  CloseRounded as CloseRoundedIcon,
   Folder as FolderIcon,
   Image as ImageIcon,
 } from "@mui/icons-material";
-import { ToastContainer, toast } from "react-toastify";
+import { AddIcon } from "../../components/svg/DefaultMenuIcons";
+import { showToast } from "../../functions/utils";
 import { auth, db } from "../../firebase";
 import ProjectHead from "./ProjectHead";
 import Modal from "../../components/Modal";
@@ -101,7 +101,7 @@ function Project() {
           console.log(`Fetching designs for projectId: ${projectId}`); // Debug log
           await fetchProjectDesigns(projectId, setDesigns);
         } catch (error) {
-          toast.error(`Error fetching project designs: ${error.message}`);
+          showToast("error", `Error fetching project designs: ${error.message}`);
         }
       }
     };
@@ -217,12 +217,11 @@ function Project() {
         }
       );
       if (response.status === 200) {
-        toast.success("Design created successfully!");
-        // Optionally, navigate to the new design or refresh the designs list
+        showToast("success", "Project created successfully");
       }
     } catch (error) {
       console.error("Error creating design:", error);
-      toast.error("Error creating design! Please try again.");
+      showToast("error", "Error creating design! Please try again.");
     }
   };
 
@@ -404,7 +403,7 @@ function Project() {
           </div>
         )}
         <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
-          {menuOpen ? <CloseIcon /> : <AddIcon />}
+          {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
       </div>
 

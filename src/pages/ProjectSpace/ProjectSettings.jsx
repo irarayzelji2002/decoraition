@@ -62,13 +62,14 @@ const ProjectSettings = () => {
   const {
     user,
     userDoc,
+    projects,
     userProjects,
-    userTimelines,
-    userPlanMaps,
-    userProjectBudgets,
     timelines,
+    userTimelines,
     planMaps,
+    userPlanMaps,
     projectBudgets,
+    userProjectBudgets,
   } = useSharedProps();
   const { projectId } = useParams({}); // Get the projectId parameter from the URL
   const location = useLocation();
@@ -114,7 +115,9 @@ const ProjectSettings = () => {
   // Effect to set the project once userProjects are loaded
   useEffect(() => {
     if (projectId && userProjects.length > 0) {
-      const fetchedProject = userProjects.find((project) => project.id === projectId);
+      const fetchedProject =
+        userProjects.find((project) => project.id === projectId) ||
+        projects.find((project) => project.id === projectId);
 
       if (!fetchedProject) {
         console.error("Project not found.");
@@ -134,13 +137,15 @@ const ProjectSettings = () => {
         );
       }
     }
-  }, [projectId, userProjects]);
+  }, [projectId, projects, userProjects]);
 
   // Effect to update the timeline once userTimelines and project data are available
   useEffect(() => {
     if (project && userTimelines.length > 0) {
       const timelineId = project.timelineId;
-      const fetchedTimeline = userTimelines.find((timeline) => timeline.id === timelineId);
+      const fetchedTimeline =
+        userTimelines.find((timeline) => timeline.id === timelineId) ||
+        timelines.find((timeline) => timeline.id === timelineId);
       if (!fetchedTimeline) {
         console.error("Timeline not found.");
       } else if (Object.keys(timeline).length === 0 || !deepEqual(timeline, fetchedTimeline)) {
@@ -156,13 +161,15 @@ const ProjectSettings = () => {
         );
       }
     }
-  }, [project, userTimelines]);
+  }, [project, timelines, userTimelines]);
 
   // Effect to update the plan map once userPlanMaps and project data are available
   useEffect(() => {
     if (project && userPlanMaps.length > 0) {
       const planMapId = project.planMapId;
-      const fetchedPlanMap = userPlanMaps.find((planMap) => planMap.id === planMapId);
+      const fetchedPlanMap =
+        userPlanMaps.find((planMap) => planMap.id === planMapId) ||
+        planMaps.find((planMap) => planMap.id === planMapId);
       if (!fetchedPlanMap) {
         console.error("Plan Map not found.");
       } else if (Object.keys(planMap).length === 0 || !deepEqual(planMap, fetchedPlanMap)) {
@@ -176,15 +183,15 @@ const ProjectSettings = () => {
         );
       }
     }
-  }, [project, userPlanMaps]);
+  }, [project, planMaps, userPlanMaps]);
 
   // Effect to update the budget once userProjectBudgets and project data are available
   useEffect(() => {
     if (project && userProjectBudgets.length > 0) {
       const projectBudgetId = project.projectBudgetId;
-      const fetchedProjectBudget = userProjectBudgets.find(
-        (budget) => budget.id === projectBudgetId
-      );
+      const fetchedProjectBudget =
+        userProjectBudgets.find((budget) => budget.id === projectBudgetId) ||
+        projectBudgets.find((budget) => budget.id === projectBudgetId);
       if (!fetchedProjectBudget) {
         console.error("Project Budget not found.");
       } else if (
@@ -203,7 +210,7 @@ const ProjectSettings = () => {
         );
       }
     }
-  }, [project, userProjectBudgets]);
+  }, [project, projectBudgets, userProjectBudgets]);
 
   // useEffect to check if all required data is populated
   useEffect(() => {
@@ -840,6 +847,7 @@ const menuItemStyles = {
 
 // Styles for Select
 const selectStyles = {
+  fontFamily: '"Inter", sans-serif !important',
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: "var(--borderInput)",
     borderWidth: 2,
@@ -865,6 +873,7 @@ const selectStyles = {
 };
 
 const selectStylesDisabled = {
+  fontFamily: '"Inter", sans-serif !important',
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: "transparent",
     borderWidth: 2,

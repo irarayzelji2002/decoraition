@@ -2,9 +2,6 @@ import React from "react";
 import { MenuItem, ListItemIcon, ListItemText, styled } from "@mui/material";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
-import ContentCopy from "@mui/icons-material/ContentCopy";
-import { toast } from "react-toastify";
 import { showToast } from "../functions/utils";
 
 const CustomMenuItem = styled(MenuItem)({

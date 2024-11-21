@@ -4,7 +4,6 @@ import { IconButton, Menu, TextField } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { CommentIcon, ShareIcon } from "./svg/DefaultMenuIcons";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { signOut } from "firebase/auth";
 import ChangeModeMenu from "./ChangeModeMenu.jsx";
 import CopyLinkModal from "./CopyLinkModal.jsx";
 import DefaultMenu from "./DefaultMenu.jsx";
@@ -19,10 +18,8 @@ import ShareMenu from "./ShareMenu.jsx";
 import MakeCopyModal from "./MakeCopyModal.jsx";
 import ShareConfirmationModal from "./ShareConfirmationModal.jsx";
 import "../css/design.css";
-import { auth } from "../firebase.js";
 import DrawerComponent from "../pages/Homepage/DrawerComponent.jsx";
 import Version from "../pages/DesignSpace/Version.jsx";
-import { toast } from "react-toastify";
 import { showToast } from "../functions/utils.js";
 import {
   handleNameChange,

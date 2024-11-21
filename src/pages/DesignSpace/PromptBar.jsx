@@ -344,7 +344,7 @@ function PromptBar({
   }, [userDoc]);
 
   const [height, setHeight] = useState("100%");
-  const [applyMinHeight, setApplyMinHeight] = useState(true);
+  const [applyMinHeight, setApplyMinHeight] = useState(false);
   const resizeFactor = 2;
   const resizeHandleRef = useRef(null);
   const resizeHandleHeightRef = useRef(null);
@@ -495,10 +495,11 @@ function PromptBar({
 
   // Check height on component mount and on numImageFrames change
   useEffect(() => {
+    console.log(numImageFrames);
     const checkWorkingAreaHeight = () => {
       if (workingAreaRef.current) {
         const workingAreaHeight = workingAreaRef.current.offsetHeight;
-        if (workingAreaHeight + 154 > window.innerHeight) {
+        if (workingAreaHeight + 154 > window.innerHeight || numImageFrames === 2) {
           setApplyMinHeight(false);
         } else {
           setApplyMinHeight(true);
@@ -605,7 +606,6 @@ function PromptBar({
     if (!selectedSamMask) {
       if (!initImage && !maskPrompt) {
         formErrors.general = "Generate a mask first with mask prompt and your selected image";
-        toggleSelectAreaToEdit();
         return {
           success: false,
           message: "Invalid inputs.",
@@ -615,7 +615,6 @@ function PromptBar({
         if (!maskPrompt) {
           errMessage = "Mask prompt is required to generate a mask";
           formErrors.maskPrompt = errMessage;
-          toggleSelectAreaToEdit();
         }
         if (!initImage) {
           errMessage = "Select an image first to generate a mask";
@@ -978,7 +977,7 @@ function PromptBar({
             </IconButton>
           )}
           <div
-            style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "655.8px" }}
+            style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "662.8px" }}
             className="transitionMinHeight"
           >
             <h3>
@@ -1793,6 +1792,7 @@ function PromptBar({
 export default PromptBar;
 
 const selectStyles = {
+  fontFamily: '"Inter", sans-serif !important',
   backgroundColor: "transparent",
   borderRadius: "10px",
   padding: "15px 20px",

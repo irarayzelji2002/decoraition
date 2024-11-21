@@ -5,16 +5,12 @@ import { showToast } from "../../functions/utils";
 import "../../css/budget.css";
 import "../../css/design.css";
 import Box from "@mui/material/Box";
-import CloseIcon from "@mui/icons-material/Close";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import Modal from "@mui/material/Modal";
 import { Divider } from "@mui/material";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import EditPen from "./svg/EditPen";
 import Trash from "./svg/Trash";
-import { ToastContainer, toast } from "react-toastify";
-import { getAuth } from "firebase/auth";
-import { db } from "../../firebase";
-import { doc, deleteDoc } from "firebase/firestore";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 const style = {
@@ -103,7 +99,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
         console.log("Item updated successfully");
       } catch (error) {
         console.error("Error updating item:", error);
-        toast.error("Failed to update item");
+        showToast("error", "Failed to update item");
         // Revert the UI change if the server update fails
         setDesignItems((prevItems) =>
           prevItems.map((prevItem) =>
@@ -150,7 +146,11 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
               <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
                 Edit Budget
               </span>{" "}
-              <CloseIcon sx={{ marginLeft: "auto" }} onClick={handleClose} cursor={"pointer"} />
+              <CloseRoundedIcon
+                sx={{ marginLeft: "auto" }}
+                onClick={handleClose}
+                cursor={"pointer"}
+              />
             </div>
             <Divider sx={{ borderColor: "var(--color-grey)" }} />
             <div className="input-group" style={{ marginTop: "12px", margin: "18px" }}>
@@ -209,7 +209,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
               <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
                 Confirm item removal
               </span>
-              <CloseIcon
+              <CloseRoundedIcon
                 sx={{ marginLeft: "auto" }}
                 onClick={handleCloseDelete}
                 cursor={"pointer"}

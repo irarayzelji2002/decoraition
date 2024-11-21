@@ -2,11 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "../../css/editEvent.css";
 import TopBar from "../../components/TopBar";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import AddIcon from "@mui/icons-material/Add";
+import { AddIcon, EditIcon, DeleteIcon } from "../../components/svg/DefaultMenuIcons.jsx";
 import { saveData, updateTask, createEvent } from "./backend/ProjectDetails";
-import { ToastContainer } from "react-toastify";
 import { auth } from "../../firebase";
 import { CustomSwitch } from "./ProjectSettings.jsx";
 import { Box, Modal, TextField, Button } from "@mui/material";
@@ -234,7 +231,6 @@ function EditEvent() {
   return (
     <ThemeProvider theme={theme}>
       <div style={{ overflowX: "hidden" }}>
-        <ToastContainer />
         <TopBar state={"Edit Event"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
         <div className="edit-event">
           <div className="form-container">

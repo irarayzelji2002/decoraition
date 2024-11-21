@@ -31,6 +31,7 @@ import { AddImage, DeselectMask, SelectMask, SaveIcon } from "./svg/AddImage";
 import AddColor from "./svg/AddColor";
 import NoImage from "./svg/NoImage";
 import CreatePallete from "./CreatePallete";
+import ConfirmDeselectMaskModal from "./ConfirmDeselectMaskModal";
 import { extendTheme, CssVarsProvider } from "@mui/joy/styles";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { togglePromptBar, toggleComments } from "./backend/DesignActions";
@@ -137,7 +138,10 @@ function PromptBar({
   const [isEditingPalette, setIsEditingPalette] = useState(false);
   const [userColorPalettes, setUserColorPalettes] = useState([]);
 
+  const [confirmDeselectMaskOpen, setConfirmDeselectMaskOpen] = useState(false);
+
   const [disabled, setDisabled] = useState(true);
+  const [isGenerateImgBtbDisabled, setIsGenerateImgBtbDisabled] = useState(false);
 
   const [dragging, setDragging] = useState(false);
   const [baseImageModalOpen, setBaseImageModalOpen] = useState(false);
@@ -530,6 +534,10 @@ function PromptBar({
 
   // Open/closing select area to edit
   const toggleSelectAreaToEdit = () => {
+    if (isSelectingMask && combinedMask) {
+      setConfirmDeselectMaskOpen(true);
+      return;
+    }
     setIsSelectingMask(!isSelectingMask);
     setPrevWidth(width);
     setPrevHeight(height);
@@ -539,6 +547,15 @@ function PromptBar({
     } else {
       setShowPromptBar(true);
     }
+  };
+
+  const handleConfirmDeselectMask = () => {
+    setCombinedMask(null);
+    setIsSelectingMask(false);
+    setPrevWidth(width);
+    setPrevHeight(height);
+    setShowPromptBar(true);
+    setConfirmDeselectMaskOpen(false);
   };
 
   const handleFirstImageValidation = async () => {
@@ -691,6 +708,7 @@ function PromptBar({
 
   const handleGeneration = async () => {
     try {
+      setIsGenerateImgBtbDisabled(true);
       if (!isNextGeneration) {
         console.log("Validating - first image");
         let colorPalettePassed = "";
@@ -875,6 +893,7 @@ function PromptBar({
       setGenerationErrors((prev) => ({ ...prev, general: "Failed to generate image" }));
     } finally {
       resetStateVariables();
+      setIsGenerateImgBtbDisabled(false);
     }
   };
 
@@ -1466,7 +1485,11 @@ function PromptBar({
               fullWidth
               variant="contained"
               disabled={
-                disabled || !isOnline || showComments || (isNextGeneration && !isSelectingMask)
+                disabled ||
+                !isOnline ||
+                showComments ||
+                (isNextGeneration && !isSelectingMask) ||
+                isGenerateImgBtbDisabled
               }
               sx={{
                 color: "white",
@@ -1477,11 +1500,19 @@ function PromptBar({
                 textTransform: "none",
                 fontWeight: "bold",
                 opacity:
-                  disabled || !isOnline || showComments || (isNextGeneration && !isSelectingMask)
+                  disabled ||
+                  !isOnline ||
+                  showComments ||
+                  (isNextGeneration && !isSelectingMask) ||
+                  isGenerateImgBtbDisabled
                     ? "0.5"
                     : "1",
                 cursor:
-                  disabled || !isOnline || showComments || (isNextGeneration && !isSelectingMask)
+                  disabled ||
+                  !isOnline ||
+                  showComments ||
+                  (isNextGeneration && !isSelectingMask) ||
+                  isGenerateImgBtbDisabled
                     ? "default"
                     : "pointer",
                 "&:hover": {
@@ -1490,6 +1521,7 @@ function PromptBar({
                     isOnline &&
                     !showComments &&
                     !(isNextGeneration && !isSelectingMask) &&
+                    !isGenerateImgBtbDisabled &&
                     "var(--gradientButtonHover)",
                 },
               }}
@@ -1784,6 +1816,13 @@ function PromptBar({
         onClose={handleColorPaletteModalClose}
         isEditingPalette={isEditingPalette}
         colorPaletteToEdit={colorPaletteToEdit}
+      />
+
+      {/* Confirm deselect modal */}
+      <ConfirmDeselectMaskModal
+        isOpen={confirmDeselectMaskOpen}
+        onClose={() => setConfirmDeselectMaskOpen(false)}
+        handleConfirm={handleConfirmDeselectMask}
       />
     </>
   );

@@ -1124,21 +1124,21 @@ export const GeneratingOverlay = ({ statusMessage, progress, eta, transparent = 
         </div>
         <div className="generatingOverlayTextCont">
           {statusMessage && (
-            <Typography
+            <Box
               variant="body1"
               sx={{
                 color: "white",
                 fontFamily: '"Inter", sans-serif',
                 fontSize: "1.1rem",
-                background: "var(--gradientFont)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                // background: "var(--gradientFont)",
+                // WebkitBackgroundClip: "text",
+                // WebkitTextFillColor: "transparent",
                 fontWeight: "800",
                 textShadow: "0px 2px 11px rgba(0,0,0,0.5)",
               }}
             >
               <BouncyText text={`${statusMessage}...`} />
-            </Typography>
+            </Box>
           )}
           {statusMessage && statusMessage.startsWith("Generating image") && (
             <Typography
@@ -1169,23 +1169,31 @@ const BouncyText = ({ text }) => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        background: "-webkit-linear-gradient(-90deg, #faa652 0%, #f36b24 50%, #ea1179 100%);",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
       }}
     >
       {text.split("").map((char, index) => (
-        <Typography
+        <p
           key={index}
           variant="body1"
-          sx={{
-            color: "white",
+          style={{
+            color: "inherit",
             fontFamily: '"Inter", sans-serif',
             fontSize: "1.1rem",
             fontWeight: "800",
-            animation: `bounce 1.5s ease-in-out ${index * 0.1}s infinite`,
             display: "inline-block",
+            willChange: "transform",
+            background: "inherit",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            animation: `bounce 1.5s ease-in-out ${index * 0.1}s infinite`,
           }}
+          className="bouncyText"
         >
           {char === " " ? "\u00A0" : char} {/* Non-breaking space for spaces */}
-        </Typography>
+        </p>
       ))}
       <style>
         {`

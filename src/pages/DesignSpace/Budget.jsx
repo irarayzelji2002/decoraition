@@ -59,6 +59,7 @@ function Budget() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isBudgetButtonDisabled, setIsBudgetButtonDisabled] = useState(false);
 
   // Icons
   const GradientAddIcon = () => (
@@ -296,9 +297,11 @@ function Budget() {
   };
 
   const handleUpdateBudget = async (budgetAmount, budgetCurrency) => {
+    setIsBudgetButtonDisabled(true);
     const error = handleValidation(budgetAmount);
     if (error !== "") {
       setError(error);
+      setIsBudgetButtonDisabled(false);
       return;
     } else {
       setError("");
@@ -322,6 +325,7 @@ function Budget() {
       console.error("Error adding budget:", error);
       showToast("error", "Failed to add budget");
     }
+    setIsBudgetButtonDisabled(false);
   };
 
   const handleRemoveBudget = async (budgetCurrency) => {
@@ -616,8 +620,16 @@ function Budget() {
                 )}
                 <button
                   className="add-item-btn"
-                  style={{ margin: "18px" }}
+                  style={{
+                    margin: "18px",
+                    opacity: isBudgetButtonDisabled ? "0.5" : "1",
+                    cursor: isBudgetButtonDisabled ? "default" : "pointer",
+                    "&:hover": {
+                      backgroundImage: !isBudgetButtonDisabled && "var(--gradientButton)",
+                    },
+                  }}
                   onClick={() => handleUpdateBudget(budgetAmountForInput, budgetCurrencyForInput)}
+                  disabled={isBudgetButtonDisabled}
                 >
                   {isEditingBudget ? "Edit budget" : "Add Budget"}
                 </button>

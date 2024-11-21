@@ -25,7 +25,6 @@ export const fetchProjectDesigns = async (projectId, setDesigns) => {
     });
 
     if (response.status === 200) {
-      console.log(`Fetched designs: ${JSON.stringify(response.data)}`); // Debug log
       setDesigns(response.data);
     } else {
       showToast("error", "Failed to fetch project designs.");
@@ -327,7 +326,6 @@ export const updatePinLocation = async (projectId, pinId, location) => {
         },
       }
     );
-    showToast("success", "Pin location updated successfully");
   } catch (error) {
     console.error("Error updating pin location:", error);
     showToast("error", "Failed to update pin location");

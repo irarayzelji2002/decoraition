@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
@@ -7,6 +7,7 @@ import update from "immutability-helper";
 import TopBar from "../../components/TopBar";
 import MapPin from "./MapPin";
 import { fetchPins, savePinOrder } from "./backend/ProjectDetails";
+import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 
 const ItemType = {
@@ -45,6 +46,7 @@ function PinOrder() {
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
   const [pins, setPins] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (projectId) {
@@ -69,8 +71,14 @@ function PinOrder() {
     setPins(updatedPins);
   };
 
-  const handleSave = () => {
-    savePinOrder(projectId, pins);
+  const handleSave = async () => {
+    try {
+      await savePinOrder(projectId, pins);
+      toast.success("Pins order saved successfully!");
+      navigate(`/planMap/${projectId}`);
+    } catch (error) {
+      toast.error("Failed to save pins order.");
+    }
   };
 
   const isMobile = window.innerWidth <= 768;

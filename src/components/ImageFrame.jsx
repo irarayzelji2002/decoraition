@@ -55,7 +55,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) =
             key={pin.id}
             bounds="parent"
             disabled={!draggable}
-            defaultPosition={{ x: position.x, y: position.y }}
+            position={{ x: position.x, y: position.y }}
             onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
           >
             <div className="pin" style={{ position: "absolute" }}>
@@ -99,7 +99,7 @@ function MapPinIcon({ number, fill }) {
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
             result="hardAlpha"
           />
           <feMorphology

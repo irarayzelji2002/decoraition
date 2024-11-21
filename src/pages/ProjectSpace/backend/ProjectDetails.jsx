@@ -290,3 +290,74 @@ export const savePinOrder = async (projectId, pins) => {
     console.error("Error saving pin order:", error);
   }
 };
+
+export const handleAddCollaborators = async (
+  project,
+  emails,
+  role,
+  message,
+  notifyPeople,
+  user
+) => {
+  try {
+    const response = await axios.post(
+      `/api/project/${project.id}/share`,
+      { userId: user.id, emails, role, message, notifyPeople },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      return {
+        success: true,
+        message: "Project shared successfully",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Failed to share project",
+      };
+    }
+  } catch (error) {
+    console.error("Error sharing project:", error);
+    return {
+      success: false,
+      message: error.response?.data?.error || "Failed to share project",
+    };
+  }
+};
+
+export const handleAccessChange = async (project, initEmailsWithRole, emailsWithRole, user) => {
+  try {
+    const response = await axios.post(
+      `/api/project/${project.id}/change-access`,
+      { userId: user.id, initEmailsWithRole, emailsWithRole },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      return {
+        success: true,
+        message: "Project collaborators' access changed",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Failed to change access of project collaborators",
+      };
+    }
+  } catch (error) {
+    console.error("Error changing access of project collaborators:", error);
+    return {
+      success: false,
+      message: error.response?.data?.error || "Failed to change access of project collaborators",
+    };
+  }
+};

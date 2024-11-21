@@ -363,7 +363,10 @@ export const getUser = async (userId) => {
 
 export const getUsernames = async (userIds) => {
   try {
-    const response = await axios.post("/api/user/get-usernames", { userIds });
+    const response = await axios.post(
+      "/api/user/get-usernames",
+      Array.isArray(userIds) ? userIds : [userIds]
+    );
 
     if (response.status === 200) {
       const usernames = response.data.usernames;

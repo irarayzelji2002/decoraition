@@ -281,6 +281,7 @@ function DesignHead({
     handleEditNameToggle();
   };
 
+  // Rename Navbar Action
   const handleBlur = async () => {
     // Save the name when the user clicks away from the input field
     if (!isEditingName) {
@@ -296,7 +297,7 @@ function DesignHead({
     else showToast("success", result.message);
   };
 
-  // Download Modal Action
+  // Add Collaborators Modal Action
   const handleShare = async (design, emails, role, message, notifyPeople = false) => {
     if (emails.length === 0) {
       return { success: false, message: "No email addresses added" };
@@ -326,6 +327,7 @@ function DesignHead({
     }
   };
 
+  // Manage Access Modal Action
   const handleAccessChange = async (design, initEmailsWithRole, emailsWithRole) => {
     // Filter emails with role changes and create synchronized lists
     const changedEmailsWithRole = emailsWithRole.filter((email) => {
@@ -437,11 +439,7 @@ function DesignHead({
     }
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle("dark-mode", !darkMode);
-  };
-
+  // Navigate to settings
   const handleSettings = () => {
     navigate(`/settings/design/${design.id}`, {
       state: { navigateFrom: navigateFrom },
@@ -450,13 +448,7 @@ function DesignHead({
 
   return (
     <div className={`designHead stickyMenu`}>
-      <DrawerComponent
-        isDrawerOpen={isDrawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        toggleDarkMode={toggleDarkMode}
-        handleLogout={handleLogout}
-        darkMode={darkMode}
-      />
+      <DrawerComponent isDrawerOpen={isDrawerOpen} onClose={() => setDrawerOpen(false)} />
       <Version
         isDrawerOpen={isHistoryOpen}
         onClose={handleHistoryClose}

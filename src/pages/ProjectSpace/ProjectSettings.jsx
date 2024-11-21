@@ -32,6 +32,7 @@ import {
 import { set } from "lodash";
 import { switchStyles } from "../DesignSpace/DesignSettings";
 import LoadingPage from "../../components/LoadingPage";
+import { selectStyles, selectStylesDisabled, menuItemStyles } from "../DesignSpace/DesignSettings";
 
 export const theme = createTheme({
   components: {
@@ -824,96 +825,3 @@ const InactivitySetting = ({ label, value, onChange, options, disabled }) => (
     </Select>
   </Box>
 );
-
-// Reusable styles for MenuItem
-const menuItemStyles = {
-  color: "var(--color-white)",
-  backgroundColor: "var(--dropdown)", //bgColor
-  transition: "all 0.3s ease",
-  display: "block",
-  minHeight: "auto",
-  "&:hover": {
-    backgroundColor: "var(--dropdownHover) !important",
-  },
-  "&.Mui-selected": {
-    backgroundColor: "var(--dropdownSelected) !important",
-    color: "var(--color-white)",
-    fontWeight: "bold",
-  },
-  "&.Mui-selected:hover": {
-    backgroundColor: "var(--dropdownSelectedHover) !important",
-  },
-};
-
-// Styles for Select
-const selectStyles = {
-  fontFamily: '"Inter", sans-serif !important',
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "var(--borderInput)",
-    borderWidth: 2,
-    borderRadius: "10px",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "var(--borderInput)",
-  },
-  "& .MuiSelect-select": {
-    color: "var(--color-white)",
-    WebkitTextFillColor: "var(--color-white)",
-  },
-  "& .MuiSelect-select.MuiInputBase-input": {
-    padding: "12px 40px 12px 20px",
-  },
-  "& .MuiSelect-icon": {
-    color: "var(--color-white)",
-    WebkitTextFillColor: "var(--color-white)",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "var(--borderInput)",
-  },
-};
-
-const selectStylesDisabled = {
-  fontFamily: '"Inter", sans-serif !important',
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "transparent",
-    borderWidth: 2,
-    borderRadius: "10px",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "transparent",
-  },
-  "& .MuiSelect-select": {
-    color: "var(--color-white) !important",
-    WebkitTextFillColor: "var(--color-white)",
-    "&:focus": {
-      color: "var(--color-white)",
-    },
-  },
-  "& .MuiSelect-select.MuiInputBase-input": {
-    padding: "12px 40px 12px 20px",
-  },
-  "& .MuiSelect-icon": {
-    color: "var(--color-white)",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "transparent",
-  },
-  "&.Mui-disabled": {
-    backgroundColor: "transparent",
-    "& .MuiOutlinedInput-notchedOutline": {
-      borderColor: "transparent",
-    },
-    "& .MuiSelect-icon": {
-      color: "transparent",
-    },
-    "& .MuiSelect-select": {
-      color: "var(--color-white)",
-      WebkitTextFillColor: "var(--color-white)",
-      paddingLeft: 0,
-      paddingRight: 0,
-    },
-    "& .MuiSvgIcon-root": {
-      color: "transparent !important",
-    },
-  },
-};

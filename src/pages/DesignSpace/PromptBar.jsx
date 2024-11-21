@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../css/design.css";
 import {
   FormControl,
@@ -32,6 +33,7 @@ import AddColor from "./svg/AddColor";
 import NoImage from "./svg/NoImage";
 import CreatePallete from "./CreatePallete";
 import ConfirmDeselectMaskModal from "./ConfirmDeselectMaskModal";
+import NavigationConfirmationDialog from "../../components/NavigationConfirmDialog";
 import { extendTheme, CssVarsProvider } from "@mui/joy/styles";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { togglePromptBar, toggleComments } from "./backend/DesignActions";
@@ -54,6 +56,7 @@ import {
   createDesignVersion,
 } from "./backend/DesignActions";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { usePreventNavigation } from "../../hooks/usePreventNavigation";
 import { checkValidServiceWorker } from "../../serviceWorkerRegistration";
 import { AutoTokenizer } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.5.0";
 
@@ -128,6 +131,7 @@ function PromptBar({
   designVersion,
   samMasks,
   validateApplyMask,
+  isGenerating,
 }) {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
   const isOnline = useNetworkStatus();
@@ -161,6 +165,28 @@ function PromptBar({
 
   const [isSmallWidth, setIsSmallWidth] = useState(false);
   const [isLess600, setIsLess600] = useState(false);
+
+  const navigate = useNavigate();
+  const [showNavDialog, setShowNavDialog] = useState(false);
+
+  useEffect(() => {
+    // Clear any leftover history state when arriving at homepage
+    window.history.replaceState(null, "", window.location.pathname);
+  }, []);
+
+  usePreventNavigation(isGenerateImgBtbDisabled && isGenerating, setShowNavDialog);
+
+  const handleNavigationConfirm = () => {
+    setIsGenerateImgBtbDisabled(false);
+    resetStateVariables();
+    setGenerationErrors({});
+    setShowNavDialog(false);
+    navigate(-1);
+  };
+
+  const handleNavigationCancel = () => {
+    setShowNavDialog(false);
+  };
 
   const customWordList = new Set([
     ...Object.values(naughtyWords).flat(),
@@ -1823,6 +1849,14 @@ function PromptBar({
         isOpen={confirmDeselectMaskOpen}
         onClose={() => setConfirmDeselectMaskOpen(false)}
         handleConfirm={handleConfirmDeselectMask}
+      />
+
+      {/* Confirm browser back modal */}
+      <NavigationConfirmationDialog
+        isOpen={showNavDialog}
+        onClose={handleNavigationCancel}
+        onConfirm={handleNavigationConfirm}
+        message="Image generation is in progress. Are you sure you want to leave? This will cancel the generation process."
       />
     </>
   );

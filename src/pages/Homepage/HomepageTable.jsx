@@ -20,6 +20,8 @@ import { visuallyHidden } from "@mui/utils";
 import { getUsername } from "./backend/HomepageActions";
 import "../../css/homepage.css";
 import { projectId } from "../../../server/firebaseConfig";
+import { TablePagination } from "@mui/material";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function EnhancedTableHead(props) {
   const {
@@ -41,6 +43,25 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
+        <TableCell
+          sx={{
+            padding: "5px 10px 5px 20px",
+            width: "32px",
+            minWidth: "32px",
+            maxWidth: "32px !important",
+            backgroundColor: "var(--bgMain)",
+            color: "var(--color-white)",
+            borderBottom: "1px solid var(--table-stroke)",
+            "&:hover": {
+              backgroundColor: "var(--bgMain)",
+              color: "var(--color-white)",
+            },
+          }}
+        >
+          <div className="miniThumbnail" style={{ visibility: "hidden" }}>
+            <img src="" alt="" />
+          </div>
+        </TableCell>
         {headCells.map(
           (headCell) =>
             !headCell.hidden && (
@@ -133,8 +154,11 @@ function EnhancedTable({
   sortOrders,
   optionsState,
   setOptionsState,
+  isHomepage,
 }) {
   const navigate = useNavigate();
+  const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
+    useSharedProps();
 
   const [selected, setSelected] = useState([]);
   //   const [page, setPage] = useState(0);
@@ -188,8 +212,13 @@ function EnhancedTable({
   //   };
 
   // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
-  const visibleRows = rows;
+  const emptyRows =
+    !isHomepage && page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+
+  // Calculate pagination
+  const startIndex = page * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const visibleRows = rows.slice(startIndex, endIndex);
 
   const [clickedId, setClickedId] = useState("");
 
@@ -222,15 +251,83 @@ function EnhancedTable({
     console.log("showOptions:", optionsState.showOptions, "; selectedId:", optionsState.selectedId);
   }, [optionsState]);
 
+  const getDesignImage = (designId) => {
+    // Get the design
+    const fetchedDesign =
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
+    if (!fetchedDesign || !fetchedDesign.history || fetchedDesign.history.length === 0) {
+      return "";
+    }
+
+    // Get the latest designVersionId
+    const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
+    const fetchedLatestDesignVersion =
+      userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
+      designVersions.find((designVer) => designVer.id === latestDesignVersionId);
+    if (
+      !fetchedLatestDesignVersion ||
+      !fetchedLatestDesignVersion.images ||
+      fetchedLatestDesignVersion.images.length === 0
+    ) {
+      return "";
+    }
+
+    // Return the first image's link from the fetched design version
+    return fetchedLatestDesignVersion.images[0].link;
+  };
+
+  const getProjectImage = (projectId) => {
+    // Get the project
+    const fetchedProject =
+      userProjects.find((project) => project.id === projectId) ||
+      projects.find((project) => project.id === projectId);
+    if (!fetchedProject || fetchedProject.designs.length === 0) {
+      return "";
+    }
+
+    // Get the latest designId (the last one in the designIds array)
+    const latestDesignId = fetchedProject.designs[fetchedProject.designs.length - 1];
+
+    // Return the design image by calling getDesignImage
+    return getDesignImage(latestDesignId);
+  };
+
   return (
     <Box sx={{ width: "100%", background: "var(--bgMain)" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
+      <Paper sx={{ width: "100%", mb: 2, boxShadow: "none" }}>
         <TableContainer
           sx={{
             overflowY: "visible",
             background: "var(--bgMain)",
-            paddingBottom: "100px",
             height: "fit-content",
+            paddingBottom: optionsState.showOptions
+              ? `${(() => {
+                  const rowIndex = visibleRows.findIndex(
+                    (row) => row.id === optionsState.selectedId
+                  );
+                  const totalRows = visibleRows.length;
+                  const rowsFromBottom = totalRows - rowIndex;
+                  // Get the height of the current row based on content
+                  const getCurrentRowHeight = (row) => {
+                    const content = row?.projectName || row?.designName || "";
+                    if (content.length > 100) return 72; // 3 lines
+                    if (content.length > 50) return 52; // 2 lines
+                    return 45; // 1 line
+                  };
+                  // If selected row is in the last 12 rows
+                  if (rowsFromBottom <= 12) {
+                    const currentRowHeight = getCurrentRowHeight(visibleRows[rowIndex]);
+                    // Calculate total height of rows below selected row
+                    const heightOfRowsBelow = visibleRows
+                      .slice(rowIndex + 1)
+                      .reduce((total, row) => total + getCurrentRowHeight(row), 0);
+                    // Return dropdown height minus height of rows below
+                    return 477 - heightOfRowsBelow;
+                  }
+                  return 0; // Default padding when dropdown isn't near bottom
+                })()}px`
+              : "0px",
           }}
         >
           <Table sx={{ minWidth: 320, width: "100%" }} stickyHeader aria-label="sticky table">
@@ -263,28 +360,52 @@ function EnhancedTable({
                       },
                     }}
                   >
+                    <TableCell
+                      sx={{
+                        padding: "5px 10px 5px 20px",
+                        margin: 0,
+                        width: "32px",
+                        minWidth: "32px",
+                        maxWidth: "32px !important",
+                        height: "fit-content",
+                        borderBottom: "1px solid var(--table-stroke)",
+                        color: "var(--color-white)",
+                        backgroundColor: "var(--table-rows)",
+                        "&:hover": {
+                          color: "var(--color-white)",
+                          backgroundColor: "var(--table-rows-hover)",
+                        },
+                      }}
+                      onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
+                    >
+                      <div className="miniThumbnail">
+                        <img src={getDesignImage(row.id)} alt="" />
+                      </div>
+                    </TableCell>
                     {headCells.map((column) => {
                       const value = row[column.id];
                       return (
                         !column.hidden && (
-                          <TableCell
-                            key={column.id}
-                            align={column.align}
-                            sx={{
-                              paddingTop: "5px",
-                              paddingBottom: "5px",
-                              borderBottom: "1px solid var(--table-stroke)",
-                              color: "var(--color-white)",
-                              backgroundColor: "var(--table-rows)",
-                              //   "&:hover": {
-                              //     color: "var(--color-white)",
-                              //     backgroundColor: "var(--table-rows-hover)",
-                              //   },
-                            }}
-                            onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
-                          >
-                            {column.format && !column.hidden ? column.format(value) : value}
-                          </TableCell>
+                          <>
+                            <TableCell
+                              key={column.id}
+                              align={column.align}
+                              sx={{
+                                paddingTop: "5px",
+                                paddingBottom: "5px",
+                                borderBottom: "1px solid var(--table-stroke)",
+                                color: "var(--color-white)",
+                                backgroundColor: "var(--table-rows)",
+                                //   "&:hover": {
+                                //     color: "var(--color-white)",
+                                //     backgroundColor: "var(--table-rows-hover)",
+                                //   },
+                              }}
+                              onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
+                            >
+                              {column.format && !column.hidden ? column.format(value) : value}
+                            </TableCell>
+                          </>
                         )
                       );
                     })}
@@ -330,22 +451,43 @@ function EnhancedTable({
               })}
               {emptyRows > 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} />
+                  <TableCell
+                    colSpan={6}
+                    sx={{
+                      borderBottom: 0,
+                      "&:hover": {
+                        backgroundColor: "transparent",
+                      },
+                    }}
+                  />
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </TableContainer>
         <Box /> {/* Add extra space beneath the table */}
-        {/* <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        /> */}
+        {/* {!isHomepage && (
+          <TablePagination
+            rowsPerPageOptions={[25, 50, 100]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              color: "var(--color-white)",
+
+              "& .MuiTablePagination-select": {
+                color: "var(--color-white)",
+              },
+
+              "& .MuiTablePagination-selectIcon": {
+                color: "var(--color-white)",
+              },
+            }}
+          />
+        )} */}
       </Paper>
     </Box>
   );
@@ -498,7 +640,7 @@ export default function HomepageTable({
       rows={sortedRows}
       headCells={columns}
       page={page - 1}
-      rowsPerPage={isHomepage ? 10 + numToShowMore : 25}
+      rowsPerPage={isHomepage ? 8 + numToShowMore : 15}
       // 10 + numToShowMore so that it will render in one page, and not apply pagination
       handleChangePage={handleChangePage}
       handleChangeRowsPerPage={handleChangeRowsPerPage}
@@ -510,6 +652,7 @@ export default function HomepageTable({
       sortOrders={sortOrders}
       optionsState={optionsState}
       setOptionsState={setOptionsState}
+      isHomepage={isHomepage}
     />
   );
 }

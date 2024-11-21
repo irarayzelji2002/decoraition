@@ -27,6 +27,11 @@ import {
   dialogContentStyles,
   dialogActionsStyles,
 } from "./RenameModal";
+import {
+  selectStyles,
+  selectStylesDisabled,
+  menuItemStyles,
+} from "../pages/DesignSpace/DesignSettings";
 
 const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
   // object is a design if isDesign is true else its a project object
@@ -645,95 +650,5 @@ const formControlStyles = {
   },
   "& .MuiSvgIcon-root": {
     color: "var(--color-white)", // Set the arrow color to white
-  },
-};
-
-const menuItemStyles = {
-  color: "var(--color-white)",
-  backgroundColor: "var(--dropdown)", //bgColor
-  transition: "all 0.3s ease",
-  display: "block",
-  minHeight: "auto",
-  "&:hover": {
-    backgroundColor: "var(--dropdownHover) !important",
-  },
-  "&.Mui-selected": {
-    backgroundColor: "var(--dropdownSelected) !important",
-    color: "var(--color-white)",
-    fontWeight: "bold",
-  },
-  "&.Mui-selected:hover": {
-    backgroundColor: "var(--dropdownSelectedHover) !important",
-  },
-};
-
-// Styles for Select
-const selectStyles = {
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "var(--borderInput)",
-    borderWidth: 2,
-    borderRadius: "10px",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "var(--borderInput)",
-  },
-  "& .MuiSelect-select": {
-    color: "var(--color-white)",
-    WebkitTextFillColor: "var(--color-white)",
-  },
-  "& .MuiSelect-select.MuiInputBase-input": {
-    padding: "12px 40px 12px 20px",
-  },
-  "& .MuiSelect-icon": {
-    color: "var(--color-white)",
-    WebkitTextFillColor: "var(--color-white)",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "var(--borderInput)",
-  },
-};
-
-const selectStylesDisabled = {
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "transparent",
-    borderWidth: 2,
-    borderRadius: "10px",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "transparent",
-  },
-  "& .MuiSelect-select": {
-    color: "var(--color-white) !important",
-    WebkitTextFillColor: "var(--color-white)",
-    "&:focus": {
-      color: "var(--color-white)",
-    },
-  },
-  "& .MuiSelect-select.MuiInputBase-input": {
-    padding: "12px 40px 12px 20px",
-  },
-  "& .MuiSelect-icon": {
-    color: "var(--color-white)",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "transparent",
-  },
-  "&.Mui-disabled": {
-    backgroundColor: "transparent",
-    "& .MuiOutlinedInput-notchedOutline": {
-      borderColor: "transparent",
-    },
-    "& .MuiSelect-icon": {
-      color: "transparent",
-    },
-    "& .MuiSelect-select": {
-      color: "var(--color-white)",
-      WebkitTextFillColor: "var(--color-white)",
-      paddingLeft: 0,
-      paddingRight: 0,
-    },
-    "& .MuiSvgIcon-root": {
-      color: "transparent !important",
-    },
   },
 };

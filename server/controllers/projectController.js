@@ -1,6 +1,10 @@
 const { db, auth, clientAuth, clientDb } = require("../firebase");
 const { ref, uploadBytes, getDownloadURL, deleteObject } = require("firebase/storage");
 const { doc, getDoc, arrayUnion } = require("firebase/firestore");
+const { Resend } = require("resend");
+const axios = require("axios");
+const resend = new Resend(process.env.REACT_APP_RESEND_API_KEY);
+const appURL = process.env.REACT_APP_URL;
 
 // Create Project
 exports.createProject = async (req, res) => {
@@ -321,6 +325,79 @@ exports.fetchUserProjects = async (req, res) => {
   }
 };
 
+// Check if user is manage (manage), manager not in generalAccessRole
+const isManagerProject = (projectDoc, userId) => {
+  const projectData = projectDoc.data();
+  const isManager = projectData.managers.includes(userId);
+  return isManager;
+};
+
+// Check if user is manager or content manager in project (crud, but not change access/delete project)
+const isContentManagerProject = (projectDoc, userId) => {
+  const projectData = projectDoc.data();
+  if (projectData.projectSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isManager = projectData.managers.includes(userId);
+    const isContentManager = projectData.contentManagers.includes(userId);
+    return isManager || isContentManager;
+  } else {
+    // Anyone with the link
+    if (projectData.projectSettings.generalAccessRole === 2) return true;
+    const isManager = projectData.managers.includes(userId);
+    const isContentManager = projectData.contentManagers.includes(userId);
+    return isManager || isContentManager;
+  }
+};
+
+// Check if user is manager, content manager, contributor (add, edit)
+const isContributorProject = (projectDoc, userId) => {
+  const projectData = projectDoc.data();
+  if (projectData.projectSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isManager = projectData.managers.includes(userId);
+    const isContentManager = projectData.contentManagers.includes(userId);
+    const isContributor = projectData.contributors.includes(userId);
+    return isManager || isContentManager || isContributor;
+  } else {
+    // Anyone with the link
+    if (
+      projectData.projectSettings.generalAccessRole === 1 ||
+      projectData.projectSettings.generalAccessRole === 2
+    )
+      return true;
+    const isManager = projectData.managers.includes(userId);
+    const isContentManager = projectData.contentManagers.includes(userId);
+    const isContributor = projectData.contributors.includes(userId);
+    return isManager || isContentManager || isContributor;
+  }
+};
+
+// Check if user is manager, content manager, contributor, viewer (viewing)
+const isCollaboratorProject = (projectDoc, userId) => {
+  const projectData = projectDoc.data();
+  if (projectData.projectSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isManager = projectData.managers.includes(userId);
+    const isContentManager = projectData.contentManagers.includes(userId);
+    const isContributor = projectData.contributors.includes(userId);
+    const isViewer = projectData.viewers.includes(userId);
+    return isManager || isContentManager || isContributor || isViewer;
+  } else {
+    // Anyone with the link
+    if (
+      projectData.projectSettings.generalAccessRole === 0 ||
+      projectData.projectSettings.generalAccessRole === 1 ||
+      projectData.projectSettings.generalAccessRole === 2
+    )
+      return true;
+    const isManager = projectData.managers.includes(userId);
+    const isContentManager = projectData.contentManagers.includes(userId);
+    const isContributor = projectData.contributors.includes(userId);
+    const isViewer = projectData.viewers.includes(userId);
+    return isManager || isContentManager || isContributor || isViewer;
+  }
+};
+
 // Update Name
 exports.updateProjectName = async (req, res) => {
   const updatedDocuments = [];
@@ -470,6 +547,401 @@ exports.updateProjectSettings = async (req, res) => {
     }
 
     res.status(500).json({ error: "Failed to update project settings" });
+  }
+};
+
+const sendEmail = async (to, subject, body) => {
+  try {
+    // "decoraition@gmail.com" or "no-reply@decoraition.org"
+    const response = await resend.emails.send({
+      from: "no-reply@decoraition.org",
+      to,
+      subject,
+      html: body,
+    });
+
+    console.log("Email sent successfully:", response);
+    return response;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Failed to send email");
+  }
+};
+
+const sendEmailBcc = async (to, bcc, subject, body) => {
+  try {
+    // "decoraition@gmail.com" or "no-reply@decoraition.org"
+    const response = await resend.emails.send({
+      from: "no-reply@decoraition.org",
+      to,
+      bcc,
+      subject,
+      html: body,
+    });
+
+    console.log("Email sent successfully:", response);
+    return response;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Failed to send email");
+  }
+};
+
+exports.shareProject = async (req, res) => {
+  const updatedDocuments = [];
+  const createdDocuments = [];
+
+  try {
+    const { projectId } = req.params;
+    const { userId, emails, role, message, notifyPeople } = req.body;
+
+    const getRoleField = (role) => {
+      switch (role) {
+        case 1:
+          return "editors";
+        case 2:
+          return "commenters";
+        case 0:
+          return "viewers";
+        default:
+          return null;
+      }
+    };
+
+    // Get the project document
+    const projectRef = db.collection("projects").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    const projectData = projectDoc.data();
+    // Check user role in project
+    const allowAction = isManagerProject(projectDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create project version" });
+    }
+
+    // Get owner data for email notification
+    const ownerRef = db.collection("users").doc(projectData.owner);
+    const ownerDoc = await ownerRef.get();
+    if (!ownerDoc.exists) {
+      return res.status(404).json({ error: "Owner not found" });
+    }
+    const ownerData = ownerDoc.data();
+    const ownerUsername = ownerData.username || `${ownerData.firstName} ${ownerData.lastName}`;
+    const ownerEmail = ownerData.email;
+
+    // Process each email
+    const batch = db.batch();
+    const userEmails = [];
+    const nonUserEmails = [];
+
+    for (const email of emails) {
+      const userSnapshot = await db.collection("users").where("email", "==", email).get();
+
+      if (!userSnapshot.empty) {
+        // User exists
+        const userData = userSnapshot.docs[0].data();
+        const collaboratorId = userSnapshot.docs[0].id;
+        userEmails.push({
+          email,
+          username: userData.username || `${userData.firstName} ${userData.lastName}`,
+        });
+
+        // Update user's projects array
+        const userRef = db.collection("users").doc(collaboratorId);
+        const userDoc = await userRef.get();
+        const currentProjects = userDoc.data().projects || [];
+        const newProject = { projectId, role };
+
+        if (!currentProjects.some((project) => project.projectId === projectId)) {
+          updatedDocuments.push({
+            collection: "users",
+            id: collaboratorId,
+            field: "projects",
+            previousValue: currentProjects,
+          });
+          batch.update(userRef, {
+            projects: [...currentProjects, newProject],
+          });
+        }
+
+        // Add to appropriate role array in project
+        const roleField = getRoleField(role);
+        if (roleField) {
+          const currentRoleArray = projectData[roleField] || [];
+          if (!currentRoleArray.includes(collaboratorId)) {
+            updatedDocuments.push({
+              collection: "projects",
+              id: projectId,
+              field: roleField,
+              previousValue: currentRoleArray,
+            });
+            batch.update(projectRef, {
+              [roleField]: [...currentRoleArray, collaboratorId],
+            });
+          }
+        }
+      } else {
+        // User doesn't exist - add to nonUserInvites
+        nonUserEmails.push(email);
+        const nonUserRef = db.collection("nonUserInvites").doc(email);
+        const nonUserDoc = await nonUserRef.get();
+
+        if (nonUserDoc.exists) {
+          const currentProjects = nonUserDoc.data().projects || [];
+          const newProject = { projectId, role };
+
+          if (!currentProjects.some((project) => project.projectId === projectId)) {
+            updatedDocuments.push({
+              collection: "nonUserInvites",
+              id: email,
+              field: "projects",
+              previousValue: currentProjects,
+            });
+            batch.update(nonUserRef, {
+              projects: [...currentProjects, newProject],
+            });
+          }
+        } else {
+          batch.set(nonUserRef, {
+            email,
+            projects: [{ projectId, role }],
+            designs: [],
+          });
+          createdDocuments.push({
+            collection: "nonUserInvites",
+            id: email,
+          });
+        }
+      }
+    }
+
+    // Commit all updates
+    await batch.commit();
+
+    // Send emails if notifyPeople is true
+    if (notifyPeople) {
+      const emailBody = `<p>You have been added as a ${role} in this project.</p>
+        <p>You can access the project here: <a href="${appURL}/project/${projectId}">${
+        projectData.projectName
+      }</a></p>
+        <p>Message from ${ownerUsername} (${ownerEmail}):</p>
+        <p>${message || "No message provided"}</p>`;
+
+      await sendEmailBcc(
+        ownerEmail, // primary recipient
+        [...userEmails.map((ue) => ue.email), ...nonUserEmails], // BCC recipients
+        "DecorAItion - Project Shared with You",
+        emailBody
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Project shared successfully",
+    });
+  } catch (error) {
+    console.error("Error sharing project:", error);
+
+    // Rollback updates to existing documents
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    // Rollback created documents
+    for (const doc of createdDocuments) {
+      try {
+        await db.collection(doc.collection).doc(doc.id).delete();
+        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
+      } catch (deleteError) {
+        console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
+      }
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to share project",
+    });
+  }
+};
+
+exports.changeAccessProject = async (req, res) => {
+  const updatedDocuments = [];
+
+  try {
+    const { projectId } = req.params;
+    const { userId, initEmailsWithRole, emailsWithRole } = req.body;
+
+    // Get project document
+    const projectRef = db.collection("projects").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found",
+      });
+    }
+    const projectData = projectDoc.data();
+    // Check user role in project
+    const allowAction = isManagerProject(projectDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create project version" });
+    }
+
+    // Get all users by email
+    const usersSnapshot = await db
+      .collection("users")
+      .where(
+        "email",
+        "in",
+        emailsWithRole.map((e) => e.email.toLowerCase())
+      )
+      .get();
+
+    const usersByEmail = {};
+    usersSnapshot.forEach((doc) => {
+      usersByEmail[doc.data().email.toLowerCase()] = {
+        id: doc.id,
+        ...doc.data(),
+      };
+    });
+
+    // Update parent documents (users) first
+    for (const { email, role } of emailsWithRole) {
+      const lowerEmail = email.toLowerCase();
+      const user = usersByEmail[lowerEmail];
+      if (!user) continue;
+
+      const userRef = db.collection("users").doc(user.id);
+      const userDoc = await userRef.get();
+      const userData = userDoc.data();
+
+      // Update user's projects array
+      const userProjects = userData.projects || [];
+      const projectIndex = userProjects.findIndex((d) => d.projectId === projectId);
+
+      if (projectIndex >= 0) {
+        userProjects[projectIndex].role = role;
+      } else {
+        userProjects.push({ projectId, role });
+      }
+
+      updatedDocuments.push({
+        ref: userRef,
+        field: "projects",
+        previousValue: userData.projects,
+      });
+      await userRef.update({ projects: userProjects });
+    }
+
+    // Update project document (child)
+    const editors = [...(projectData.editors || [])];
+    const commenters = [...(projectData.commenters || [])];
+    const viewers = [...(projectData.viewers || [])];
+
+    // Remove users from their previous roles first
+    for (const { email } of initEmailsWithRole) {
+      const lowerEmail = email.toLowerCase();
+      const user = usersByEmail[lowerEmail];
+      if (!user) continue;
+
+      const initRole = initEmailsWithRole.find((e) => e.email.toLowerCase() === lowerEmail)?.role;
+
+      // Remove from previous role array
+      switch (initRole) {
+        case 1:
+          const editorIndex = editors.indexOf(user.id);
+          if (editorIndex > -1) editors.splice(editorIndex, 1);
+          break;
+        case 2:
+          const commenterIndex = commenters.indexOf(user.id);
+          if (commenterIndex > -1) commenters.splice(commenterIndex, 1);
+          break;
+        case 0:
+          const viewerIndex = viewers.indexOf(user.id);
+          if (viewerIndex > -1) viewers.splice(viewerIndex, 1);
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Add users to their new roles
+    for (const { email, role } of emailsWithRole) {
+      const lowerEmail = email.toLowerCase();
+      const user = usersByEmail[lowerEmail];
+      if (!user) continue;
+
+      // Add to new role array
+      switch (role) {
+        case 1:
+          if (!editors.includes(user.id)) editors.push(user.id);
+          break;
+        case 2:
+          if (!commenters.includes(user.id)) commenters.push(user.id);
+          break;
+        case 0:
+          if (!viewers.includes(user.id)) viewers.push(user.id);
+          break;
+        default:
+          break;
+      }
+    }
+
+    updatedDocuments.push({
+      ref: projectRef,
+      previousValue: {
+        editors: projectData.editors,
+        commenters: projectData.commenters,
+        viewers: projectData.viewers,
+      },
+    });
+    await projectRef.update({
+      editors,
+      commenters,
+      viewers,
+      modifiedAt: new Date(),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Project collaborators' access changed",
+    });
+  } catch (error) {
+    console.error("Error updating project:", error);
+
+    // Rollback updates
+    for (const update of updatedDocuments) {
+      try {
+        if (update.field) {
+          await update.ref.update({ [update.field]: update.previousValue });
+        } else {
+          await update.ref.update(update.previousValue);
+        }
+      } catch (rollbackError) {
+        console.error("Error rolling back update:", rollbackError);
+      }
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to change access of project collaborators",
+    });
   }
 };
 

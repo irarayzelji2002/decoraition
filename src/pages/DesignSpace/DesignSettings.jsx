@@ -747,6 +747,9 @@ export const selectStyles = {
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: "var(--borderInput)",
   },
+  "& .MuiSvgIcon-root": {
+    marginRight: "8px",
+  },
 };
 
 export const selectStylesDisabled = {
@@ -774,6 +777,9 @@ export const selectStylesDisabled = {
   },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: "transparent",
+  },
+  "& .MuiSvgIcon-root": {
+    marginRight: "8px",
   },
   "&.Mui-disabled": {
     backgroundColor: "transparent",

@@ -24,7 +24,7 @@ import "../../css/project.css";
 import { fetchDesigns, handleDeleteDesign, fetchProjectDesigns } from "./backend/ProjectDetails";
 import { Button } from "@mui/material";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
-import { HorizontalIcon, VerticalIcon } from "./svg/ExportIcon";
+import { HorizontalIcon, TiledIcon, VerticalIcon } from "./svg/ExportIcon";
 import { Typography } from "@mui/material";
 import { ListIcon } from "./svg/ExportIcon";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
@@ -35,6 +35,7 @@ import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { formatDateLong, getUsername } from "../Homepage/backend/HomepageActions";
 import axios from "axios";
 import HomepageTable from "../Homepage/HomepageTable";
+import { usePreventNavigation } from "../../hooks/usePreventNavigation";
 
 function Project() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -54,8 +55,8 @@ function Project() {
   });
   const [filteredDesignsForTable, setFilteredDesignsForTable] = useState([]);
   const [loadingDesigns, setLoadingDesigns] = useState(true);
-  const [sortBy, setSortBy] = useState("");
-  const [order, setOrder] = useState("");
+  const [sortBy, setSortBy] = useState("none");
+  const [order, setOrder] = useState("none");
 
   const handleVerticalClick = () => {
     setIsVertical(true);
@@ -80,16 +81,19 @@ function Project() {
   const sortDesigns = (sortBy, order) => {
     const sortedDesigns = [...designs].sort((a, b) => {
       let comparison = 0;
-      if (sortBy === "name") {
-        comparison = a.designName.localeCompare(b.designName);
-      } else if (sortBy === "owner") {
-        comparison = a.owner.localeCompare(b.owner);
-      } else if (sortBy === "created") {
-        comparison = a.createdAtTimestamp - b.createdAtTimestamp;
-      } else if (sortBy === "modified") {
-        comparison = a.modifiedAtTimestamp - b.modifiedAtTimestamp;
+      if (sortBy && sortBy !== "none" && order && order !== "none") {
+        if (sortBy === "name") {
+          comparison = a.designName.localeCompare(b.designName);
+        } else if (sortBy === "owner") {
+          comparison = a.owner.localeCompare(b.owner);
+        } else if (sortBy === "created") {
+          comparison = a.createdAtTimestamp - b.createdAtTimestamp;
+        } else if (sortBy === "modified") {
+          comparison = a.modifiedAtTimestamp - b.modifiedAtTimestamp;
+        }
+        return order === "ascending" ? comparison : -comparison;
       }
-      return order === "ascending" ? comparison : -comparison;
+      return [...designs];
     });
     setFilteredDesignsForTable(sortedDesigns);
   };
@@ -268,12 +272,17 @@ function Project() {
             inputProps={{ "aria-label": "search google maps" }}
           />
         </Paper>
-        <Dropdowns
-          sortBy={sortBy}
-          order={order}
-          onSortByChange={handleSortByChange}
-          onOrderChange={handleOrderChange}
-        />
+        {!isVertical && (
+          <div className="dropdown-container">
+            <Dropdowns
+              sortBy={sortBy}
+              order={order}
+              onSortByChange={handleSortByChange}
+              onOrderChange={handleOrderChange}
+              isDesign={true}
+            />
+          </div>
+        )}
         <div
           style={{
             display: "flex",
@@ -320,12 +329,24 @@ function Project() {
                 <IconButton
                   style={{ marginRight: "10px" }}
                   onClick={handleHorizontalClick}
-                  sx={{ ...iconButtonStyles, padding: "15px", margin: "0px 5px" }}
+                  sx={{
+                    ...iconButtonStyles,
+                    padding: "10px",
+                    marginRight: "10px",
+                    borderRadius: "8px",
+                    backgroundColor: !isVertical ? "var(--nav-card-modal)" : "transparent",
+                  }}
                 >
-                  <HorizontalIcon />
+                  <TiledIcon />
                 </IconButton>
                 <IconButton
-                  sx={{ ...iconButtonStyles, padding: "15px", margin: "0px 5px" }}
+                  sx={{
+                    ...iconButtonStyles,
+                    padding: "10px",
+                    marginRight: "10px",
+                    borderRadius: "8px",
+                    backgroundColor: isVertical ? "var(--nav-card-modal)" : "transparent",
+                  }}
                   onClick={handleVerticalClick}
                 >
                   <ListIcon />
@@ -402,7 +423,7 @@ function Project() {
             </div>
           </div>
         )}
-        <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
+        <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
           {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
       </div>

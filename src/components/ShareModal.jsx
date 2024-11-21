@@ -237,7 +237,7 @@ const ShareModal = ({ isOpen, onClose, handleShare, isDesign, object }) => {
             value={message}
             onChange={handleInputChange}
             sx={{
-              padding: "20px",
+              padding: "15px",
               display: "flex",
               backgroundColor: "transparent",
               "& .MuiInput-root": {
@@ -325,6 +325,7 @@ const selectStyles = {
   },
   "& .MuiSvgIcon-root": {
     color: "var(--color-white)",
+    marginRight: "8px",
   },
 };
 

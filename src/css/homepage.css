@@ -60,6 +60,10 @@
   margin-top: 20px;
 }
 
+.separator.see-all {
+  margin-top: 0;
+}
+
 .homepage {
   background-image: var(--bg-image);
   background-repeat: no-repeat;

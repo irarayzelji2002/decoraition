@@ -709,6 +709,10 @@ textarea {
   transform: rotate(135deg);
 }
 
+.circle-button.add svg {
+  transform: scale(1.1);
+}
+
 /* Container for the smaller buttons */
 .small-buttons {
   display: flex;
@@ -721,8 +725,6 @@ textarea {
 .small-circle-button {
   background-image: var(--gradientCircle);
   color: var(--color-white);
-  width: 70px !important;
-  height: 70px !important;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -736,6 +738,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-right: 4.55px;
 }
 
 /* Icons inside small circular buttons */
@@ -748,6 +751,7 @@ textarea {
   color: var(--always-white);
   font-size: var(--font-size-small);
   font-weight: bold;
+  margin-right: 8px;
 }
 
 /* Hover effect for small and main buttons */

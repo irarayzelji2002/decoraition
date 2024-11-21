@@ -21,7 +21,12 @@ import "../../css/design.css";
 import { useEffect } from "react";
 import DrawerComponent from "../Homepage/DrawerComponent.jsx";
 import { useNavigate } from "react-router-dom";
-import { useHandleNameChange, useProjectDetails } from "./backend/ProjectDetails";
+import {
+  handleAddCollaborators,
+  handleAccessChange as handleAccessChangeProject,
+  useHandleNameChange,
+  useProjectDetails,
+} from "./backend/ProjectDetails";
 import { showToast } from "../../functions/utils.js";
 import { handleDeleteProject } from "../Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
@@ -214,6 +219,7 @@ function ProjectHead({ project }) {
     handleEditNameToggle();
   };
 
+  // Rename Navbar Action
   const handleBlur = async () => {
     // Save the name when the user clicks away from the input field
     if (!isEditingName) {
@@ -228,14 +234,72 @@ function ProjectHead({ project }) {
     else showToast("success", result.message);
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle("dark-mode", !darkMode);
+  // Add Collaborators Modal Action
+  const handleShare = async (project, emails, role, message, notifyPeople = false) => {
+    if (emails.length === 0) {
+      return { success: false, message: "No email addresses added" };
+    }
+    if (!role) {
+      return { success: false, message: "Select a role" };
+    }
+    try {
+      const result = await handleAddCollaborators(
+        project,
+        emails,
+        role,
+        message,
+        notifyPeople,
+        user
+      );
+      if (result.success) {
+        handleClose();
+        handleCloseShareModal();
+        return { success: true, message: "Project shared to collaborators" };
+      } else {
+        return { success: false, message: "Failed to share project to collaborators" };
+      }
+    } catch (error) {
+      console.error("Error sharing project:", error);
+      return { success: false, message: "Failed to share project to collaborators" };
+    }
   };
-  const handleSettings = () => {
-    navigate(`/settings/project/${projectId}`, {
-      state: { navigateFrom: navigateFrom },
+
+  // Manage Access Modal Action
+  const handleAccessChange = async (project, initEmailsWithRole, emailsWithRole) => {
+    // Filter emails with role changes and create synchronized lists
+    const changedEmailsWithRole = emailsWithRole.filter((email) => {
+      const initialEmail = initEmailsWithRole.find(
+        (initEmail) => initEmail.userId === email.userId
+      );
+      return initialEmail && initialEmail.role !== email.role;
     });
+
+    const changedInitEmailsWithRole = initEmailsWithRole.filter((initEmail) =>
+      changedEmailsWithRole.some((email) => email.userId === initEmail.userId)
+    );
+
+    // If no roles have changed, return early
+    if (changedEmailsWithRole.length === 0) {
+      return { success: false, message: "No email addresses changed" };
+    }
+    try {
+      const result = await handleAccessChangeProject(
+        project,
+        changedInitEmailsWithRole,
+        changedEmailsWithRole,
+        user
+      );
+      if (result.success) {
+        handleClose();
+        handleCloseManageAccessModal();
+        return { success: true, message: "Project collaborators' access changed" };
+      } else {
+        return { success: false, message: "Failed to change access of collaborators" };
+      }
+    } catch (error) {
+      console.error("Error changing access of collaborators:", error);
+      return { success: false, message: "Failed to change access of collaborators" };
+    }
   };
 
   // Rename Modal Action
@@ -264,6 +328,13 @@ function ProjectHead({ project }) {
       showToast("error", "Failed to copy link.");
       console.error("Failed to copy: ", err);
     }
+  };
+
+  // Navigate to settings
+  const handleSettings = () => {
+    navigate(`/settings/project/${projectId}`, {
+      state: { navigateFrom: navigateFrom },
+    });
   };
 
   return (
@@ -349,8 +420,9 @@ function ProjectHead({ project }) {
               backgroundColor: "var(--iconButtonActive)",
             },
           }}
+          onClick={handleShareClick}
         >
-          <ShareIcon onClick={handleOpenShareModal} />
+          <ShareIcon />
         </IconButton>
         <IconButton
           sx={{
@@ -491,14 +563,14 @@ function ProjectHead({ project }) {
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={handleCloseShareModal}
-        handleShare={() => {}}
+        handleShare={handleShare}
         isDesign={false}
         object={project}
       />
       <ManageAccessModal
         isOpen={isManageAccessModalOpen}
         onClose={handleCloseManageAccessModal}
-        handleSave={() => {}}
+        handleSave={handleAccessChange}
         isDesign={false}
         object={project}
         isViewCollab={false}
@@ -511,11 +583,11 @@ function ProjectHead({ project }) {
         object={project}
         isViewCollab={true}
       />
-      <ShareConfirmationModal
+      {/* <ShareConfirmationModal
         isOpen={isShareConfirmationModalOpen}
         onClose={handleCloseShareConfirmationModal}
         collaborators={collaborators}
-      />
+      /> */}
       {/* Copy Link (No Modal) */}
       {/* Settings (No Modal) */}
       {/* Download */}
@@ -537,7 +609,7 @@ function ProjectHead({ project }) {
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        handleDelete={() => handleDeleteProject(userDoc.id, projectId, navigate)}
+        handleDelete={() => handleDeleteProject(userDoc.id, project.id, navigate)}
         isDesign={false}
         object={project}
       />

@@ -52,11 +52,11 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
     userDesignVersions,
     projects,
     userProjects,
+    isDarkMode,
   } = useSharedProps();
-  const initDarkMode = userDoc?.theme === 0 ? true : false;
   const [userDesignsLatest, setUserDesignsLatest] = useState([]);
   const [userProjectsLatest, setUserProjectsLatest] = useState([]);
-  const [darkMode, setDarkMode] = useState(initDarkMode);
+  const [darkMode, setDarkMode] = useState(isDarkMode);
 
   // Sorting designs by latest modifiedAt
   useEffect(() => {
@@ -197,8 +197,9 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               ...iconButtonStyles,
               marginLeft: "5px",
             }}
+            onClick={onClose}
           >
-            <ArrowBackIosRoundedIcon onClick={onClose} />
+            <ArrowBackIosRoundedIcon />
           </IconButton>
           <h2 className="navName drawer">DecorAItion</h2>
           <IconButton

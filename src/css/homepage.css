@@ -222,7 +222,7 @@ h2 {
   align-items: start;
 }
 .layout > * {
-  overflow: hidden; /* Prevent content from spilling */
+  /* overflow: hidden; Prevent content from spilling */
   text-overflow: ellipsis; /* Optional: Handles long text */
   white-space: nowrap; /* Optional: Prevent text from wrapping */
   width: 100%;

@@ -219,13 +219,10 @@ function ProjectHead({ project }) {
     if (!isEditingName) {
       return;
     }
-    if (project.projectName === newName.trim()) {
-      setIsEditingName(false);
-      return;
-    }
-    const result = await handleNameChange(project.id, newName, user, userDoc, setIsEditingName);
+    const result = await handleRename(newName);
     if (!result.success) showToast("error", result.message);
     else showToast("success", result.message);
+    setIsEditingName(false);
   };
 
   const toggleDarkMode = () => {
@@ -245,8 +242,7 @@ function ProjectHead({ project }) {
     }
     const result = await handleNameChange(projectId, newName, user, userDoc, setIsEditingName);
     if (result.success) {
-      handleClose();
-      handleCloseRenameModal();
+      setNewName(newName);
       return { success: true, message: "Project name updated successfully" };
     } else {
       return { success: false, message: "Failed to update project name" };

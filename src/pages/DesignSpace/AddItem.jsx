@@ -31,6 +31,7 @@ const AddItem = () => {
   const [selectedImagePreview, setSelectedImagePreview] = useState(null);
   const [isUploadedImage, setIsUploadedImage] = useState(false);
   const [imageLink, setImageLink] = useState("");
+  const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
 
   const [errors, setErrors] = useState({});
 
@@ -132,10 +133,12 @@ const AddItem = () => {
 
   const handleAddItem = async (e) => {
     e.preventDefault();
+    setIsDesignButtonDisabled(true);
     const formErrors = handleValidation();
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
+      setIsDesignButtonDisabled(false);
       return;
     } else {
       setErrors({});
@@ -191,6 +194,8 @@ const AddItem = () => {
       } else {
         showToast("error", "Failed to add item. Please try again.");
       }
+    } finally {
+      setIsDesignButtonDisabled(false);
     }
   };
 
@@ -340,7 +345,18 @@ const AddItem = () => {
             <div className="error-text">{errors?.quantity}</div>
 
             {/* Add Item Button */}
-            <button className="add-item-btn" onClick={handleAddItem}>
+            <button
+              className="add-item-btn"
+              onClick={handleAddItem}
+              disabled={isDesignButtonDisabled}
+              style={{
+                opacity: isDesignButtonDisabled ? "0.5" : "1",
+                cursor: isDesignButtonDisabled ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: !isDesignButtonDisabled && "var(--gradientButton)",
+                },
+              }}
+            >
               Add item
             </button>
           </div>

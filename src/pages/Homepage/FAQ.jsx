@@ -14,23 +14,23 @@ const FAQ = () => {
     {
       question: "Is my subscription account-based or device-based?",
       answer:
-        "Your subscription is account-based, so you can access it on multiple devices as long as you're logged in.",
+        "DecorAItion Planner is completely free, so there’s no subscription needed. Your account is cloud-based, meaning you can log in from any device and access your saved designs seamlessly.",
     },
     {
       question:
         "Can I use any photo for the room interior or does it need to meet certain requirements?",
       answer:
-        "The photo should be well-lit and clearly show the room's dimensions for the AI to work effectively.",
+        "Yes, you can use any photo, but for the best results, we recommend clear, well-lit images with minimal obstructions like furniture or people in the frame. This helps the AI process the image more effectively.",
     },
     {
-      question: "What is the difference between the free and paid options?",
+      question: "What features does the app provide for free?",
       answer:
-        "The free option allows limited design ideas, while the paid version includes full access to all design styles and customization features.",
+        "DecorAItion Planner offers a variety of free features, including the ability to generate images based on your customizations, mask specific areas, and explore a wide range of design styles. You can also manage your budget, create a project timeline, and use the plan map to add pins that mark key areas or items in your design. The app supports collaboration, allowing you to share and work on designs with others, and you can download or share your final designs at no cost.",
     },
     {
       question: "How long does it take for the AI to change the room's interior?",
       answer:
-        "It typically takes just a few seconds, depending on the complexity of the room and your internet connection.",
+        "The AI processes most requests in just a few seconds to a minute, depending on the complexity of the design and your internet speed. It’s quick and seamless!",
     },
     {
       question: "Can I share the images I create using the app on social media?",
@@ -39,7 +39,7 @@ const FAQ = () => {
     {
       question: "Are the styles available for selection limited to a certain number?",
       answer:
-        "There are multiple styles available, and the number may vary depending on your subscription plan.",
+        "Not at all! DecorAItion Planner provides an extensive and growing library of styles to suit your tastes. Whether you love modern, rustic, minimalistic, or eclectic designs, you’ll find something perfect for your room.",
     },
   ];
 
@@ -48,6 +48,7 @@ const FAQ = () => {
       className="faq-page"
       style={{
         background: "var(--bg-decor)",
+        animation: "moveBackground 70s infinite",
         height: "92vh",
         display: "flex",
         alignItems: "center",

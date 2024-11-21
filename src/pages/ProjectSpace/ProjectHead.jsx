@@ -5,30 +5,30 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { ShareIcon } from "../../components/svg/DefaultMenuIcons.jsx";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ChangeModeMenu from "../../components/ChangeModeMenu.jsx";
-import CopyLinkModal from "../../components/CopyLinkModal.jsx";
 import DefaultMenu from "../../components/DefaultMenu.jsx";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal.jsx";
 import DownloadModal from "../../components/DownloadModal.jsx";
 import InfoModal from "../../components/InfoModal.jsx";
 import RenameModal from "../../components/RenameModal.jsx";
-import RestoreModal from "../../components/RestoreModal.jsx";
 import ShareModal from "../../components/ShareModal.jsx";
 import ManageAccessModal from "../../components/ManageAccessModal.jsx";
 import ShareMenu from "../../components/ShareMenu.jsx";
-import MakeCopyModal from "../../components/MakeCopyModal.jsx";
+import { getAuth } from "firebase/auth";
+import { db } from "../../firebase";
+import { onSnapshot, doc, getDoc } from "firebase/firestore";
 import ShareConfirmationModal from "../../components/ShareConfirmationModal.jsx";
 import "../../css/design.css";
 import { useEffect } from "react";
 import DrawerComponent from "../Homepage/DrawerComponent.jsx";
 import { useNavigate } from "react-router-dom";
-import { useHandleNameChange, useProjectDetails } from "./backend/ProjectDetails";
+import { useProjectDetails } from "./backend/ProjectDetails";
 import { showToast } from "../../functions/utils.js";
 import { handleDeleteProject } from "../Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { handleNameChange } from "./backend/ProjectDetails";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 
-function ProjectHead({ project }) {
+function ProjectHead() {
   const location = useLocation();
   const navigateFrom = location.pathname;
 
@@ -64,11 +64,55 @@ function ProjectHead({ project }) {
   const [designs, setDesigns] = useState([]);
   const [userId, setUserId] = useState(null);
   const [projectData, setProjectData] = useState(null);
+  const [project, setProject] = useState(null);
   const { projectId } = useParams();
 
   const navigate = useNavigate();
 
   useProjectDetails(projectId, setUserId, setProjectData, setNewName);
+  useEffect(() => {
+    const auth = getAuth();
+
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUserId(user.uid);
+
+        const fetchProjectDetails = async () => {
+          try {
+            const projectRef = doc(db, "projects", projectId);
+            const projectSnapshot = await getDoc(projectRef);
+            if (projectSnapshot.exists()) {
+              const project = projectSnapshot.data();
+              setProject(project);
+              setNewName(project.name);
+
+              // Listen for real-time updates to the project document
+              const unsubscribeProject = onSnapshot(projectRef, (doc) => {
+                if (doc.exists()) {
+                  const updatedProject = doc.data();
+                  setProject(updatedProject);
+                  setNewName(updatedProject.name);
+                }
+              });
+
+              // Cleanup listener on component unmount
+              return () => unsubscribeProject();
+            } else {
+              console.error("Project not found");
+            }
+          } catch (error) {
+            console.error("Error fetching project details:", error);
+          }
+        };
+
+        fetchProjectDetails();
+      } else {
+        console.error("User is not authenticated");
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup listener on component unmount
+  }, [projectId]);
 
   useEffect(() => {
     // Find access level of the user (to display Manage Access/View Collaborators in ShareMenu)

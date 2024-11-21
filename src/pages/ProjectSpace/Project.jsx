@@ -56,6 +56,7 @@ function Project() {
   const [loadingDesigns, setLoadingDesigns] = useState(true);
   const [sortBy, setSortBy] = useState("");
   const [order, setOrder] = useState("");
+  const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
 
   const handleVerticalClick = () => {
     setIsVertical(true);
@@ -102,6 +103,7 @@ function Project() {
           await fetchProjectDesigns(projectId, setDesigns);
         } catch (error) {
           showToast("error", `Error fetching project designs: ${error.message}`);
+          setLoadingDesigns(false); // Set loading to false on error
         }
       }
     };
@@ -189,6 +191,7 @@ function Project() {
       setFilteredDesignsForTable(tableData);
     } else {
       setFilteredDesignsForTable([]);
+      setLoadingDesigns(false); // Set loading to false if no designs
     }
   };
 
@@ -223,6 +226,12 @@ function Project() {
       console.error("Error creating design:", error);
       showToast("error", "Error creating design! Please try again.");
     }
+  };
+
+  const handleCreateDesignWithLoading = async (projectId) => {
+    setIsDesignButtonDisabled(true);
+    await handleCreateDesign(projectId);
+    setIsDesignButtonDisabled(false);
   };
 
   if (!projectData) {
@@ -388,13 +397,27 @@ function Project() {
       <div className="circle-button-container">
         {menuOpen && (
           <div className="small-buttons">
-            <div className="small-button-container" onClick={() => handleCreateDesign(projectId)}>
+            <div
+              className="small-button-container"
+              onClick={() => !isDesignButtonDisabled && handleCreateDesignWithLoading(projectId)}
+              style={{
+                opacity: isDesignButtonDisabled ? "0.5" : "1",
+                cursor: isDesignButtonDisabled ? "default" : "pointer",
+              }}
+            >
               <span className="small-button-text">Import a Design</span>
               <div className="small-circle-button">
                 <AddDesign />
               </div>
             </div>
-            <div className="small-button-container" onClick={() => handleCreateDesign(projectId)}>
+            <div
+              className="small-button-container"
+              onClick={() => !isDesignButtonDisabled && handleCreateDesignWithLoading(projectId)}
+              style={{
+                opacity: isDesignButtonDisabled ? "0.5" : "1",
+                cursor: isDesignButtonDisabled ? "default" : "pointer",
+              }}
+            >
               <span className="small-button-text">Create a Design</span>
               <div className="small-circle-button">
                 <AddProject />

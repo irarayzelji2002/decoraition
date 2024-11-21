@@ -347,7 +347,7 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                 disabled={!isOnline}
                 sx={{
                   ...outlinedButtonStyles,
-                  color: "white",
+                  color: "var(--color-white)",
                   opacity: !isOnline ? "0.5" : "1",
                   cursor: !isOnline ? "default" : "pointer",
                   "&:hover": {

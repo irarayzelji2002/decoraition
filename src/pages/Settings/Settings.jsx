@@ -811,6 +811,10 @@ function Settings() {
     }
   };
 
+  const handleSwitchToAccountTab = () => {
+    setSelectedTab("Account");
+  };
+
   return (
     <>
       <TopBar state="Settings" navigateTo={navigateTo} navigateFrom={navigateFrom} />
@@ -1031,7 +1035,7 @@ function Settings() {
         {/* Notification Tab Content */}
         {selectedTab === "Notification" && (
           <Box mt={4} className="notification-settings">
-            <Notifications />
+            <Notifications onCancel={handleSwitchToAccountTab} />
           </Box>
         )}
       </div>{" "}

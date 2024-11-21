@@ -41,7 +41,7 @@ const theme = createTheme({
   },
 });
 
-export default function Notifications() {
+export default function Notifications({ onCancel }) {
   const { user, userDoc } = useSharedProps();
   const [allowNotif, setAllowNotif] = useState(userDoc?.notifSettings?.allowNotif ?? true);
   const [deleteNotif, setDeleteNotif] = useState(userDoc?.notifSettings?.deleteNotif ?? true);
@@ -580,6 +580,7 @@ export default function Notifications() {
                 height: "fit-content",
                 opacity: isSaveButtonDisabled ? "0.5" : "1",
                 cursor: isSaveButtonDisabled ? "default" : "pointer",
+                color: "var(--always-white) !important",
               }}
               onClick={handleSaveChangesWithLoading}
               disabled={isSaveButtonDisabled}
@@ -589,7 +590,7 @@ export default function Notifications() {
             <Button
               fullWidth
               variant="contained"
-              onClick={() => {}}
+              onClick={onCancel}
               sx={{ ...outlinedButtonStyles, height: "fit-content" }}
               onMouseOver={(e) =>
                 (e.target.style.backgroundImage =

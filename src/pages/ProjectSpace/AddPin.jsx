@@ -15,8 +15,8 @@ import { ChromePicker } from "react-color";
 import Button from "@mui/material/Button";
 import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
 import ImageFrame from "../../components/ImageFrame";
-import { fetchProjectDesigns, addPinToDatabase, fetchPins } from "./backend/ProjectDetails";
-import { CurrencyExchange } from "@mui/icons-material";
+import { fetchProjectDesigns, addPinToDatabase } from "./backend/ProjectDetails";
+
 
 function AddPin({ EditMode }) {
   const location = useLocation();

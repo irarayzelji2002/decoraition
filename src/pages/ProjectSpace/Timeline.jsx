@@ -120,6 +120,12 @@ function Timeline() {
   };
 
   const handleAddEventClick = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to midnight to compare only dates
+    if (date < today) {
+      showToast("error", "Cannot add event for a past date!");
+      return;
+    }
     const formattedDate = new Date(date);
     formattedDate.setDate(formattedDate.getDate() + 1);
     const formattedDateString = formattedDate.toISOString().split("T")[0];

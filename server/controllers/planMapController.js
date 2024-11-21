@@ -87,7 +87,6 @@ exports.createPin = async (req, res) => {
 exports.getPins = async (req, res) => {
   try {
     const { projectId } = req.params;
-    console.log("Project ID:", projectId);
 
     const planMapSnapshot = await db.collection("pins").where("projectId", "==", projectId).get();
 
@@ -99,11 +98,10 @@ exports.getPins = async (req, res) => {
     const pins = [];
     planMapSnapshot.forEach((doc) => {
       const planMapData = doc.data();
-      console.log("Document data:", planMapData);
+      planMapData.id = doc.id; // Add the document ID to the pin data
       pins.push(planMapData);
     });
 
-    console.log("Pins:", pins);
     res.json(pins);
   } catch (error) {
     console.error("Error fetching pins:", error);
@@ -114,10 +112,10 @@ exports.getPins = async (req, res) => {
 // Update Pin
 exports.updatePin = async (req, res) => {
   try {
-    const { planMapId, pinId } = req.params;
+    const { pinId } = req.params;
     const updateData = req.body;
     updateData.updatedAt = new Date();
-    await db.collection("planMaps").doc(planMapId).collection("pins").doc(pinId).update(updateData);
+    await db.collection("pins").doc(pinId).update(updateData);
     res.json({ message: "Pin updated successfully" });
   } catch (error) {
     console.error("Error updating pin:", error);
@@ -128,8 +126,9 @@ exports.updatePin = async (req, res) => {
 // Delete Pin
 exports.deletePin = async (req, res) => {
   try {
-    const { planMapId, pinId } = req.params;
-    await db.collection("planMaps").doc(planMapId).collection("pins").doc(pinId).delete();
+    const { pinId } = req.params;
+    console.log("Delete pin", pinId);
+    await db.collection("pins").doc(pinId).delete();
     res.json({ message: "Pin deleted successfully" });
   } catch (error) {
     console.error("Error deleting pin:", error);

@@ -95,7 +95,9 @@ function PinOrder() {
               color={pin.color}
             />
           ))}
-          <button className="add-item-btn">Save pins order and color</button>
+          <button className="add-item-btn" onClick={handleSave}>
+            Save pins order and color
+          </button>
           {/* onClick={handleSave}  */}
         </div>
       </div>

@@ -9,6 +9,7 @@ import { query, where, setDoc, deleteDoc, getDocs } from "firebase/firestore";
 import { CheckCircle } from "@mui/icons-material";
 import { DeleteIcon } from "../../../components/svg/DefaultMenuIcons";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 // Adjust the import path as necessary
 
@@ -276,15 +277,18 @@ export const addPinToDatabase = async (projectId, pinData) => {
 
 export const savePinOrder = async (projectId, pins) => {
   try {
-    const response = await fetch(`/api/projects/${projectId}/pins/order`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ pins }),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to save pin order");
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.post(
+      `/api/project/${projectId}/pins/order`,
+      { pins },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      showToast("Saved Pin");
     }
   } catch (error) {
     console.error("Error saving pin order:", error);

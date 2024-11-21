@@ -290,3 +290,23 @@ export const savePinOrder = async (projectId, pins) => {
     console.error("Error saving pin order:", error);
   }
 };
+
+export const deleteProjectPin = async (projectId, pinId) => {
+  try {
+    console.log(`Deleting pin ${pinId} from project ${projectId}`); // Debug log
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.delete(`/api/project/${projectId}/pin/${pinId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.status === 200) {
+      showToast("success", "Pin deleted successfully");
+    } else {
+      showToast("error", "Failed to delete pin");
+    }
+  } catch (error) {
+    console.error("Error deleting pin:", error);
+    showToast("error", "Failed to delete pin");
+  }
+};

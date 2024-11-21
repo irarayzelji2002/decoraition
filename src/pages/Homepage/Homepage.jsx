@@ -1,17 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
-import { showToast } from "../../functions/utils.js";
 import {
-  fetchUserDesigns,
-  fetchUserProjects,
   handleCreateDesign,
   handleCreateProject,
-  handleDeleteDesign,
-  handleDeleteProject,
   handleViewChange,
-  toggleDarkMode,
   toggleMenu,
   formatDate,
   formatDateLong,
@@ -22,8 +15,6 @@ import {
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import { AddIcon } from "../../components/svg/DefaultMenuIcons.jsx";
-import FolderIcon from "@mui/icons-material/Folder";
-import ImageIcon from "@mui/icons-material/Image";
 import KeyboardDoubleArrowUpRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowUpRounded";
 import HomepageTable from "./HomepageTable.jsx";
 import SearchAppBar from "./SearchAppBar.jsx";
@@ -31,15 +22,12 @@ import DesignIcon from "../../components/DesignIcon.jsx";
 import ProjectOptionsHome from "../../components/ProjectOptionsHome.jsx";
 import "../../css/homepage.css";
 import "../../css/design.css";
-import ProjectIcon from "./svg/ProjectIcon.jsx";
-import DesignSvg from "./svg/DesignSvg.jsx";
 import Loading from "../../components/Loading.jsx";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage.jsx";
-import { set } from "lodash";
 import { handleLogout } from "./backend/HomepageFunctions.jsx";
-import { HorizontalIcon, ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
+import { ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
 import { iconButtonStyles } from "./DrawerComponent.jsx";
-import { gradientButtonStyles, outlinedButtonStyles } from "../DesignSpace/PromptBar.jsx";
+import { outlinedButtonStyles } from "../DesignSpace/PromptBar.jsx";
 
 function Homepage() {
   const navigate = useNavigate();

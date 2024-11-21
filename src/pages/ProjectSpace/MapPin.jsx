@@ -6,11 +6,13 @@ import { IconButton, Modal, Button } from "@mui/material";
 import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
 import { useState, useEffect } from "react";
 import { ChromePicker } from "react-color";
+import SimpleDeleteConfirmation from "../../components/SimpleDeleteConfirmation";
 
-const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor }) => {
+const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor, pinId, deletePin }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [value, setValue] = useState("#ffffff");
   const [textColor, setTextColor] = useState("#000000");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   useEffect(() => {
     const isBright = (color) => {
@@ -24,6 +26,12 @@ const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor }) => {
 
     setTextColor(isBright(pinColor) ? "#000000" : "#ffffff");
   }, [pinColor]);
+
+  const handleDelete = () => {
+    console.log(`Deleting pin with ID: ${pinId}`); // Debug log
+    deletePin(pinId);
+    setDeleteConfirmOpen(false);
+  };
 
   const handleChange = (color) => {
     setValue(color.hex);
@@ -122,9 +130,16 @@ const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor }) => {
         <div style={{ display: "flex", width: "50%", justifyContent: "flex-end" }}>
           {!editMode ? (
             <>
-              <ExportIcon />
-              <EditPen />
-              <Trash />
+              <div aria-label="delete">
+                <ExportIcon />
+              </div>
+              <div aria-label="delete">
+                <EditPen />
+              </div>
+
+              <div aria-label="delete" onClick={() => setDeleteConfirmOpen(true)}>
+                <Trash />
+              </div>
             </>
           ) : (
             <>
@@ -135,6 +150,11 @@ const MapPin = ({ title = "Untitled", editMode = false, pinNo, pinColor }) => {
           )}
         </div>
       </div>
+      <SimpleDeleteConfirmation
+        open={deleteConfirmOpen}
+        handleClose={() => setDeleteConfirmOpen(false)}
+        handleDelete={handleDelete}
+      />
     </div>
   );
 };

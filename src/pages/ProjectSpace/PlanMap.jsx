@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
-import { db, auth } from "../../firebase";
-import { fetchDesigns, fetchPins } from "./backend/ProjectDetails";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../firebase";
+import { fetchPins, deleteProjectPin } from "./backend/ProjectDetails";
 import ProjectHead from "./ProjectHead";
 import MapPin from "./MapPin";
 import BottomBarDesign from "./BottomBarProject";
@@ -26,8 +25,6 @@ import {
   dialogTitleStyles,
   dialogContentStyles,
   dialogActionsVertButtonsStyles,
-  gradientButtonStyles,
-  outlinedButtonStyles,
 } from "../../components/RenameModal";
 import ImageFrame from "../../components/ImageFrame";
 
@@ -38,7 +35,6 @@ function PlanMap() {
   const { projectId } = useParams();
   const [pins, setPins] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [designs, setDesigns] = useState([]);
   const [user, setUser] = useState(null);
   const [styleRefModalOpen, setStyleRefModalOpen] = useState(false);
   const [styleRefPreview, setStyleRefPreview] = useState(null);
@@ -46,7 +42,6 @@ function PlanMap() {
   const styleRefFileInputRef = useRef(null);
 
   useEffect(() => {
-    const currentUser = auth.currentUser;
     if (user) {
     }
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -59,37 +54,7 @@ function PlanMap() {
       }
     });
     return () => unsubscribeAuth();
-  }, [user]);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        const fetchProjectDetails = async () => {
-          try {
-            const projectRef = doc(db, "projects", projectId);
-            const projectSnapshot = await getDoc(projectRef);
-            if (projectSnapshot.exists()) {
-              const unsubscribeProject = onSnapshot(projectRef, (doc) => {
-                if (doc.exists()) {
-                  const updatedProject = doc.data();
-                }
-              });
-              return () => unsubscribeProject();
-            } else {
-              console.error("Project not found");
-            }
-          } catch (error) {
-            console.error("Error fetching project details:", error);
-          }
-        };
-        fetchProjectDetails();
-      } else {
-        console.error("User is not authenticated");
-      }
-    });
-    return () => unsubscribe();
-  }, [projectId]);
+  });
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -145,6 +110,15 @@ function PlanMap() {
       reader.readAsDataURL(file);
     }
   };
+  const deletePin = async (pinId) => {
+    try {
+      await deleteProjectPin(projectId, pinId);
+      console.log("Deleting pin lol", pinId);
+      setPins((prevPins) => prevPins.filter((pin) => pin.id !== pinId));
+    } catch (error) {
+      console.error("Error deleting pin:", error);
+    }
+  };
 
   const onFileUpload = (event, setInitStyleRef, setStyleRefPreview) => {
     const file = event.target.files[0];
@@ -188,6 +162,8 @@ function PlanMap() {
                       title={design.designName}
                       pinColor={design.color}
                       pinNo={design.order}
+                      pinId={design.id}
+                      deletePin={() => deletePin(design.id)} // Pass design.id to deletePin
                     />
                   </>
                 );

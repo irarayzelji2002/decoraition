@@ -264,7 +264,7 @@ function Homepage() {
 
       <SearchAppBar onSearchChange={setSearchQuery} searchQuery={searchQuery} />
 
-      <div className="recent-section">
+      <div className="recent-section" style={{ marginBottom: "50px" }}>
         <div className="headerPlace">
           <div className="header">
             <img
@@ -498,7 +498,7 @@ function Homepage() {
           )}
         </div>
 
-        <section className="recent-section" style={{ marginBottom: "200px" }}>
+        <section className="recent-section">
           <div className="recent-designs">
             <div className="separator">
               {/* <ProjectIcon /> */}

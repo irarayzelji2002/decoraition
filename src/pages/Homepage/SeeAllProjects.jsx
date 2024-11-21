@@ -210,7 +210,7 @@ export default function SeeAllProjects() {
   return (
     <>
       <SearchAppBar onSearchChange={(value) => setSearchQuery(value)} searchQuery={searchQuery} />
-      <div className="bg" style={{ background: "none" }}>
+      <div className="bg" style={{ background: "none", marginBottom: "50px" }}>
         <div className="dropdown-container">
           <Dropdowns
             owners={owners}

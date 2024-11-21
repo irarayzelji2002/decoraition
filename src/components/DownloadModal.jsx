@@ -219,7 +219,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       // Design: has a design version
       if (design.history && design.history.length > 0) {
         getVersionDetails(design);
-        if (!filteredOptions.includes("Design")) {
+        if (!filteredOptions?.includes("Design")) {
           filteredOptions.push("Design");
         }
       }
@@ -228,7 +228,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       setProject(project);
       // Designs: has related designs
       if (project.designs.length > 0) {
-        if (!filteredOptions.includes("Designs")) {
+        if (!filteredOptions?.includes("Designs")) {
           filteredOptions.push("Designs");
         }
       }
@@ -250,7 +250,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       if (fetchedBudget.budget?.amount > 0 || fetchedBudget.items?.length > 0) {
         setDownloadOptions((prev) => {
           const newOptions = [...prev];
-          if (!newOptions.includes("Budget")) {
+          if (!newOptions?.includes("Budget")) {
             newOptions.push("Budget");
           }
           return sortDownloadOptions(newOptions, true); // true for design
@@ -271,7 +271,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       if (fetchedTimeline.events.length > 0) {
         setDownloadOptions((prev) => {
           const newOptions = [...prev];
-          if (!newOptions.includes("Timeline")) {
+          if (!newOptions?.includes("Timeline")) {
             newOptions.push("Timeline");
           }
           return sortDownloadOptions(newOptions, false); // false for project
@@ -292,7 +292,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       if (fetchedPlanMap.venuePlan) {
         setDownloadOptions((prev) => {
           const newOptions = [...prev];
-          if (!newOptions.includes("Plan Map")) {
+          if (!newOptions?.includes("Plan Map")) {
             newOptions.push("Plan Map");
           }
           return sortDownloadOptions(newOptions, false);
@@ -313,7 +313,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       if (fetchedProjectBudget.budgets?.length > 0 || fetchedProjectBudget.budget?.amount > 0) {
         setDownloadOptions((prev) => {
           const newOptions = [...prev];
-          if (!newOptions.includes("Budget")) {
+          if (!newOptions?.includes("Budget")) {
             newOptions.push("Budget");
           }
           return sortDownloadOptions(newOptions, false);

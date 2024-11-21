@@ -246,7 +246,7 @@ function EnhancedTable({
             />
             <TableBody>
               {visibleRows.map((row, index) => {
-                const isItemSelected = selected.includes(row.id);
+                const isItemSelected = selected?.includes(row.id);
 
                 return (
                   <TableRow

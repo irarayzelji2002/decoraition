@@ -151,8 +151,8 @@ function Budget() {
 
     const fetchedItems =
       fetchedBudget && fetchedBudget.items
-        ? userItems.filter((item) => fetchedBudget.items.includes(item.id)) ||
-          items.filter((item) => fetchedBudget.items.includes(item.id))
+        ? userItems.filter((item) => fetchedBudget.items?.includes(item.id)) ||
+          items.filter((item) => fetchedBudget.items?.includes(item.id))
         : [];
     setDesignItems(fetchedItems);
 
@@ -180,7 +180,7 @@ function Budget() {
   const updateItems = () => {
     if (budget && budget.items) {
       // Keep existing items that are in the budget
-      const updatedItems = designItems.filter((item) => budget.items.includes(item.id));
+      const updatedItems = designItems.filter((item) => budget.items?.includes(item.id));
 
       // Add or update items from userItems
       budget.items.forEach((itemId) => {

@@ -93,7 +93,7 @@ export const useSamCanvas = (
           // Check if the input value is not empty
           if (samMaskImage) {
             // Check if the value does not match any mask in the masks array
-            const isValueInMasks = masks.includes(samMaskImage);
+            const isValueInMasks = masks?.includes(samMaskImage);
             console.log("Masks:", masks);
             console.log("samMaskImage:", samMaskImage);
             console.log("Is Value in Masks:", isValueInMasks);

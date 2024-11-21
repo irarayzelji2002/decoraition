@@ -107,7 +107,7 @@ function Homepage() {
       );
 
       const filteredDesigns = designsByLatest.filter((design) =>
-        design.designName.toLowerCase().includes(searchQuery.trim().toLowerCase())
+        design.designName.toLowerCase()?.includes(searchQuery.trim().toLowerCase())
       );
 
       setFilteredDesigns(filteredDesigns);
@@ -146,7 +146,7 @@ function Homepage() {
       );
 
       const filteredProjects = projectsByLatest.filter((project) =>
-        project.projectName.toLowerCase().includes(searchQuery.trim().toLowerCase())
+        project.projectName.toLowerCase()?.includes(searchQuery.trim().toLowerCase())
       );
 
       setFilteredProjects(filteredProjects);

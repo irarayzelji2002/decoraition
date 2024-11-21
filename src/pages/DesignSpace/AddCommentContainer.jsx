@@ -68,8 +68,8 @@ function AddCommentContainer({
     // console.log("design", design);
     if (!userId || !design) return "";
     if (userId === design.owner) return "Owner";
-    if (design.editors.includes(userId)) return "Editor";
-    if (design.commenters.includes(userId)) return "Commenter";
+    if (design.editors?.includes(userId)) return "Editor";
+    if (design.commenters?.includes(userId)) return "Commenter";
     return "";
   };
 
@@ -173,9 +173,9 @@ function AddCommentContainer({
     if (firstName.startsWith(search)) return 60;
     if (lastName.startsWith(search)) return 50;
     // Contains gets lowest priority
-    if (username.includes(search)) return 40;
-    if (firstName.includes(search)) return 30;
-    if (lastName.includes(search)) return 20;
+    if (username?.includes(search)) return 40;
+    if (firstName?.includes(search)) return 30;
+    if (lastName?.includes(search)) return 20;
     return 0;
   };
 
@@ -188,8 +188,8 @@ function AddCommentContainer({
             ? users.filter(
                 (user) =>
                   design.owner === user.id ||
-                  design.editors.includes(user.id) ||
-                  design.commenters.includes(user.id)
+                  design.editors?.includes(user.id) ||
+                  design.commenters?.includes(user.id)
               )
             : users;
 
@@ -472,7 +472,7 @@ function AddCommentContainer({
                   if (mentionMatch) {
                     const username = mentionMatch[1];
                     const userId = users.find((opt) => opt.username === username)?.id;
-                    if (userId && mentions.includes(userId)) {
+                    if (userId && mentions?.includes(userId)) {
                       setMentions((prev) => prev.filter((id) => id !== userId));
                       setOpenMentionOptions(true);
                     }

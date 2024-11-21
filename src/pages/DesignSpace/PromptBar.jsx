@@ -289,7 +289,7 @@ function PromptBar({
   const handleImageValidation = (file) => {
     let message = "";
     const acceptedTypes = ["image/png", "image/jpeg", "image/jpg"];
-    if (!acceptedTypes.includes(file.type)) {
+    if (!acceptedTypes?.includes(file.type)) {
       message = "Please upload an image file of png, jpg, or jpeg type";
       showToast("error", message);
     } else {
@@ -560,7 +560,7 @@ function PromptBar({
       const validExtensions = ["jpg", "jpeg", "png"];
       const fileExtension = baseImage.name.split(".").pop().toLowerCase();
 
-      if (!validExtensions.includes(fileExtension)) {
+      if (!validExtensions?.includes(fileExtension)) {
         formErrors.baseImage = "Invalid file type. Please upload a JPG or PNG image.";
       }
     }
@@ -568,7 +568,7 @@ function PromptBar({
       const validExtensions = ["jpg", "jpeg", "png"];
       const fileExtension = styleRef.name.split(".").pop().toLowerCase();
 
-      if (!validExtensions.includes(fileExtension)) {
+      if (!validExtensions?.includes(fileExtension)) {
         formErrors.styleReference = "Invalid file type. Please upload a JPG or PNG image.";
       }
     }
@@ -660,7 +660,7 @@ function PromptBar({
       const validExtensions = ["jpg", "jpeg", "png"];
       const fileExtension = styleRef.name.split(".").pop().toLowerCase();
 
-      if (!validExtensions.includes(fileExtension)) {
+      if (!validExtensions?.includes(fileExtension)) {
         formErrors.styleReference = "Invalid file type. Please upload a JPG or PNG image.";
       }
     }

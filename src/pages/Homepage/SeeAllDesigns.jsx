@@ -60,7 +60,7 @@ export default function SeeAllDesigns() {
       });
 
       const filteredDesigns = designsByLatest.filter((design) =>
-        design.designName.toLowerCase().includes(searchQuery.trim().toLowerCase())
+        design.designName.toLowerCase()?.includes(searchQuery.trim().toLowerCase())
       );
       setFilteredDesigns(filteredDesigns);
 
@@ -114,7 +114,7 @@ export default function SeeAllDesigns() {
     let filteredDesigns = userDesigns.filter((design) => {
       const matchesSearchQuery = design.designName
         .toLowerCase()
-        .includes(searchQuery.trim().toLowerCase());
+        ?.includes(searchQuery.trim().toLowerCase());
       const matchesOwner = owner ? design.owner === owner : true;
       const matchesDateRange =
         dateRange.start && dateRange.end
@@ -208,7 +208,7 @@ export default function SeeAllDesigns() {
     <>
       <SearchAppBar onSearchChange={(value) => setSearchQuery(value)} searchQuery={searchQuery} />
 
-      <div className="bg" style={{ background: "none", marginBottom:"50px" }}>
+      <div className="bg" style={{ background: "none", marginBottom: "50px" }}>
         <div className="dropdown-container">
           <Dropdowns
             owners={owners}

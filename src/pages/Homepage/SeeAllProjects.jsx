@@ -61,7 +61,7 @@ export default function SeeAllProjects() {
       });
 
       const filteredProjects = projectsByLatest.filter((project) =>
-        project.projectName.toLowerCase().includes(searchQuery.trim().toLowerCase())
+        project.projectName.toLowerCase()?.includes(searchQuery.trim().toLowerCase())
       );
       setFilteredProjects(filteredProjects);
 
@@ -117,7 +117,7 @@ export default function SeeAllProjects() {
     let filteredProjects = userProjects.filter((project) => {
       const matchesSearchQuery = project.projectName
         .toLowerCase()
-        .includes(searchQuery.trim().toLowerCase());
+        ?.includes(searchQuery.trim().toLowerCase());
       const matchesOwner = owner ? project.owner === owner : true;
       const matchesDateRange =
         dateRange.start && dateRange.end

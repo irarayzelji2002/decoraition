@@ -50,7 +50,7 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
     const unsubscribeCallbacks = [];
 
     collections.forEach((collectionName) => {
-      if (!generalCollections.includes(collectionName)) {
+      if (!generalCollections?.includes(collectionName)) {
         // console.warn(`Warning: ${collectionName} is not a general collection.`);
         return;
       }
@@ -165,7 +165,7 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
     const unsubscribers = [];
 
     const setupListener = (userDataName, fetchFunction) => {
-      if (!userRelatedCollections.includes(userDataName)) {
+      if (!userRelatedCollections?.includes(userDataName)) {
         // console.warn(`Warning: ${collectionName} is not a user-related collection`);
         return;
       }

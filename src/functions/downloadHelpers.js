@@ -42,16 +42,16 @@ const handleDesignDownload = async (design, category, versionId, fileType, share
     const version = userDesignVersions.find((v) => v.id === versionId);
     if (!version) throw new Error("Design version not found");
 
-    if (["PNG", "JPG"].includes(fileType)) {
+    if (["PNG", "JPG"]?.includes(fileType)) {
       await handleImageDownload(version, fileType);
     } else if (fileType === "PDF") {
       await handleDesignPDF(design, version);
     }
   } else if (category === "Budget") {
     const budget = userBudgets.find((b) => b.designId === design.id);
-    const budgetItems = userItems.filter((item) => budget.items.includes(item.id));
+    const budgetItems = userItems.filter((item) => budget.items?.includes(item.id));
 
-    if (["XLSX", "CSV"].includes(fileType)) {
+    if (["XLSX", "CSV"]?.includes(fileType)) {
       await handleBudgetSpreadsheet(design, budget, budgetItems, fileType);
     } else if (fileType === "PDF") {
       await handleBudgetPDF(design, budget, budgetItems);
@@ -368,7 +368,7 @@ const handleProjectBudget = async (project, projectBudgets, budgets, items, file
     return sum + budgetTotal;
   }, 0);
 
-  if (["XLSX", "CSV"].includes(fileType)) {
+  if (["XLSX", "CSV"]?.includes(fileType)) {
     const data = [
       ["PROJECT", project.projectName],
       ["TOTAL BUDGET", `${projectBudget.budget.currency} ${projectBudget.budget.amount}`],
@@ -379,7 +379,7 @@ const handleProjectBudget = async (project, projectBudgets, budgets, items, file
 
     for (const budget of allBudgets) {
       const design = designs.find((d) => d.id === budget.designId);
-      const budgetItems = items.filter((item) => budget.items.includes(item.id));
+      const budgetItems = items.filter((item) => budget.items?.includes(item.id));
       const budgetTotal = budgetItems.reduce(
         (sum, item) => sum + item.cost.amount * item.quantity,
         0
@@ -444,7 +444,7 @@ const handleProjectBudget = async (project, projectBudgets, budgets, items, file
 
     for (const budget of allBudgets) {
       const design = designs.find((d) => d.id === budget.designId);
-      const budgetItems = items.filter((item) => budget.items.includes(item.id));
+      const budgetItems = items.filter((item) => budget.items?.includes(item.id));
       const budgetTotal = budgetItems.reduce(
         (sum, item) => sum + item.cost.amount * item.quantity,
         0
@@ -520,7 +520,7 @@ const handleTimeline = async (project, timelines, events, fileType) => {
     ]);
   });
 
-  if (["XLSX", "CSV"].includes(fileType)) {
+  if (["XLSX", "CSV"]?.includes(fileType)) {
     if (fileType === "XLSX") {
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(data);

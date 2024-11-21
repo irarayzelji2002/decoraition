@@ -53,7 +53,7 @@ const AddItem = () => {
       // Image validation
       let message = "";
       const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
-      if (!acceptedTypes.includes(file.type)) {
+      if (!acceptedTypes?.includes(file.type)) {
         message = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
         showToast("error", message);
       } else {
@@ -116,7 +116,7 @@ const AddItem = () => {
     // Image validation
     if (isUploadedImage && selectedImage) {
       const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
-      if (!acceptedTypes.includes(selectedImage.type)) {
+      if (!acceptedTypes?.includes(selectedImage.type)) {
         formErrors.image = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
         showToast("error", formErrors.image);
       } else {

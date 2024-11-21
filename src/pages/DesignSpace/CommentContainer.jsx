@@ -218,8 +218,8 @@ const CommentContainer = ({
     // console.log("design", design);
     if (!userId || !design) return "";
     if (userId === design.owner) return "Owner";
-    if (design.editors.includes(userId)) return "Editor";
-    if (design.commenters.includes(userId)) return "Commenter";
+    if (design.editors?.includes(userId)) return "Editor";
+    if (design.commenters?.includes(userId)) return "Commenter";
     return "";
   };
 
@@ -335,9 +335,9 @@ const CommentContainer = ({
     if (firstName.startsWith(search)) return 60;
     if (lastName.startsWith(search)) return 50;
     // Contains gets lowest priority
-    if (username.includes(search)) return 40;
-    if (firstName.includes(search)) return 30;
-    if (lastName.includes(search)) return 20;
+    if (username?.includes(search)) return 40;
+    if (firstName?.includes(search)) return 30;
+    if (lastName?.includes(search)) return 20;
     return 0;
   };
 
@@ -350,8 +350,8 @@ const CommentContainer = ({
             ? users.filter(
                 (user) =>
                   design.owner === user.id ||
-                  design.editors.includes(user.id) ||
-                  design.commenters.includes(user.id)
+                  design.editors?.includes(user.id) ||
+                  design.commenters?.includes(user.id)
               )
             : users;
 
@@ -874,7 +874,7 @@ const CommentContainer = ({
                 if (part.match(/^@\w+(\s|$)/)) {
                   const username = part.trim().substring(1);
                   const userId = users.find((opt) => opt.username === username)?.id;
-                  const isValidMention = mentions.includes(userId);
+                  const isValidMention = mentions?.includes(userId);
 
                   return isValidMention ? (
                     <CustomTooltip
@@ -967,7 +967,7 @@ const CommentContainer = ({
                     if (mentionMatch) {
                       const username = mentionMatch[1];
                       const userId = users.find((opt) => opt.username === username)?.id;
-                      if (userId && updatedMentions.includes(userId)) {
+                      if (userId && updatedMentions?.includes(userId)) {
                         setUpdatedMentions((prev) => prev.filter((id) => id !== userId));
                         setOpenMentionOptions(true);
                       }
@@ -1216,7 +1216,7 @@ const CommentContainer = ({
               {replyTo && (
                 <div>
                   <span style={{ color: "var(--greyText)", fontSize: "0.875rem" }}>
-                    Replying to {replyTo.username}'s reply {replyTo.date.includes("at") && "at"}{" "}
+                    Replying to {replyTo.username}'s reply {replyTo.date?.includes("at") && "at"}{" "}
                     {replyTo.date.replace(" at ", ", ")}
                   </span>
                   <IconButton
@@ -1301,7 +1301,7 @@ const CommentContainer = ({
                     if (mentionMatch) {
                       const username = mentionMatch[1];
                       const userId = users.find((opt) => opt.username === username)?.id;
-                      if (userId && replyMentions.includes(userId)) {
+                      if (userId && replyMentions?.includes(userId)) {
                         setReplyMentions((prev) => prev.filter((id) => id !== userId));
                         setOpenMentionOptions(true);
                       }
@@ -1565,7 +1565,7 @@ const ConfirmDeleteModal = ({ isOpen, onClose, handleDelete, isReply, date }) =>
       <DialogContent sx={dialogContentStyles}>
         <Typography variant="body1" sx={{ marginBottom: "10px", textAlign: "center" }}>
           Are you sure you want to delete your {!isReply ? "comment" : "reply"}{" "}
-          {date.includes("at") && "at"} {date.replace(" at ", ", ")}?
+          {date?.includes("at") && "at"} {date.replace(" at ", ", ")}?
         </Typography>
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>

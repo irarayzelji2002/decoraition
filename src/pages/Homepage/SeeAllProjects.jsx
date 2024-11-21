@@ -54,6 +54,8 @@ export default function SeeAllProjects() {
   const [sortBy, setSortBy] = useState("");
   const [order, setOrder] = useState("");
 
+  const [isCreateProjectButtonDisabled, setIsCreateProjectButtonDisabled] = useState(false);
+
   const loadProjectDataForView = async () => {
     if (userProjects.length > 0) {
       const projectsByLatest = [...userProjects].sort((a, b) => {
@@ -205,6 +207,12 @@ export default function SeeAllProjects() {
 
   const toggleModal = () => {
     // Your modal toggle logic here
+  };
+
+  const handleCreateProjectWithLoading = async () => {
+    setIsCreateProjectButtonDisabled(true);
+    // Your create project logic here
+    setIsCreateProjectButtonDisabled(false);
   };
 
   return (
@@ -394,8 +402,16 @@ export default function SeeAllProjects() {
       <div className="circle-button-container" style={{ bottom: "30px" }}>
         {menuOpen && (
           <div className="small-buttons">
-            <div className="small-button-container" onClick={toggleModal}>
-              <span className="small-button-text">Create a Project</span>
+            <div className="small-button-container" onClick={handleCreateProjectWithLoading}>
+              <span
+                className="small-button-text"
+                style={{
+                  opacity: isCreateProjectButtonDisabled ? "0.5" : "1",
+                  cursor: isCreateProjectButtonDisabled ? "default" : "pointer",
+                }}
+              >
+                Create a Project
+              </span>
               <div className="small-circle-button">
                 <AddProject />
               </div>

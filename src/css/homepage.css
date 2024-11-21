@@ -19,7 +19,7 @@
 }
 .headerPlace {
   position: relative;
-  background-image: var(--bg-full);
+  background-image: var(--bg-decor);
   animation: moveBackground 70s infinite;
   background-repeat: no-repeat;
   background-size: cover;

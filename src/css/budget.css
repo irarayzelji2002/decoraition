@@ -107,7 +107,7 @@
   transform: rotate(135deg);
 }
 
-.small-circle-button {
+/* .small-circle-button {
   background-image: var(--gradientCircle);
   color: var(--color-white);
   width: 60px;
@@ -118,7 +118,7 @@
   align-items: center;
   transition: opacity 0.3s ease;
   cursor: pointer;
-}
+} */
 
 .small-button-container {
   display: flex;

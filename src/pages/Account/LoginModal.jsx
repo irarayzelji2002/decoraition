@@ -38,9 +38,21 @@ export default function LoginModal() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [emailLimitReached, setEmailLimitReached] = useState(false);
+  const [passwordLimitReached, setPasswordLimitReached] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = (event) => event.preventDefault();
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    setEmailLimitReached(e.target.value.length >= 254);
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    setPasswordLimitReached(e.target.value.length >= 50);
+  };
 
   const handleValidation = () => {
     let formErrors = {};
@@ -246,12 +258,17 @@ export default function LoginModal() {
             id="email-address"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             error={!!errors.email}
             helperText={errors.email}
             sx={{ ...commonInputStyles, marginBottom: "20px" }}
-            inputProps={textFieldInputProps}
+            inputProps={{ maxLength: 254, ...textFieldInputProps }}
           />
+          {emailLimitReached && (
+            <Typography color="error" variant="body2">
+              Character limit reached!
+            </Typography>
+          )}
 
           <span className="formLabels">Password</span>
           <TextField
@@ -263,7 +280,7 @@ export default function LoginModal() {
             type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange}
             error={!!errors.password}
             helperText={errors.password}
             InputProps={{
@@ -286,7 +303,13 @@ export default function LoginModal() {
               ),
             }}
             sx={{ ...commonInputStyles, marginBottom: "15px" }}
+            inputProps={{ maxLength: 50 }}
           />
+          {passwordLimitReached && (
+            <Typography color="error" variant="body2">
+              Character limit reached!
+            </Typography>
+          )}
 
           {errors.general && (
             <Typography color="error" variant="body2">

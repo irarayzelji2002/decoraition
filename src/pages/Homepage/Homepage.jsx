@@ -244,6 +244,18 @@ function Homepage() {
     recentProjectsRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleCreateDesignWithLoading = async () => {
+    setIsDesignButtonDisabled(true);
+    await handleCreateDesign(user, userDoc.id, navigate);
+    setIsDesignButtonDisabled(false);
+  };
+
+  const handleCreateProjectWithLoading = async () => {
+    setIsProjectButtonDisabled(true);
+    await handleCreateProject(user, userDoc.id, navigate);
+    setIsProjectButtonDisabled(false);
+  };
+
   return (
     <div className={`homepage ${menuOpen ? "darkened" : ""}`}>
       {menuOpen && (
@@ -271,52 +283,66 @@ function Homepage() {
           <div className="action-buttons">
             <Button
               variant="contained"
-              onClick={() => {
-                setIsDesignButtonDisabled(true);
-                handleCreateDesign(user, userDoc.id, navigate);
-                setTimeout(() => {
-                  setIsDesignButtonDisabled(false);
-                }, 6000);
-              }}
+              onClick={handleCreateDesignWithLoading}
               disabled={isDesignButtonDisabled}
-              sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
               onMouseOver={(e) => {
-                e.target.style.backgroundImage = "var(--gradientButton)";
-                e.target.style.padding = "8px 18px";
-                e.target.style.border = "none";
-                e.target.style.color = "var(--always-white)";
+                if (!isDesignButtonDisabled) {
+                  e.target.style.backgroundImage = "var(--gradientButton)";
+                  e.target.style.padding = "8px 18px";
+                  e.target.style.border = "none";
+                  e.target.style.color = "var(--always-white)";
+                }
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)";
-                e.target.style.border = "2px solid transparent";
-                e.target.style.padding = "6px 16px";
-                e.target.style.color = "var(--color-white)";
+                if (!isDesignButtonDisabled) {
+                  e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)";
+                  e.target.style.border = "2px solid transparent";
+                  e.target.style.padding = "6px 16px";
+                  e.target.style.color = "var(--color-white)";
+                }
+              }}
+              sx={{
+                ...outlinedButtonStyles,
+                fontSize: "0.95rem",
+                transition: "none",
+                opacity: isDesignButtonDisabled ? "0.5" : "1",
+                cursor: isDesignButtonDisabled ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: !isDesignButtonDisabled && "var(--gradientButton)",
+                },
               }}
             >
               Create a design
             </Button>
             <Button
               variant="contained"
-              onClick={() => {
-                setIsProjectButtonDisabled(true);
-                handleCreateProject(user, userDoc.id, navigate);
-                setTimeout(() => {
-                  setIsProjectButtonDisabled(false);
-                }, 6000);
-              }}
+              onClick={handleCreateProjectWithLoading}
               disabled={isProjectButtonDisabled}
-              sx={{ ...outlinedButtonStyles, fontSize: "0.95rem", transition: "none" }}
               onMouseOver={(e) => {
-                e.target.style.backgroundImage = "var(--gradientButton)";
-                e.target.style.padding = "8px 18px";
-                e.target.style.border = "none";
-                e.target.style.color = "var(--always-white)";
+                if (!isProjectButtonDisabled) {
+                  e.target.style.backgroundImage = "var(--gradientButton)";
+                  e.target.style.padding = "8px 18px";
+                  e.target.style.border = "none";
+                  e.target.style.color = "var(--always-white)";
+                }
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)";
-                e.target.style.border = "2px solid transparent";
-                e.target.style.padding = "6px 16px";
-                e.target.style.color = "var(--color-white)";
+                if (!isProjectButtonDisabled) {
+                  e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)";
+                  e.target.style.border = "2px solid transparent";
+                  e.target.style.padding = "6px 16px";
+                  e.target.style.color = "var(--color-white)";
+                }
+              }}
+              sx={{
+                ...outlinedButtonStyles,
+                fontSize: "0.95rem",
+                transition: "none",
+                opacity: isProjectButtonDisabled ? "0.5" : "1",
+                cursor: isProjectButtonDisabled ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: !isProjectButtonDisabled && "var(--gradientButton)",
+                },
               }}
             >
               Create a project
@@ -623,8 +649,7 @@ function Homepage() {
                 onClick={() => setNumToShowMoreProject(numToShowMoreProject + thresholdProject)}
                 className="cancel-button"
                 sx={{
-                  marginTop: "20px",
-                  width: "80%",
+                  width: "200px",
                 }}
               >
                 Show more
@@ -661,7 +686,11 @@ function Homepage() {
                 <span className="small-button-text">Create a Project</span>
                 <div
                   className="small-circle-button"
-                  onClick={() => handleCreateProject(user, userDoc.id, navigate)}
+                  onClick={handleCreateProjectWithLoading}
+                  style={{
+                    opacity: isProjectButtonDisabled ? "0.5" : "1",
+                    cursor: isProjectButtonDisabled ? "default" : "pointer",
+                  }}
                 >
                   <AddProject />
                 </div>
@@ -670,7 +699,11 @@ function Homepage() {
                 <span className="small-button-text">Create a Design</span>
                 <div
                   className="small-circle-button"
-                  onClick={() => handleCreateDesign(user, userDoc.id, navigate)}
+                  onClick={handleCreateDesignWithLoading}
+                  style={{
+                    opacity: isDesignButtonDisabled ? "0.5" : "1",
+                    cursor: isDesignButtonDisabled ? "default" : "pointer",
+                  }}
                 >
                   <AddDesign />
                 </div>

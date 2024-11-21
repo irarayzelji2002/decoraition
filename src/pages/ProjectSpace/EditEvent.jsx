@@ -34,6 +34,7 @@ function EditEvent() {
   const [allowRepeat, setAllowRepeat] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
+  const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(false);
 
   const initialFormData = {
     taskName: "",
@@ -208,6 +209,12 @@ function EditEvent() {
     }
   };
 
+  const handleSaveWithLoading = async () => {
+    setIsSaveButtonDisabled(true);
+    await handleSave();
+    setIsSaveButtonDisabled(false);
+  };
+
   const handleCancel = () => {
     setOpenModal(false);
   };
@@ -328,7 +335,15 @@ function EditEvent() {
               ))}
             </div>
 
-            <button className="edit-event-button" onClick={handleSave}>
+            <button
+              className="edit-event-button"
+              onClick={handleSaveWithLoading}
+              disabled={isSaveButtonDisabled}
+              style={{
+                opacity: isSaveButtonDisabled ? "0.5" : "1",
+                cursor: isSaveButtonDisabled ? "default" : "pointer",
+              }}
+            >
               Save event
             </button>
           </div>

@@ -1,14 +1,24 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Draggable from "react-draggable";
+import { fetchPlanImage } from "../pages/ProjectSpace/backend/ProjectDetails";
 
-const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) => {
+const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, projectId }) => {
   const frameRef = useRef(null);
   const imageRef = useRef(null);
+  const [planImage, setPlanImage] = useState("");
 
   useEffect(() => {
+    fetchPlanImage(projectId, setPlanImage);
+
     const updateImageSize = () => {
       if (imageRef.current) {
         const rect = imageRef.current.getBoundingClientRect();
+        setPins((prevPins) =>
+          prevPins.map((pin) => {
+            const position = getPinPosition(pin, rect);
+            return { ...pin, position };
+          })
+        );
       }
     };
 
@@ -18,7 +28,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) =
     return () => {
       window.removeEventListener("resize", updateImageSize);
     };
-  }, [imageRef]);
+  }, [imageRef, projectId, setPins]);
 
   const updatePinPosition = (id, x, y) => {
     const rect = imageRef.current.getBoundingClientRect();
@@ -31,8 +41,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) =
     );
   };
 
-  const getPinPosition = (pin) => {
-    const rect = imageRef.current.getBoundingClientRect();
+  const getPinPosition = (pin, rect) => {
     return {
       x: (pin.location.x / 100) * rect.width,
       y: (pin.location.y / 100) * rect.height,
@@ -42,14 +51,14 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) =
   return (
     <div className="image-frame-other" ref={frameRef} style={{ position: "relative" }}>
       <img
-        src={src}
+        src={planImage}
         alt={alt}
         className="image-preview-other"
         ref={imageRef}
         style={{ display: "block" }}
       />
       {pins.map((pin) => {
-        const position = getPinPosition(pin);
+        const position = getPinPosition(pin, imageRef.current.getBoundingClientRect());
         return (
           <Draggable
             key={pin.id}

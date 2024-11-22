@@ -217,6 +217,13 @@ router.post(
   authenticateUser,
   projectController.changeAccessProject
 );
+router.get("/project/:projectId/planImage", authenticateUser, planMapController.getPlanImage);
+router.post(
+  "/project/:projectId/planImage",
+  authenticateUser,
+  upload.single("file"),
+  planMapController.handlePlanImageUpload
+);
 
 // Network check
 router.get("/health-check", (req, res) => {

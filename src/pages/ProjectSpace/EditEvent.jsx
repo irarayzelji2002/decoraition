@@ -16,6 +16,8 @@ import { Typography, IconButton } from "@mui/material";
 import DialogTitle from "@mui/material/DialogTitle";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { fetchTaskDetails } from "./backend/ProjectDetails";
+import EditPen from "../DesignSpace/svg/EditPen.jsx";
+import Trash from "../DesignSpace/svg/Trash.jsx";
 
 function EditEvent() {
   const { projectId } = useParams();
@@ -315,19 +317,10 @@ function EditEvent() {
                           setOpenModal(true);
                         }}
                       >
-                        <EditIcon
-                          sx={{
-                            color: "var(--brightFont)",
-                            marginRight: "12px",
-                          }}
-                        />
+                        <EditPen />
                       </button>{" "}
                       <button className="icon-button" onClick={() => deleteReminder(reminder.id)}>
-                        <DeleteIcon
-                          sx={{
-                            color: "var(--brightFont)",
-                          }}
-                        />
+                        <Trash />
                       </button>
                     </div>
                   </div>

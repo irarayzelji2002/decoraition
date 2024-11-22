@@ -6,10 +6,9 @@ import { showToast } from "../../../functions/utils";
 import { collection, addDoc } from "firebase/firestore";
 
 import { query, where, setDoc, deleteDoc, getDocs } from "firebase/firestore";
-import { CheckCircle } from "@mui/icons-material";
-import { DeleteIcon } from "../../../components/svg/DefaultMenuIcons";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../../firebase";
 
 // Adjust the import path as necessary
 
@@ -252,9 +251,11 @@ export const fetchPins = async (projectId, setPins) => {
     if (response.status === 200) {
       setPins(response.data);
     } else {
+      showToast("error", "Failed to fetch pins");
     }
   } catch (error) {
     console.error("Error fetching pins:", error);
+    showToast("error", "Failed to fetch pins");
   }
 };
 
@@ -413,5 +414,60 @@ export const handleAccessChange = async (project, initEmailsWithRole, emailsWith
       success: false,
       message: error.response?.data?.error || "Failed to change access of project collaborators",
     };
+  }
+};
+
+export const handlePlanImageUpload = async (file, projectId, setPlanImage) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.post(`/api/project/${projectId}/planImage`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      setPlanImage(response.data.planImage);
+    } else {
+      showToast("error", "Failed to upload plan image");
+    }
+  } catch (error) {
+    console.error("Error uploading plan image:", error);
+    showToast("error", "Failed to upload plan image");
+  }
+};
+
+export const fetchPlanImage = async (projectId, setPlanImage) => {
+  console.log(`Fetching plan image for project ${projectId}`); // Debug log
+  try {
+    const token = await auth.currentUser.getIdToken();
+    console.log("Token acquired:", token); // Debug log
+    const response = await axios.get(`/api/project/${projectId}/planImage`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log("Response received:", response); // Debug log
+
+    if (response.status === 200 && response.data.planImage) {
+      setPlanImage(response.data.planImage);
+    } else if (response.status === 404) {
+      console.warn("Plan image not found, using default image 1", projectId, "wow");
+      setPlanImage("../../img/floorplan.png");
+    } else {
+      showToast("error", "Failed to fetch plan image");
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.warn("Plan image not found, using default image 2" + projectId);
+      setPlanImage("../../img/floorplan.png");
+    } else {
+      console.error("Error fetching plan image:", error);
+      showToast("error", "Failed to fetch plan image");
+    }
   }
 };

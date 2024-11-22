@@ -152,7 +152,12 @@
 
 .SubtitleBudget {
   font-size: var(--font-size-h5);
+  width: 800px;
   margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
   font-weight: bold;
 }
 

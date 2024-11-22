@@ -30,6 +30,20 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
     };
   }, [imageRef, projectId, setPins]);
 
+  useEffect(() => {
+    if (imageRef.current) {
+      imageRef.current.onload = () => {
+        const rect = imageRef.current.getBoundingClientRect();
+        setPins((prevPins) =>
+          prevPins.map((pin) => {
+            const position = getPinPosition(pin, rect);
+            return { ...pin, position };
+          })
+        );
+      };
+    }
+  }, [planImage, setPins]);
+
   const updatePinPosition = (id, x, y) => {
     const rect = imageRef.current.getBoundingClientRect();
     const relativeX = (x / rect.width) * 100;

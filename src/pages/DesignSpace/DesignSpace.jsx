@@ -15,6 +15,7 @@ function DesignSpace({
   const { user, userDoc } = useSharedProps();
   const location = useLocation();
   const [changeMode, setChangeMode] = useState(location.state?.changeMode || "Viewing");
+  const [showBudget, setShowBudget] = useState(false);
 
   useEffect(() => {
     if (!design || !user || !userDoc) return;
@@ -44,6 +45,10 @@ function DesignSpace({
       else newRole = design?.designSettings?.generalAccessRole ?? 0;
     }
 
+    if (design?.history?.length > 0) {
+      setShowBudget(true);
+    }
+
     // Set role and all dependent flags
     if (!location.state?.changeMode)
       setChangeMode(
@@ -61,7 +66,12 @@ function DesignSpace({
         isSelectingMask={isSelectingMask}
       />
       {children}
-      <BottomBar isDesign={isDesign} designId={designId} changeMode={changeMode} />
+      <BottomBar
+        isDesign={isDesign}
+        designId={designId}
+        changeMode={changeMode}
+        showBudget={showBudget}
+      />
     </div>
   );
 }

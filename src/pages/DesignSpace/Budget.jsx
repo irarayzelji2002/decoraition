@@ -42,6 +42,7 @@ import {
   dialogStyles,
   dialogTitleStyles,
 } from "../../components/RenameModal";
+import { textFieldInputProps } from "./DesignSettings";
 
 const style = {
   position: "absolute",
@@ -729,6 +730,7 @@ function Budget() {
                         }
                       }}
                       sx={priceTextFieldStyles}
+                      inputProps={{ ...textFieldInputProps, maxLength: 22 }}
                     />
                   </div>
                 </div>

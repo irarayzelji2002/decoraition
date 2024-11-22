@@ -1231,7 +1231,14 @@ textarea {
   background-image: var(--lightGradient), var(--gradientButtonHover) !important;
 }
 
-.dialog .MuiDialog-paper {
+.cancel-button.show-more {
+  background-image: var(--darkGradient), var(--gradientButton) !important;
+}
+
+.cancel-button.show-more:hover {
+  background-image: var(--darkGradient), var(--gradientButtonHover) !important;
+}
+s .dialog .MuiDialog-paper {
   background-color: var(--nav-card-modal) !important;
   border-radius: 20px !important;
 }

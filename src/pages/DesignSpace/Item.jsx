@@ -5,7 +5,20 @@ import { showToast } from "../../functions/utils";
 import "../../css/budget.css";
 import "../../css/design.css";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { Divider, IconButton, Box, Modal, Checkbox, FormControlLabel } from "@mui/material";
+import {
+  Divider,
+  IconButton,
+  Box,
+  Modal,
+  Checkbox,
+  FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+} from "@mui/material";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import EditPen from "./svg/EditPen";
 import Trash from "./svg/Trash";
@@ -13,6 +26,13 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { CheckboxIcon, CheckboxCheckedIcon } from "../../components/svg/SharedIcons";
 import { DeleteIconGradient, EditIconSmallGradient } from "../../components/svg/DefaultMenuIcons";
+import {
+  dialogActionsStyles,
+  dialogContentStyles,
+  dialogStyles,
+  dialogTitleStyles,
+} from "../../components/RenameModal";
+import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
 
 const style = {
   position: "absolute",
@@ -35,9 +55,11 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
   const [pendingUpdates, setPendingUpdates] = useState({});
+  const [isConfirmRemoveItemBtnDisabled, setIsConfirmRemoveItemBtnDisabled] = useState(false);
 
   const handleDeleteItem = async (itemToDelete, budgetId) => {
     try {
+      setIsConfirmRemoveItemBtnDisabled(true);
       const response = await axios.post(
         `/api/design/item/${itemToDelete.id}/delete-item`,
         { budgetId: budgetId },
@@ -65,6 +87,8 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
       } else {
         showToast("error", "Failed to update item. Please try again.");
       }
+    } finally {
+      setIsConfirmRemoveItemBtnDisabled(false);
     }
   };
 
@@ -198,64 +222,75 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
           </div>
         </Box>
       </Modal>
-      <Modal
+      <Dialog
         open={openDelete}
         onClose={handleCloseDelete}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
+        sx={dialogStyles}
       >
-        <Box sx={style}>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
-              <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
-                Confirm item removal
-              </span>
-              <CloseRoundedIcon
-                sx={{ marginLeft: "auto" }}
-                onClick={handleCloseDelete}
-                cursor={"pointer"}
-              />
-            </div>
-            <Divider sx={{ borderColor: "var(--color-grey)" }} />
-            <span style={{ textAlign: "center", margin: "18px" }}>
-              Are you sure you want to remove {item.quantity} {item.itemName}?
-            </span>
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                margin: "18px",
-                marginTop: "-24px",
-                justifyContent: "center",
-              }}
-            >
-              <button
-                className="add-item-btn"
-                style={{
-                  background: "transparent",
-                  border: "2px solid transparent",
-                  backgroundImage: " var(--lightGradient), var(--gradientButton)",
-                  backgroundOrigin: "border-box",
-                  backgroundClip: " padding-box, border-box",
-                }}
-                onMouseOver={(e) =>
-                  (e.target.style.backgroundImage =
-                    " var(--lightGradient), var(--gradientButtonHover)")
-                }
-                onMouseOut={(e) =>
-                  (e.target.style.backgroundImage = " var(--lightGradient), var(--gradientButton)")
-                }
-                onClick={handleCloseDelete}
-              >
-                Cancel
-              </button>
-              <button className="add-item-btn" onClick={() => handleDeleteItem(item, budgetId)}>
-                Confirm
-              </button>
-            </div>
-          </div>
-        </Box>
-      </Modal>
+        <DialogTitle sx={dialogTitleStyles}>
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "1.15rem",
+              flexGrow: 1,
+              maxWidth: "80%",
+              whiteSpace: "normal",
+            }}
+          >
+            Confirm item removal
+          </Typography>
+          <IconButton
+            onClick={handleCloseDelete}
+            sx={{
+              ...iconButtonStyles,
+              flexShrink: 0,
+              marginLeft: "auto",
+            }}
+          >
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ ...dialogContentStyles, marginTop: "0 !important" }}>
+          <span style={{ textAlign: "center", margin: "18px" }}>
+            Are you sure you want to remove {item.quantity} {item.itemName}?
+          </span>
+        </DialogContent>
+        <DialogActions sx={{ ...dialogActionsStyles, marginTop: "0 !important" }}>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={() => handleDeleteItem(item, budgetId)}
+            sx={{
+              ...gradientButtonStyles,
+              opacity: isConfirmRemoveItemBtnDisabled ? "0.5" : "1",
+              cursor: isConfirmRemoveItemBtnDisabled ? "default" : "pointer",
+              "&:hover": {
+                backgroundImage: !isConfirmRemoveItemBtnDisabled && "var(--gradientButton)",
+              },
+            }}
+            disabled={isConfirmRemoveItemBtnDisabled}
+          >
+            Yes
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleCloseDelete}
+            sx={outlinedButtonStyles}
+            onMouseOver={(e) =>
+              (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
+            }
+            onMouseOut={(e) =>
+              (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+            }
+          >
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
       {/* <div
         style={{
           alignContent: "center",

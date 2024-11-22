@@ -472,7 +472,7 @@ function Homepage() {
               <Button
                 variant="contained"
                 onClick={() => setNumToShowMoreDesign(numToShowMoreDesign + thresholdDesign)}
-                className="cancel-button"
+                className="cancel-button show-more"
                 sx={{
                   width: "200px",
                 }}
@@ -494,7 +494,7 @@ function Homepage() {
             <Button
               variant="contained"
               onClick={() => scrollToRecentDesigns()}
-              className="cancel-button"
+              className="cancel-button show-more"
               sx={{
                 width: "200px",
               }}
@@ -639,7 +639,7 @@ function Homepage() {
               <Button
                 variant="contained"
                 onClick={() => setNumToShowMoreProject(numToShowMoreProject + thresholdProject)}
-                className="cancel-button"
+                className="cancel-button show-more"
                 sx={{
                   width: "200px",
                 }}
@@ -661,7 +661,7 @@ function Homepage() {
             <Button
               variant="contained"
               onClick={() => scrollToRecentProjects}
-              className="cancel-button"
+              className="cancel-button show-more"
               sx={{
                 width: "200px",
               }}
@@ -683,9 +683,9 @@ function Homepage() {
                     opacity: isProjectButtonDisabled ? "0.5" : "1",
                     cursor: isProjectButtonDisabled ? "default" : "pointer",
                     "&:hover": {
-                      backgroundImage: !isProjectButtonDisabled
+                      backgroundImage: isProjectButtonDisabled
                         ? "var(--gradientCircle)"
-                        : "var(--gradientCircle)",
+                        : "var(--gradientCircleHover)",
                     },
                     "& svg": {
                       marginRight: "-2px",
@@ -708,9 +708,9 @@ function Homepage() {
                     opacity: isDesignButtonDisabled ? "0.5" : "1",
                     cursor: isDesignButtonDisabled ? "default" : "pointer",
                     "&:hover": {
-                      backgroundImage: !isDesignButtonDisabled
+                      backgroundImage: isDesignButtonDisabled
                         ? "var(--gradientCircle)"
-                        : "var(--gradientCircle)",
+                        : "var(--gradientCircleHover)",
                     },
                     "& svg": {
                       marginRight: "-2px",

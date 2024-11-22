@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
@@ -157,15 +157,10 @@ function Budget() {
       .toFixed(2);
     setTotalCost(totalCost);
 
-    // Assuming all items have the same currency
-    let currenyDisplay;
-    if (designItems[0].cost.currency?.currencyCode) {
-      currenyDisplay = designItems[0].cost.currency?.currencyCode;
-    } else if (designItems[0].cost.currency) {
-      currenyDisplay = designItems[0].cost.currency;
-    } else {
-      currenyDisplay = "PHP";
-    }
+    // Currency
+    const currenyDisplay =
+      items[0]?.cost?.currency?.currencyCode || items[0]?.cost?.currency || "PHP";
+
     const formattedTotalCost =
       currenyDisplay +
       " " +
@@ -223,7 +218,10 @@ function Budget() {
 
   // Get budget and items
   useEffect(() => {
+    let mounted = true;
+
     const fetchBudgetData = async () => {
+      if (!mounted) return;
       try {
         if (!designVersion?.id) {
           console.error("Init Budget page - No design version available");
@@ -246,6 +244,7 @@ function Budget() {
           setBudget(fetchedBudget);
         }
 
+        // Get items & compute total
         const fetchedItems =
           fetchedBudget && fetchedBudget.items
             ? userItems.filter((item) => fetchedBudget.items?.includes(item.id)) ||
@@ -264,6 +263,7 @@ function Budget() {
     };
 
     const fetchImagesLink = () => {
+      if (!mounted) return;
       if (!designVersion?.images) return;
       const imagesLink = designVersion?.images.map((image, index) => {
         return getDesignImage(design.id, userDesigns, userDesignVersions, index);
@@ -273,16 +273,22 @@ function Budget() {
 
     fetchBudgetData();
     fetchImagesLink();
+
+    return () => {
+      mounted = false;
+    };
   }, [designVersion, budgets, userBudgets, items, userItems]);
 
-  const updateItems = () => {
+  const updateItems = useCallback(() => {
     if (budget && budget.items) {
       // Keep existing items that are in the budget
       const updatedItems = designItems.filter((item) => budget.items?.includes(item.id));
+      console.log("updatedItems - init", updatedItems);
 
       // Add or update items from userItems
       budget.items.forEach((itemId) => {
-        const userItem = userItems.find((item) => item.id === itemId);
+        const userItem =
+          userItems.find((item) => item.id === itemId) || items.find((item) => item.id === itemId);
         if (userItem) {
           const existingIndex = updatedItems.findIndex((item) => item.id === itemId);
           if (existingIndex !== -1) {
@@ -292,10 +298,11 @@ function Budget() {
           }
         }
       });
+      console.log("updatedItems - modified", updatedItems);
 
       if (!deepEqual(designItems, updatedItems)) {
         setDesignItems(updatedItems);
-        console.log("design items updated", updatedItems);
+        console.log("updatedItems - setDesignItems", updatedItems);
       }
 
       if (updatedItems.length > 0) {
@@ -307,7 +314,7 @@ function Budget() {
       setFormattedTotalCost("0.00");
       setExceededBudget(false);
     }
-  };
+  }, [budget, items, userItems, designItems]);
 
   useEffect(() => {
     const fetchedBudget =
@@ -326,8 +333,11 @@ function Budget() {
   }, [budgets, userBudgets]);
 
   useEffect(() => {
-    updateItems();
-  }, [items, userItems, budget]);
+    const timer = setTimeout(() => {
+      updateItems();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [items, userItems, budget, updateItems]);
 
   useEffect(() => {
     setBudgetAmount(budget?.budget?.amount ?? 0);

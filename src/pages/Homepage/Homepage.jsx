@@ -28,6 +28,7 @@ import { handleLogout } from "./backend/HomepageFunctions.jsx";
 import { ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
 import { iconButtonStyles } from "./DrawerComponent.jsx";
 import { outlinedButtonStyles } from "../DesignSpace/PromptBar.jsx";
+import { Box } from "@mui/material";
 
 function Homepage() {
   const navigate = useNavigate();
@@ -300,6 +301,9 @@ function Homepage() {
                 "&:hover": {
                   backgroundImage: !isDesignButtonDisabled && "var(--gradientButton)",
                 },
+                "&.Mui-disabled": {
+                  color: "var(--always-white)",
+                },
               }}
             >
               Create a design
@@ -332,6 +336,9 @@ function Homepage() {
                 cursor: isProjectButtonDisabled ? "default" : "pointer",
                 "&:hover": {
                   backgroundImage: !isProjectButtonDisabled && "var(--gradientButton)",
+                },
+                "&.Mui-disabled": {
+                  color: "var(--always-white)",
                 },
               }}
             >
@@ -669,29 +676,53 @@ function Homepage() {
             <div className="small-buttons">
               <div className="small-button-container">
                 <span className="small-button-text">Create a Project</span>
-                <div
-                  className="small-circle-button"
+                <Box
                   onClick={handleCreateProjectWithLoading}
-                  style={{
+                  sx={{
+                    ...circleButtonStyles,
                     opacity: isProjectButtonDisabled ? "0.5" : "1",
                     cursor: isProjectButtonDisabled ? "default" : "pointer",
+                    "&:hover": {
+                      backgroundImage: !isProjectButtonDisabled
+                        ? "var(--gradientCircle)"
+                        : "var(--gradientCircle)",
+                    },
+                    "& svg": {
+                      marginRight: "-2px",
+                    },
+                    "@media (max-width: 768px)": {
+                      width: "50px",
+                      height: "50px",
+                    },
                   }}
                 >
                   <AddProject />
-                </div>
+                </Box>
               </div>
               <div className="small-button-container">
                 <span className="small-button-text">Create a Design</span>
-                <div
-                  className="small-circle-button"
+                <Box
                   onClick={handleCreateDesignWithLoading}
-                  style={{
+                  sx={{
+                    ...circleButtonStyles,
                     opacity: isDesignButtonDisabled ? "0.5" : "1",
                     cursor: isDesignButtonDisabled ? "default" : "pointer",
+                    "&:hover": {
+                      backgroundImage: !isDesignButtonDisabled
+                        ? "var(--gradientCircle)"
+                        : "var(--gradientCircle)",
+                    },
+                    "& svg": {
+                      marginRight: "-2px",
+                    },
+                    "@media (max-width: 768px)": {
+                      width: "50px",
+                      height: "50px",
+                    },
                   }}
                 >
                   <AddDesign />
-                </div>
+                </Box>
               </div>
             </div>
           )}
@@ -708,3 +739,15 @@ function Homepage() {
 }
 
 export default Homepage;
+
+const circleButtonStyles = {
+  backgroundImage: "var(--gradientCircle)",
+  color: "var(--color-white)",
+  borderRadius: "50%",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  transition: "opacity 0.3s ease",
+  width: "60px",
+  height: "60px",
+};

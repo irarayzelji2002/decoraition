@@ -12,6 +12,8 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { dialogContentStyles, dialogStyles, dialogTitleStyles } from "../../components/RenameModal";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { BlankImage } from "./svg/AddImage";
+import { getDesignImage } from "./backend/DesignActions";
 
 function VersionOverviewModal({
   openViewModal,
@@ -19,8 +21,10 @@ function VersionOverviewModal({
   selectedDesignVersionDetails,
   viewingImage,
   setViewingImage,
+  design,
 }) {
-  const { budgets, userBudgets, items, userItems } = useSharedProps();
+  const { userDesigns, userDesignVersions, budgets, userBudgets, items, userItems } =
+    useSharedProps();
   const [versionDetailTypeTab, setVersionDetailTypeTab] = useState(true); // true for Design, false for Budget
   const [versionBudget, setVersionBudget] = useState(null);
   const [versionItems, setVersionItems] = useState([]);
@@ -154,7 +158,9 @@ function VersionOverviewModal({
             whiteSpace: "normal",
           }}
         >
-          {`Version at ${selectedDesignVersionDetails.displayDate}`}
+          {`Version ${selectedDesignVersionDetails.displayDate?.includes(",") ? "at " : ""}${
+            selectedDesignVersionDetails.displayDate
+          }`}
         </Typography>
         <IconButton
           onClick={() => setOpenViewModal(false)}
@@ -176,7 +182,7 @@ function VersionOverviewModal({
         <div style={{ position: "relative" }}>
           <div className="comment-tabs-header">
             {/* Version Tabs */}
-            <div className="commentTabsContainer">
+            <div className="commentTabsContainer version">
               <div className="pairTabs">
                 <Tabs
                   value={versionDetailTypeTab ? 0 : 1}
@@ -198,19 +204,34 @@ function VersionOverviewModal({
             </div>
           </div>
           {versionDetailTypeTab ? (
-            <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                position: "relative",
+                flexDirection: "column",
+              }}
+            >
               {/* Version Images */}
-              <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  position: "relative",
+                  gap: "5px",
+                  marginBottom: "10px",
+                }}
+              >
                 {selectedDesignVersionDetails.imagesLink.map((img, index) => {
                   return (
                     <div style={{ border: index !== viewingImage && "1px solid transparent" }}>
                       <div
                         key={index}
-                        className="select-image-preview"
+                        className="select-image-preview version"
                         style={{ border: index === viewingImage && "2px solid var(--brightFont)" }}
                         onClick={() => setViewingImage(index)}
                       >
-                        <img src={img} alt="" />
+                        <img src={img ?? "/img/transparent-image.png"} alt="" />
                       </div>
                     </div>
                   );
@@ -232,16 +253,18 @@ function VersionOverviewModal({
                 display: "flex",
                 justifyContent: "center",
                 position: "relative",
-                alignItems: "start",
+                alignItems: versionItems.length === 0 ? "center" : "start",
               }}
             >
               {/* Version Budget */}
-              <div className="cutoff">
-                <div className="budgetSpaceImg">
+              <div className="cutoff" style={{ alignItems: "center" }}>
+                <div className="budgetSpaceImg" style={{ marginTop: 0, marginBottom: 0 }}>
                   <span
                     className="priceSum"
                     style={{
                       backgroundColor: getBudgetColor(budgetAmount, totalCost),
+                      marginTop: "0px",
+                      marginBottom: "10px",
                     }}
                   >
                     {(() => {
@@ -274,6 +297,54 @@ function VersionOverviewModal({
                       }
                     })()}
                   </span>
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        position: "relative",
+                        gap: "5px",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      {selectedDesignVersionDetails.imagesLink.map((img, index) => {
+                        return (
+                          <div
+                            style={{ border: index !== viewingImage && "1px solid transparent" }}
+                          >
+                            <div
+                              key={index}
+                              className="select-image-preview budget"
+                              style={{
+                                border: index === viewingImage && "2px solid var(--brightFont)",
+                              }}
+                              onClick={() => setViewingImage(index)}
+                            >
+                              <img src={img ?? "/img/transparent-image.png"} alt="" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="image-frame">
+                      <div className="image-frame-icon">
+                        <BlankImage />
+                        <span>No design yet</span>
+                      </div>
+                      <img
+                        src={
+                          getDesignImage(
+                            design.id,
+                            userDesigns,
+                            userDesignVersions,
+                            viewingImage
+                          ) ?? "/img/transparent-image.png"
+                        }
+                        alt=""
+                        className="image-preview"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -298,7 +369,7 @@ function VersionOverviewModal({
                     </div>
                   ))
                 ) : (
-                  <div className="placeholderDiv">
+                  <div className="placeholderDiv" style={{ margin: "0 !important" }}>
                     <img
                       src={"../../img/design-placeholder.png"}
                       style={{ width: "100px" }}

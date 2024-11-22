@@ -4,14 +4,15 @@ import debounce from "lodash/debounce";
 import { showToast } from "../../functions/utils";
 import "../../css/budget.css";
 import "../../css/design.css";
-import Box from "@mui/material/Box";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import Modal from "@mui/material/Modal";
-import { Divider } from "@mui/material";
+import { Divider, IconButton, Box, Modal, Checkbox, FormControlLabel } from "@mui/material";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import EditPen from "./svg/EditPen";
 import Trash from "./svg/Trash";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { CheckboxIcon, CheckboxCheckedIcon } from "../../components/svg/SharedIcons";
+import { DeleteIconGradient, EditIconSmallGradient } from "../../components/svg/DefaultMenuIcons";
 
 const style = {
   position: "absolute",
@@ -264,17 +265,20 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
       >
         <span style={{ fontSize: "12px" }}> x {item.quantity}</span>
       </div> */}
-      <img src={item.image} alt="" className="thumbnail" />
+      <img src={item.image ?? "/img/transparent-image.png"} alt="" className="thumbnail" />
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           margin: "12px",
           width: "auto  ",
+          justifyContent: "center",
         }}
       >
         <span className="itemName">{item.quantity + " " + item.itemName}</span>
-        <span className="itemPrice">{item.cost.currency + " " + item.cost.amount}</span>
+        <span className="itemPrice">
+          {item.cost.currency?.currencyCode + " " + item.cost.amount}
+        </span>
       </div>
       <div
         style={{
@@ -284,24 +288,50 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
           marginRight: "10px",
           justifyContent: "flex-end",
           alignItems: "center",
+          gap: "10px",
         }}
       >
         <div>
-          <input
-            type="checkbox"
+          <Checkbox
             checked={item.includedInTotal === true || item.includedInTotal === "true"}
             onChange={() => {
               toggleIncludedInTotal();
               handleIncludedInTotalChange(item.id);
             }}
+            value="included-in-total"
+            sx={{
+              color: "var(--color-white)",
+              "&.Mui-checked": {
+                color: "var(--brightFont)",
+              },
+              borderRadius: "50%",
+              "& .MuiSvgIcon-root": {
+                fontSize: 28,
+              },
+              "&:hover": {
+                backgroundColor: "var(--iconButtonHover)",
+              },
+              "&:active": {
+                backgroundColor: "var(--iconButtonActive)",
+              },
+              "& svg": {
+                transform: "scale(0.88)",
+              },
+            }}
+            icon={<CheckboxIcon />}
+            checkedIcon={<CheckboxCheckedIcon />}
           />
         </div>
-        <div onClick={onEdit}>
-          <EditPen />
-        </div>
-        <div onClick={handleOpenDelete} style={{ marginRight: "10px" }}>
-          <Trash />
-        </div>
+
+        <IconButton onClick={onEdit} sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}>
+          <EditIconSmallGradient />
+        </IconButton>
+        <IconButton
+          onClick={handleOpenDelete}
+          sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+        >
+          <DeleteIconGradient />
+        </IconButton>
       </div>
     </div>
   );

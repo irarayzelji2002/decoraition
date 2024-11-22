@@ -78,7 +78,7 @@ const defaultTheme = createTheme({
     },
     MuiMenu: {
       styleOverrides: {
-        paper: { fontFamily: '"Inter", sans-serif' },
+        paper: { fontFamily: '"Inter", sans-serif', backgroundColor: "var(--nav-card-modal)" },
       },
     },
     MuiList: {

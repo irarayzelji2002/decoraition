@@ -71,6 +71,7 @@
   color: var(--brightFont);
   margin: 5px 0;
   font-weight: bold;
+  font-size: 1rem !important;
 }
 
 .item-store {

@@ -9,7 +9,7 @@
 .left-column,
 .right-column {
   width: 40%;
-  height: 80vh;
+  height: 77vh;
   padding: 40px;
   display: flex;
   flex-direction: column;
@@ -59,7 +59,7 @@
   background-color: var(--nav-card-modal);
   border-radius: 8px;
   color: var(--noContent);
-  font-size: var(--font-size-h7);
+  font-size: var(--font-size-h6);
   font-weight: 500;
 }
 
@@ -70,13 +70,17 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 20px;
-
   background-color: var(--nav-card-modal);
   border-radius: 8px;
   color: var(--color-white);
   font-size: var(--font-size-h7);
   margin-bottom: 20px;
+}
+
+.image-placeholder-container.add {
+  gap: 0px !important;
+  padding: 20px 0px;
+  height: 350px !important;
 }
 
 .upload-btn:hover,
@@ -111,16 +115,14 @@
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .item-name-label,
 .price-label {
   display: block;
-  margin-bottom: 10px;
   color: var(--color-white);
   font-size: var(--font-size-h6);
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .search-section input:focus-within {
@@ -128,25 +130,34 @@
 }
 
 .input-group {
-  width: 100%;
-  padding: 18px;
+  width: calc(100% - 5px) !important;
+  padding: 0px !important;
   background-color: var(--nav-card-modal);
   border: 2px solid var(--borderInput);
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 10px;
   margin-top: 10px;
 }
 
+.input-group.budget {
+  width: calc(100% - 10%) !important;
+}
+
+.input-group.add {
+  margin-bottom: 5px;
+  background-color: var(--bg-image);
+}
+
 .input-group:focus-within {
-  border-color: var(--brightFont);
+  border-color: var(--borderInputBrighter);
 }
 
 .search-section input:focus-within {
-  border-color: var(--brightFont);
+  border-color: var(--borderInputBrighter);
 }
 
 /* Input styling */
-.input-group input,
+/* .input-group input,
 .price-quantity-section input,
 .price-quantity-section select {
   width: 100%;
@@ -154,13 +165,13 @@
   background-color: transparent;
   color: var(--color-white);
   font-size: var(--font-size-h7);
-}
+} */
 
 .input-group input:focus,
 .price-quantity-section input:focus,
 .price-quantity-section select:focus {
-  outline: none; /* Remove focus outline */
-  box-shadow: none; /* Remove focus box-shadow */
+  outline: none !important; /* Remove focus outline */
+  box-shadow: none !important; /* Remove focus box-shadow */
 }
 
 /* Container for Price and Currency Selector */
@@ -176,7 +187,7 @@
 }
 
 .price-quantity-section input {
-  width: 65%;
+  /* width: 65%; */
 }
 
 /* Quantity Section */
@@ -184,18 +195,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--nav-card-modal);
+  background-color: var(--bg-image);
   border: 2px solid var(--borderInput);
   border-radius: 8px;
-  height: 60px;
+  height: 53px;
+  margin-top: 12px;
 }
 
 .quantity-section button {
   background-color: var(--nav-card-modal);
-  color: var(--borderInput);
+  color: var(--color-white);
   border: 2px solid var(--borderInput);
-  padding: 20px 20px;
-  border-radius: 8px;
+  padding: 14.5px 20px;
+  border-radius: 0px;
   cursor: pointer;
   font-size: var(--font-size-h7);
 }
@@ -206,7 +218,21 @@
 }
 
 .quantity-section button:hover {
-  background: var(--gradientCircle);
+  /* background: var(--gradientCircle); */
+}
+
+.quantity-section button.left {
+  margin-left: -2px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  width: 10%;
+}
+
+.quantity-section button.right {
+  margin-right: -2px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  width: 10%;
 }
 
 /* Add Item Button */
@@ -230,6 +256,15 @@
 }
 
 /* Responsive Styles */
+@media (max-width: 839px) {
+  .left-column,
+  .right-column {
+    width: 100%;
+    padding: 0%;
+    height: auto;
+    margin-bottom: 30px;
+  }
+}
 @media (max-width: 768px) {
   .left-column,
   .right-column {
@@ -271,22 +306,13 @@
     font-size: var(--font-size-h6);
   }
 
-  .quantity-section {
-    padding: 10px;
-  }
-
-  .quantity-section button {
-    padding: 8px 16px;
-    font-size: var(--font-size-h6);
-  }
-
   .add-item-btn {
     font-size: var(--font-size-h6);
   }
 
   .item-name-label,
   .price-label {
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-h6);
   }
 }
 
@@ -301,7 +327,7 @@
   }
 
   .image-placeholder {
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-h6);
   }
 
   .upload-btn {
@@ -313,20 +339,6 @@
     padding: 8px;
   }
 
-  .price-quantity-section select,
-  .price-quantity-section input {
-    font-size: var(--font-size-small);
-  }
-
-  .quantity-section {
-    padding: 8px;
-  }
-
-  .quantity-section button {
-    padding: 6px 12px;
-    font-size: var(--font-size-small);
-  }
-
   .add-item-btn {
     padding: 10px;
     font-size: var(--font-size-small);
@@ -334,6 +346,6 @@
 
   .item-name-label,
   .price-label {
-    font-size: var(--font-size-tiny);
+    font-size: var(--font-size-h6);
   }
 }

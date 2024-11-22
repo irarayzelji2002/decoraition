@@ -76,7 +76,7 @@ const Layout = ({ children }) => {
     "--gradientFontLessYellow": "linear-gradient(120deg, #faa652 0%, #f36b24 20%, #ea1179 100%)",
     "--gradientFontLessYellowHover":
       "linear-gradient(120deg, #faa652 0%, #f36b24 10%, #ea1179 100%)",
-    "--darkGradient": "linear-gradient(#1e1e1e, #1e1e1e)",
+    "--darkGradient": "linear-gradient(#1f1e22, #1f1e22)",
     "--lightGradient": "linear-gradient(#27262c, #27262c)",
     "--gradientIcon": "linear-gradient(180deg, #f9a754, #f26b27, #ef4e59)",
     "--switchThumbGrey": "#5c5b5b",
@@ -185,7 +185,7 @@ const Layout = ({ children }) => {
     "--gradientFontLessYellow": "linear-gradient(120deg, #faa652 0%, #f36b24 20%, #ea1179 100%)",
     "--gradientFontLessYellowHover":
       "linear-gradient(120deg, #faa652 0%, #f36b24 10%, #ea1179 100%)",
-    "--darkGradient": "linear-gradient(#eeeeee, #eeeeee)",
+    "--darkGradient": "linear-gradient(#ffffff, #ffffff)",
     "--lightGradient": "linear-gradient(#e0e0e0, #e0e0e0)",
     "--gradientIcon": "linear-gradient(180deg, #f9a754, #f26b27, #ef4e59)",
     "--switchThumbGrey": "#5c5b5b",

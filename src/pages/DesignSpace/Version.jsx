@@ -549,6 +549,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
           selectedDesignVersionDetails={selectedDesignVersionDetails}
           viewingImage={viewingImage}
           setViewingImage={setViewingImage}
+          design={design}
         />
       )}
       {openConfirmRestoreModal && (

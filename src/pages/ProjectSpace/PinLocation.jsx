@@ -40,12 +40,7 @@ function PinLocation({ EditMode }) {
       <TopBar state={"Add Pin"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="sectionBudget" style={{ background: "none" }}>
         <div className="budgetSpaceImg">
-          <ImageFrame
-            src="../../img/floorplan.png"
-            alt="design preview"
-            pins={pins}
-            setPins={setPins}
-          />
+          <ImageFrame projectId={projectId} alt="design preview" pins={pins} setPins={setPins} />
           <button
             className="add-item-btn"
             onClick={savePinLocations}

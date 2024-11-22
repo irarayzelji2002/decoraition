@@ -74,9 +74,9 @@ function Timeline() {
 
     fetchAndSetTasks(); // Fetch tasks immediately when the component mounts
 
-    const intervalId = setInterval(fetchAndSetTasks, 10000); // Refresh every 60 seconds
+    // const intervalId = setInterval(fetchAndSetTasks, 10000); // Refresh every 60 seconds
 
-    return () => clearInterval(intervalId); // Clear interval on component unmount
+    // return () => clearInterval(intervalId); // Clear interval on component unmount
   }, [timelineId]);
 
   const formatDate = (date) => {

@@ -177,7 +177,9 @@
 
 .SubtitleBudget {
   font-size: var(--font-size-h5);
-  width: 800px;
+
+  width: 100%;
+  max-width: 600px;
   margin-bottom: 12px;
   white-space: nowrap;
   overflow: hidden;
@@ -338,6 +340,9 @@ select {
   .budgetSpaceImg.items {
     align-items: center !important;
     justify-content: center;
+  }
+  .SubtitleBudget {
+    max-width: 300px;
   }
 }
 

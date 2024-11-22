@@ -343,6 +343,7 @@ h6 {
   background-color: var(--lighterDarkBg);
   cursor: pointer;
   position: relative;
+  border: 10px solid var(--iconBg);
 }
 
 .image-frame:hover {

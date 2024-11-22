@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { ChromePicker } from "react-color";
 import SimpleDeleteConfirmation from "../../components/SimpleDeleteConfirmation";
 import { useNavigate } from "react-router-dom";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 const MapPin = ({
   title = "Untitled",
@@ -24,6 +25,7 @@ const MapPin = ({
   const [textColor, setTextColor] = useState("#000000");
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const history = useNavigate();
+  const { designs, userDesigns, designVersions, userDesignVersions } = useSharedProps();
 
   useEffect(() => {
     const isBright = (color) => {
@@ -56,6 +58,29 @@ const MapPin = ({
 
   const handleExportClick = () => {
     history(`/design/${designId}`);
+  };
+
+  const getDesignImage = (designId) => {
+    const fetchedDesign =
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
+    if (!fetchedDesign || !fetchedDesign.history || fetchedDesign.history.length === 0) {
+      return "../../img/logoWhitebg.png";
+    }
+
+    const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
+    const fetchedLatestDesignVersion =
+      userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
+      designVersions.find((designVer) => designVer.id === latestDesignVersionId);
+    if (
+      !fetchedLatestDesignVersion ||
+      !fetchedLatestDesignVersion.images ||
+      fetchedLatestDesignVersion.images.length === 0
+    ) {
+      return "../../img/logoWhitebg.png";
+    }
+
+    return fetchedLatestDesignVersion.images[0].link;
   };
 
   return (
@@ -142,7 +167,7 @@ const MapPin = ({
             alignItems: "center",
           }}
         >
-          <img src="../../img/logoWhitebg.png" alt={`design preview `} className="image-pin" />
+          <img src={getDesignImage(designId)} alt={`design preview`} className="image-pin" />
           <span className="pinName">{title}</span>
         </div>
         <div style={{ display: "flex", width: "50%", justifyContent: "flex-end" }}>

@@ -1,7 +1,6 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Draggable from "react-draggable";
 import { fetchPlanImage } from "../pages/ProjectSpace/backend/ProjectDetails";
-import { useState } from "react";
 
 const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, projectId }) => {
   const frameRef = useRef(null);
@@ -14,6 +13,12 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
     const updateImageSize = () => {
       if (imageRef.current) {
         const rect = imageRef.current.getBoundingClientRect();
+        setPins((prevPins) =>
+          prevPins.map((pin) => {
+            const position = getPinPosition(pin, rect);
+            return { ...pin, position };
+          })
+        );
       }
     };
 
@@ -23,7 +28,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
     return () => {
       window.removeEventListener("resize", updateImageSize);
     };
-  }, [imageRef]);
+  }, [imageRef, projectId, setPins]);
 
   const updatePinPosition = (id, x, y) => {
     const rect = imageRef.current.getBoundingClientRect();
@@ -36,8 +41,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
     );
   };
 
-  const getPinPosition = (pin) => {
-    const rect = imageRef.current.getBoundingClientRect();
+  const getPinPosition = (pin, rect) => {
     return {
       x: (pin.location.x / 100) * rect.width,
       y: (pin.location.y / 100) * rect.height,
@@ -54,7 +58,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
         style={{ display: "block" }}
       />
       {pins.map((pin) => {
-        const position = getPinPosition(pin);
+        const position = getPinPosition(pin, imageRef.current.getBoundingClientRect());
         return (
           <Draggable
             key={pin.id}

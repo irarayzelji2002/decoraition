@@ -154,7 +154,7 @@ function PlanMap() {
     <>
       <ProjectHead />
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
-      <div className="sectionBudget" style={{ background: "none" }}>
+      <div className="sectionBudget" style={{ background: "none", maxWidth: "100%" }}>
         <div className="budgetSpaceImg" style={{ background: "none", height: "100%" }}>
           <ImageFrame
             src="../../img/floorplan.png"
@@ -177,6 +177,7 @@ function PlanMap() {
                       pinColor={design.color}
                       pinNo={design.order}
                       pinId={design.id}
+                      designId={design.designId}
                       deletePin={() => deletePin(design.id)} // Pass design.id to deletePin
                       editPin={() => navigateToEditPin(design.id)} // Pass design.id to editPin
                     />

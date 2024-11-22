@@ -49,24 +49,18 @@ function ProjectHead() {
   const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
   const [isViewCollab, setIsViewCollab] = useState(true);
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
-  const [isCopyLinkModalOpen, setIsCopyLinkModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
-
-  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [newCollaborator, setNewCollaborator] = useState("");
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [username, setUsername] = useState("");
-  const [designs, setDesigns] = useState([]);
   const [userId, setUserId] = useState(null);
   const [projectData, setProjectData] = useState(null);
   const [project, setProject] = useState(null);

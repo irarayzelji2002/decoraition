@@ -120,10 +120,10 @@ function AddPin({ EditMode }) {
             <br />
             <br />
             <label style={{ marginLeft: "12px" }}>Associated Design</label>
+            <br />
             <FormControl sx={formControlStyles}>
               <Select
                 labelId="owner-select-label"
-                fullWidth
                 id="owner-select"
                 label="Owner"
                 value={owner}
@@ -165,11 +165,12 @@ function AddPin({ EditMode }) {
                 ))}
               </Select>
             </FormControl>
+            <br />
             <label style={{ marginLeft: "12px" }}>Pin Color</label>
-            <div className="color-picker">
-              <div className="color-circle"></div>
+            <div className="color-picker" onClick={handleOpenModal}>
+              <div className="color-circle" style={{ backgroundColor: selectedColor }}></div>
               <span className="color-text">Select a color</span>
-              <IconButton className="color-dropper" onClick={handleOpenModal}>
+              <IconButton className="color-dropper">
                 <ColorizeIcon sx={{ color: "var(--color-white)" }} />
               </IconButton>
             </div>
@@ -230,7 +231,7 @@ function AddPin({ EditMode }) {
             </Modal>
             <button
               className="add-item-btn"
-              style={{ width: "100%", margin: "8px" }}
+              style={{ width: "100%", margin: "8px", maxWidth: "600px" }}
               onClick={handleSavePin}
             >
               Add Pin
@@ -247,6 +248,7 @@ export default AddPin;
 const formControlStyles = {
   m: 1,
   minWidth: 200,
+  maxWidth: 600, // Set the maximum width to 400px
   backgroundColor: "transparent",
   color: "var(--color-white)",
   width: "100%",

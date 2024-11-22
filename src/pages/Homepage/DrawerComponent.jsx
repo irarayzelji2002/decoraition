@@ -264,10 +264,31 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
             margin: "-6px 0px 0px 5px",
           }}
         >
-          <Typography variant="body1" style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+          <Typography
+            variant="body1"
+            style={{
+              fontWeight: "bold",
+              fontSize: "1.1rem",
+              maxWidth: "250px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            sx={{}}
+          >
             {`${userDoc?.firstName || ""} ${userDoc?.lastName || ""}`.toUpperCase() || "GUEST"}
           </Typography>
-          <Typography variant="caption" sx={{ fontSize: "0.8rem", fontWeight: "300" }}>
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: "0.8rem",
+              fontWeight: "300",
+              maxWidth: "200px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {userDoc?.username || "Guest"}
           </Typography>
         </div>
@@ -320,7 +341,15 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               <div className="miniThumbnail">
                 <img src={getDesignImage(design.id)} alt="" className="" />
               </div>
-              <ListItemText primary={design.designName} />
+              <ListItemText
+                primary={design.designName}
+                sx={{
+                  maxWidth: "300px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              />
               <IconButton
                 edge="end"
                 aria-label="more"
@@ -383,7 +412,15 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               <div className="miniThumbnail">
                 <img src={getProjectImage(project.id)} alt="" />
               </div>
-              <ListItemText primary={project.projectName} />
+              <ListItemText
+                primary={project.projectName}
+                sx={{
+                  maxWidth: "230px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              />
               <IconButton
                 edge="end"
                 aria-label="more"

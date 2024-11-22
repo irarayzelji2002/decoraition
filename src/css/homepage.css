@@ -197,6 +197,7 @@ h2 {
 
 .miniThumbnail {
   width: 30px;
+  min-width: 30px;
   height: 30px;
   background-color: var(--thumbnailFill);
   margin-right: 16px;
@@ -254,6 +255,7 @@ tr:hover td {
 .iconFrame {
   height: 70%;
   width: 95%;
+  max-width: 400px;
   margin: 8px;
 }
 

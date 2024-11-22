@@ -198,6 +198,7 @@ function EditEvent() {
           timeBeforeEvent: reminder.count,
           time: reminder.time, // Save the formatted time
           unit: reminder.unit,
+          reminderInMinutes: reminder.reminderInMinutes, // Save the reminder in minutes
         })),
       };
 

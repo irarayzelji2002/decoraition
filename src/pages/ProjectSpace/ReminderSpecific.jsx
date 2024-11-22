@@ -62,6 +62,11 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
 
   const handleSave = () => {
     const time = `${hours}:${minutes.toString().padStart(2, "0")} ${period}`;
+    let reminderInMinutes = count;
+    if (unit === "day") reminderInMinutes *= 1440;
+    if (unit === "week") reminderInMinutes *= 10080;
+    if (unit === "month") reminderInMinutes *= 43200;
+
     onSave({
       ...reminder,
       hours,
@@ -70,6 +75,7 @@ function ReminderSpecific({ reminder, onSave, onCancel }) {
       count,
       unit,
       time, // Save the formatted time
+      reminderInMinutes, // Save the reminder in minutes
     });
   };
 

@@ -15,6 +15,7 @@ function PinLocation({ EditMode }) {
   const navigate = useNavigate();
 
   const [pins, setPins] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (projectId) {
@@ -23,12 +24,14 @@ function PinLocation({ EditMode }) {
   }, [projectId]);
 
   const savePinLocations = async () => {
+    setIsLoading(true);
     try {
       await Promise.all(pins.map((pin) => updatePinLocation(projectId, pin.id, pin.location)));
       console.log("Pin locations updated successfully");
     } catch (error) {
       console.error("Error updating pin locations:", error);
     }
+    setIsLoading(false);
     navigate(`/planMap/${projectId}`);
   };
 
@@ -43,8 +46,16 @@ function PinLocation({ EditMode }) {
             pins={pins}
             setPins={setPins}
           />
-          <button className="add-item-btn" onClick={savePinLocations}>
-            Save Pin Locations
+          <button
+            className="add-item-btn"
+            onClick={savePinLocations}
+            style={{
+              opacity: isLoading ? 0.5 : 1,
+              cursor: isLoading ? "default" : "pointer",
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? "Save Pin Locations" : "Save Pin Locations"}
           </button>
         </div>
       </div>

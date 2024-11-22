@@ -167,22 +167,35 @@ function Settings() {
   };
 
   const handleThreeInputsChange = (index, value) => {
-    switch (index) {
-      case 0:
-        setFirstName(value);
-        break;
-      case 1:
-        setLastName(value);
-        break;
-      case 2:
-        setUsername(value);
-        break;
-      default:
-        break;
+    const maxLengths = [50, 50, 20];
+    if (value.length <= maxLengths[index]) {
+      switch (index) {
+        case 0:
+          setFirstName(value);
+          break;
+        case 1:
+          setLastName(value);
+          break;
+        case 2:
+          setUsername(value);
+          break;
+        default:
+          break;
+      }
     }
   };
 
   const handleSaveThreeInputs = async (values) => {
+    const maxLengths = [50, 50, 20];
+    const tempErrors = initUserDetailsErr;
+
+    values.forEach((value, index) => {
+      if (value.length > maxLengths[index]) {
+        tempErrors[index].hasError = true;
+        tempErrors[index].errMessage = `Character limit of ${maxLengths[index]} reached`;
+      }
+    });
+
     const trimmedFirstName = values[0].trim();
     const trimmedLastName = values[1].trim();
     const trimmedUsername = values[2].trim();
@@ -190,7 +203,6 @@ function Settings() {
     setLastName(trimmedLastName);
     setUsername(trimmedUsername);
 
-    const tempErrors = initUserDetailsErr;
     if (trimmedFirstName === "") {
       tempErrors.find((field) => field.field === "firstName").hasError = true;
       tempErrors.find((field) => field.field === "firstName").errMessage = "This field is required";

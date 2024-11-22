@@ -34,7 +34,7 @@ function DraggablePin({ id, index, movePin, title, editMode, pinNo, color }) {
   drag(drop(ref));
 
   return (
-    <div ref={ref} style={{ width: "100%" }}>
+    <div ref={ref} style={{ width: "100%", maxWidth: "600px" }}>
       <MapPin title={title} editMode={editMode} pinNo={pinNo} pinColor={color} />
     </div>
   );

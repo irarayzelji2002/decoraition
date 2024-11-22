@@ -7,6 +7,7 @@ import {
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import firebaseConfig from "./firebaseConfig"; // Import the configuration
+import { getStorage } from "firebase/storage";
 
 // Initialize Firebase app
 const app = initializeApp(firebaseConfig);
@@ -14,6 +15,7 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication and Firestore
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // Set persistence to browser session
 setPersistence(auth, browserSessionPersistence)

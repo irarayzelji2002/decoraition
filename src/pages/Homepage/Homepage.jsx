@@ -569,7 +569,7 @@ function Homepage() {
                   viewForProjects === 0 ? (
                     <div className="layout">
                       {filteredProjects.slice(0, 6 + numToShowMoreProject).map((project) => (
-                        <div key={project.id} style={{ width: "100%" }}>
+                        <div key={project.id} className="layoutBox">
                           <ProjectOptionsHome
                             id={project.id}
                             name={project.projectName}

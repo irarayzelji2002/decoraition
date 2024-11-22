@@ -39,9 +39,19 @@
 .pinHolder {
   display: flex;
   width: 100%;
+  max-width: 600px;
 }
 
 .image-pin {
   width: 60px;
   border-radius: 6px;
+}
+@media screen and (max-width: 768px) {
+  .ifMobile {
+    max-width: 150px !important;
+  }
+  .image-pin {
+    width: 40px;
+    border-radius: 3px;
+  }
 }

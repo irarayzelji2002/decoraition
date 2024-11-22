@@ -7,6 +7,7 @@ import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
 import { useState, useEffect } from "react";
 import { ChromePicker } from "react-color";
 import SimpleDeleteConfirmation from "../../components/SimpleDeleteConfirmation";
+import { useNavigate } from "react-router-dom";
 
 const MapPin = ({
   title = "Untitled",
@@ -15,12 +16,14 @@ const MapPin = ({
   pinColor,
   pinId,
   deletePin,
+  designId,
   editPin,
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [value, setValue] = useState("#ffffff");
   const [textColor, setTextColor] = useState("#000000");
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const history = useNavigate();
 
   useEffect(() => {
     const isBright = (color) => {
@@ -50,6 +53,11 @@ const MapPin = ({
   const handleCloseModal = () => {
     setModalOpen(false);
   };
+
+  const handleExportClick = () => {
+    history(`/design/${designId}`);
+  };
+
   return (
     <div className="pinHolder" style={{ width: "100%" }}>
       <div
@@ -125,8 +133,10 @@ const MapPin = ({
       )}
       <div className="mapPin" style={{ width: "100%" }}>
         <div
+          className="ifMobile"
           style={{
             width: "50%",
+            maxWidth: "250px",
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
@@ -138,7 +148,7 @@ const MapPin = ({
         <div style={{ display: "flex", width: "50%", justifyContent: "flex-end" }}>
           {!editMode ? (
             <>
-              <div aria-label="delete">
+              <div aria-label="delete" style={{ cursor: "pointer" }} onClick={handleExportClick}>
                 <ExportIcon />
               </div>
               <div aria-label="edit" onClick={editPin}>

@@ -7,8 +7,7 @@ function DesignIcon({
   id,
   name,
   onOpen,
-  owner = "",
-  createdAt = "",
+  projectType = false,
   modifiedAt = "",
   optionsState = {},
   design = {},
@@ -61,7 +60,7 @@ function DesignIcon({
   };
 
   return (
-    <div className="iconFrame">
+    <div className={projectType ? "iconFrameAlt" : "iconFrame"}>
       <HomepageOptions
         isDesign={true}
         id={id}

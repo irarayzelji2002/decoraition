@@ -183,6 +183,15 @@ exports.handlePlanImageUpload = async (req, res) => {
   }
 
   try {
+    // Delete all current pins associated with the projectId
+    const pinsSnapshot = await db.collection("pins").where("projectId", "==", projectId).get();
+    const batch = db.batch();
+    pinsSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+
+    // Upload the new plan image
     const storageRef = ref(storage, `plans/${projectId}/planImage.png`);
     await uploadBytes(storageRef, file.buffer);
     const downloadURL = await getDownloadURL(storageRef);

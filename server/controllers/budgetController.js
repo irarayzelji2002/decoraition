@@ -346,3 +346,39 @@ exports.deleteItem = async (req, res) => {
     res.status(500).json({ message: "Failed to delete item", error: error.message });
   }
 };
+
+exports.createDefaultBudget = async (req, res) => {
+  try {
+    const { designVersionId } = req.body;
+
+    if (!designVersionId) {
+      return res.status(400).json({ error: "Design version ID is required" });
+    }
+
+    // Create default budget document
+    const defaultBudgetData = {
+      designVersionId: designVersionId,
+      budget: {
+        amount: 0,
+        currency: "PHP", // default currency
+      },
+      items: [],
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+    };
+
+    const budgetRef = await db.collection("budgets").add(defaultBudgetData);
+    const budgetDoc = await budgetRef.get();
+
+    // Update design version with the new budget ID
+    await db.collection("designVersions").doc(designVersionId).update({ budgetId: budgetRef.id });
+
+    res.status(201).json({
+      id: budgetRef.id,
+      ...budgetDoc.data(),
+    });
+  } catch (error) {
+    console.error("Error creating default budget:", error);
+    res.status(500).json({ error: "Failed to create default budget" });
+  }
+};

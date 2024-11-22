@@ -14,6 +14,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { showToast } from "../../functions/utils";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
+import { textFieldInputProps, textFieldStyles } from "./DesignSettings";
 
 const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) => {
   const [description, setDescription] = useState("");
@@ -92,21 +93,10 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
           variant="outlined"
           fullWidth
           sx={{
+            ...textFieldStyles,
             marginBottom: "16px",
-            backgroundColor: "var(  --nav-card-modal)",
-            input: { color: "var(--color-white)" }, //placehold color
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var( --borderInput)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var( --borderInput)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--borderInputBrighter)",
-              },
-            },
           }}
+          inputProps={textFieldInputProps}
         />
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>

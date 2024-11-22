@@ -13,6 +13,7 @@ import {
   where,
   documentId,
 } from "firebase/firestore";
+import { createDefaultBudget } from "../pages/DesignSpace/backend/DesignActions";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -129,7 +130,7 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       userDesignVersions: ["userDesigns"],
       userDesignsComments: ["userDesignVersions"],
       userProjectBudgets: ["userProjects"],
-      userBudgets: ["userProjectBudgets", "userDesigns"],
+      userBudgets: ["userProjectBudgets", "userDesignVersions"],
       userItems: ["userBudgets"],
       userPlanMaps: ["userProjects"],
       userPins: ["userPlanMaps"],
@@ -147,8 +148,8 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       userReplies: (user) => fetchUserReplies(user),
       userNotifications: (user) => fetchUserNotifications(user),
       userProjectBudgets: (projectsSnapshot) => fetchUserProjectBudgets(projectsSnapshot),
-      userBudgets: (projectBudgetsSnapshot, designsSnapshot) =>
-        fetchUserBudgets(projectBudgetsSnapshot, designsSnapshot),
+      userBudgets: (projectBudgetsSnapshot, designVersionsSnapshot) =>
+        fetchUserBudgets(projectBudgetsSnapshot, designVersionsSnapshot),
       userItems: (budgetsSnapshot) => fetchUserItems(budgetsSnapshot),
       userPlanMaps: (projectsSnapshot) => fetchUserPlanMaps(projectsSnapshot),
       userPins: (planMapsSnapshot) => fetchUserPins(planMapsSnapshot),
@@ -297,11 +298,11 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
 
         const { snapshot: budgetsSnapshot, data: budgetsData } = await fetchUserBudgets(
           projectBudgetsSnapshot,
-          designsSnapshot
+          designVersionsSnapshot
         );
         stateSetterFunctions.userBudgets(budgetsData);
         setupListener("userBudgets", () =>
-          fetchUserBudgets(projectBudgetsSnapshot, designsSnapshot)
+          fetchUserBudgets(projectBudgetsSnapshot, designVersionsSnapshot)
         );
 
         const { data: itemsData } = await fetchUserItems(budgetsSnapshot);
@@ -567,33 +568,47 @@ const fetchUserProjectBudgets = async (projectsSnapshot) => {
   return { snapshot, data };
 };
 
-//get all user-related budgets from the budgets array field of userProjectBudgets's documents AND also from the budgetId field of userDesigns's documents in the budgets collection
-const fetchUserBudgets = async (projectBudgetsSnapshot, designsSnapshot) => {
-  let budgetIdsFromProjects = [];
-  let budgetIdsFromDesigns = [];
-  if (projectBudgetsSnapshot && !projectBudgetsSnapshot.empty) {
-    budgetIdsFromProjects =
-      projectBudgetsSnapshot?.docs.flatMap((doc) => doc.data().budgets || []) || [];
+//get all user-related budgets from the budgets array field of userProjectBudgets's documents AND also from the budgetId field of userDesignVersion's documents in the budgets collection
+const fetchUserBudgets = async (projectBudgetsSnapshot, designVersionsSnapshot) => {
+  try {
+    // Collect budget IDs from projects & design versions & combine
+    let budgetIdsFromProjects = [];
+    if (projectBudgetsSnapshot && !projectBudgetsSnapshot.empty) {
+      budgetIdsFromProjects = projectBudgetsSnapshot?.docs.flatMap(
+        (doc) => doc.data().budgets || []
+      );
+    }
+    let budgetIdsFromDesigns = [];
+    if (designVersionsSnapshot && !designVersionsSnapshot.empty) {
+      budgetIdsFromDesigns = designVersionsSnapshot?.docs
+        .map((doc) => doc.data().budgetId)
+        .filter(Boolean);
+    }
+    const allBudgetIds = [...new Set([...budgetIdsFromProjects, ...budgetIdsFromDesigns])];
+
+    // If no budgets exist, return empty result
+    if (allBudgetIds.length === 0) {
+      return { snapshot: null, data: [] };
+    }
+
+    // Fetch existing budgets
+    const batches = batchIntoChunks(allBudgetIds);
+    const budgetsSnapshots = await Promise.all(
+      batches.map((batch) =>
+        getDocs(query(collection(db, "budgets"), where(documentId(), "in", batch)))
+      )
+    );
+    const data = budgetsSnapshots.flatMap((snapshot) =>
+      snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    );
+    return {
+      snapshot: combineSnapshots(budgetsSnapshots),
+      data,
+    };
+  } catch (error) {
+    console.error("Error in fetchUserBudgets:", error);
+    throw error;
   }
-  if (designsSnapshot && !designsSnapshot.empty) {
-    budgetIdsFromDesigns =
-      designsSnapshot?.docs.map((doc) => doc.data().budgetId).filter(Boolean) || [];
-  }
-  const allBudgetIds = [...new Set([...budgetIdsFromProjects, ...budgetIdsFromDesigns])];
-  if (allBudgetIds.length === 0) {
-    return { snapshot: null, data: [] };
-  }
-  const batches = batchIntoChunks(allBudgetIds);
-  const budgetsSnapshots = await Promise.all(
-    batches.map((batch) =>
-      getDocs(query(collection(db, "budgets"), where(documentId(), "in", batch)))
-    )
-  );
-  const data = budgetsSnapshots.flatMap((snapshot) =>
-    snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-  );
-  const snapshot = combineSnapshots(budgetsSnapshots);
-  return { snapshot, data };
 };
 
 //get all user-related items from the items array field of userBudgets's documents in the items collection

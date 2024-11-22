@@ -19,6 +19,7 @@ import {
   dialogContentStyles,
   dialogActionsStyles,
 } from "./RenameModal";
+import { textFieldInputProps, textFieldStyles } from "../pages/DesignSpace/DesignSettings";
 
 const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, object }) => {
   // if isDesign is true, object is a design object, else it is a project object
@@ -86,20 +87,10 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
           variant="outlined"
           fullWidth
           sx={{
-            backgroundColor: "var(  --nav-card-modal)",
-            input: { color: "var(--color-white)" }, //placehold color
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var( --borderInput)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var( --borderInput)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--borderInputBrighter)",
-              },
-            },
+            ...textFieldStyles,
+            marginBottom: "16px",
           }}
+          inputProps={textFieldInputProps}
         />
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>

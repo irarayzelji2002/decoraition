@@ -378,7 +378,7 @@ const handleProjectBudget = async (project, projectBudgets, budgets, items, file
     ];
 
     for (const budget of allBudgets) {
-      const design = designs.find((d) => d.id === budget.designId);
+      const design = designs.find((d) => d.id === budget?.designVersionId);
       const budgetItems = items.filter((item) => budget.items?.includes(item.id));
       const budgetTotal = budgetItems.reduce(
         (sum, item) => sum + item.cost.amount * item.quantity,
@@ -443,7 +443,7 @@ const handleProjectBudget = async (project, projectBudgets, budgets, items, file
     let yOffset = 80;
 
     for (const budget of allBudgets) {
-      const design = designs.find((d) => d.id === budget.designId);
+      const design = designs.find((d) => d.id === budget?.designVersionId);
       const budgetItems = items.filter((item) => budget.items?.includes(item.id));
       const budgetTotal = budgetItems.reduce(
         (sum, item) => sum + item.cost.amount * item.quantity,

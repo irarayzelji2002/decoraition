@@ -90,6 +90,11 @@ router.put(
   budgetController.updateBudget
 );
 router.post(
+  "/design/budget/create-default-budget",
+  authenticateUser,
+  budgetController.createDefaultBudget
+);
+router.post(
   "/design/item/add-item",
   authenticateUser,
   upload.single("file"),

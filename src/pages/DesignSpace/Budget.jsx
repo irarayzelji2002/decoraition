@@ -17,7 +17,7 @@ import { Divider } from "@mui/material";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import "../../css/budget.css";
 import { AddBudget, AddItem, BlankImage } from "./svg/AddImage";
-import { getDesignImage, handleNameChange } from "./backend/DesignActions";
+import { getDesignImage, handleNameChange, createDefaultBudget } from "./backend/DesignActions";
 import LoadingPage from "../../components/LoadingPage";
 
 const style = {
@@ -32,14 +32,25 @@ const style = {
 };
 
 function Budget() {
-  const { user, designs, userDesigns, userDesignVersions, budgets, userBudgets, items, userItems } =
-    useSharedProps();
+  const {
+    user,
+    userDoc,
+    designs,
+    userDesigns,
+    designVersions,
+    userDesignVersions,
+    budgets,
+    userBudgets,
+    items,
+    userItems,
+  } = useSharedProps();
   const { designId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
 
   const [design, setDesign] = useState({});
+  const [designVersion, setDesignVersion] = useState({});
   const [budget, setBudget] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
@@ -55,7 +66,7 @@ function Budget() {
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [totalCost, setTotalCost] = useState(0);
   const [formattedTotalCost, setFormattedTotalCost] = useState("0.00");
-  const [exceededBudget, setExceededBudget] = useState(0);
+  const [exceededBudget, setExceededBudget] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -131,52 +142,89 @@ function Budget() {
 
   const formatNumber = (num) => (typeof num === "number" ? num.toFixed(2) : "0.00");
 
-  // Initialize
+  // Get design
   useEffect(() => {
-    if (Object.keys(design).length > 0) return;
-    const fetchedDesign =
-      userDesigns.find((design) => design.id === designId) ||
-      designs.find((design) => design.id === designId);
-    setDesign(fetchedDesign || {});
-    setDesignName(fetchedDesign?.designName ?? "Untitled Design");
+    if (designId && userDesigns.length > 0) {
+      const fetchedDesign =
+        userDesigns.find((d) => d.id === designId) || designs.find((d) => d.id === designId);
 
-    if (!fetchedDesign) {
-      console.error("Design not found.");
-      return;
+      if (!fetchedDesign) {
+        console.error("Design not found.");
+      } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
+        setDesign(fetchedDesign);
+        console.log("current design:", fetchedDesign);
+      }
     }
+  }, [designId, design, userDesigns]);
 
-    const fetchedBudget =
-      userBudgets.find((budget) => budget.designId === designId) ||
-      budgets.find((budget) => budget.designId === designId);
-    setBudget(fetchedBudget || {});
-
-    const fetchedItems =
-      fetchedBudget && fetchedBudget.items
-        ? userItems.filter((item) => fetchedBudget.items?.includes(item.id)) ||
-          items.filter((item) => fetchedBudget.items?.includes(item.id))
-        : [];
-    setDesignItems(fetchedItems);
-
-    if (fetchedBudget && fetchedItems.length > 0) {
-      computeTotalCostAndExceededBudget(fetchedItems, fetchedBudget.budget?.amount);
-    }
-    setLoading(false);
-  }, [budgets, userBudgets, designs, userDesigns, items, userItems]);
-
-  // Updates on Real-time changes on shared props
+  // Get latest design version
   useEffect(() => {
-    if (Object.keys(design).length === 0) return;
-    const fetchedDesign =
-      userDesigns.find((design) => design.id === designId) ||
-      designs.find((design) => design.id === designId);
+    console.log("Init Budget page - deisgn", design);
+    console.log("Init Budget page - design?.history", design?.history);
+    if (design?.history && design.history.length > 0) {
+      const latestDesignVersionId = design.history[design.history.length - 1];
+      const fetchedLatestDesignVersion =
+        designVersions.find((v) => v.id === latestDesignVersionId) ||
+        userDesignVersions.find((v) => v.id === latestDesignVersionId);
 
-    if (!fetchedDesign) {
-      console.error("Design not found");
-    } else if (!deepEqual(design, fetchedDesign)) {
-      setDesign(fetchedDesign);
-      setDesignName(fetchedDesign?.designName ?? "Untitled Design");
+      if (!fetchedLatestDesignVersion) {
+        console.error("Init Budget page - Latest design version not found.");
+      } else if (
+        Object.keys(designVersion).length === 0 ||
+        !deepEqual(designVersion, fetchedLatestDesignVersion)
+      ) {
+        setDesignVersion(fetchedLatestDesignVersion);
+        console.log("Init Budget page - fetchedLatestDesignVersion", fetchedLatestDesignVersion);
+      }
+    } else {
+      setDesignVersion({});
     }
-  }, [designs, designs, userDesigns]);
+  }, [design, designVersions, userDesignVersions]);
+
+  // Get budget and items
+  useEffect(() => {
+    const fetchBudgetData = async () => {
+      try {
+        if (!designVersion?.id) {
+          console.error("Init Budget page - No design version available");
+          return;
+        }
+
+        const fetchedBudget =
+          userBudgets.find((budget) => budget?.designVersionId === designVersion.id) ||
+          budgets.find((budget) => budget?.designVersionId === designVersion.id);
+        setBudget(fetchedBudget || {});
+
+        if (!fetchedBudget) {
+          console.error(
+            `Init Budget page - No budget found for design version ${designVersion.id}`
+          );
+          // Create new budget if none exists
+          const newBudget = await createDefaultBudget(designVersion.id, user, userDoc);
+          setBudget(newBudget);
+        } else {
+          setBudget(fetchedBudget);
+        }
+
+        const fetchedItems =
+          fetchedBudget && fetchedBudget.items
+            ? userItems.filter((item) => fetchedBudget.items?.includes(item.id)) ||
+              items.filter((item) => fetchedBudget.items?.includes(item.id))
+            : [];
+        setDesignItems(fetchedItems);
+
+        if (fetchedBudget && fetchedItems.length > 0) {
+          computeTotalCostAndExceededBudget(fetchedItems, fetchedBudget.budget?.amount);
+        }
+      } catch (err) {
+        console.error("Init Budget page - Error fetching budget:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBudgetData();
+  }, [designVersion, budgets, userBudgets, items, userItems]);
 
   const updateItems = () => {
     if (budget && budget.items) {
@@ -214,8 +262,8 @@ function Budget() {
 
   useEffect(() => {
     const fetchedBudget =
-      userBudgets.find((budget) => budget.designId === designId) ||
-      budgets.find((budget) => budget.designId === designId);
+      userBudgets.find((budget) => budget?.designVersionId === designId) ||
+      budgets.find((budget) => budget?.designVersionId === designId);
 
     if (fetchedBudget && !deepEqual(budget, fetchedBudget)) {
       setBudget(fetchedBudget);
@@ -247,8 +295,10 @@ function Budget() {
     return <LoadingPage />;
   }
 
-  if (!design) {
-    return <div>Design not found. Please reload or navigate to this design again.</div>;
+  if (!design || !designVersion) {
+    return (
+      <LoadingPage message="Design not found. Please reload or navigate to this design again." />
+    );
   }
 
   const toggleMenu = () => {

@@ -1323,3 +1323,27 @@ export const deleteReply = async (designId, commentId, replyId, user, userDoc) =
     return { success: false, message: error?.response?.data?.error || "Failed to delete reply" };
   }
 };
+
+export const createDefaultBudget = async (designVersionId, user, useDoc) => {
+  try {
+    const response = await axios.post(
+      `/api/design/budget/create-default-budget`,
+      { designVersionId },
+      {
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+      }
+    );
+
+    if (response.status === 200) {
+      const newBudget = await response.json();
+      console.log("Default Budget created successfully:", newBudget);
+      return { success: true, message: "Budget for design version added successfully", newBudget };
+    }
+  } catch (error) {
+    console.error("Error creating default budget:", error?.response?.data?.error || error.message);
+    return {
+      success: false,
+      message: error?.response?.data?.error || "Error creating default budget",
+    };
+  }
+};

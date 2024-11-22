@@ -43,6 +43,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
   const [selectedDesignCategory, setSelectedDesignCategory] = useState("Design");
   const [selectedDesignVersionId, setSelectedDesignVersionId] = useState("");
   const [selectedDesignVersionDate, setSelectedDesignVersionDate] = useState("");
+  const [selectedDesignVersionBudgetId, setSelectedDesignVersionBudgetId] = useState("");
   const [versionDetails, setVersionDetails] = useState([]);
   const [designFileType, setDesignFileType] = useState(
     selectedDesignCategory === "Design" ? "PDF" : selectedDesignCategory === "Budget" ? "XLSX" : ""
@@ -80,6 +81,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
     onClose();
     setSelectedDesignVersionId("");
     setSelectedDesignVersionDate("");
+    setSelectedDesignVersionBudgetId("");
     setVersionDetails([]);
     setDesignFileType(
       selectedDesignCategory === "Design"
@@ -175,9 +177,10 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       const selectedVersion = versionDetails.find((version) => version.id === selectedId);
       if (selectedVersion) {
         setSelectedDesignVersionDate(formatDateDetailComma(selectedVersion.createdAt));
+        setSelectedDesignVersionBudgetId(selectedVersion?.budgetId);
       }
     } else {
-      setSelectedDesignVersionDate("");
+      setSelectedDesignVersionDate("");setSelectedDesignVersionBudgetId("");
     }
   };
 
@@ -189,6 +192,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
         console.error("Error:", result.message);
         setSelectedDesignVersionId("");
         setSelectedDesignVersionDate("");
+        setSelectedDesignVersionBudgetId("");
         setVersionDetails([]);
         return;
       }
@@ -198,7 +202,8 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       const latestVersion = versionDetails[0];
       if (latestVersion) {
         setSelectedDesignVersionId(latestVersion.id);
-        setSelectedDesignVersionDate(formatDateDetailComma(latestVersion.createdAt));
+        setSelectedDesignVersionDate(formatDateDetailComma(latestVersion?.createdAt));
+        setSelectedDesignVersionBudgetId(latestVersion?.budgetId);
       }
     }
   };
@@ -245,9 +250,9 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
 
   // Budget useEffect
   useEffect(() => {
-    if (!design?.budgetId || !userBudgets) return;
+    if (!selectedDesignVersionBudgetId || !userBudgets) return;
 
-    const budgetId = design.budgetId;
+    const budgetId = selectedDesignVersionBudgetId;
     const fetchedBudget = userBudgets.find((budget) => budget.id === budgetId);
     if (!fetchedBudget) {
       console.error("Budget not found.");
@@ -262,7 +267,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
         });
       }
     }
-  }, [design, userBudgets]);
+  }, [selectedDesignVersionBudgetId, userBudgets]);
 
   // Timeline useEffect
   useEffect(() => {

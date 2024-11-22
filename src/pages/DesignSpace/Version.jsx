@@ -15,7 +15,8 @@ import {
 } from "@mui/material";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { formatDateDetailComma } from "../Homepage/backend/HomepageActions";
+import VersionOverviewModal from "./VersionOverviewModal";
+import { formatDateDetail, formatDateDetailComma } from "../Homepage/backend/HomepageActions";
 import { fetchVersionDetails } from "./backend/DesignActions";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { showToast } from "../../functions/utils";
@@ -112,18 +113,21 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
           setVersionDetails([]);
           return;
         }
-        let versionDetails = result.versionDetails;
-        versionDetails.forEach((version) => {
+
+        // Create new array with modified versions instead of modifying in place
+        let versionDetails = result.versionDetails.map((version) => {
           const displayDate = formatDateDetailComma(version.createdAt);
           let restoredFromCreatedAt, restoredFromDisplayDate;
-          if (version.isRestored && version.isRestoredFrom.versionId) {
-            const isRestoredFrom = versionDetails.find(
+          if (version.isRestored && version.isRestoredFrom?.versionId) {
+            const isRestoredFrom = result.versionDetails.find(
               (v) => v.id === version.isRestoredFrom.versionId
             );
-            restoredFromCreatedAt = isRestoredFrom.createdAt;
-            restoredFromDisplayDate = formatDateDetailComma(restoredFromCreatedAt);
+            if (isRestoredFrom) {
+              restoredFromCreatedAt = isRestoredFrom.createdAt;
+              restoredFromDisplayDate = formatDateDetailComma(restoredFromCreatedAt);
+            }
           }
-          version = {
+          return {
             ...version,
             displayDate,
             isRestoredFrom: {
@@ -135,18 +139,19 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
             imagesLink: version.images?.map((img) => img.link) || [],
           };
         });
-        setVersionDetails(versionDetails);
 
-        // Reverse the version details to show the latest version at the top
+        // Reverse after mapping
         versionDetails = versionDetails.reverse();
         setVersionDetails(versionDetails);
+        console.log("versionDetails - versionDetails", versionDetails);
 
-        // Set the latest version as the selected version
+        // Set latest version
         const latestVersion = versionDetails[0];
         if (latestVersion) {
           setSelectedDesignVersionId(latestVersion.id);
           setSelectedVersionDetails(latestVersion);
         }
+        console.log("versionDetails - latestVersion", latestVersion);
 
         // Get copied versions
         const copiedVersionDetails = await Promise.all(
@@ -186,6 +191,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
           })
         ).then((results) => results.flat().filter(Boolean));
         setCopiedVersionDetails(copiedVersionDetails.reverse());
+        console.log("versionDetails - copiedVersionDetails", copiedVersionDetails.reverse());
       }
     };
 
@@ -537,141 +543,98 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
         </Toolbar>
       </Drawer>
       {openViewModal && (
-        <Dialog
-          open={openViewModal}
-          onClose={() => setOpenViewModal(false)}
-          sx={{
-            ...dialogStyles,
-            zIndex: "13002",
-          }}
-        >
-          <DialogTitle sx={dialogTitleStyles}>
-            <Typography
-              variant="body1"
-              sx={{
-                fontWeight: "bold",
-                fontSize: "1.15rem",
-                flexGrow: 1,
-                maxWidth: "80%",
-                whiteSpace: "normal",
-              }}
-            >
-              {`Version at ${selectedDesignVersionDetails.displayDate}`}
-            </Typography>
-            <IconButton
-              onClick={() => setOpenViewModal(false)}
-              sx={{
-                ...iconButtonStyles,
-                flexShrink: 0,
-                marginLeft: "auto",
-              }}
-            >
-              <CloseRoundedIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent
-            sx={{
-              ...dialogContentStyles,
-              paddingBottom: "20px",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
-              {selectedDesignVersionDetails.imagesLink.map((img, index) => {
-                return (
-                  <div style={{ border: index !== viewingImage && "1px solid transparent" }}>
-                    <div
-                      key={index}
-                      className="select-image-preview"
-                      style={{ border: index === viewingImage && "2px solid var(--brightFont)" }}
-                      onClick={() => setViewingImage(index)}
-                    >
-                      <img src={img} alt="" />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
-              <div className="historyImageFrame" key={viewingImage}>
-                <img
-                  src={selectedDesignVersionDetails.imagesLink[viewingImage]}
-                  alt=""
-                  className="historyImagePreview"
-                />
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <VersionOverviewModal
+          openViewModal={openViewModal}
+          setOpenViewModal={setOpenViewModal}
+          selectedDesignVersionDetails={selectedDesignVersionDetails}
+          viewingImage={viewingImage}
+          setViewingImage={setViewingImage}
+        />
       )}
       {openConfirmRestoreModal && (
-        <Dialog
-          open={openConfirmRestoreModal}
-          onClose={() => setOpenConfirmRestoreModal(false)}
-          sx={{
-            ...dialogStyles,
-            zIndex: "13002",
-          }}
-        >
-          <DialogTitle sx={dialogTitleStyles}>
-            <Typography
-              variant="body1"
-              sx={{
-                fontWeight: "bold",
-                fontSize: "1.15rem",
-                flexGrow: 1,
-                maxWidth: "80%",
-                whiteSpace: "normal",
-              }}
-            >
-              Confirm Restore
-            </Typography>
-            <IconButton
-              onClick={() => setOpenConfirmRestoreModal(false)}
-              sx={{
-                ...iconButtonStyles,
-                flexShrink: 0,
-                marginLeft: "auto",
-              }}
-            >
-              <CloseRoundedIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent sx={dialogContentStyles}>
-            <Typography variant="body1" sx={{ textAlign: "center", maxWidth: "500px" }}>
-              Are you sure you want to restore the design to the version at{" "}
-              {selectedDesignVersionDetails.displayDate}?
-            </Typography>
-          </DialogContent>
-          <DialogActions sx={dialogActionsStyles}>
-            {/* Yes Button */}
-            <Button
-              variant="contained"
-              onClick={() => handleRestore(selectedDesignVersionId)}
-              sx={gradientButtonStyles}
-            >
-              Yes
-            </Button>
-
-            {/* No Button */}
-            <Button
-              variant="contained"
-              onClick={() => setOpenConfirmRestoreModal(false)}
-              sx={outlinedButtonStyles}
-              onMouseOver={(e) =>
-                (e.target.style.backgroundImage =
-                  "var(--lightGradient), var(--gradientButtonHover)")
-              }
-              onMouseOut={(e) =>
-                (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
-              }
-            >
-              No
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <ConfirmRestoreModal
+          openConfirmRestoreModal={openConfirmRestoreModal}
+          setOpenConfirmRestoreModal={setOpenConfirmRestoreModal}
+          selectedDesignVersionDetails={selectedDesignVersionDetails}
+          handleRestore={handleRestore}
+          selectedDesignVersionId={selectedDesignVersionId}
+        />
       )}
     </>
   );
+};
+
+const ConfirmRestoreModal = ({
+  openConfirmRestoreModal,
+  setOpenConfirmRestoreModal,
+  selectedDesignVersionDetails,
+  handleRestore,
+  selectedDesignVersionId,
+}) => {
+  <Dialog
+    open={openConfirmRestoreModal}
+    onClose={() => setOpenConfirmRestoreModal(false)}
+    sx={{
+      ...dialogStyles,
+      zIndex: "13002",
+    }}
+  >
+    <DialogTitle sx={dialogTitleStyles}>
+      <Typography
+        variant="body1"
+        sx={{
+          fontWeight: "bold",
+          fontSize: "1.15rem",
+          flexGrow: 1,
+          maxWidth: "80%",
+          whiteSpace: "normal",
+        }}
+      >
+        Confirm Restore
+      </Typography>
+      <IconButton
+        onClick={() => setOpenConfirmRestoreModal(false)}
+        sx={{
+          ...iconButtonStyles,
+          flexShrink: 0,
+          marginLeft: "auto",
+        }}
+      >
+        <CloseRoundedIcon />
+      </IconButton>
+    </DialogTitle>
+    <DialogContent sx={dialogContentStyles}>
+      <Typography variant="body1" sx={{ textAlign: "center", maxWidth: "500px" }}>
+        Are you sure you want to restore the design to the version at{" "}
+        {selectedDesignVersionDetails.displayDate}?
+      </Typography>
+    </DialogContent>
+    <DialogActions sx={dialogActionsStyles}>
+      {/* Yes Button */}
+      <Button
+        variant="contained"
+        onClick={() => handleRestore(selectedDesignVersionId)}
+        sx={gradientButtonStyles}
+      >
+        Yes
+      </Button>
+
+      {/* No Button */}
+      <Button
+        variant="contained"
+        onClick={() => setOpenConfirmRestoreModal(false)}
+        sx={outlinedButtonStyles}
+        onMouseOver={(e) =>
+          (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
+        }
+        onMouseOut={(e) =>
+          (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+        }
+      >
+        No
+      </Button>
+    </DialogActions>
+  </Dialog>;
 };
 
 export default Version;

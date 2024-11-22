@@ -11,6 +11,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import NoImage from "./svg/NoImage";
 import { showToast } from "../../functions/utils";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { textFieldInputProps, textFieldStyles } from "./DesignSettings";
 
 const AddItem = () => {
   const { budgetId } = useParams();
@@ -19,8 +20,9 @@ const AddItem = () => {
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
 
-  const { user, designs, userDesigns } = useSharedProps();
+  const { user, designs, userDesigns, designVersions, userDesignVersions } = useSharedProps();
   const [design, setDesign] = useState({});
+  const [designVersion, setDesignVersion] = useState({});
 
   const [itemQuantity, setItemQuantity] = useState(1);
   const [budgetItem, setBudgetItem] = useState("");
@@ -34,19 +36,22 @@ const AddItem = () => {
   const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
 
   // Updates on Real-time changes on shared props
   useEffect(() => {
-    const fetchedDesign =
-      userDesigns.find((design) => design.budgetId === budgetId) ||
-      designs.find((design) => design.budgetId === budgetId);
+    setLoading(true);
+    const fetchedDesignVersion =
+      userDesignVersions.find((designVersion) => designVersion?.budgetId === budgetId) ||
+      designVersions.find((designVersion) => designVersion?.budgetId === budgetId);
 
-    if (!fetchedDesign) {
-      console.error("Design not found");
-    } else if (!deepEqual(design, fetchedDesign)) {
-      setDesign(fetchedDesign);
+    if (!fetchedDesignVersion) {
+      console.error("Design version not found");
+    } else if (!deepEqual(designVersion, fetchedDesignVersion)) {
+      setDesignVersion(fetchedDesignVersion);
     }
-  }, [designs, designs, userDesigns]);
+    setLoading(false);
+  }, [designVersions, userDesignVersions]);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -177,7 +182,7 @@ const AddItem = () => {
         const itemName = budgetItem;
         showToast("success", `${itemName} has been added!`);
         if (design) {
-          setTimeout(() => navigate(`/budget/${design.id}`), 1000);
+          setTimeout(() => navigate(`/budget/${designVersion.id}`), 1000);
         } else {
           setTimeout(() => window.history.back(), 1000);
         }
@@ -214,26 +219,12 @@ const AddItem = () => {
               ),
             }}
             sx={{
+              ...textFieldStyles,
               width: "100%",
               marginBottom: "20px",
-
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  border: "var(--borderInput) 2px solid",
-                  borderRadius: "20px",
-                },
-                "&:hover fieldset": {
-                  border: "var(--borderInput) 2px solid",
-                },
-                "&.Mui-focused fieldset": {
-                  border: "var(--borderInputBrighter) 2px solid",
-                },
-                "& input": {
-                  color: "var(--color-white)", // Change the text color
-                },
-              },
             }}
             fullWidth
+            inputProps={textFieldInputProps}
           />
 
           <div className="upload-section">

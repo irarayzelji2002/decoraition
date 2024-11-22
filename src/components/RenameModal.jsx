@@ -14,6 +14,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { showToast } from "../functions/utils";
 import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
 import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
+import { textFieldInputProps, textFieldStyles } from "../pages/DesignSpace/DesignSettings";
 
 const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
   // if isDesign is true, object is a design object, else it is a project object
@@ -84,21 +85,10 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
           variant="outlined"
           fullWidth
           sx={{
+            ...textFieldStyles,
             marginBottom: "16px",
-            backgroundColor: "var(  --nav-card-modal)",
-            input: { color: "var(--color-white)" }, //placehold color
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var( --borderInput)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var( --borderInput)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--borderInputBrighter)",
-              },
-            },
           }}
+          inputProps={textFieldInputProps}
         />
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>

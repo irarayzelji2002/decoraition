@@ -15,9 +15,10 @@ const EditItem = () => {
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
 
-  const { user, designs, userDesigns, items, userItems } = useSharedProps();
+  const { user, designs, userDesigns, items, userItems, designVersions, userDesignVersions } =
+    useSharedProps();
   const { budgetId, itemId } = useParams();
-  const [design, setDesign] = useState({});
+  const [designVersion, setDesignVersion] = useState({});
   const [item, setItem] = useState({});
 
   const [itemName, setItemName] = useState(item?.itemName ?? "");
@@ -31,25 +32,25 @@ const EditItem = () => {
   const [imageLink, setImageLink] = useState("");
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   // Initialize
   useEffect(() => {
     if (userItems.length > 0) {
-      const fetchedItem = userItems.find((item) => item.id === itemId);
-      setItem(fetchedItem || {});
-
+      const fetchedItem =
+        userItems.find((item) => item.id === itemId) || items.find((item) => item.id === itemId);
       if (!fetchedItem) {
         console.error("Item not found");
-      }
+      } else setItem(fetchedItem || {});
     }
-    if (userDesigns.length > 0) {
-      const fetchedDesign = userDesigns.find((design) => design.budgetId === budgetId);
-      setDesign(fetchedDesign || {});
-      if (!fetchedDesign) {
-        console.error("Design not found.");
-      }
-    }
-  }, []);
+
+    const fetchedDesignVersion =
+      userDesignVersions.find((designVersion) => designVersion?.budgetId === budgetId) ||
+      designVersions.find((designVersion) => designVersion?.budgetId === budgetId);
+    if (!fetchedDesignVersion) {
+      console.error("Design version not found.");
+    } else setDesignVersion(fetchedDesignVersion || {});
+  }, [designVersions, userDesignVersions, items, userItems]);
 
   useEffect(() => {
     if (item && Object.keys(item).length > 0) {
@@ -184,8 +185,8 @@ const EditItem = () => {
       if (response.status === 200) {
         console.log("Item updated successfully");
         showToast("success", "Item updated successfully");
-        if (design) {
-          setTimeout(() => navigate(`/budget/${design.id}`), 1000);
+        if (designVersion) {
+          setTimeout(() => navigate(`/budget/${designVersion.id}`), 1000);
         } else {
           setTimeout(() => window.history.back(), 1000);
         }

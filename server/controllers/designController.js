@@ -50,32 +50,6 @@ exports.createDesign = async (req, res) => {
       link: `/design/${designId}`,
     });
 
-    // Create associated budget document
-    const budgetData = {
-      designId: designId,
-      budget: {
-        amount: 0,
-        currency: "PHP", //default
-      },
-      items: [],
-      createdAt: new Date(),
-      modifiedAt: new Date(),
-    };
-
-    const budgetRef = await db.collection("budgets").add(budgetData);
-    const budgetId = budgetRef.id;
-    createdDocuments.push({ collection: "budgets", id: budgetId });
-
-    // Update design document with budgetId
-    const designSnapshot = await designRef.get();
-    updatedDocuments.push({
-      ref: designRef,
-      data: { budgetId: designSnapshot.data().budgetId },
-      collection: "budgets",
-      id: designRef.id,
-    });
-    await designRef.update({ budgetId });
-
     // Update user's designs array
     const userRef = db.collection("users").doc(userId);
     const userDoc = await userRef.get();
@@ -93,7 +67,6 @@ exports.createDesign = async (req, res) => {
       id: designId,
       ...designData,
       link: `/design/${designId}`,
-      budgetId,
     });
   } catch (error) {
     console.error("Error creating design:", error);
@@ -417,10 +390,31 @@ exports.restoreDesignVersion = async (req, res) => {
       modifiedAt: new Date(),
     });
 
-    // Copy data from original version to new version
+    // Create new budget for restored version
+    const originalBudget = await db.collection("budgets").doc(versionDoc.data().budgetId).get();
 
+    const newBudgetData = originalBudget.exists
+      ? {
+          designVersionId: newVersionRef.id,
+          budget: originalBudget.data().budget,
+          items: originalBudget.data().items,
+          createdAt: new Date(),
+          modifiedAt: new Date(),
+        }
+      : {
+          designVersionId: newVersionRef.id,
+          budget: { amount: 0, currency: "PHP" },
+          items: [],
+          createdAt: new Date(),
+          modifiedAt: new Date(),
+        };
+    const newBudgetRef = await db.collection("budgets").add(newBudgetData);
+    createdDocuments.push({ collection: "budgets", id: newBudgetRef.id });
+
+    // Copy data from original version to new version
     await newVersionRef.update({
       images: versionDoc.data().images,
+      budgetId: newBudgetRef.id,
     });
 
     res.status(200).json({
@@ -483,7 +477,7 @@ exports.copyDesign = async (req, res) => {
     }
 
     // Get original budget document
-    const origBudgetDoc = await db.collection("budgets").doc(origDesignData.budgetId).get();
+    const origBudgetDoc = await db.collection("budgets").doc(versionId?.budgetId).get();
     if (!origBudgetDoc.exists) {
       return res.status(404).json({ error: "Original budget not found" });
     }
@@ -505,17 +499,34 @@ exports.copyDesign = async (req, res) => {
     const newDesignId = newDesignRef.id;
     createdDocuments.push({ collection: "designs", id: newDesignId });
 
-    // Step 2: Create empty budget document
-    const emptyBudgetData = {
-      designId: newDesignId,
-      budget: { amount: 0, currency: "PHP" },
-      items: [],
+    // Step 2.1: Create new version for the design
+    const versionDoc = await db.collection("designVersions").doc(versionId).get();
+    const originalBudget = await db.collection("budgets").doc(versionDoc.data().budgetId).get();
+    const newVersionData = {
+      description: versionDoc.data().description,
+      images: versionDoc.data().images,
+      createdBy: userId,
+      createdAt: new Date(),
+      copiedDesigns: [],
+      isRestored: false,
+    };
+    const newVersionRef = await db.collection("designVersions").add(newVersionData);
+    const newVersionId = newVersionRef.id;
+    createdDocuments.push({ collection: "designVersions", id: newVersionId });
+
+    // Step 2.2: Create new budget for the version
+    const newBudgetData = {
+      designVersionId: newVersionId,
+      budget: originalBudget.data().budget,
+      items: originalBudget.data().items,
       createdAt: new Date(),
       modifiedAt: new Date(),
     };
-    const newBudgetRef = await db.collection("budgets").add(emptyBudgetData);
+
+    const newBudgetRef = await db.collection("budgets").add(newBudgetData);
     const newBudgetId = newBudgetRef.id;
-    createdDocuments.push({ collection: "budgets", id: newBudgetId });
+    createdDocuments.push({ collection: "budgets", id: newBudgetRef.id });
+    await newVersionRef.update({ budgetId: newBudgetRef.id });
 
     // Step 3: Create empty items (following dependency order)
     const newItemIds = [];
@@ -554,7 +565,6 @@ exports.copyDesign = async (req, res) => {
 
     // Step 5: Update version's copiedDesigns array
     const versionRef = db.collection("designVersions").doc(versionId);
-    const versionDoc = await versionRef.get();
     const previousCopiedDesigns = versionDoc.data().copiedDesigns || [];
     updatedDocuments.push({
       collection: "designVersions",
@@ -577,9 +587,8 @@ exports.copyDesign = async (req, res) => {
         : [],
       commenters: shareWithCollaborators ? origDesignData.commenters : [],
       viewers: shareWithCollaborators ? origDesignData.viewers : [],
-      history: [versionId],
+      history: [newVersionId],
       projectId: "",
-      budgetId: newBudgetId,
       link: `/design/${newDesignId}`,
       isCopied: true,
       isCopiedFrom: { designId, versionId },
@@ -1210,12 +1219,30 @@ exports.createDesignVersion = async (req, res) => {
     if (!updatedImages || updatedImages.length === 0) {
       throw new Error("Failed to generate image");
     }
+
+    // Create associated budget document
+    const budgetData = {
+      designVersionId: newVersionId,
+      budget: {
+        amount: 0,
+        currency: "PHP", //default
+      },
+      items: [],
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+    };
+
+    const budgetRef = await db.collection("budgets").add(budgetData);
+    const budgetId = budgetRef.id;
+    createdDocuments.push({ collection: "budgets", id: budgetId });
+
     // Update version with full data
     const fullVersionData = {
       description: prompt,
       images: updatedImages,
       createdBy: userId,
       createdAt: new Date(),
+      budgetId: budgetId,
       copiedDesigns: [],
       isRestored: false,
       isRestoredFrom: null,
@@ -1495,7 +1522,7 @@ exports.updateDesignVersionCombinedMask = async (req, res) => {
   }
 };
 
-// Delete Design
+// Delete Design (TO DO: UPDATE BUDGET REFERENCE)
 exports.deleteDesign = async (req, res) => {
   const deletedDocuments = [];
   const updatedDocuments = [];
@@ -1593,58 +1620,7 @@ exports.deleteDesign = async (req, res) => {
       await pinDoc.ref.delete();
     }
 
-    // 3. Handle budgets and projectBudgets
-    if (designData.budgetId) {
-      const budgetRef = db.collection("budgets").doc(designData.budgetId);
-      const budgetDoc = await budgetRef.get();
-
-      if (budgetDoc.exists) {
-        const budgetData = budgetDoc.data();
-
-        // Update projectBudgets FIRST before deleting budget
-        const projectBudgetsSnapshot = await db
-          .collection("projectBudgets")
-          .where("budgets", "array-contains", designData.budgetId)
-          .get();
-
-        for (const projectBudgetDoc of projectBudgetsSnapshot.docs) {
-          const projectBudgetData = projectBudgetDoc.data();
-          const previousBudgets = [...projectBudgetData.budgets];
-          const updatedBudgets = previousBudgets.filter(
-            (budgetId) => budgetId !== designData.budgetId
-          );
-          updatedDocuments.push({
-            ref: projectBudgetDoc.ref,
-            field: "budgets",
-            previousValue: previousBudgets,
-            newValue: updatedBudgets,
-          });
-          await projectBudgetDoc.ref.update({ budgets: updatedBudgets });
-        }
-
-        // Delete items after updating projectBudgets
-        for (const itemId of budgetData.items || []) {
-          const itemRef = db.collection("items").doc(itemId);
-          const itemDoc = await itemRef.get();
-          if (itemDoc.exists) {
-            deletedDocuments.push({
-              ref: itemRef,
-              data: itemDoc.data(),
-            });
-            await itemRef.delete();
-          }
-        }
-
-        // Then delete budget
-        deletedDocuments.push({
-          ref: budgetRef,
-          data: budgetData,
-        });
-        await budgetRef.delete();
-      }
-    }
-
-    // 4. Delete designVersions and comments
+    // 3-4. Delete designVersions, comments, handle budget, projectBudgets
     for (const versionId of designData.history || []) {
       const versionRef = db.collection("designVersions").doc(versionId);
       const versionDoc = await versionRef.get();
@@ -1671,6 +1647,57 @@ exports.deleteDesign = async (req, res) => {
               });
               await commentDoc.ref.delete();
             }
+          }
+        }
+
+        // Handle budgets and projectBudgets
+        if (versionData.budgetId) {
+          const budgetRef = db.collection("budgets").doc(versionData.budgetId);
+          const budgetDoc = await budgetRef.get();
+
+          if (budgetDoc.exists) {
+            const budgetData = budgetDoc.data();
+
+            // Update projectBudgets FIRST before deleting budget
+            const projectBudgetsSnapshot = await db
+              .collection("projectBudgets")
+              .where("budgets", "array-contains", versionData.budgetId)
+              .get();
+
+            for (const projectBudgetDoc of projectBudgetsSnapshot.docs) {
+              const projectBudgetData = projectBudgetDoc.data();
+              const previousBudgets = [...projectBudgetData.budgets];
+              const updatedBudgets = previousBudgets.filter(
+                (budgetId) => budgetId !== versionData.budgetId
+              );
+              updatedDocuments.push({
+                ref: projectBudgetDoc.ref,
+                field: "budgets",
+                previousValue: previousBudgets,
+                newValue: updatedBudgets,
+              });
+              await projectBudgetDoc.ref.update({ budgets: updatedBudgets });
+            }
+
+            // Delete items after updating projectBudgets
+            for (const itemId of budgetData.items || []) {
+              const itemRef = db.collection("items").doc(itemId);
+              const itemDoc = await itemRef.get();
+              if (itemDoc.exists) {
+                deletedDocuments.push({
+                  ref: itemRef,
+                  data: itemDoc.data(),
+                });
+                await itemRef.delete();
+              }
+            }
+
+            // Then delete budget
+            deletedDocuments.push({
+              ref: budgetRef,
+              data: budgetData,
+            });
+            await budgetRef.delete();
           }
         }
       }

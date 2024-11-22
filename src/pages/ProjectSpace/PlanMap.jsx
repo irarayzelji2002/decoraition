@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase";
-import { fetchPins, deleteProjectPin, savePinOrder } from "./backend/ProjectDetails";
+import {
+  fetchPins,
+  deleteProjectPin,
+  savePinOrder,
+  handlePlanImageUpload,
+  fetchPlanImage,
+} from "./backend/ProjectDetails";
 import ProjectHead from "./ProjectHead";
 import MapPin from "./MapPin";
 import BottomBarDesign from "./BottomBarProject";
@@ -40,21 +46,26 @@ function PlanMap() {
   const [styleRefPreview, setStyleRefPreview] = useState(null);
   const [initStyleRef, setInitStyleRef] = useState(null);
   const styleRefFileInputRef = useRef(null);
+  const [planImage, setPlanImage] = useState("../../img/floorplan.png");
+  const [initPlanImage, setInitPlanImage] = useState(null);
+  const planImageFileInputRef = useRef(null);
 
   useEffect(() => {
     if (user) {
+      fetchPlanImage(projectId, setPlanImage);
     }
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
         fetchPins(projectId, setPins);
+        fetchPlanImage(projectId, setPlanImage);
       } else {
         setUser(null);
         setPins([]);
       }
     });
     return () => unsubscribeAuth();
-  });
+  }, [user, projectId]);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -150,6 +161,14 @@ function PlanMap() {
     // Handle the continue action
   };
 
+  const handlePlanImageContinue = () => {
+    if (initPlanImage) {
+      handlePlanImageUpload(initPlanImage, projectId, setPlanImage);
+      setInitPlanImage(null);
+    }
+    setStyleRefModalOpen(false);
+  };
+
   return (
     <>
       <ProjectHead />
@@ -157,7 +176,7 @@ function PlanMap() {
       <div className="sectionBudget" style={{ background: "none", maxWidth: "100%" }}>
         <div className="budgetSpaceImg" style={{ background: "none", height: "100%" }}>
           <ImageFrame
-            src="../../img/floorplan.png"
+            src={planImage || "../../img/floorplan.png"}
             alt="design preview"
             pins={pins}
             projectId={projectId}
@@ -276,7 +295,7 @@ function PlanMap() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => {
-              handleDrop(e, setInitStyleRef, setStyleRefPreview);
+              handleDrop(e, setInitPlanImage, setStyleRefPreview);
             }}
           >
             {styleRefPreview ? (
@@ -294,7 +313,7 @@ function PlanMap() {
             ) : (
               <div
                 className="image-placeholder-container"
-                onClick={() => handleUploadClick(styleRefFileInputRef)}
+                onClick={() => handleUploadClick(planImageFileInputRef)}
                 style={{ cursor: "pointer" }}
               >
                 <div
@@ -315,28 +334,28 @@ function PlanMap() {
           <input
             type="file"
             accept="image/png, image/jpeg, image/gif, image/webp"
-            ref={styleRefFileInputRef}
+            ref={planImageFileInputRef}
             style={{ display: "none" }}
-            onChange={(event) => onFileUpload(event, setInitStyleRef, setStyleRefPreview)}
+            onChange={(event) => onFileUpload(event, setInitPlanImage, setStyleRefPreview)}
           />
           <div style={dialogActionsVertButtonsStyles}>
             <ButtonMUI
               variant="contained"
               fullWidth
               onClick={
-                !initStyleRef
-                  ? () => handleUploadClick(styleRefFileInputRef)
-                  : handleStyleRefContinue
+                !initPlanImage
+                  ? () => handleUploadClick(planImageFileInputRef)
+                  : handlePlanImageContinue
               }
               className="confirm-button"
             >
-              {!initStyleRef ? "Add Plan" : "Continue"}
+              {!initPlanImage ? "Add Plan" : "Continue"}
             </ButtonMUI>
-            {initStyleRef && (
+            {initPlanImage && (
               <ButtonMUI
                 variant="contained"
                 fullWidth
-                onClick={() => handleUploadClick(styleRefFileInputRef)}
+                onClick={() => handleUploadClick(planImageFileInputRef)}
                 className="confirm-button"
               >
                 Reupload Image

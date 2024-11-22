@@ -1,4 +1,5 @@
-const { db, auth } = require("../firebase");
+const { db, auth, storage } = require("../firebase");
+const { ref, getDownloadURL, uploadBytes } = require("firebase/storage");
 
 // Create Plan Map
 exports.createPlanMap = async (req, res) => {
@@ -153,5 +154,41 @@ exports.savePinOrder = async (req, res) => {
   } catch (error) {
     console.error("Error saving pin order:", error);
     res.status(500).json({ error: "Failed to save pin order" });
+  }
+};
+
+exports.getPlanImage = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const planImageRef = ref(storage, `plans/${projectId}/planImage.png`);
+    const planImageUrl = await getDownloadURL(planImageRef);
+    res.status(200).json({ planImage: planImageUrl });
+    console.log("Plan image URL:", planImageUrl);
+  } catch (error) {
+    if (error.code === "storage/object-not-found") {
+      res.status(404).json({ error: "Plan image not found" });
+    } else {
+      console.error("Error fetching plan image:", error);
+      res.status(500).json({ error: "Failed to fetch plan image" });
+    }
+  }
+};
+
+exports.handlePlanImageUpload = async (req, res) => {
+  const { projectId } = req.params;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+
+  try {
+    const storageRef = ref(storage, `plans/${projectId}/planImage.png`);
+    await uploadBytes(storageRef, file.buffer);
+    const downloadURL = await getDownloadURL(storageRef);
+    res.status(200).json({ planImage: downloadURL });
+  } catch (error) {
+    console.error("Error uploading plan image:", error);
+    res.status(500).json({ error: "Failed to upload plan image" });
   }
 };

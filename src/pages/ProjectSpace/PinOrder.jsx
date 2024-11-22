@@ -46,6 +46,7 @@ function PinOrder() {
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
   const [pins, setPins] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,12 +73,15 @@ function PinOrder() {
   };
 
   const handleSave = async () => {
+    setLoading(true);
     try {
       await savePinOrder(projectId, pins);
       toast.success("Pins order saved successfully!");
       navigate(`/planMap/${projectId}`);
     } catch (error) {
       toast.error("Failed to save pins order.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,10 +107,17 @@ function PinOrder() {
               color={pin.color}
             />
           ))}
-          <button className="add-item-btn" onClick={handleSave}>
+          <button
+            className="add-item-btn"
+            onClick={handleSave}
+            style={{
+              opacity: loading ? 0.5 : 1,
+              cursor: loading ? "default" : "pointer",
+            }}
+            disabled={loading}
+          >
             Save pins order and color
           </button>
-          {/* onClick={handleSave}  */}
         </div>
       </div>
     </DndProvider>

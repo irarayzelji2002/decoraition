@@ -163,7 +163,6 @@ exports.getPlanImage = async (req, res) => {
     const planImageRef = ref(storage, `plans/${projectId}/planImage.png`);
     const planImageUrl = await getDownloadURL(planImageRef);
     res.status(200).json({ planImage: planImageUrl });
-    console.log("Plan image URL:", planImageUrl);
   } catch (error) {
     if (error.code === "storage/object-not-found") {
       res.status(404).json({ error: "Plan image not found" });

@@ -95,8 +95,6 @@ body {
   background-color: var(--nav-card-modal);
   display: flex;
   justify-content: start;
-
-  align-items: center;
   padding: 30px;
   margin-bottom: 12px;
   border-radius: 24px;

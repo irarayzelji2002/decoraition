@@ -33,6 +33,7 @@ import {
   dialogActionsVertButtonsStyles,
 } from "../../components/RenameModal";
 import ImageFrame from "../../components/ImageFrame";
+import LoadingPage from "../../components/LoadingPage";
 
 function PlanMap() {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ function PlanMap() {
   const [planImage, setPlanImage] = useState("../../img/floorplan.png");
   const [initPlanImage, setInitPlanImage] = useState(null);
   const planImageFileInputRef = useRef(null);
+  const [loadingImage, setLoadingImage] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -58,10 +60,11 @@ function PlanMap() {
       if (user) {
         setUser(user);
         fetchPins(projectId, setPins);
-        fetchPlanImage(projectId, setPlanImage);
+        fetchPlanImage(projectId, setPlanImage).finally(() => setLoadingImage(false));
       } else {
         setUser(null);
         setPins([]);
+        setLoadingImage(false);
       }
     });
     return () => unsubscribeAuth();
@@ -169,20 +172,30 @@ function PlanMap() {
     setStyleRefModalOpen(false);
   };
 
+  if (loadingImage) {
+    return <LoadingPage />;
+  }
+
   return (
     <>
       <ProjectHead />
       {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
       <div className="sectionBudget" style={{ background: "none", maxWidth: "100%" }}>
         <div className="budgetSpaceImg" style={{ background: "none", height: "100%" }}>
-          <ImageFrame
-            src={planImage || "../../img/floorplan.png"}
-            alt="design preview"
-            pins={pins}
-            projectId={projectId}
-            setPins={setPins}
-            draggable={false} // Ensure this line is present
-          />
+          {planImage ? (
+            <ImageFrame
+              src={planImage}
+              alt="design preview"
+              pins={pins}
+              projectId={projectId}
+              setPins={setPins}
+              draggable={false} // Ensure this line is present
+            />
+          ) : (
+            <div className="no-content" style={{ height: "80vh" }}>
+              <p>Please upload an image to place your pins</p>
+            </div>
+          )}
         </div>
         <div className="budgetSpaceImg">
           {pins.length > 0 ? (
@@ -223,19 +236,25 @@ function PlanMap() {
                 <ChangePlan />
               </div>
             </div>
-            <div className="small-button-container" onClick={navigateToPinLayout}>
+            <div
+              className="small-button-container"
+              onClick={planImage ? navigateToPinLayout : null}
+            >
               <span className="small-button-text">Change pins order</span>
               <div className="small-circle-button">
                 <ChangeOrder />
               </div>
             </div>
-            <div className="small-button-container" onClick={navigateToAdjustPin}>
+            <div
+              className="small-button-container"
+              onClick={planImage ? navigateToAdjustPin : null}
+            >
               <span className="small-button-text">Adjust Pins</span>
               <div className="small-circle-button">
                 <AdjustPin />
               </div>
             </div>
-            <div className="small-button-container" onClick={navigateToAddPin}>
+            <div className="small-button-container" onClick={planImage ? navigateToAddPin : null}>
               <span className="small-button-text">Add a Pin</span>
               <div className="small-circle-button">
                 <AddPin />
@@ -326,7 +345,7 @@ function PlanMap() {
                   }}
                 >
                   <NoImage />
-                  <div className="image-placeholder">Upload an style reference</div>
+                  <div className="image-placeholder">Upload a map layout</div>
                 </div>
               </div>
             )}

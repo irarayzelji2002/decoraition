@@ -255,7 +255,6 @@ export const fetchPins = async (projectId, setPins) => {
     }
   } catch (error) {
     console.error("Error fetching pins:", error);
-    showToast("error", "Failed to fetch pins");
   }
 };
 
@@ -456,15 +455,15 @@ export const fetchPlanImage = async (projectId, setPlanImage) => {
     if (response.status === 200 && response.data.planImage) {
       setPlanImage(response.data.planImage);
     } else if (response.status === 404) {
-      console.warn("Plan image not found, using default image 1", projectId, "wow");
-      setPlanImage("../../img/floorplan.png");
+      console.warn("Plan image not found, please upload an image.");
+      setPlanImage(null);
     } else {
       showToast("error", "Failed to fetch plan image");
     }
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.warn("Plan image not found, using default image 2" + projectId);
-      setPlanImage("../../img/floorplan.png");
+      console.warn("Plan image not found, please upload an image.");
+      setPlanImage(null);
     } else {
       console.error("Error fetching plan image:", error);
       showToast("error", "Failed to fetch plan image");

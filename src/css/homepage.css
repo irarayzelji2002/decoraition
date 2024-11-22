@@ -258,6 +258,12 @@ tr:hover td {
   max-width: 400px;
   margin: 8px;
 }
+.iconFrameAlt {
+  height: 70%;
+  width: 100%;
+
+  margin: 8px;
+}
 
 .pic {
   width: 100%;

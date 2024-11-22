@@ -22,6 +22,7 @@ const EditableInputThree = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValues, setInputValues] = useState(values);
+  const maxLengths = [50, 50, 20]; // Define maxLengths array
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -51,10 +52,17 @@ const EditableInputThree = ({
   );
 
   const handleChange = (index, value) => {
-    const newValues = [...inputValues];
-    newValues[index] = value;
-    setInputValues(newValues);
-    onChange(index, value);
+    if (value.length <= maxLengths[index]) {
+      const newValues = [...inputValues];
+      newValues[index] = value;
+      setInputValues(newValues);
+      onChange(index, value);
+    } else {
+      const tempErrors = [...errors];
+      tempErrors[index].hasError = true;
+      tempErrors[index].errMessage = `Character limit of ${maxLengths[index]} reached`;
+      setErrors(tempErrors);
+    }
   };
 
   const handleReset = (index) => {
@@ -84,7 +92,11 @@ const EditableInputThree = ({
               placeholder={label}
               fullWidth
               margin="normal"
-              helperText={getErrMessage(toCamelCase(label), errors)}
+              helperText={
+                getErrMessage(toCamelCase(label), errors) ||
+                (inputValues[index].length >= maxLengths[index] &&
+                  `Character limit of ${maxLengths[index]} reached`)
+              }
               sx={{
                 ...textFieldStyles,
                 margin: 0,

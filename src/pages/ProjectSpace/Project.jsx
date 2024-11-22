@@ -312,15 +312,19 @@ function Project() {
       <div
         style={{
           paddingBottom: "20%",
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
         <div
           style={{
-            width: "100%",
+            width: "90%",
             display: "flex",
             justifyContent: "center",
-            flexDirection: "column",
             alignItems: "center",
+            flexDirection: "column",
           }}
         >
           <div style={{ width: "90%" }}>
@@ -398,6 +402,7 @@ function Project() {
                     })
                   }
                   owner={getUsername(design.owner)}
+                  projectType={true}
                   createdAt={formatDateLong(design.createdAt)}
                   modifiedAt={formatDateLong(design.modifiedAt)}
                   optionsState={optionsState}

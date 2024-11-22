@@ -108,6 +108,7 @@ function AddPin({ EditMode }) {
           <ImageFrame
             src="../../img/floorplan.png"
             alt="design preview"
+            projectId={projectId}
             pins={pins}
             setPins={setPins}
             color={selectedColor}

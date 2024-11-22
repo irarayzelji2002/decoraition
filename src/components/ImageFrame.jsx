@@ -1,11 +1,16 @@
 import React, { useRef, useEffect } from "react";
 import Draggable from "react-draggable";
+import { fetchPlanImage } from "../pages/ProjectSpace/backend/ProjectDetails";
+import { useState } from "react";
 
-const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) => {
+const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, projectId }) => {
   const frameRef = useRef(null);
   const imageRef = useRef(null);
+  const [planImage, setPlanImage] = useState("");
 
   useEffect(() => {
+    fetchPlanImage(projectId, setPlanImage);
+
     const updateImageSize = () => {
       if (imageRef.current) {
         const rect = imageRef.current.getBoundingClientRect();
@@ -42,7 +47,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color }) =
   return (
     <div className="image-frame-other" ref={frameRef} style={{ position: "relative" }}>
       <img
-        src={src}
+        src={planImage}
         alt={alt}
         className="image-preview-other"
         ref={imageRef}

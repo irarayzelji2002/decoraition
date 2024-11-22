@@ -54,4 +54,14 @@
     width: 40px;
     border-radius: 3px;
   }
+
+  .mapPin {
+    padding: 10px;
+  }
+
+  .pinColor {
+    padding: 4px;
+    padding-right: 6px;
+    padding-left: 6px;
+  }
 }

@@ -50,29 +50,36 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
 
   return (
     <div className="image-frame-other" ref={frameRef} style={{ position: "relative" }}>
-      <img
-        src={planImage}
-        alt={alt}
-        className="image-preview-other"
-        ref={imageRef}
-        style={{ display: "block" }}
-      />
-      {pins.map((pin) => {
-        const position = getPinPosition(pin, imageRef.current.getBoundingClientRect());
-        return (
-          <Draggable
-            key={pin.id}
-            bounds="parent"
-            disabled={!draggable}
-            position={{ x: position.x, y: position.y }}
-            onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
-          >
-            <div className="pin" style={{ position: "absolute" }}>
-              <MapPinIcon number={pin.order} fill={pin.color || color} />
-            </div>
-          </Draggable>
-        );
-      })}
+      {planImage ? (
+        <img
+          src={planImage}
+          alt={alt}
+          className="image-preview-other"
+          ref={imageRef}
+          style={{ display: "block" }}
+        />
+      ) : (
+        <div className="no-content" style={{ height: "80vh" }}>
+          <p>Please upload an image to place your pins</p>
+        </div>
+      )}
+      {imageRef.current &&
+        pins.map((pin) => {
+          const position = getPinPosition(pin, imageRef.current.getBoundingClientRect());
+          return (
+            <Draggable
+              key={pin.id}
+              bounds="parent"
+              disabled={!draggable}
+              position={{ x: position.x, y: position.y }}
+              onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
+            >
+              <div className="pin" style={{ position: "absolute" }}>
+                <MapPinIcon number={pin.order} fill={pin.color || color} />
+              </div>
+            </Draggable>
+          );
+        })}
     </div>
   );
 };

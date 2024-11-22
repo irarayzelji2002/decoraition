@@ -56,6 +56,7 @@ function Project() {
   const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
   const [numToShowMoreDesign, setNumToShowMoreDesign] = useState(0);
   const [thresholdDesign, setThresholdDesign] = useState(6);
+  const [loadingImage, setLoadingImage] = useState(true);
 
   const handleVerticalClick = () => {
     setIsVertical(true);
@@ -103,9 +104,11 @@ function Project() {
         try {
           console.log(`Fetching designs for projectId: ${projectId}`); // Debug log
           await fetchProjectDesigns(projectId, setDesigns);
+          setLoadingImage(false); // Set loading to false after fetching
         } catch (error) {
           showToast("error", `Error fetching project designs: ${error.message}`);
           setLoadingDesigns(false); // Set loading to false on error
+          setLoadingImage(false); // Set loading to false on error
         }
       }
     };
@@ -236,6 +239,10 @@ function Project() {
     await handleCreateDesign(projectId);
     setIsDesignButtonDisabled(false);
   };
+
+  if (loadingImage) {
+    return <LoadingPage />;
+  }
 
   if (!projectData) {
     return <LoadingPage />;

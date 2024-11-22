@@ -548,6 +548,7 @@ function Design() {
                     designVersion={designVersion}
                     samMasks={samMasks}
                     validateApplyMask={validateApplyMask}
+                    isGenerating={isGenerating}
                   />
                 </div>
               )}

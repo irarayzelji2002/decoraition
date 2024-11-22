@@ -31,7 +31,7 @@ import { outlinedButtonStyles } from "../DesignSpace/PromptBar.jsx";
 
 function Homepage() {
   const navigate = useNavigate();
-  const { user, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
+  const { user, users, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredDesigns, setFilteredDesigns] = useState([]);
@@ -60,107 +60,97 @@ function Homepage() {
   const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
   const [isProjectButtonDisabled, setIsProjectButtonDisabled] = useState(false);
 
-  const usernameCache = new Map();
-
-  const fetchUsernamesBatch = async (userIds) => {
-    const uncachedUserIds = userIds.filter((id) => !usernameCache.has(id));
-    if (uncachedUserIds.length > 0) {
-      const usernames = await getUsernames(uncachedUserIds);
-      uncachedUserIds.forEach((id, index) => {
-        usernameCache.set(id, usernames[index]);
-      });
-    }
-    return userIds.map((id) => usernameCache.get(id));
-  };
-
-  const managerCache = new Map();
-
-  const fetchManagersBatch = async (managerIds) => {
-    const uncachedManagerIds = managerIds.filter((id) => !managerCache.has(id));
-    if (uncachedManagerIds.length > 0) {
-      const managers = await getUsernames(uncachedManagerIds);
-      uncachedManagerIds.forEach((id, index) => {
-        managerCache.set(id, managers[index]);
-      });
-    }
-    return managerIds.map((id) => managerCache.get(id));
-  };
-
   const loadDesignDataForView = async () => {
-    if (userDesigns.length > 0) {
-      setLoadingDesigns(true);
-      setLoadingDesignsTable(true);
-      const designsByLatest = [...userDesigns].sort(
-        (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
-      );
+    try {
+      if (userDesigns?.length > 0) {
+        setLoadingDesigns(true);
+        setLoadingDesignsTable(true);
 
-      const filteredDesigns = designsByLatest.filter((design) =>
-        design.designName.toLowerCase()?.includes(searchQuery.trim().toLowerCase())
-      );
+        const designsByLatest = [...userDesigns].sort(
+          (a, b) => b.modifiedAt?.toMillis() - a.modifiedAt?.toMillis()
+        );
 
-      setFilteredDesigns(filteredDesigns);
-      console.log("filteredDesigns", filteredDesigns);
-      setLoadingDesigns(false);
+        const filteredDesigns = designsByLatest.filter((design) =>
+          design?.designName?.toLowerCase()?.includes(searchQuery?.trim()?.toLowerCase() || "")
+        );
 
-      console.log("filteredDesigns", filteredDesigns);
-      const ownerIds = filteredDesigns.map((design) => design.owner);
-      const usernames = await fetchUsernamesBatch(ownerIds);
+        setFilteredDesigns(filteredDesigns);
+        console.log("filteredDesigns", filteredDesigns);
+        setLoadingDesigns(false);
 
-      const tableData = filteredDesigns.map((design, index) => ({
-        ...design,
-        ownerId: design.owner,
-        owner: usernames[index],
-        formattedCreatedAt: formatDate(design.createdAt),
-        createdAtTimestamp: design.createdAt.toMillis(),
-        formattedModifiedAt: formatDate(design.modifiedAt),
-        modifiedAtTimestamp: design.modifiedAt.toMillis(),
-      }));
+        console.log("filteredDesigns", filteredDesigns);
 
-      setFilteredDesignsForTable(tableData);
-    } else {
+        const tableData = filteredDesigns.map((design) => ({
+          ...design,
+          ownerId: design?.owner,
+          owner: users?.find((user) => user?.id === design?.owner)?.username || "",
+          formattedCreatedAt: formatDate(design?.createdAt),
+          createdAtTimestamp: design?.createdAt?.toMillis(),
+          formattedModifiedAt: formatDate(design?.modifiedAt),
+          modifiedAtTimestamp: design?.modifiedAt?.toMillis(),
+        }));
+
+        setFilteredDesignsForTable(tableData);
+      } else {
+        setFilteredDesigns([]);
+        setFilteredDesignsForTable([]);
+      }
+    } catch (error) {
+      console.error("Error in loadDesignDataForView:", error);
       setFilteredDesigns([]);
       setFilteredDesignsForTable([]);
+    } finally {
+      setLoadingDesigns(false);
+      setLoadingDesignsTable(false);
     }
-
-    setLoadingDesignsTable(false);
   };
 
   const loadProjectDataForView = async () => {
-    if (userProjects.length > 0) {
-      setLoadingProjects(true);
-      setLoadingProjectsTable(true);
-      const projectsByLatest = [...userProjects].sort(
-        (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
-      );
+    try {
+      if (userProjects?.length > 0) {
+        setLoadingProjects(true);
+        setLoadingProjectsTable(true);
 
-      const filteredProjects = projectsByLatest.filter((project) =>
-        project.projectName.toLowerCase()?.includes(searchQuery.trim().toLowerCase())
-      );
+        const projectsByLatest = [...userProjects].sort(
+          (a, b) => b.modifiedAt?.toMillis() - a.modifiedAt?.toMillis()
+        );
 
-      setFilteredProjects(filteredProjects);
-      setLoadingProjects(false);
+        const filteredProjects = projectsByLatest.filter((project) =>
+          project?.projectName?.toLowerCase()?.includes(searchQuery?.trim()?.toLowerCase() || "")
+        );
 
-      const managerIds = filteredProjects.flatMap((project) => project.managers || []);
-      const managers = await fetchManagersBatch(managerIds);
+        setFilteredProjects(filteredProjects);
+        setLoadingProjects(false);
 
-      const tableData = filteredProjects.map((project) => {
-        const projectManagers = (project.managers || []).map((id) => managerCache.get(id));
-        return {
-          ...project,
-          managersId: project.managers,
-          managers: projectManagers,
-          formattedCreatedAt: formatDate(project.createdAt),
-          createdAtTimestamp: project.createdAt.toMillis(),
-          formattedModifiedAt: formatDate(project.modifiedAt),
-          modifiedAtTimestamp: project.modifiedAt.toMillis(),
-        };
-      });
+        const tableData = filteredProjects.map((project) => {
+          const projectManagers = (project?.managers || []).map(
+            (id) => users?.find((user) => user?.id === id)?.username || ""
+          );
 
-      setFilteredProjectsForTable(tableData);
-      setLoadingProjectsTable(false);
-    } else {
+          return {
+            ...project,
+            managersId: project?.managers,
+            managers: projectManagers.join(", "),
+            formattedCreatedAt: formatDate(project?.createdAt),
+            createdAtTimestamp: project?.createdAt?.toMillis(),
+            formattedModifiedAt: formatDate(project?.modifiedAt),
+            modifiedAtTimestamp: project?.modifiedAt?.toMillis(),
+          };
+        });
+
+        setFilteredProjectsForTable(tableData);
+        setLoadingProjectsTable(false);
+      } else {
+        setFilteredProjects([]);
+        setFilteredProjectsForTable([]);
+      }
+    } catch (error) {
+      console.error("Error in loadProjectDataForView:", error);
       setFilteredProjects([]);
       setFilteredProjectsForTable([]);
+    } finally {
+      setLoadingProjects(false);
+      setLoadingProjectsTable(false);
     }
   };
 
@@ -176,7 +166,7 @@ function Homepage() {
         }
       } else if (viewForDesigns === 1) {
         // list view
-        const thresholdDesign = 10;
+        const thresholdDesign = 8;
         setThresholdDesign(thresholdDesign);
         const remainder = numToShowMoreDesign % thresholdDesign;
         if (numToShowMoreDesign >= remainder && remainder !== 0) {
@@ -194,7 +184,7 @@ function Homepage() {
         }
       } else if (viewForProjects === 1) {
         // list view
-        const thresholdProject = 10;
+        const thresholdProject = 8;
         setThresholdProject(thresholdProject);
         const remainder = numToShowMoreProject % thresholdProject;
         if (numToShowMoreProject >= remainder && remainder !== 0) {
@@ -264,7 +254,7 @@ function Homepage() {
 
       <SearchAppBar onSearchChange={setSearchQuery} searchQuery={searchQuery} />
 
-      <div className="recent-section" style={{ marginBottom: "50px" }}>
+      <div className="recent-section" style={{ paddingBottom: "50px" }}>
         <div className="headerPlace">
           <div className="header">
             <img
@@ -350,13 +340,11 @@ function Homepage() {
           </div>
         </div>
 
-        <div className="recent-designs">{searchQuery && <h2>Search Results</h2>}</div>
-
         <section className="recent-section">
           <div className="recent-designs">
             <div className="separator">
               {/* <DesignSvg /> */}
-              <h2 ref={recentDesignsRef}>Recent Designs</h2>
+              <h2 ref={recentDesignsRef}>{`${searchQuery ? "Searched" : "Recent"} Designs`}</h2>
               <div style={{ marginLeft: "auto", display: "inline-flex", marginBottom: "10px" }}>
                 {filteredDesigns.length > 0 && (
                   <div className="homepageIconButtons">
@@ -424,10 +412,7 @@ function Homepage() {
                   viewForDesigns === 0 ? (
                     <div className="layout">
                       {filteredDesigns.slice(0, 6 + numToShowMoreDesign).map((design) => (
-                        <div
-                          key={design.id}
-                          style={{ width: "100%", display: "flex", justifyContent: "center" }}
-                        >
+                        <div key={design.id} className="layoutBox">
                           <DesignIcon
                             id={design.id}
                             name={design.designName}
@@ -476,7 +461,7 @@ function Homepage() {
         </section>
         <div style={{ display: "inline-flex", marginTop: "20px", position: "relative" }}>
           {filteredDesigns.length > thresholdDesign &&
-            numToShowMoreDesign < filteredDesigns.length && (
+            numToShowMoreDesign < filteredDesigns.length - thresholdDesign && (
               <Button
                 variant="contained"
                 onClick={() => setNumToShowMoreDesign(numToShowMoreDesign + thresholdDesign)}
@@ -489,7 +474,7 @@ function Homepage() {
               </Button>
             )}
           {filteredDesigns.length > thresholdDesign &&
-          numToShowMoreDesign < filteredDesigns.length ? (
+          numToShowMoreDesign < filteredDesigns.length - thresholdDesign ? (
             <IconButton
               onClick={() => scrollToRecentDesigns()}
               sx={{ ...iconButtonStyles, position: "absolute", right: "-50px" }}
@@ -516,7 +501,7 @@ function Homepage() {
           <div className="recent-designs">
             <div className="separator">
               {/* <ProjectIcon /> */}
-              <h2 ref={recentProjectsRef}>Recent Projects</h2>
+              <h2 ref={recentProjectsRef}>{`${searchQuery ? "Searched" : "Recent"} Projects`}</h2>
               <div style={{ marginLeft: "auto", display: "inline-flex", marginBottom: "10px" }}>
                 {filteredProjects.length > 0 && (
                   <div className="homepageIconButtons">
@@ -643,7 +628,7 @@ function Homepage() {
         </section>
         <div style={{ display: "inline-flex", marginTop: "20px", position: "relative" }}>
           {filteredProjects.length > thresholdProject &&
-            numToShowMoreProject < filteredProjects.length && (
+            numToShowMoreProject < filteredProjects.length - thresholdProject && (
               <Button
                 variant="contained"
                 onClick={() => setNumToShowMoreProject(numToShowMoreProject + thresholdProject)}
@@ -656,7 +641,7 @@ function Homepage() {
               </Button>
             )}
           {filteredProjects.length > thresholdProject &&
-          numToShowMoreProject < filteredProjects.length ? (
+          numToShowMoreProject < filteredProjects.length - thresholdProject ? (
             <IconButton
               onClick={() => scrollToRecentProjects}
               sx={{ ...iconButtonStyles, position: "absolute", right: "-50px" }}
@@ -711,7 +696,7 @@ function Homepage() {
             </div>
           )}
           <div
-            className={`circle-button ${menuOpen ? "rotate" : ""}`}
+            className={`circle-button ${menuOpen ? "rotate" : ""} add`}
             onClick={() => toggleMenu(menuOpen, setMenuOpen)}
           >
             {menuOpen ? <AddIcon /> : <AddIcon />}

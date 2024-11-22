@@ -3,6 +3,7 @@
   flex-direction: row;
   justify-content: start;
   width: 90%;
+  margin-top: 20px;
 }
 
 .dropdown {
@@ -183,9 +184,8 @@
   display: flex;
   justify-content: center;
   flex-wrap: wrap; /* Allow content to wrap */
-  margin: 16px;
-  width: 95%;
-  margin-top: 24px;
+  width: 100%;
+  gap: 15px;
 }
 
 .custom-selectAll {
@@ -219,6 +219,10 @@
 
 @media (max-width: 768px) {
   .scrollable-div {
-    justify-content: start;
+    /* justify-content: start; */
+  }
+  .dropdown-container {
+    margin-bottom: 15px;
+    margin-top: 4px;
   }
 }

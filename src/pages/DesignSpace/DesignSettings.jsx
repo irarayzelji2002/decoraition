@@ -79,6 +79,7 @@ const DesignSettings = () => {
 
   const [loading, setLoading] = useState(true);
   const [allowEdit, setAllowEdit] = useState(false);
+  const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
 
   useEffect(() => {
     if (designId && userDesigns.length > 0) {
@@ -143,6 +144,7 @@ const DesignSettings = () => {
   const handleTabChange = useCallback((tab) => setActiveTab(tab), []);
 
   const handleSaveDesignSettings = async () => {
+    setIsDesignButtonDisabled(true);
     try {
       const updatedSettings = {
         generalAccessSetting: generalAccessSetting,
@@ -178,6 +180,8 @@ const DesignSettings = () => {
     } catch (error) {
       console.error("Failed to update design settings:", error);
       showToast("error", "Failed to update design settings");
+    } finally {
+      setIsDesignButtonDisabled(false);
     }
   };
 
@@ -234,6 +238,7 @@ const DesignSettings = () => {
         setNotifyDays={setNotifyDays}
         handleSaveDesignSettings={handleSaveDesignSettings}
         allowEdit={allowEdit}
+        isDesignButtonDisabled={isDesignButtonDisabled}
       />
     </div>
   );
@@ -266,6 +271,7 @@ const SettingsContent = ({
   setNotifyDays = () => {},
   handleSaveDesignSettings = () => {},
   allowEdit = false,
+  isDesignButtonDisabled = false,
 }) => (
   <ThemeProvider theme={theme}>
     <div className="settingsContainer">
@@ -374,16 +380,19 @@ const SettingsContent = ({
             sx={{
               background: "var(--gradientButton)",
               borderRadius: "20px",
-              color: "var(--always-white)",
+              color: "var(--always-white) !important",
               fontWeight: "bold",
               textTransform: "none",
               paddingLeft: "100px",
               paddingRight: "100px",
               margin: "0px 10px",
+              opacity: isDesignButtonDisabled ? "0.5" : "1",
+              cursor: isDesignButtonDisabled ? "default" : "pointer",
               "&:hover": {
-                background: "var(--gradientButtonHover)",
+                backgroundImage: !isDesignButtonDisabled && "var(--gradientButtonHover)",
               },
             }}
+            disabled={isDesignButtonDisabled}
           >
             Save
           </Button>
@@ -747,6 +756,9 @@ export const selectStyles = {
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: "var(--borderInput)",
   },
+  "& .MuiSvgIcon-root": {
+    marginRight: "8px",
+  },
 };
 
 export const selectStylesDisabled = {
@@ -774,6 +786,9 @@ export const selectStylesDisabled = {
   },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: "transparent",
+  },
+  "& .MuiSvgIcon-root": {
+    marginRight: "8px",
   },
   "&.Mui-disabled": {
     backgroundColor: "transparent",

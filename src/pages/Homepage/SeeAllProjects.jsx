@@ -29,7 +29,7 @@ import { AddProject } from "../DesignSpace/svg/AddImage.jsx";
 
 export default function SeeAllProjects() {
   const navigate = useNavigate();
-  const { user, userDoc, projects, userProjects } = useSharedProps();
+  const { user, users, userDoc, projects, userProjects } = useSharedProps();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProjects, setFilteredProjects] = useState([]);
@@ -51,50 +51,66 @@ export default function SeeAllProjects() {
   const [selectedOwner, setSelectedOwner] = useState("");
   const [dateRange, setDateRange] = useState({ start: null, end: null });
 
-  const [sortBy, setSortBy] = useState("");
-  const [order, setOrder] = useState("");
+  const [sortBy, setSortBy] = useState("none");
+  const [order, setOrder] = useState("none");
 
   const [isCreateProjectButtonDisabled, setIsCreateProjectButtonDisabled] = useState(false);
 
   const loadProjectDataForView = async () => {
     if (userProjects.length > 0) {
-      const projectsByLatest = [...userProjects].sort((a, b) => {
-        return b.modifiedAt.toMillis() - a.modifiedAt.toMillis();
-      });
+      try {
+        setLoadingProjects(true);
 
-      const filteredProjects = projectsByLatest.filter((project) =>
-        project.projectName.toLowerCase()?.includes(searchQuery.trim().toLowerCase())
-      );
-      setFilteredProjects(filteredProjects);
+        // Sort projects by latest modified date
+        const projectsByLatest = [...userProjects].sort(
+          (a, b) => b.modifiedAt?.toMillis() - a.modifiedAt?.toMillis()
+        );
 
-      const tableData = await Promise.all(
-        filteredProjects.map(async (project) => {
-          const managersId = project.managers || [];
-          const managers = await getUsernames(managersId);
+        // Filter projects based on search query
+        const filteredProjects = projectsByLatest.filter((project) =>
+          project.projectName?.toLowerCase()?.includes(searchQuery?.trim()?.toLowerCase())
+        );
+        setFilteredProjects(filteredProjects);
 
-          return {
-            ...project,
-            managersId,
-            managers: managers.join(", "),
-            formattedCreatedAt: formatDate(project.createdAt),
-            createdAtTimestamp: project.createdAt.toMillis(),
-            formattedModifiedAt: formatDate(project.modifiedAt),
-            modifiedAtTimestamp: project.modifiedAt.toMillis(),
-          };
-        })
-      );
-      setFilteredProjectsForTable(tableData);
+        // Process projects and fetch manager usernames
+        const tableData = await Promise.all(
+          filteredProjects.map(async (project) => {
+            const managersId = project?.managers || [];
+            let projectManagers = [];
 
-      const uniqueOwners = await Promise.all(
-        [...new Set(userProjects.map((project) => project.owner))].map(async (ownerId) => {
-          const username = await getUsernames(ownerId);
-          return username;
-        })
-      );
-      setOwners(uniqueOwners);
+            try {
+              // Use getUsernames function to fetch usernames
+              projectManagers = (project?.managers || []).map(
+                (id) => users?.find((user) => user?.id === id)?.username || ""
+              );
+            } catch (error) {
+              console.error(`Error fetching manager usernames for project ${project.id}:`, error);
+            }
+
+            return {
+              ...project,
+              managersId,
+              managers: projectManagers.join(", "),
+              formattedCreatedAt: formatDate(project?.createdAt),
+              createdAtTimestamp: project.createdAt?.toMillis(),
+              formattedModifiedAt: formatDate(project?.modifiedAt),
+              modifiedAtTimestamp: project.modifiedAt?.toMillis(),
+            };
+          })
+        );
+
+        setFilteredProjectsForTable(tableData);
+        setOwners([]);
+      } catch (error) {
+        console.error("Error loading project data:", error);
+      } finally {
+        setLoadingProjects(false);
+      }
     } else {
       setFilteredProjects([]);
       setFilteredProjectsForTable([]);
+      setOwners([]);
+      setLoadingProjects(false);
     }
   };
 
@@ -119,7 +135,7 @@ export default function SeeAllProjects() {
     let filteredProjects = userProjects.filter((project) => {
       const matchesSearchQuery = project.projectName
         .toLowerCase()
-        ?.includes(searchQuery.trim().toLowerCase());
+        .includes(searchQuery.trim().toLowerCase());
       const matchesOwner = owner ? project.owner === owner : true;
       const matchesDateRange =
         dateRange.start && dateRange.end
@@ -129,13 +145,14 @@ export default function SeeAllProjects() {
       return matchesSearchQuery && matchesOwner && matchesDateRange;
     });
 
-    if (sortBy) {
+    // Sorting logic for tiled view
+    filteredProjects.sort((a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis());
+
+    if (sortBy && sortBy !== "none" && order && order !== "none") {
       filteredProjects = filteredProjects.sort((a, b) => {
         let comparison = 0;
         if (sortBy === "name") {
           comparison = a.projectName.localeCompare(b.projectName);
-        } else if (sortBy === "owner") {
-          comparison = a.owner.localeCompare(b.owner);
         } else if (sortBy === "created") {
           comparison = a.createdAt.toMillis() - b.createdAt.toMillis();
         } else if (sortBy === "modified") {
@@ -146,7 +163,7 @@ export default function SeeAllProjects() {
     }
 
     setFilteredProjects(filteredProjects);
-    setPage(1); // Reset to the first page after filtering
+    setPage(1);
   };
 
   useEffect(() => {
@@ -164,11 +181,11 @@ export default function SeeAllProjects() {
     setLoadingProjects(true);
     if (filteredProjects.length > 0) {
       // Set number of pages
-      const totalPages = Math.ceil(filteredProjects.length / 25);
+      const totalPages = Math.ceil(filteredProjects.length / 18);
       setTotalPages(totalPages);
 
       // Set contents of the page
-      const itemsPerPage = 25;
+      const itemsPerPage = 18;
       const startIndex = (page - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
@@ -218,24 +235,27 @@ export default function SeeAllProjects() {
   return (
     <>
       <SearchAppBar onSearchChange={(value) => setSearchQuery(value)} searchQuery={searchQuery} />
-      <div className="bg" style={{ background: "none", marginBottom: "50px" }}>
+      <div className="bg" style={{ background: "none", paddingBottom: "50px" }}>
         <div className="dropdown-container">
-          <Dropdowns
-            owners={owners}
-            onOwnerChange={handleOwnerChange}
-            onDateRangeChange={handleDateRangeChange}
-            sortBy={sortBy}
-            order={order}
-            onSortByChange={setSortBy}
-            onOrderChange={setOrder}
-          />
+          {view === 0 && (
+            <Dropdowns
+              owners={owners}
+              onOwnerChange={handleOwnerChange}
+              onDateRangeChange={handleDateRangeChange}
+              sortBy={sortBy}
+              order={order}
+              onSortByChange={setSortBy}
+              onOrderChange={setOrder}
+              isDesign={false}
+            />
+          )}
         </div>
         {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
 
         <section className="recent-section">
           <div className="recent-projects">
-            <div className="separator">
-              <h2>Projects</h2>
+            <div className="separator see-all">
+              <h2>{`${searchQuery ? "Searched " : ""}Projects`}</h2>
               <div style={{ marginLeft: "auto", display: "inline-flex", marginBottom: "10px" }}>
                 {filteredProjects.length > 0 && (
                   <div>
@@ -296,7 +316,7 @@ export default function SeeAllProjects() {
                   view === 0 ? (
                     <div className="layout">
                       {displayedProjects.map((project) => (
-                        <div key={project.id} style={{ width: "100%" }}>
+                        <div key={project.id} className="layoutBox">
                           <ProjectOptionsHome
                             id={project.id}
                             name={project.projectName}
@@ -426,7 +446,7 @@ export default function SeeAllProjects() {
             ></div>
           </div>
         )}
-        <div className={`circle-button ${menuOpen ? "rotate" : ""}`} onClick={toggleMenu}>
+        <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
           {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
       </div>

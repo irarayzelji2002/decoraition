@@ -839,6 +839,14 @@ exports.getUsername = async (req, res) => {
 exports.getUsernames = async (req, res) => {
   const { userIds } = req.body;
   try {
+    // Add validation
+    if (!userIds || !Array.isArray(userIds)) {
+      return res.status(400).json({
+        error: "Invalid userIds format",
+        received: userIds,
+      });
+    }
+
     const usernames = [];
 
     for (const userId of userIds) {
@@ -854,7 +862,7 @@ exports.getUsernames = async (req, res) => {
 
     return res.status(200).json({ usernames });
   } catch (error) {
-    console.error("Error fetching usernames:", error);
+    console.error("Error fetching usernames:", error.message);
     return res.status(500).json({ error: "Failed to fetch usernames" });
   }
 };

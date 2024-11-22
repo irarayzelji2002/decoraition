@@ -49,7 +49,7 @@ function Details() {
   const navigateFrom = location.pathname;
 
   const { id, type } = useParams();
-  const { user, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
+  const { user, users, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
   const [loading, setLoading] = useState(true);
   const [design, setDesign] = useState({});
   const [designId, setDesignId] = useState("");
@@ -73,7 +73,7 @@ function Details() {
         console.error("Design not found.");
       } else {
         setDesign(fetchedDesign);
-        getUsername(fetchedDesign.owner).then((username) => setOwnerName(username));
+        setOwnerName(users.find((user) => user.id === design.owner)?.username);
         console.log("fetchedDesign", fetchedDesign);
         setCreatedAtDisplay(formatDateDetail(fetchedDesign.createdAt));
         setModifiedAtDisplay(formatDateDetail(fetchedDesign.modifiedAt));
@@ -91,7 +91,10 @@ function Details() {
         console.error("Project not found.");
       } else {
         setProject(fetchedProject);
-        getUsernames(fetchedProject.managers).then((usernames) => setManagerNames(usernames));
+        const projectManagers = (fetchedProject.managers || []).map(
+          (id) => users.find((user) => user.id === id)?.username
+        );
+        setManagerNames(projectManagers.join(", "));
         console.log("fetchedProject", fetchedProject);
         setCreatedAtDisplay(formatDateDetail(fetchedProject.createdAt));
         setModifiedAtDisplay(formatDateDetail(fetchedProject.modifiedAt));

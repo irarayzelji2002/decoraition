@@ -21,7 +21,12 @@ import "../../css/design.css";
 import { useEffect } from "react";
 import DrawerComponent from "../Homepage/DrawerComponent.jsx";
 import { useNavigate } from "react-router-dom";
-import { useProjectDetails } from "./backend/ProjectDetails";
+import {
+  handleAddCollaborators,
+  handleAccessChange as handleAccessChangeProject,
+  useHandleNameChange,
+  useProjectDetails,
+} from "./backend/ProjectDetails";
 import { showToast } from "../../functions/utils.js";
 import { handleDeleteProject } from "../Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
@@ -258,6 +263,7 @@ function ProjectHead() {
     handleEditNameToggle();
   };
 
+  // Rename Navbar Action
   const handleBlur = async () => {
     // Save the name when the user clicks away from the input field
     if (!isEditingName) {
@@ -269,14 +275,72 @@ function ProjectHead() {
     setIsEditingName(false);
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle("dark-mode", !darkMode);
+  // Add Collaborators Modal Action
+  const handleShare = async (project, emails, role, message, notifyPeople = false) => {
+    if (emails.length === 0) {
+      return { success: false, message: "No email addresses added" };
+    }
+    if (!role) {
+      return { success: false, message: "Select a role" };
+    }
+    try {
+      const result = await handleAddCollaborators(
+        project,
+        emails,
+        role,
+        message,
+        notifyPeople,
+        user
+      );
+      if (result.success) {
+        handleClose();
+        handleCloseShareModal();
+        return { success: true, message: "Project shared to collaborators" };
+      } else {
+        return { success: false, message: "Failed to share project to collaborators" };
+      }
+    } catch (error) {
+      console.error("Error sharing project:", error);
+      return { success: false, message: "Failed to share project to collaborators" };
+    }
   };
-  const handleSettings = () => {
-    navigate(`/settings/project/${projectId}`, {
-      state: { navigateFrom: navigateFrom },
+
+  // Manage Access Modal Action
+  const handleAccessChange = async (project, initEmailsWithRole, emailsWithRole) => {
+    // Filter emails with role changes and create synchronized lists
+    const changedEmailsWithRole = emailsWithRole.filter((email) => {
+      const initialEmail = initEmailsWithRole.find(
+        (initEmail) => initEmail.userId === email.userId
+      );
+      return initialEmail && initialEmail.role !== email.role;
     });
+
+    const changedInitEmailsWithRole = initEmailsWithRole.filter((initEmail) =>
+      changedEmailsWithRole.some((email) => email.userId === initEmail.userId)
+    );
+
+    // If no roles have changed, return early
+    if (changedEmailsWithRole.length === 0) {
+      return { success: false, message: "No email addresses changed" };
+    }
+    try {
+      const result = await handleAccessChangeProject(
+        project,
+        changedInitEmailsWithRole,
+        changedEmailsWithRole,
+        user
+      );
+      if (result.success) {
+        handleClose();
+        handleCloseManageAccessModal();
+        return { success: true, message: "Project collaborators' access changed" };
+      } else {
+        return { success: false, message: "Failed to change access of collaborators" };
+      }
+    } catch (error) {
+      console.error("Error changing access of collaborators:", error);
+      return { success: false, message: "Failed to change access of collaborators" };
+    }
   };
 
   // Rename Modal Action
@@ -306,6 +370,13 @@ function ProjectHead() {
     }
   };
 
+  // Navigate to settings
+  const handleSettings = () => {
+    navigate(`/settings/project/${projectId}`, {
+      state: { navigateFrom: navigateFrom },
+    });
+  };
+
   return (
     <div className={`designHead stickyMenu ${menuOpen ? "darkened" : ""}`}>
       <DrawerComponent isDrawerOpen={isDrawerOpen} onClose={() => setDrawerOpen(false)} />
@@ -331,46 +402,54 @@ function ProjectHead() {
         </IconButton>
         <div className="design-name-section">
           {isEditingName ? (
-            <TextField
-              placeholder="Project Name"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  e.target.blur();
-                }
-              }}
-              autoFocus
-              onBlur={handleBlur}
-              variant="outlined"
-              className="headTitleInput headTitle"
-              fullWidth
-              sx={{
-                backgroundColor: "transparent",
-                input: { color: "var(--color-white)" },
-                padding: "0px",
-                marginTop: "3px",
-                "& .MuiOutlinedInput-root": {
-                  fontSize: "1.5rem",
-                  fontWeight: "bold",
-                  padding: "8px 15px",
-                  borderRadius: "8px",
-                  "& fieldset": {
-                    borderColor: "var( --borderInput)",
+            <>
+              <TextField
+                placeholder="Project Name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.target.blur();
+                  }
+                }}
+                autoFocus
+                onBlur={handleBlur}
+                variant="outlined"
+                className="headTitleInput headTitle"
+                fullWidth
+                inputProps={{ maxLength: 20 }}
+                sx={{
+                  backgroundColor: "transparent",
+                  input: { color: "var(--color-white)" },
+                  padding: "0px",
+                  marginTop: "3px",
+                  "& .MuiOutlinedInput-root": {
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    padding: "8px 15px",
+                    borderRadius: "8px",
+                    "& fieldset": {
+                      borderColor: "var( --borderInput)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "var( --borderInput)",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "var(--borderInputBrighter)",
+                    },
+                    "& input": {
+                      padding: 0,
+                    },
                   },
-                  "&:hover fieldset": {
-                    borderColor: "var( --borderInput)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "var(--borderInputBrighter)",
-                  },
-                  "& input": {
-                    padding: 0,
-                  },
-                },
-              }}
-            />
+                }}
+              />
+              {newName?.length >= 20 && (
+                <div style={{ color: "var(--errorText)", fontSize: "0.8rem", marginTop: "5px" }}>
+                  Character limit reached!
+                </div>
+              )}
+            </>
           ) : (
             <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
               {project?.projectName || "Untitled Project"}
@@ -389,8 +468,9 @@ function ProjectHead() {
               backgroundColor: "var(--iconButtonActive)",
             },
           }}
+          onClick={handleShareClick}
         >
-          <ShareIcon onClick={handleOpenShareModal} />
+          <ShareIcon />
         </IconButton>
         <IconButton
           sx={{
@@ -531,14 +611,14 @@ function ProjectHead() {
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={handleCloseShareModal}
-        handleShare={() => {}}
+        handleShare={handleShare}
         isDesign={false}
         object={project}
       />
       <ManageAccessModal
         isOpen={isManageAccessModalOpen}
         onClose={handleCloseManageAccessModal}
-        handleSave={() => {}}
+        handleSave={handleAccessChange}
         isDesign={false}
         object={project}
         isViewCollab={false}
@@ -551,11 +631,11 @@ function ProjectHead() {
         object={project}
         isViewCollab={true}
       />
-      <ShareConfirmationModal
+      {/* <ShareConfirmationModal
         isOpen={isShareConfirmationModalOpen}
         onClose={handleCloseShareConfirmationModal}
         collaborators={collaborators}
-      />
+      /> */}
       {/* Copy Link (No Modal) */}
       {/* Settings (No Modal) */}
       {/* Download */}
@@ -577,7 +657,7 @@ function ProjectHead() {
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        handleDelete={() => handleDeleteProject(userDoc.id, projectId, navigate)}
+        handleDelete={() => handleDeleteProject(userDoc.id, project.id, navigate)}
         isDesign={false}
         object={project}
       />

@@ -14,7 +14,6 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 function ProjBudget() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const [userId, setUserId] = useState(null);
   const [designs, setDesigns] = useState([]);
   const { user } = useSharedProps();
   const [designBudgetItems, setDesignBudgetItems] = useState({});

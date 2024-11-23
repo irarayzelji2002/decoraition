@@ -229,7 +229,7 @@ function PlanMap() {
       {/* Floating Action Button */}
       <div className="circle-button-container">
         {menuOpen && (
-          <div className="small-buttons">
+          <div className="small-buttons" style={{ cursor: "pointer" }}>
             <div className="small-button-container" onClick={handleStyleRefModalOpen}>
               <span className="small-button-text">Change plan</span>
               <div className="small-circle-button">

@@ -55,6 +55,17 @@ const style = {
   boxShadow: 24,
 };
 
+const getPHCurrency = () => {
+  let currency = {
+    countryISO: "PH",
+    currencyCode: "PHP",
+    currencyName: "Philippines",
+    currencySymbol: "₱",
+    flagEmoji: "🇵🇭",
+  };
+  return currency;
+};
+
 function Budget() {
   const {
     user,
@@ -79,10 +90,10 @@ function Budget() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isRemoveBudgetModalOpen, setIsRemoveBudgetModalOpen] = useState(false);
-  const [budgetCurrency, setBudgetCurrency] = useState(budget?.budget?.currency ?? {});
+  const [budgetCurrency, setBudgetCurrency] = useState(budget?.budget?.currency ?? getPHCurrency());
   const [budgetAmount, setBudgetAmount] = useState(budget?.budget?.amount ?? 0);
   const [budgetCurrencyForInput, setBudgetCurrencyForInput] = useState(
-    budget?.budget?.currency ?? {}
+    budget?.budget?.currency ?? getPHCurrency()
   );
   const [budgetAmountForInput, setBudgetAmountForInput] = useState(budget?.budget?.amount ?? "");
   const [defaultBudgetCurrency, setDefaultBudgetCurrency] = useState({});
@@ -244,7 +255,11 @@ function Budget() {
           setBudget(fetchedBudget);
         }
 
-        // Get items & compute total
+        // Only proceed to get items & compute total if we have a valid budget
+        if (!fetchedBudget.items?.length) {
+          console.log("No items in budget");
+          return;
+        }
         const fetchedItems =
           fetchedBudget && fetchedBudget.items
             ? userItems.filter((item) => fetchedBudget.items?.includes(item.id)) ||
@@ -263,10 +278,9 @@ function Budget() {
     };
 
     const fetchImagesLink = () => {
-      if (!mounted) return;
       if (!designVersion?.images) return;
       const imagesLink = designVersion?.images.map((image, index) => {
-        return getDesignImage(design.id, userDesigns, userDesignVersions, index);
+        return designVersion.images[index].link || "";
       });
       setImagesLink(imagesLink);
     };
@@ -316,6 +330,17 @@ function Budget() {
     }
   }, [budget, items, userItems, designItems]);
 
+  const updateImagesLink = useCallback(() => {
+    if (designVersion && designVersion?.images && designVersion?.images?.length > 0) {
+      const imagesLink = designVersion?.images.map((image, index) => {
+        return designVersion.images[index].link || "";
+      });
+      setImagesLink(imagesLink);
+    } else {
+      setImagesLink([]);
+    }
+  }, [designVersion]);
+
   useEffect(() => {
     const fetchedBudget =
       userBudgets.find((budget) => budget?.designVersionId === designId) ||
@@ -323,16 +348,17 @@ function Budget() {
 
     if (fetchedBudget && !deepEqual(budget, fetchedBudget)) {
       setBudget(fetchedBudget);
-      setBudgetCurrencyForInput(fetchedBudget.budget?.currency ?? defaultBudgetCurrency ?? {});
+      setBudgetCurrencyForInput(fetchedBudget.budget?.currency ?? getPHCurrency());
       setBudgetAmountForInput(fetchedBudget.budget?.amount ?? 0);
       setBudget(fetchedBudget);
-      setBudgetCurrency(fetchedBudget.budget?.currency ?? defaultBudgetCurrency ?? {});
+      setBudgetCurrency(fetchedBudget.budget?.currency ?? getPHCurrency());
       setBudgetAmount(fetchedBudget.budget?.amount ?? 0);
       updateItems();
     }
   }, [budgets, userBudgets]);
 
   useEffect(() => {
+    console.log("User Items changed:", userItems);
     const timer = setTimeout(() => {
       updateItems();
     }, 100);
@@ -340,8 +366,16 @@ function Budget() {
   }, [items, userItems, budget, updateItems]);
 
   useEffect(() => {
+    console.log("Design version changed:", designVersion);
+    const timer = setTimeout(() => {
+      updateImagesLink();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [designVersion, updateImagesLink]);
+
+  useEffect(() => {
     setBudgetAmount(budget?.budget?.amount ?? 0);
-    setBudgetCurrency(budget?.budget?.currency ?? defaultBudgetCurrency ?? {});
+    setBudgetCurrency(budget?.budget?.currency ?? getPHCurrency());
   }, [budget]);
 
   useEffect(() => {
@@ -559,10 +593,7 @@ function Budget() {
                 <span>No design yet</span>
               </div>
               <img
-                src={
-                  getDesignImage(design.id, userDesigns, userDesignVersions, viewingImage) ??
-                  "/img/transparent-image.png"
-                }
+                src={imagesLink[viewingImage] ?? "/img/transparent-image.png"}
                 alt=""
                 className="image-preview"
               />

@@ -57,6 +57,8 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
   const [pendingUpdates, setPendingUpdates] = useState({});
   const [isConfirmRemoveItemBtnDisabled, setIsConfirmRemoveItemBtnDisabled] = useState(false);
 
+  const formatNumber = (num) => (typeof num === "number" ? num.toFixed(2) : "0.00");
+
   const handleDeleteItem = async (itemToDelete, budgetId) => {
     try {
       setIsConfirmRemoveItemBtnDisabled(true);
@@ -312,7 +314,7 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
       >
         <span className="itemName">{item.quantity + " " + item.itemName}</span>
         <span className="itemPrice">
-          {item.cost.currency?.currencyCode + " " + item.cost.amount}
+          {item.cost.currency?.currencyCode + " " + formatNumber(item.cost.amount)}
         </span>
       </div>
       <div

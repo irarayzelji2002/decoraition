@@ -6,6 +6,17 @@ const axios = require("axios");
 const resend = new Resend(process.env.REACT_APP_RESEND_API_KEY);
 const appURL = process.env.REACT_APP_URL;
 
+const getPHCurrency = () => {
+  let currency = {
+    countryISO: "PH",
+    currencyCode: "PHP",
+    currencyName: "Philippines",
+    currencySymbol: "₱",
+    flagEmoji: "🇵🇭",
+  };
+  return currency;
+};
+
 // Create Project
 exports.createProject = async (req, res) => {
   const updatedDocuments = [];
@@ -222,7 +233,7 @@ exports.createDesignProject = async (req, res) => {
       designId: designId,
       budget: {
         amount: 0,
-        currency: "PHP", //default
+        currency: getPHCurrency(), //default
       },
       items: [],
       createdAt: new Date(),

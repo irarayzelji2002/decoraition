@@ -87,22 +87,31 @@ const AddItem = () => {
   // Updates on Real-time changes on shared props
   useEffect(() => {
     setLoading(true);
-    const fetchedDesignVersion =
-      userDesignVersions.find((designVersion) => designVersion?.budgetId === budgetId) ||
-      designVersions.find((designVersion) => designVersion?.budgetId === budgetId);
+    try {
+      // Find design version
+      const fetchedDesignVersion =
+        userDesignVersions.find((designVersion) => designVersion?.budgetId === budgetId) ||
+        designVersions.find((designVersion) => designVersion?.budgetId === budgetId);
+      if (!fetchedDesignVersion) {
+        console.error("Design version not found for budgetId:", budgetId);
+        setDesignVersion({});
+        console.error("Design version not found");
+        return;
+      } else if (!deepEqual(designVersion, fetchedDesignVersion)) {
+        setDesignVersion(fetchedDesignVersion);
+      }
 
-    if (!fetchedDesignVersion) {
-      console.error("Design version not found");
-    } else if (!deepEqual(designVersion, fetchedDesignVersion)) {
-      setDesignVersion(fetchedDesignVersion);
+      // Only find design if we have a valid design version
+      const fetchedDesign =
+        userDesigns.find((design) => design?.history?.includes(fetchedDesignVersion.id)) ||
+        designs.find((design) => design?.history?.includes(fetchedDesignVersion.id));
+      setDesign(fetchedDesign);
+    } catch (error) {
+      console.error("Error in initialization:", error);
+    } finally {
+      setLoading(false);
     }
-
-    const fetchedDesign =
-      userDesigns.find((design) => design?.history?.includes(fetchedDesignVersion.id)) ||
-      designs.find((design) => design?.history?.includes(fetchedDesignVersion.id));
-    setDesign(fetchedDesign);
-    setLoading(false);
-  }, [designs, userDesigns, designVersions, userDesignVersions]);
+  }, [designs, userDesigns, designVersions, userDesignVersions, designVersion, budgetId]);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -145,6 +154,7 @@ const AddItem = () => {
     if (message !== "") return;
 
     setInitImage(file);
+    setIsUploadedImage(true);
     const reader = new FileReader();
     reader.onloadend = () => {
       console.log("FileReader result:", reader.result);

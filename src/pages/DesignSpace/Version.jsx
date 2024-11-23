@@ -415,26 +415,28 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                 >
                   View
                 </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setOpenConfirmRestoreModal(true);
-                    handleSelectVersion(selectedDesignVersionId);
-                  }}
-                  sx={{
-                    background: "var(--gradientButton)", // Gradient background
-                    borderRadius: "20px", // Button border radius
-                    color: "var(--always-white)", // Button text color
-                    fontWeight: "bold",
-                    textTransform: "none",
-                    minWidth: "200px",
-                    "&:hover": {
-                      background: "var(--gradientButtonHover)", // Reverse gradient on hover
-                    },
-                  }}
-                >
-                  Restore
-                </Button>
+                {selectedDesignVersionId !== versionDetails[0]?.id && (
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setOpenConfirmRestoreModal(true);
+                      handleSelectVersion(selectedDesignVersionId);
+                    }}
+                    sx={{
+                      background: "var(--gradientButton)", // Gradient background
+                      borderRadius: "20px", // Button border radius
+                      color: "var(--always-white)", // Button text color
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      minWidth: "200px",
+                      "&:hover": {
+                        background: "var(--gradientButtonHover)", // Reverse gradient on hover
+                      },
+                    }}
+                  >
+                    Restore
+                  </Button>
+                )}
               </>
             ) : isHistory && isCopySelected ? (
               <>

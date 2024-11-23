@@ -252,6 +252,11 @@ function EnhancedTable({
   }, [optionsState]);
 
   const getDesignImage = (designId) => {
+    if (!designId) {
+      console.log("No design ID provided");
+      return "";
+    }
+
     // Get the design
     const fetchedDesign =
       userDesigns.find((design) => design.id === designId) ||
@@ -262,19 +267,18 @@ function EnhancedTable({
 
     // Get the latest designVersionId
     const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
+    if (!latestDesignVersionId) {
+      return "";
+    }
     const fetchedLatestDesignVersion =
       userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
       designVersions.find((designVer) => designVer.id === latestDesignVersionId);
-    if (
-      !fetchedLatestDesignVersion ||
-      !fetchedLatestDesignVersion.images ||
-      fetchedLatestDesignVersion.images.length === 0
-    ) {
+    if (!fetchedLatestDesignVersion?.images?.length) {
       return "";
     }
 
     // Return the first image's link from the fetched design version
-    return fetchedLatestDesignVersion.images[0].link;
+    return fetchedLatestDesignVersion.images[0].link || "";
   };
 
   const getProjectImage = (projectId) => {

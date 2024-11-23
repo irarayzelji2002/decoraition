@@ -19,6 +19,17 @@ import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
 import { textFieldStyles, textFieldInputProps, priceTextFieldStyles } from "./AddItem";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 
+const getPHCurrency = () => {
+  let currency = {
+    countryISO: "PH",
+    currencyCode: "PHP",
+    currencyName: "Philippines",
+    currencySymbol: "₱",
+    flagEmoji: "🇵🇭",
+  };
+  return currency;
+};
+
 const EditItem = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,7 +46,7 @@ const EditItem = () => {
   const [itemName, setItemName] = useState(item?.itemName ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
   const [itemPrice, setItemPrice] = useState(item?.cost?.amount ?? "");
-  const [currency, setCurrency] = useState(item?.cost?.currency ?? "PHP");
+  const [currency, setCurrency] = useState(item?.cost?.currency ?? getPHCurrency());
   const [itemQuantity, setItemQuantity] = useState(item?.quantity ?? 1);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(item?.image ?? null);
@@ -88,27 +99,51 @@ const EditItem = () => {
   // Initialize
   useEffect(() => {
     setLoading(true);
-    if (userItems.length > 0) {
-      const fetchedItem =
-        userItems.find((item) => item.id === itemId) || items.find((item) => item.id === itemId);
-      if (!fetchedItem) {
-        console.error("Item not found");
-      } else setItem(fetchedItem || {});
+    try {
+      // Find item
+      if (userItems.length > 0) {
+        const fetchedItem =
+          userItems.find((item) => item.id === itemId) || items.find((item) => item.id === itemId);
+        if (!fetchedItem) {
+          console.error("Item not found");
+        } else setItem(fetchedItem || {});
+      }
+
+      // Find design version
+      const fetchedDesignVersion =
+        userDesignVersions.find((designVersion) => designVersion?.budgetId === budgetId) ||
+        designVersions.find((designVersion) => designVersion?.budgetId === budgetId);
+      if (!fetchedDesignVersion) {
+        console.error("Design version not found for budgetId:", budgetId);
+        setDesignVersion({});
+        return;
+      }
+      setDesignVersion(fetchedDesignVersion);
+
+      // Only find design if we have a valid design version
+      const fetchedDesign =
+        userDesigns.find((design) => design?.history?.includes(fetchedDesignVersion.id)) ||
+        designs.find((design) => design?.history?.includes(fetchedDesignVersion.id));
+
+      if (!fetchedDesign) {
+        console.error("Design not found for design version:", fetchedDesignVersion.id);
+      }
+      setDesign(fetchedDesign || {});
+    } catch (error) {
+      console.error("Error in initialization:", error);
+    } finally {
+      setLoading(false);
     }
-
-    const fetchedDesignVersion =
-      userDesignVersions.find((designVersion) => designVersion?.budgetId === budgetId) ||
-      designVersions.find((designVersion) => designVersion?.budgetId === budgetId);
-    if (!fetchedDesignVersion) {
-      console.error("Design version not found.");
-    } else setDesignVersion(fetchedDesignVersion || {});
-
-    const fetchedDesign =
-      userDesigns.find((design) => design?.history?.includes(fetchedDesignVersion.id)) ||
-      designs.find((design) => design?.history?.includes(fetchedDesignVersion.id));
-    setDesign(fetchedDesign);
-    setLoading(false);
-  }, [designs, userDesigns, designVersions, userDesignVersions, items, userItems]);
+  }, [
+    designs,
+    userDesigns,
+    designVersions,
+    userDesignVersions,
+    items,
+    userItems,
+    itemId,
+    budgetId,
+  ]);
 
   useEffect(() => {
     if (item && Object.keys(item).length > 0) {
@@ -163,6 +198,7 @@ const EditItem = () => {
     if (message !== "") return;
 
     setInitImage(file);
+    setIsUploadedImage(true);
     const reader = new FileReader();
     reader.onloadend = () => {
       console.log("FileReader result:", reader.result);
@@ -391,7 +427,7 @@ const EditItem = () => {
                 (e.target.style.backgroundImage = "var(--darkGradient), var(--gradientButton)")
               }
             >
-              Reupload an image of item
+              {item?.image ? "Reupload image of item" : "Upload image of item"}
             </Button>
             <input
               type="file"

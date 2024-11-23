@@ -6,6 +6,17 @@ const axios = require("axios");
 const resend = new Resend(process.env.REACT_APP_RESEND_API_KEY);
 const appURL = process.env.REACT_APP_URL;
 
+const getPHCurrency = () => {
+  let currency = {
+    countryISO: "PH",
+    currencyCode: "PHP",
+    currencyName: "Philippines",
+    currencySymbol: "₱",
+    flagEmoji: "🇵🇭",
+  };
+  return currency;
+};
+
 // Create Design
 exports.createDesign = async (req, res) => {
   const updatedDocuments = [];
@@ -403,7 +414,7 @@ exports.restoreDesignVersion = async (req, res) => {
         }
       : {
           designVersionId: newVersionRef.id,
-          budget: { amount: 0, currency: "PHP" },
+          budget: { amount: 0, currency: getPHCurrency() },
           items: [],
           createdAt: new Date(),
           modifiedAt: new Date(),
@@ -534,7 +545,7 @@ exports.copyDesign = async (req, res) => {
       const emptyItemRef = await db.collection("items").add({
         itemName: "",
         description: "",
-        cost: { amount: 0, currency: "PHP" },
+        cost: { amount: 0, currency: getPHCurrency() },
         quantity: 0,
         image: "",
         includedInTotal: true,
@@ -1221,16 +1232,42 @@ exports.createDesignVersion = async (req, res) => {
     }
 
     // Create associated budget document
-    const budgetData = {
-      designVersionId: newVersionId,
-      budget: {
-        amount: 0,
-        currency: "PHP", //default
-      },
-      items: [],
-      createdAt: new Date(),
-      modifiedAt: new Date(),
-    };
+    // Get previous version's budget if design has history
+    let budgetData;
+    if (previousHistory.length > 0) {
+      const previousVersionId = previousHistory[previousHistory.length - 1];
+      const previousVersionDoc = await db.collection("designVersions").doc(previousVersionId).get();
+      if (previousVersionDoc.exists && previousVersionDoc.data().budgetId) {
+        const previousBudgetDoc = await db
+          .collection("budgets")
+          .doc(previousVersionDoc.data().budgetId)
+          .get();
+        if (previousBudgetDoc.exists) {
+          // Use previous budget data but with new designVersionId
+          budgetData = {
+            designVersionId: newVersionId,
+            budget: previousBudgetDoc.data().budget,
+            items: previousBudgetDoc.data().items,
+            createdAt: new Date(),
+            modifiedAt: new Date(),
+          };
+        }
+      }
+    }
+
+    // If no previous budget found, create empty budget
+    if (!budgetData) {
+      budgetData = {
+        designVersionId: newVersionId,
+        budget: {
+          amount: 0,
+          currency: getPHCurrency(),
+        },
+        items: [],
+        createdAt: new Date(),
+        modifiedAt: new Date(),
+      };
+    }
 
     const budgetRef = await db.collection("budgets").add(budgetData);
     const budgetId = budgetRef.id;

@@ -1,6 +1,17 @@
 const { db, storage } = require("../firebase");
 const { ref, uploadBytes, getDownloadURL } = require("firebase/storage");
 
+const getPHCurrency = () => {
+  let currency = {
+    countryISO: "PH",
+    currencyCode: "PHP",
+    currencyName: "Philippines",
+    currencySymbol: "₱",
+    flagEmoji: "🇵🇭",
+  };
+  return currency;
+};
+
 // Add, Edit, Remove Budget
 exports.updateBudget = async (req, res) => {
   const updatedDocuments = [];
@@ -53,13 +64,15 @@ exports.addItem = async (req, res) => {
     const { budgetId, itemName, description, quantity, isUploadedImage } = req.body;
     const cost = JSON.parse(req.body.cost);
     let imageUrl = null;
+    console.log("received data:", { budgetId, itemName, description, quantity, isUploadedImage });
 
-    if (isUploadedImage === true) {
+    if (isUploadedImage === true || isUploadedImage === "true") {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
       const file = req.file;
+      console.log("file:", file);
       const fileName = `items/${budgetId}/${Date.now()}_${file.originalname}`;
       const storageRef = ref(storage, fileName);
 
@@ -69,6 +82,7 @@ exports.addItem = async (req, res) => {
       imageUrl = await getDownloadURL(snapshot.ref);
     } else {
       imageUrl = req.body.image; // Use provided image link
+      console.log("imageUrl:", imageUrl);
     }
 
     // Create a new blank item document
@@ -76,7 +90,7 @@ exports.addItem = async (req, res) => {
     const blankItemData = {
       itemName: "",
       description: "",
-      cost: { amount: 0, currency: "PHP" },
+      cost: { amount: 0, currency: getPHCurrency() },
       quantity: 0,
       image: "",
       includedInTotal: true,
@@ -360,7 +374,7 @@ exports.createDefaultBudget = async (req, res) => {
       designVersionId: designVersionId,
       budget: {
         amount: 0,
-        currency: "PHP", // default currency
+        currency: getPHCurrency(), // default currency
       },
       items: [],
       createdAt: new Date(),

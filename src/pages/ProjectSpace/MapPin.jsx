@@ -61,26 +61,33 @@ const MapPin = ({
   };
 
   const getDesignImage = (designId) => {
+    if (!designId) {
+      console.log("No design ID provided");
+      return "";
+    }
+
+    // Get the design
     const fetchedDesign =
       userDesigns.find((design) => design.id === designId) ||
       designs.find((design) => design.id === designId);
     if (!fetchedDesign || !fetchedDesign.history || fetchedDesign.history.length === 0) {
-      return "../../img/logoWhitebg.png";
+      return "";
     }
 
+    // Get the latest designVersionId
     const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
+    if (!latestDesignVersionId) {
+      return "";
+    }
     const fetchedLatestDesignVersion =
       userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
       designVersions.find((designVer) => designVer.id === latestDesignVersionId);
-    if (
-      !fetchedLatestDesignVersion ||
-      !fetchedLatestDesignVersion.images ||
-      fetchedLatestDesignVersion.images.length === 0
-    ) {
-      return "../../img/logoWhitebg.png";
+    if (!fetchedLatestDesignVersion?.images?.length) {
+      return "";
     }
 
-    return fetchedLatestDesignVersion.images[0].link;
+    // Return the first image's link from the fetched design version
+    return fetchedLatestDesignVersion.images[0].link || "";
   };
 
   return (

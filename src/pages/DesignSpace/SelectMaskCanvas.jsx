@@ -123,6 +123,7 @@ function SelectMaskCanvas({
   setIsPreviewingMask,
   validateApplyMask,
   setValidateApplyMask,
+  isSelectingMask,
 }) {
   const { user, userDoc, designVersions, userDesignVersions } = useSharedProps();
   // Canvas/Container refs
@@ -255,7 +256,6 @@ function SelectMaskCanvas({
     });
 
     // Apply width-specific classes based on current container width
-
     if (width <= 1155) {
       container.querySelector(".canvasControlsCont")?.classList.add("width-1155");
       container.querySelector(".canvasControls")?.classList.add("width-1155");
@@ -513,13 +513,20 @@ function SelectMaskCanvas({
   };
 
   // Drawing hooks
-  const addDrawing = useCanvasDrawing(addCanvasRef, pickedColorAdd, opacityAdd, brushModeAdd);
+  const addDrawing = useCanvasDrawing(
+    addCanvasRef,
+    pickedColorAdd,
+    opacityAdd,
+    brushModeAdd,
+    isSelectingMask
+  );
 
   const removeDrawing = useCanvasDrawing(
     removeCanvasRef,
     pickedColorRemove,
     opacityRemove,
-    brushModeRemove
+    brushModeRemove,
+    isSelectingMask
   );
 
   const initSamDrawing = useSamCanvas(

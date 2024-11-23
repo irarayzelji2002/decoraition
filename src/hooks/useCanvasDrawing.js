@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 
-export const useCanvasDrawing = (canvasRef, color, opacity, brushMode) => {
+export const useCanvasDrawing = (canvasRef, color, opacity, brushMode, isSelectingMask) => {
   const [drawing, setDrawing] = useState(false);
   const [path, setPath] = useState(new Path2D());
   const [erasedRegions, setErasedRegions] = useState([]);
@@ -12,8 +12,14 @@ export const useCanvasDrawing = (canvasRef, color, opacity, brushMode) => {
     (brushSize) => {
       if (!canvasRef.current) return;
 
-      // Create cursor div
+      // Create cursor or remove cursor
       let cursor = document.querySelector(".brush-cursor");
+      if (!isSelectingMask) {
+        if (cursor) {
+          document.body.removeChild(cursor);
+        }
+        return;
+      }
       if (!cursor) {
         cursor = document.createElement("div");
         cursor.className = "brush-cursor";

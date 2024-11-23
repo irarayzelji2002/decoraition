@@ -325,6 +325,11 @@ h6 {
 .image-frame.budget {
   padding-bottom: 512px;
   max-width: 512px;
+  cursor: auto;
+}
+
+.image-frame.version {
+  cursor: auto;
 }
 
 @media screen and (max-width: 1096px) {

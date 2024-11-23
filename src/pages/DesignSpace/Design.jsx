@@ -803,6 +803,7 @@ function Design() {
                   setIsPreviewingMask={setIsPreviewingMask}
                   validateApplyMask={validateApplyMask}
                   setValidateApplyMask={setValidateApplyMask}
+                  isSelectingMask={isSelectingMask}
                 />
               ) : (isGenerating && generatedImagesPreview.length > 0) ||
                 designVersionImages.length > 0 ? (

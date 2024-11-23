@@ -14,6 +14,18 @@ import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { BlankImage } from "./svg/AddImage";
 import { getDesignImage } from "./backend/DesignActions";
+import { get } from "lodash";
+
+const getPHCurrency = () => {
+  let currency = {
+    countryISO: "PH",
+    currencyCode: "PHP",
+    currencyName: "Philippines",
+    currencySymbol: "₱",
+    flagEmoji: "🇵🇭",
+  };
+  return currency;
+};
 
 function VersionOverviewModal({
   openViewModal,
@@ -29,7 +41,7 @@ function VersionOverviewModal({
   const [versionBudget, setVersionBudget] = useState(null);
   const [versionItems, setVersionItems] = useState([]);
   const [budgetAmount, setBudgetAmount] = useState(0);
-  const [budgetCurrency, setBudgetCurrency] = useState("PHP");
+  const [budgetCurrency, setBudgetCurrency] = useState(getPHCurrency());
   const [totalCost, setTotalCost] = useState(0);
   const [formattedTotalCost, setFormattedTotalCost] = useState("0.00");
   const [exceededBudget, setExceededBudget] = useState(false);
@@ -66,15 +78,23 @@ function VersionOverviewModal({
         }
         setVersionBudget(fetchedBudget);
 
-        const fetchedItems = fetchedBudget.items.map(async (itemId) => {
-          const item = userItems.find((i) => i.id === itemId) || items.find((i) => i.id === itemId);
-          if (!item) {
-            console.error("Item not found");
-            return;
-          }
-          return item;
-        });
-        setVersionItems(fetchedItems);
+        if (!fetchedBudget.items?.length) {
+          console.log("No items in budget");
+          return;
+        }
+        const fetchedItems = await Promise.all(
+          fetchedBudget.items.map(async (itemId) => {
+            const item =
+              userItems.find((i) => i.id === itemId) || items.find((i) => i.id === itemId);
+            if (!item) {
+              console.error(`Item ${itemId} not found`);
+              return null;
+            }
+            return item;
+          })
+        );
+        const validItems = fetchedItems.filter((item) => item !== null);
+        setVersionItems(validItems);
       } catch (err) {
         console.error("Failed to load budget data", err.mesage);
       } finally {
@@ -110,9 +130,12 @@ function VersionOverviewModal({
       .toFixed(2);
     setTotalCost(totalCost);
 
-    // Assuming all items have the same currency
+    // Currency
+    const currenyDisplay =
+      items[0]?.cost?.currency?.currencyCode || items[0]?.cost?.currency || "PHP";
+
     const formattedTotalCost =
-      designItems[0].cost.currency +
+      currenyDisplay +
       " " +
       new Intl.NumberFormat("en-US", {
         style: "decimal",
@@ -129,7 +152,7 @@ function VersionOverviewModal({
 
   useEffect(() => {
     setBudgetAmount(versionBudget?.budget?.amount ?? 0);
-    setBudgetCurrency(versionBudget?.budget?.currency ?? "PHP");
+    setBudgetCurrency(versionBudget?.budget?.currency ?? getPHCurrency());
   }, [versionBudget]);
 
   useEffect(() => {
@@ -177,6 +200,7 @@ function VersionOverviewModal({
         sx={{
           ...dialogContentStyles,
           paddingBottom: "20px",
+          width: versionDetailTypeTab ? "min(50vw, 50vh)" : "auto",
         }}
       >
         <div style={{ position: "relative" }}>
@@ -240,7 +264,10 @@ function VersionOverviewModal({
               <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
                 <div className="historyImageFrame" key={viewingImage}>
                   <img
-                    src={selectedDesignVersionDetails.imagesLink[viewingImage]}
+                    src={
+                      selectedDesignVersionDetails.imagesLink[viewingImage] ??
+                      "/img/transparent-image.png"
+                    }
                     alt=""
                     className="historyImagePreview"
                   />
@@ -250,63 +277,56 @@ function VersionOverviewModal({
           ) : (
             <div
               style={{
-                display: "flex",
-                justifyContent: "center",
-                position: "relative",
                 alignItems: versionItems.length === 0 ? "center" : "start",
               }}
+              className="versionDetailsCont"
             >
               {/* Version Budget */}
-              <div className="cutoff" style={{ alignItems: "center" }}>
-                <div className="budgetSpaceImg" style={{ marginTop: 0, marginBottom: 0 }}>
-                  <span
-                    className="priceSum"
-                    style={{
-                      backgroundColor: getBudgetColor(budgetAmount, totalCost),
-                      marginTop: "0px",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {(() => {
-                      if (formattedTotalCost === "0.00" && budgetAmount === 0) {
-                        return <>No cost and added budget</>;
-                      } else if (formattedTotalCost === "0.00") {
-                        return (
-                          <>
-                            No cost, Budget:{" "}
-                            <strong>
-                              {budgetCurrency} {formatNumber(budgetAmount)}
-                            </strong>
-                          </>
-                        );
-                      } else if (budgetAmount === 0) {
-                        return (
-                          <>
-                            Total Cost: <strong>{formattedTotalCost}</strong>, No added budget
-                          </>
-                        );
-                      } else {
-                        return (
-                          <>
-                            Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
-                            <strong>
-                              {budgetCurrency} {formatNumber(budgetAmount)}
-                            </strong>
-                          </>
-                        );
-                      }
-                    })()}
-                  </span>
+              <div className="previewBudgetCont version">
+                <span
+                  className="priceSum"
+                  style={{
+                    backgroundColor: getBudgetColor(budgetAmount, totalCost),
+                    marginTop: "0px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {(() => {
+                    if (formattedTotalCost === "0.00" && budgetAmount === 0) {
+                      return <>No cost and added budget</>;
+                    } else if (formattedTotalCost === "0.00") {
+                      return (
+                        <>
+                          No cost, Budget:{" "}
+                          <strong>
+                            {budgetCurrency?.currencyCode} {formatNumber(budgetAmount)}
+                          </strong>
+                        </>
+                      );
+                    } else if (budgetAmount === 0) {
+                      return (
+                        <>
+                          Total Cost: <strong>{formattedTotalCost}</strong>, No added budget
+                        </>
+                      );
+                    } else {
+                      return (
+                        <>
+                          Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
+                          <strong>
+                            {budgetCurrency?.currencyCode} {formatNumber(budgetAmount)}
+                          </strong>
+                        </>
+                      );
+                    }
+                  })()}
+                </span>
+              </div>
+              <div className="cutoff version">
+                {/* Images */}
+                <div className="budgetSpaceImg version pic">
                   <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        position: "relative",
-                        gap: "5px",
-                        marginBottom: "10px",
-                      }}
-                    >
+                    <div className="versionImagesPreviewOptionsCont">
                       {selectedDesignVersionDetails.imagesLink.map((img, index) => {
                         return (
                           <div
@@ -326,19 +346,15 @@ function VersionOverviewModal({
                         );
                       })}
                     </div>
-                    <div className="image-frame">
+                    <div className="image-frame version">
                       <div className="image-frame-icon">
                         <BlankImage />
                         <span>No design yet</span>
                       </div>
                       <img
                         src={
-                          getDesignImage(
-                            design.id,
-                            userDesigns,
-                            userDesignVersions,
-                            viewingImage
-                          ) ?? "/img/transparent-image.png"
+                          selectedDesignVersionDetails.imagesLink[viewingImage] ??
+                          "/img/transparent-image.png"
                         }
                         alt=""
                         className="image-preview"
@@ -346,38 +362,51 @@ function VersionOverviewModal({
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="budgetSpaceImg">
-                {versionItems.length > 0 ? (
-                  versionItems.map((item) => (
-                    <div className="itemSpace" style={{ display: "flex", flexDirection: "row" }}>
-                      <img src={item.image} alt="" className="thumbnail" />
+                {/* Items */}
+                <div
+                  className="budgetSpaceImg version items"
+                  style={{ alignItems: versionItems.length === 0 ? "center" : "start" }}
+                >
+                  {versionItems.length > 0 ? (
+                    versionItems.map((item) => (
                       <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          margin: "12px",
-                          width: "auto  ",
-                        }}
+                        key={item.id}
+                        className="itemSpace version"
+                        style={{ display: "flex", flexDirection: "row" }}
                       >
-                        <span className="itemName">{item.quantity + " " + item.itemName}</span>
-                        <span className="itemPrice">
-                          {item.cost.currency + " " + item.cost.amount}
-                        </span>
+                        <img
+                          src={item.image ?? "/img/transparent-image.png"}
+                          alt=""
+                          className="thumbnail"
+                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            margin: "12px",
+                            width: "auto  ",
+                          }}
+                        >
+                          <span className="itemName">{item.quantity + " " + item.itemName}</span>
+                          <span className="itemPrice">
+                            {item.cost.currency?.currencyCode +
+                              " " +
+                              formatNumber(item.cost.amount)}
+                          </span>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="placeholderDiv" style={{ margin: "0 !important" }}>
+                      <img
+                        src={"../../img/design-placeholder.png"}
+                        style={{ width: "100px" }}
+                        alt=""
+                      />
+                      <p className="grey-text center">No items in this version.</p>
                     </div>
-                  ))
-                ) : (
-                  <div className="placeholderDiv" style={{ margin: "0 !important" }}>
-                    <img
-                      src={"../../img/design-placeholder.png"}
-                      style={{ width: "100px" }}
-                      alt=""
-                    />
-                    <p className="grey-text center">No items in this version.</p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}

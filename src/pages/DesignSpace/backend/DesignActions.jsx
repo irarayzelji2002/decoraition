@@ -35,6 +35,10 @@ export const handleSidebarEffect = (isSidebarOpen) => {
 };
 
 export const getDesignImage = (designId, userDesigns, userDesignVersions, index = 0) => {
+  if (!designId) {
+    console.log("No design ID provided");
+    return "";
+  }
   // Check if userDesigns and userDesignVersions are defined and are arrays
   if (!Array.isArray(userDesigns) || !Array.isArray(userDesignVersions)) {
     console.error("userDesigns or userDesignVersions is not an array");
@@ -50,14 +54,14 @@ export const getDesignImage = (designId, userDesigns, userDesignVersions, index 
 
   // Get the latest designVersionId
   const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
+  if (!latestDesignVersionId) {
+    return "";
+  }
+
   const fetchedLatestDesignVersion = userDesignVersions.find(
     (designVer) => designVer.id === latestDesignVersionId
   );
-  if (
-    !fetchedLatestDesignVersion ||
-    !fetchedLatestDesignVersion.images ||
-    fetchedLatestDesignVersion.images.length === 0
-  ) {
+  if (!fetchedLatestDesignVersion?.images?.length) {
     console.log("Latest design version not found or has no images");
     return "";
   }
@@ -1111,11 +1115,14 @@ export const updateDesignVersionSamMask = async (
   userDoc
 ) => {
   try {
+    const token = await user.getIdToken();
+    if (!token)
+      return { success: false, message: "Failed to upload generated masks. Please try again." };
     const response = await axios.post(
       `/api/design/${designId}/design-version/${designVersionId}/update-sam-masks`,
       { userId: userDoc.id, designVersionImageId, samMasks },
       {
-        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
     if (response.status === 200) {
@@ -1128,7 +1135,7 @@ export const updateDesignVersionSamMask = async (
     return { success: false, message: "Failed to upload SAM masks", status: response.status };
   } catch (error) {
     console.error("Error uploading SAM masks:", error);
-    return { success: false, message: "Failed to upload SAM masks" };
+    return { success: false, message: "Failed to upload generated masks. Please try again." };
   }
 };
 

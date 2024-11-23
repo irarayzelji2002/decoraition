@@ -10,7 +10,7 @@ import { db } from "../../firebase";
 import { fetchProjectDesigns } from "./backend/ProjectDetails";
 import { showToast } from "../../functions/utils";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
-import { fetchVersionDetails } from "../DesignSpace/backend/DesignActions";
+import { fetchVersionDetails, getDesignImage } from "../DesignSpace/backend/DesignActions";
 import CircularProgress from "@mui/material/CircularProgress";
 import Loading from "../../components/Loading";
 
@@ -21,6 +21,8 @@ function ProjBudget() {
   const { user, userBudgets, items, userItems, budgets } = useSharedProps();
   const [designBudgetItems, setDesignBudgetItems] = useState({});
   const [loading, setLoading] = useState(true);
+  const [designImages, setDesignImages] = useState({});
+  const [itemImages, setItemImages] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,6 +72,33 @@ function ProjBudget() {
     }
   }, [designs, user, userBudgets, items, userItems, budgets]);
 
+  useEffect(() => {
+    const fetchDesignImages = async () => {
+      const images = {};
+      for (const design of designs) {
+        const image = await getDesignImage(design.id);
+        images[design.id] = image;
+      }
+      setDesignImages(images);
+    };
+
+    const fetchItemImages = async () => {
+      const images = {};
+      for (const design of designs) {
+        for (const item of designBudgetItems[design.id] || []) {
+          const image = item.image || "/img/transparent-image.png";
+          images[item.id] = image;
+        }
+      }
+      setItemImages(images);
+    };
+
+    if (designs.length > 0) {
+      fetchDesignImages();
+      fetchItemImages();
+    }
+  }, [designs, designBudgetItems]);
+
   const totalProjectBudget = designs.reduce((total, design) => {
     const totalCost = designBudgetItems[design.id]?.reduce(
       (sum, item) => sum + parseFloat(item.cost.amount || 0) * (item.quantity || 1),
@@ -112,8 +141,9 @@ function ProjBudget() {
                     </div>
 
                     <div className="image-frame-project">
+                      {/* the design image goes here */}
                       <img
-                        src="../../img/logoWhitebg.png"
+                        src={designImages[design.id] || "../../img/logoWhitebg.png"}
                         alt={`design preview `}
                         className="image-preview"
                         style={{ marginRight: "10px" }}
@@ -123,9 +153,10 @@ function ProjBudget() {
                   <div className="itemList">
                     {designBudgetItems[design.id]?.map((item) => (
                       <div className="item" key={item.id}>
+                        {/* the item image goes here */}
                         <img
-                          src="../../img/logoWhitebg.png"
-                          alt={`design preview `}
+                          src={itemImages[item.id] || "../../img/logoWhitebg.png"}
+                          alt={`item preview `}
                           style={{ width: "80px", height: "80px" }}
                         />
                         <div

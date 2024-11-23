@@ -64,7 +64,6 @@ exports.addItem = async (req, res) => {
     const { budgetId, itemName, description, quantity, isUploadedImage } = req.body;
     const cost = JSON.parse(req.body.cost);
     let imageUrl = null;
-    console.log("received data:", { budgetId, itemName, description, quantity, isUploadedImage });
 
     if (isUploadedImage === true || isUploadedImage === "true") {
       if (!req.file) {

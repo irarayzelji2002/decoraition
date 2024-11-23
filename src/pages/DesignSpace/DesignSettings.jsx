@@ -835,7 +835,7 @@ export const textFieldStyles = {
   },
   "& input": {
     color: "var(--color-white)",
-    padding: 0,
+    padding: "15px",
   },
   "& .MuiFormHelperText-root": {
     color: "var(--color-quaternary)",

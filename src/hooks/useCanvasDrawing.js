@@ -12,19 +12,22 @@ export const useCanvasDrawing = (canvasRef, color, opacity, brushMode, isSelecti
     (brushSize) => {
       if (!canvasRef.current) return;
 
-      // Create cursor or remove cursor
+      // Remove existing cursor first
       let cursor = document.querySelector(".brush-cursor");
+      if (cursor) {
+        document.body.removeChild(cursor);
+      }
+      // If not selecting mask, don't create new cursor and return
       if (!isSelectingMask) {
-        if (cursor) {
-          document.body.removeChild(cursor);
+        if (canvasRef.current) {
+          canvasRef.current.style.cursor = "auto";
         }
         return;
       }
-      if (!cursor) {
-        cursor = document.createElement("div");
-        cursor.className = "brush-cursor";
-        document.body.appendChild(cursor);
-      }
+      // Create new cursor
+      cursor = document.createElement("div");
+      cursor.className = "brush-cursor";
+      document.body.appendChild(cursor);
 
       // Create SVG for brush cursor
       const zoomLevel = window.devicePixelRatio;
@@ -56,6 +59,14 @@ export const useCanvasDrawing = (canvasRef, color, opacity, brushMode, isSelecti
 
       // Add event listeners to canvas
       const updateCursor = (e) => {
+        let cursor = document.querySelector(".brush-cursor");
+        if (!isSelectingMask) {
+          if (cursor && cursor.parentNode === document.body) {
+            document.body.removeChild(cursor);
+          }
+          return;
+        }
+
         cursor.style.display = "block";
         cursor.style.left = `${e.clientX}px`;
         cursor.style.top = `${e.clientY}px`;
@@ -89,7 +100,7 @@ export const useCanvasDrawing = (canvasRef, color, opacity, brushMode, isSelecti
         }
       };
     },
-    [canvasRef]
+    [canvasRef, isSelectingMask]
   );
 
   const getBrushArcPoints = useCallback((centerX, centerY, radius) => {

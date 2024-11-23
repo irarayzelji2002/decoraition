@@ -948,7 +948,7 @@ function PromptBar({
     } else {
       setMaskPrompt("");
       setSelectedSamMask(null);
-      setShowPreview(false);
+      // setShowPreview(false);
       setPreviewMask(null);
       setBase64ImageAdd(null);
       setBase64ImageRemove(null);

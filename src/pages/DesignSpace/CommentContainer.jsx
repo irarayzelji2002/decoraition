@@ -326,18 +326,25 @@ const CommentContainer = ({
     const username = user.username.toLowerCase();
     const firstName = user.firstName.toLowerCase();
     const lastName = user.lastName.toLowerCase();
+    const fullName = `${firstName} ${lastName}`.toLowerCase();
+
     // Exact matches get highest priority
     if (username === search) return 100;
+    if (fullName === search) return 95;
     if (firstName === search) return 90;
-    if (lastName === search) return 80;
+    if (lastName === search) return 85;
+
     // Starts with gets second priority
-    if (username.startsWith(search)) return 70;
-    if (firstName.startsWith(search)) return 60;
-    if (lastName.startsWith(search)) return 50;
+    if (username.startsWith(search)) return 80;
+    if (fullName.startsWith(search)) return 75;
+    if (firstName.startsWith(search)) return 70;
+    if (lastName.startsWith(search)) return 65;
+
     // Contains gets lowest priority
-    if (username?.includes(search)) return 40;
-    if (firstName?.includes(search)) return 30;
-    if (lastName?.includes(search)) return 20;
+    if (username?.includes(search)) return 60;
+    if (fullName?.includes(search)) return 55;
+    if (firstName?.includes(search)) return 50;
+    if (lastName?.includes(search)) return 45;
     return 0;
   };
 
@@ -1517,12 +1524,34 @@ export const UserInfoTooltip = ({ username, firstName, lastName, role, profilePi
         children={stringAvatarInitials(username)}
       />
     </Box>
-    <Box>
+    <Box sx={{ flexGrow: "1", minWidth: 0 }}>
       <Typography
-        sx={{ color: "var(--color-white)", fontSize: "0.875rem", fontWeight: "bold" }}
+        sx={{
+          color: "var(--color-white)",
+          fontSize: "0.875rem",
+          fontWeight: "bold",
+          wordBreak: "break-all",
+          overflow: "visible",
+        }}
       >{`${firstName} ${lastName}`}</Typography>
-      <Typography sx={{ color: "var(--color-white)", fontSize: "0.7rem" }}>@{username}</Typography>
-      <Typography sx={{ color: "var(--color-white)", fontSize: "0.7rem" }}>
+      <Typography
+        sx={{
+          color: "var(--color-white)",
+          fontSize: "0.7rem",
+          wordBreak: "break-all",
+          overflow: "visible",
+        }}
+      >
+        @{username}
+      </Typography>
+      <Typography
+        sx={{
+          color: "var(--color-white)",
+          fontSize: "0.7rem",
+          wordBreak: "break-all",
+          overflow: "visible",
+        }}
+      >
         {role && `${role}`}
       </Typography>
     </Box>

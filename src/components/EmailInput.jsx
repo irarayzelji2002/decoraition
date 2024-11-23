@@ -25,6 +25,7 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
   const [userOptions, setUserOptions] = useState([]);
   const [openUserOptions, setOpenUserOptions] = useState(false);
   const [userOptionClicked, setUserOptionClicked] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const userOptionsRef = useRef(null);
 
   useEffect(() => {
@@ -55,48 +56,57 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
     }
   }, [userOptionClicked]);
 
+  useEffect(() => {
+    console.log("selectedIndex", selectedIndex);
+  }, [selectedIndex]);
+
   const calculateMatchScore = (user, searchText) => {
     const search = searchText.toLowerCase();
     const email = user?.email.toLowerCase();
     const username = user?.username.toLowerCase();
     const firstName = user?.firstName.toLowerCase();
     const lastName = user?.lastName.toLowerCase();
+    const fullName = `${firstName} ${lastName}`.toLowerCase();
+
     // Exact matches get highest priority
     if (email === search) return 100;
     if (username === search) return 95;
-    if (firstName === search) return 90;
-    if (lastName === search) return 85;
+    if (fullName === search) return 90;
+    if (firstName === search) return 85;
+    if (lastName === search) return 82;
+
     // Starts with gets second priority
     if (email.startsWith(search)) return 80;
     if (username.startsWith(search)) return 75;
-    if (firstName.startsWith(search)) return 70;
-    if (lastName.startsWith(search)) return 65;
+    if (fullName.startsWith(search)) return 70;
+    if (firstName.startsWith(search)) return 65;
+    if (lastName.startsWith(search)) return 62;
+
     // Contains gets lowest priority
     if (email?.includes(search)) return 60;
     if (username?.includes(search)) return 55;
-    if (firstName?.includes(search)) return 50;
-    if (lastName?.includes(search)) return 45;
+    if (fullName?.includes(search)) return 50;
+    if (firstName?.includes(search)) return 45;
+    if (lastName?.includes(search)) return 42;
+
     return 0;
   };
 
   const filterUserOptions = (input) => {
-    if (input) {
-      console.log("email - input", input);
-      const filtered = userOptions
+    console.log("input", input);
+    if (input?.trim()) {
+      const filtered = originalUserOptions
         .map((user) => ({
           ...user,
-          score: calculateMatchScore(user, input),
+          score: calculateMatchScore(user, input.trim()),
         }))
         .filter((user) => user.score > 0)
         .sort((a, b) => b.score - a.score);
-      setOpenUserOptions(filtered.length > 0);
       setUserOptions(filtered);
-      console.log("email - filtered.length > 0", filtered.length > 0);
-      console.log("email - filtered", filtered);
+      setOpenUserOptions(filtered.length > 0);
     } else {
-      console.log("email - !input", input);
-      setOpenUserOptions(false);
       setUserOptions(originalUserOptions);
+      setOpenUserOptions(false);
     }
   };
 
@@ -115,13 +125,39 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
     };
   };
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter" || event.key === ",") {
-      const email = event.target.value.trim().toLowerCase(); // Convert to lowercase
-      if (email && validateEmail(email) && validUser(email)) {
-        // Check if email already exists (case-insensitive)
-        const isDuplicate = emails.some((existingEmail) => existingEmail.toLowerCase() === email);
+  const handleInputChange = (event) => {
+    const value = event.target.value;
+    setInputValue(value);
+    filterUserOptions(value);
+  };
 
+  const handleKeyDown = (event) => {
+    // Handle arrow keys for navigation
+    if (openUserOptions && userOptions.length > 0) {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev < userOptions.length - 1 ? prev + 1 : prev));
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+      }
+    }
+
+    if (event.key === "Enter" || event.key === ",") {
+      event.preventDefault();
+
+      // If there are filtered options, set selected user if there's a selection, otherwise use first option
+      if (openUserOptions && userOptions.length > 0) {
+        const userToAdd = selectedIndex >= 0 ? userOptions[selectedIndex] : userOptions[0];
+        setUserOptionClicked(userToAdd);
+        setSelectedIndex(-1);
+        return;
+      }
+
+      // Fallback to original email validation if no matches
+      const email = event.target.value.trim().toLowerCase();
+      if (email && validateEmail(email) && validUser(email)) {
+        const isDuplicate = emails.some((existingEmail) => existingEmail.toLowerCase() === email);
         if (isDuplicate) {
           setError("Email already added");
         } else {
@@ -129,12 +165,20 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
           setInputValue("");
         }
       }
-      if (event.key === ",") {
-        event.preventDefault();
+    } else if (event.key === "Backspace") {
+      if (inputValue !== "") {
+        // If there's text, filter and show options
+        filterUserOptions(inputValue.slice(0, -1));
+      } else if (emails.length > 0) {
+        // If input is empty, remove last email
+        const newEmails = [...emails];
+        newEmails.pop();
+        setEmails(newEmails);
       }
     } else {
-      filterUserOptions(inputValue.trim());
+      filterUserOptions(inputValue);
     }
+
     if (error) setError("");
   };
 
@@ -158,7 +202,7 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
         <AddCollaborators />
         <input // Input field at the top
           value={inputValue}
-          onChange={(event) => setInputValue(event.target.value)}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Enter email addresses"
           style={{
@@ -168,7 +212,6 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
             outline: "none",
             fontSize: "1rem",
           }}
-          // Add margin-bottom for spacing
         />
       </Box>
       {openUserOptions && userOptions.length > 0 && (
@@ -187,7 +230,7 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
             marginLeft: "-30px",
           }}
         >
-          {userOptions.slice(0, 5).map((user) => (
+          {userOptions.slice(0, 5).map((user, index) => (
             <CustomMenuItem
               key={user.id}
               onClick={(e) => {
@@ -195,6 +238,7 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
                 console.log("user", user);
                 setUserOptionClicked(user);
               }}
+              selected={index === selectedIndex}
             >
               <UserInfoTooltip {...user} />
             </CustomMenuItem>
@@ -291,12 +335,36 @@ const UserInfoTooltip = ({ username, firstName, lastName, email, profilePic }) =
         children={stringAvatarInitials(username)}
       />
     </Box>
-    <Box sx={{ flexGrow: "1" }}>
+    <Box sx={{ flexGrow: "1", minWidth: 0 }}>
       <Typography
-        sx={{ color: "var(--color-white)", fontSize: "0.875rem", fontWeight: "bold" }}
+        sx={{
+          color: "var(--color-white)",
+          fontSize: "0.875rem",
+          fontWeight: "bold",
+          wordBreak: "break-all",
+          overflow: "visible",
+        }}
       >{`${firstName} ${lastName}`}</Typography>
-      <Typography sx={{ color: "var(--color-white)", fontSize: "0.7rem" }}>@{username}</Typography>
-      <Typography sx={{ color: "var(--color-white)", fontSize: "0.7rem" }}>{email}</Typography>
+      <Typography
+        sx={{
+          color: "var(--color-white)",
+          fontSize: "0.7rem",
+          wordBreak: "break-all",
+          overflow: "visible",
+        }}
+      >
+        @{username}
+      </Typography>
+      <Typography
+        sx={{
+          color: "var(--color-white)",
+          fontSize: "0.7rem",
+          wordBreak: "break-all",
+          overflow: "visible",
+        }}
+      >
+        {email}
+      </Typography>
     </Box>
   </Box>
 );
@@ -341,5 +409,11 @@ const CustomMenuItem = styled(MenuItem)({
   },
   "&:focus": {
     backgroundColor: "var(--iconBg2)",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "var(--iconBgHover2) !important",
+  },
+  "&.Mui-selected:hover": {
+    backgroundColor: "var(--iconBgHover2) !important",
   },
 });

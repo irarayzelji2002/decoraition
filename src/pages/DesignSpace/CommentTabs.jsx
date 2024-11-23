@@ -19,6 +19,8 @@ function CommentTabs({
   setShowComments,
   width,
   setWidth,
+  promptBarWidth,
+  setPromptBarWidth,
   prevWidth,
   setPrevWidth,
   prevHeight,
@@ -56,7 +58,7 @@ function CommentTabs({
     selectedId: null,
   });
 
-  const [isLess600, setIsLess600] = useState(false);
+  const [isLess768, setIsLess768] = useState(false);
 
   const handleCommentForTabChange = () => {
     setCommentForTab(!commentForTab);
@@ -72,30 +74,63 @@ function CommentTabs({
   const commentSectionRef = useRef(null);
   const resizeHandleRef = useRef(null);
   const resizeHandleHeightRef = useRef(null);
-  const commentSectionIconButtonRef = useRef(null);
 
-  // Effect for adjusting the promptBar width on drag
+  const handleOpenCommentsWidth = () => {
+    if (window.innerWidth > 768) {
+      const promptBarTrueWidth = showPromptBar ? promptBarWidth + 80 : 0;
+      const maxAvailableWidth = window.innerWidth - 320 - 40 - promptBarTrueWidth;
+      if (width > maxAvailableWidth) {
+        setWidth(maxAvailableWidth);
+      }
+    }
+  };
+
   useEffect(() => {
-    const promptBar = commentSectionRef.current;
-    const resizeHandle = resizeHandleRef.current;
-    if (!promptBar || !resizeHandle) return;
+    const initializeWidth = () => {
+      if (window.innerWidth > 768) {
+        const promptBarTrueWidth = showPromptBar ? promptBarWidth + 80 : 0;
+        const maxAvailableWidth = window.innerWidth - 320 - 40 - promptBarTrueWidth;
+        const initialWidth = Math.min(500, maxAvailableWidth); // Default to 500 or less if space is limited
+        setWidth(initialWidth);
+      }
+    };
 
-    promptBar.style.width = `${width}px`;
+    initializeWidth();
+  }, []); // Run once on mount
+
+  useEffect(() => {
+    if (showComments) {
+      handleOpenCommentsWidth();
+    }
+  }, [showComments, showPromptBar, promptBarWidth]);
+
+  // Effect for adjusting the commentSection width on drag
+  useEffect(() => {
+    const commentSection = commentSectionRef.current;
+    const resizeHandle = resizeHandleRef.current;
+    if (!commentSection || !resizeHandle) return;
+
+    commentSection.style.width = `${width}px`;
 
     const handleMouseDown = (e) => {
       e.preventDefault();
-      if (window.innerWidth <= 600) {
-        promptBar.style.width = "auto";
-        setIsLess600(true);
+      if (window.innerWidth <= 768) {
+        commentSection.style.width = "auto";
+        setIsLess768(true);
         return;
-      } else setIsLess600(false);
+      } else setIsLess768(false);
 
       const initialX = e.clientX;
       const handleMouseMove = (e) => {
         const deltaX = initialX - e.clientX;
         const newWidth = width + resizeFactor * deltaX;
-        if (newWidth > 0) {
-          setWidth(newWidth);
+        if (newWidth > 0 && newWidth <= window.innerWidth * 0.75) {
+          const promptBarTrueWidth = showPromptBar ? promptBarWidth + 80 : 0;
+          const maxAvailableWidth = window.innerWidth - 320 - 40 - promptBarTrueWidth;
+          if (newWidth <= maxAvailableWidth) {
+            // 40 is width padding, 320 is working area (middle part)
+            setWidth(newWidth);
+          }
         }
       };
 
@@ -111,12 +146,14 @@ function CommentTabs({
     resizeHandleRef.current.addEventListener("mousedown", handleMouseDown);
 
     const handleResize = () => {
-      if (window.innerWidth <= 600) {
-        promptBar.style.width = "auto";
-        setIsLess600(true);
+      if (window.innerWidth <= 768) {
+        commentSection.style.width = "auto";
+        setIsLess768(true);
       } else {
-        promptBar.style.width = `${width}px`;
-        setIsLess600(false);
+        handleOpenCommentsWidth();
+        commentSection.style.width = `${width}px`;
+
+        setIsLess768(false);
       }
     };
     window.addEventListener("resize", handleResize);
@@ -127,22 +164,22 @@ function CommentTabs({
       }
       window.removeEventListener("resize", handleResize);
     };
-  }, [width]);
+  }, [width, showPromptBar]);
 
-  // Effect for adjusting the promptBar height on drag
+  // Effect for adjusting the commentSection height on drag
   useEffect(() => {
-    const promptBar = commentSectionRef.current;
+    const commentSection = commentSectionRef.current;
     const resizeHandleHeight = resizeHandleHeightRef.current;
-    if (!promptBar || !resizeHandleHeight) return;
+    if (!commentSection || !resizeHandleHeight) return;
 
-    promptBar.style.height = `${height}px`;
+    commentSection.style.height = `${height}px`;
 
     // Handle resizing on mousedown and drag
     const handleMouseDownHeight = (e) => {
       e.preventDefault();
       console.log("Mouse down detected on resize handle");
       const startY = e.clientY;
-      const startHeight = promptBar.getBoundingClientRect().height;
+      const startHeight = commentSection.getBoundingClientRect().height;
 
       const handleMouseMoveHeight = (e) => {
         const deltaY = startY - e.clientY;
@@ -152,7 +189,7 @@ function CommentTabs({
         );
 
         // Adjust height
-        if (window.innerWidth <= 600) {
+        if (window.innerWidth <= 768) {
           const initHeight = window.innerHeight - 154;
           if (newHeight >= initHeight) {
             newHeight = initHeight;
@@ -162,10 +199,10 @@ function CommentTabs({
             // console.log("Min height reached, setting height to 0");
           }
           setHeight(`${newHeight}px`);
-          promptBar.style.height = `${newHeight}px`;
+          commentSection.style.height = `${newHeight}px`;
         } else {
           setHeight("auto");
-          promptBar.style.height = "auto";
+          commentSection.style.height = "auto";
         }
       };
 
@@ -183,10 +220,10 @@ function CommentTabs({
 
     // Handle screen resize adjustments
     const handleResizeHeight = () => {
-      if (window.innerWidth <= 600) {
-        promptBar.style.height = `${height}px`;
+      if (window.innerWidth <= 768) {
+        commentSection.style.height = `${height}px`;
       } else {
-        promptBar.style.height = "100%";
+        commentSection.style.height = "100%";
       }
     };
     window.addEventListener("resize", handleResizeHeight);
@@ -198,18 +235,18 @@ function CommentTabs({
   }, [height]);
 
   useEffect(() => {
-    const promptBar = commentSectionRef.current;
-    if (!promptBar) return;
+    const commentSection = commentSectionRef.current;
+    if (!commentSection) return;
     setWidth(prevWidth ?? width);
     setHeight(prevHeight ?? height);
 
-    if (window.innerWidth <= 600) {
-      promptBar.style.width = "auto";
-      promptBar.style.height = `${prevHeight ?? height}`;
-      setIsLess600(true);
+    if (window.innerWidth <= 768) {
+      commentSection.style.width = "auto";
+      commentSection.style.height = `${prevHeight ?? height}`;
+      setIsLess768(true);
     } else {
-      promptBar.style.width = `${prevWidth ?? width}`;
-      promptBar.style.height = "100%";
+      commentSection.style.width = `${prevWidth ?? width}`;
+      commentSection.style.height = "100%";
     }
   }, [showComments]);
 
@@ -396,20 +433,20 @@ function CommentTabs({
 
   return (
     <div className="comment-section" ref={commentSectionRef}>
-      <div className={window.innerWidth > 600 ? "resizeHandle left" : ""} ref={resizeHandleRef}>
-        <div className={window.innerWidth > 600 ? "resizeHandleChildDiv" : ""}>
-          <div className={window.innerWidth > 600 ? "sliderIndicator" : ""}></div>
+      <div className={window.innerWidth > 768 ? "resizeHandle left" : ""} ref={resizeHandleRef}>
+        <div className={window.innerWidth > 768 ? "resizeHandleChildDiv" : ""}>
+          <div className={window.innerWidth > 768 ? "sliderIndicator" : ""}></div>
         </div>
       </div>
       <div
-        className={window.innerWidth <= 600 ? "resizeHandle height" : ""}
+        className={window.innerWidth <= 768 ? "resizeHandle height" : ""}
         ref={resizeHandleHeightRef}
       >
-        <div className={window.innerWidth <= 600 ? "resizeHandleChildDiv" : ""}>
-          <div className={window.innerWidth <= 600 ? "sliderIndicator" : ""}></div>
+        <div className={window.innerWidth <= 768 ? "resizeHandleChildDiv" : ""}>
+          <div className={window.innerWidth <= 768 ? "sliderIndicator" : ""}></div>
         </div>
       </div>
-      {isLess600 && (
+      {isLess768 && (
         <IconButton
           sx={{
             color: "var(--color-white)",

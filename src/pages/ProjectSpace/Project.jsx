@@ -43,7 +43,7 @@ function Project() {
   const [projectData, setProjectData] = useState(null);
   const [designs, setDesigns] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, userDesign } = useSharedProps();
+  const { user, userDesigns } = useSharedProps();
   const [isVertical, setIsVertical] = useState(false);
   const navigate = useNavigate();
   const [optionsState, setOptionsState] = useState({
@@ -69,42 +69,15 @@ function Project() {
     setMenuOpen(!menuOpen);
   };
 
-  const handleSortByChange = (value) => {
-    setSortBy(value);
-    sortDesigns(value, order);
-  };
-
-  const handleOrderChange = (value) => {
-    setOrder(value);
-    sortDesigns(sortBy, value);
-  };
-
-  const sortDesigns = (sortBy, order) => {
-    const sortedDesigns = [...designs].sort((a, b) => {
-      let comparison = 0;
-      if (sortBy && sortBy !== "none" && order && order !== "none") {
-        if (sortBy === "name") {
-          comparison = a.designName.localeCompare(b.designName);
-        } else if (sortBy === "owner") {
-          comparison = a.owner.localeCompare(b.owner);
-        } else if (sortBy === "created") {
-          comparison = a.createdAtTimestamp - b.createdAtTimestamp;
-        } else if (sortBy === "modified") {
-          comparison = a.modifiedAtTimestamp - b.modifiedAtTimestamp;
-        }
-        return order === "ascending" ? comparison : -comparison;
-      }
-      return [...designs];
-    });
-    setFilteredDesignsForTable(sortedDesigns);
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       if (user) {
         try {
           console.log(`Fetching designs for projectId: ${projectId}`); // Debug log
-          await fetchProjectDesigns(projectId, setDesigns);
+          const projectDesigns = userDesigns
+            .filter((design) => design.projectId === projectId)
+            .sort((a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis());
+          setDesigns(projectDesigns);
           setLoadingImage(false); // Set loading to false after fetching
         } catch (error) {
           showToast("error", `Error fetching project designs: ${error.message}`);
@@ -115,10 +88,8 @@ function Project() {
     };
 
     fetchData();
-  }, [user, projectId, userDesign]);
-  useEffect(() => {
-    loadProjectDataForView();
-  }, [designs]);
+  }, [user, projectId, userDesigns]);
+
   useEffect(() => {
     const auth = getAuth();
 
@@ -163,44 +134,6 @@ function Project() {
     return () => unsubscribe(); // Cleanup listener on component unmount
   }, [projectId]);
 
-  const loadProjectDataForView = async () => {
-    setLoadingDesigns(true);
-    if (designs.length > 0) {
-      const designsByLatest = [...designs].sort((a, b) => {
-        const aModifiedAt = a.modifiedAt?.toMillis
-          ? a.modifiedAt.toMillis()
-          : new Date(a.modifiedAt).getTime();
-        const bModifiedAt = b.modifiedAt?.toMillis
-          ? b.modifiedAt.toMillis()
-          : new Date(b.modifiedAt).getTime();
-        return bModifiedAt - aModifiedAt;
-      });
-      console.log("Designs by latest:", designsByLatest); // Debug log
-
-      setLoadingDesigns(false);
-      const tableData = await Promise.all(
-        designsByLatest.map(async (design) => {
-          const username = await getUsername(design.owner);
-          const createdAtTimestamp =
-            design.createdAt && design.createdAt.toMillis
-              ? design.createdAt.toMillis()
-              : new Date(design.createdAt).getTime();
-          const modifiedAtTimestamp =
-            design.modifiedAt && design.modifiedAt.toMillis
-              ? design.modifiedAt.toMillis()
-              : new Date(design.modifiedAt).getTime();
-          return {
-            ...design,
-            username,
-            createdAt: createdAtTimestamp,
-            modifiedAt: modifiedAtTimestamp,
-          };
-        })
-      );
-
-      setFilteredDesignsForTable(tableData);
-    }
-  };
   const closeModal = () => {
     setModalOpen(false);
     setModalContent(null);
@@ -255,13 +188,7 @@ function Project() {
         </Paper>
         {!isVertical && (
           <div className="dropdown-container">
-            <Dropdowns
-              sortBy={sortBy}
-              order={order}
-              onSortByChange={handleSortByChange}
-              onOrderChange={handleOrderChange}
-              isDesign={true}
-            />
+            <Dropdowns sortBy={sortBy} order={order} isDesign={true} />
           </div>
         )}
         <div
@@ -345,43 +272,41 @@ function Project() {
             style={{
               width: "100%",
               display: "flex",
+              alignItems: "center",
               justifyContent: "center",
               flexDirection: "column",
             }}
           >
-            {loadingDesigns ? (
-              <Loading />
-            ) : isVertical ? (
-              filteredDesignsForTable.length > 0 && (
-                <HomepageTable
-                  isDesign={true}
-                  data={filteredDesignsForTable}
-                  isHomepage={false}
-                  optionsState={optionsState}
-                  setOptionsState={setOptionsState}
-                />
-              )
+            {isVertical ? (
+              <HomepageTable
+                isDesign={true}
+                data={designs}
+                isHomepage={false}
+                numToShowMore={numToShowMoreDesign}
+                optionsState={optionsState}
+                setOptionsState={setOptionsState}
+              />
             ) : (
-              designs.length > 0 &&
-              designs.slice(0, 6 + numToShowMoreDesign).map((design) => (
-                <DesignIcon
-                  key={design.id}
-                  id={design.id}
-                  name={design.designName}
-                  design={design}
-                  onOpen={() =>
-                    navigate(`/design/${design.id}`, {
-                      state: { designId: design.id },
-                    })
-                  }
-                  owner={getUsername(design.owner)}
-                  projectType={true}
-                  createdAt={formatDateLong(design.createdAt)}
-                  modifiedAt={formatDateLong(design.modifiedAt)}
-                  optionsState={optionsState}
-                  setOptionsState={setOptionsState}
-                />
-              ))
+              <>
+                {designs.slice(0, 6 + numToShowMoreDesign).map((design) => (
+                  <DesignIcon
+                    key={design.id}
+                    id={design.id}
+                    name={design.designName}
+                    design={design}
+                    onOpen={() =>
+                      navigate(`/design/${design.id}`, {
+                        state: { designId: design.id },
+                      })
+                    }
+                    owner={getUsername(design.owner)}
+                    createdAt={formatDateLong(design.createdAt)}
+                    modifiedAt={formatDateLong(design.modifiedAt)}
+                    optionsState={optionsState}
+                    setOptionsState={setOptionsState}
+                  />
+                ))}
+              </>
             )}
           </div>
         </div>

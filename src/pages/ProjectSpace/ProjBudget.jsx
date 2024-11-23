@@ -18,7 +18,16 @@ function ProjBudget() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [designs, setDesigns] = useState([]);
-  const { user, userBudgets, items, userItems, budgets } = useSharedProps();
+  const {
+    user,
+    userBudgets,
+    items,
+    userItems,
+    budgets,
+    userDesigns,
+    designVersions,
+    userDesignVersions,
+  } = useSharedProps();
   const [designBudgetItems, setDesignBudgetItems] = useState({});
   const [loading, setLoading] = useState(true);
   const [designImages, setDesignImages] = useState({});
@@ -72,11 +81,38 @@ function ProjBudget() {
     }
   }, [designs, user, userBudgets, items, userItems, budgets]);
 
+  const fetchDesignImage = (designId) => {
+    if (!designId) {
+      console.log("No design ID provided");
+      return "";
+    }
+
+    const fetchedDesign =
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
+    if (!fetchedDesign || !fetchedDesign.history || fetchedDesign.history.length === 0) {
+      return "";
+    }
+
+    const latestDesignVersionId = fetchedDesign.history[fetchedDesign.history.length - 1];
+    if (!latestDesignVersionId) {
+      return "";
+    }
+    const fetchedLatestDesignVersion =
+      userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
+      designVersions.find((designVer) => designVer.id === latestDesignVersionId);
+    if (!fetchedLatestDesignVersion?.images?.length) {
+      return "";
+    }
+
+    return fetchedLatestDesignVersion.images[0].link || "";
+  };
+
   useEffect(() => {
     const fetchDesignImages = async () => {
       const images = {};
       for (const design of designs) {
-        const image = await getDesignImage(design.id);
+        const image = fetchDesignImage(design.id);
         images[design.id] = image;
       }
       setDesignImages(images);

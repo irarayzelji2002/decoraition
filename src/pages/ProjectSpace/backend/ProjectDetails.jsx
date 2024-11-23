@@ -470,3 +470,38 @@ export const fetchPlanImage = async (projectId, setPlanImage) => {
     }
   }
 };
+
+export const handleCreateDesign = async (projectId, setDesigns) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.post(
+      `/api/project/${projectId}/create-design`,
+      {
+        userId: auth.currentUser.uid,
+        designName: "Untitled Design",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      showToast("success", "Design created successfully");
+      await fetchProjectDesigns(projectId, setDesigns); // Refresh designs list
+    }
+  } catch (error) {
+    console.error("Error creating design:", error);
+    showToast("error", "Error creating design! Please try again.");
+  }
+};
+
+export const handleCreateDesignWithLoading = async (
+  projectId,
+  setDesigns,
+  setIsDesignButtonDisabled
+) => {
+  setIsDesignButtonDisabled(true);
+  await handleCreateDesign(projectId, setDesigns);
+  setIsDesignButtonDisabled(false);
+};

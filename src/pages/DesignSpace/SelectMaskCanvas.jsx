@@ -1165,6 +1165,10 @@ function SelectMaskCanvas({
                 sx={{
                   ...textFieldStyles,
                   flexGrow: 1,
+                  "& input": {
+                    ...textFieldStyles["& input"],
+                    padding: 0,
+                  },
                   "& .MuiOutlinedInput-root": {
                     ...textFieldStyles["& .MuiOutlinedInput-root"],
                     padding: "11.8px 146px 11.8px 14px",

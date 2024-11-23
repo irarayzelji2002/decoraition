@@ -6,7 +6,15 @@ import Draggable from "react-draggable";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { showToast } from "../../functions/utils";
 import SelectMaskCanvas from "./SelectMaskCanvas";
-import { IconButton, Typography, Box, Stack } from "@mui/material";
+import {
+  IconButton,
+  Typography,
+  Box,
+  Stack,
+  Tooltip,
+  ClickAwayListener,
+  tooltipClasses,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import CircularProgress, { circularProgressClasses } from "@mui/material/CircularProgress";
 import LinearProgress, { linearProgressClasses } from "@mui/material/LinearProgress";
@@ -31,6 +39,7 @@ import { handleEditDescription } from "./backend/DesignActions";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { SelectedComment, UnselectedComment } from "./svg/AddColor";
 import LoadingPage from "../../components/LoadingPage";
+import { formatDateDetailComma } from "../Homepage/backend/HomepageActions";
 
 function Design() {
   const { user, userDoc, designs, userDesigns, designVersions, userDesignVersions, comments } =
@@ -58,7 +67,9 @@ function Design() {
   const [heightPromptBar, setHeightPromptBar] = useState("100%");
 
   const [loading, setLoading] = useState(true);
-  const [isMobileLayout, setIsMobileLayout] = useState(window.innerWidth <= 600);
+  const [isMobileLayout, setIsMobileLayout] = useState(window.innerWidth <= 768);
+  const [openDescTooltip, setOpenDescTooltip] = useState(false);
+  const [tooltipClickLocked, setTooltipClickLocked] = useState(false);
   const workingAreaRef = useRef(null);
   const imagesWorkSpaceChildRef = useRef(null);
 
@@ -111,8 +122,8 @@ function Design() {
     console.log("got imageId", imageId);
     console.log("got description", description);
     const designVersionImages = designVersion?.images;
-    const image = designVersionImages.find((image) => image.id === imageId);
-    if (image.description === description.trim()) {
+    const image = designVersionImages.find((image) => image?.imageId === imageId);
+    if (image?.description === description.trim()) {
       return { success: false, message: "Description is the same as the current description" };
     }
     try {
@@ -138,7 +149,7 @@ function Design() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobileLayout(window.innerWidth <= 600);
+      setIsMobileLayout(window.innerWidth <= 768);
     };
 
     window.addEventListener("resize", handleResize);
@@ -496,6 +507,8 @@ function Design() {
                     setShowComments={setShowComments}
                     width={controlWidthPromptBar}
                     setWidth={setControlWidthPromptBar}
+                    commentsWidth={controlWidthComments}
+                    setCommentsWidth={setControlWidthComments}
                     prevWidth={widthPromptBar}
                     setPrevWidth={setWidthPromptBar}
                     prevHeight={heightPromptBar}
@@ -568,6 +581,8 @@ function Design() {
                     setShowComments={setShowComments}
                     width={controlWidthComments}
                     setWidth={setControlWidthComments}
+                    promptBarWidth={controlWidthPromptBar}
+                    setPromptBarWidth={setControlWidthPromptBar}
                     prevWidth={widthComments}
                     setPrevWidth={setWidthComments}
                     prevHeight={heightComments}
@@ -718,41 +733,106 @@ function Design() {
                   }}
                 />
               </IconButton>
-              {!isSelectingMask && (
-                <IconButton
-                  sx={{
-                    color: "var(--color-white)",
-                    position: "absolute",
-                    borderRadius: "50%",
-                    right: "8px",
-                    top: "8px",
-                    marginRight: !showComments ? "5px" : "0px",
-                    marginTop: "10px",
-                    zIndex: "49",
-                    height: "40px",
-                    width: "40px",
-                    opacity: design?.designSettings ? 1 : 0.5,
-                    "&:hover": {
-                      backgroundColor: design?.designSettings
-                        ? "var(--iconButtonHover)"
-                        : "transparent",
-                    },
-                    "& .MuiTouchRipple-root span": {
-                      backgroundColor: "var(--iconButtonActive)",
-                    },
-                  }}
-                  disabled={!design?.designSettings}
-                  onClick={() => design?.designSettings && toggleComments(setShowComments)}
-                  className="commentSectionIconButton"
-                >
-                  <ArrowBackIosRoundedIcon
-                    sx={{
-                      color: "var(--color-white) !important",
-                      transform: showComments ? "rotate(180deg)" : "",
-                    }}
-                  />
-                </IconButton>
-              )}
+              <Box
+                sx={{
+                  position: "absolute",
+                  borderRadius: "50%",
+                  right: "8px",
+                  top: "8px",
+                  marginTop: "10px",
+                  zIndex: "49",
+                  marginRight: !showComments ? "5px" : "0px",
+                }}
+              >
+                <Box sx={{ display: "flex" }}>
+                  {(designVersion?.description || designVersion?.createdAt) && !isSelectingMask && (
+                    <ClickAwayListener onClickAway={() => setOpenDescTooltip(false)} sx={{}}>
+                      <CustomTooltip
+                        title={
+                          <DescriptionTooltip
+                            description={designVersion.description}
+                            createdAt={designVersion.createdAt}
+                          />
+                        }
+                        PopperProps={{
+                          disablePortal: true,
+                        }}
+                        onClose={() => setOpenDescTooltip(false)}
+                        open={openDescTooltip}
+                        disableFocusListener
+                        disableHoverListener
+                        disableTouchListener
+                        arrow
+                      >
+                        <IconButton
+                          sx={{
+                            ...iconButtonStyles,
+                            height: "40px",
+                            width: "40px",
+                            opacity: design?.designSettings ? 1 : 0.5,
+                            "&:hover": {
+                              backgroundColor: design?.designSettings
+                                ? "var(--iconButtonHover)"
+                                : "transparent",
+                            },
+                            "& .MuiTouchRipple-root span": {
+                              backgroundColor: "var(--iconButtonActive)",
+                            },
+                          }}
+                          onClick={() => {
+                            if (tooltipClickLocked) {
+                              // If tooltip is locked (was clicked before), clicking again will close it
+                              setOpenDescTooltip(false);
+                              setTooltipClickLocked(false);
+                            } else {
+                              // If tooltip is not locked, clicking will lock it open
+                              setOpenDescTooltip(true);
+                              setTooltipClickLocked(true);
+                            }
+                          }}
+                          onMouseEnter={() => {
+                            if (!tooltipClickLocked) setOpenDescTooltip(true);
+                          }}
+                          onMouseLeave={() => {
+                            if (!tooltipClickLocked) setOpenDescTooltip(false);
+                          }}
+                        >
+                          <ViewInfoIcon />
+                        </IconButton>
+                      </CustomTooltip>
+                    </ClickAwayListener>
+                  )}
+                  {!isSelectingMask && (
+                    <IconButton
+                      sx={{
+                        ...iconButtonStyles,
+
+                        height: "40px",
+                        width: "40px",
+                        opacity: design?.designSettings ? 1 : 0.5,
+                        "&:hover": {
+                          backgroundColor: design?.designSettings
+                            ? "var(--iconButtonHover)"
+                            : "transparent",
+                        },
+                        "& .MuiTouchRipple-root span": {
+                          backgroundColor: "var(--iconButtonActive)",
+                        },
+                      }}
+                      disabled={!design?.designSettings}
+                      onClick={() => design?.designSettings && toggleComments(setShowComments)}
+                      className="commentSectionIconButton"
+                    >
+                      <ArrowBackIosRoundedIcon
+                        sx={{
+                          color: "var(--color-white) !important",
+                          transform: showComments ? "rotate(180deg)" : "",
+                        }}
+                      />
+                    </IconButton>
+                  )}
+                </Box>
+              </Box>
               {isSelectingMask ? (
                 <SelectMaskCanvas
                   selectedImage={selectedImage}
@@ -908,7 +988,9 @@ function Design() {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
-                                        setImageDescToEdit(image.id);
+                                        console.log("editdesc - Image object:", image); // Add this
+                                        console.log("editdesc - Image ID:", image.imageId); // Add this
+                                        setImageDescToEdit(image.imageId);
                                         setIsEditDescModalOpen(true);
                                       }}
                                     >
@@ -1070,6 +1152,8 @@ function Design() {
                     setShowComments={setShowComments}
                     width={controlWidthComments}
                     setWidth={setControlWidthComments}
+                    promptBarWidth={controlWidthPromptBar}
+                    setPromptBarWidth={setControlWidthPromptBar}
                     prevWidth={widthComments}
                     setPrevWidth={setWidthComments}
                     design={design}
@@ -1344,6 +1428,78 @@ export const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
     background: "var(--gradientButton)",
   },
 }));
+
+const CustomTooltip = styled(({ className, ...props }) => (
+  <Tooltip
+    {...props}
+    classes={{ popper: className }}
+    slotProps={{
+      popper: {
+        modifiers: [
+          {
+            name: "offset",
+            options: {
+              offset: [0, -6],
+            },
+          },
+        ],
+      },
+    }}
+  />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.arrow}`]: {
+    color: "var(--iconBg)",
+  },
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: "var(--iconBg)",
+    color: "var(--color-white)",
+    maxWidth: "320px",
+    width: "100%",
+    borderRadius: "10px",
+    boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
+    border: "1px solid var(--table-stroke)",
+    padding: "0",
+  },
+}));
+
+export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
+  const displayDate = formatDateDetailComma(createdAt);
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: "5px",
+        textAlign: "center",
+        width: "100%",
+        padding: "5px 10px",
+        minWidth: "calc(320px - 40px)",
+      }}
+    >
+      <Box sx={{ width: "100%" }}>
+        {description && (
+          <Typography
+            sx={{
+              color: "var(--color-white)",
+              fontSize: "0.875rem",
+              fontWeight: "bold",
+              wordBreak: "break-word",
+            }}
+          >
+            {description}
+          </Typography>
+        )}
+        {createdAt && (
+          <Typography sx={{ color: "var(--color-white)", fontSize: "0.7rem" }}>
+            {`Version created ${displayDate?.includes(",") ? "at " : ""}${displayDate}`}
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+};
 
 // <BorderLinearProgress variant="determinate" value={50} />;
 

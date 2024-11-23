@@ -79,6 +79,8 @@ function PromptBar({
   setShowComments,
   width,
   setWidth,
+  commentsWidth,
+  setCommentsWidth,
   prevWidth,
   setPrevWidth,
   prevHeight,
@@ -164,7 +166,7 @@ function PromptBar({
   const [numberOfImages, setNumberOfImages] = useState(1);
 
   const [isSmallWidth, setIsSmallWidth] = useState(false);
-  const [isLess600, setIsLess600] = useState(false);
+  const [isLess768, setIsLess768] = useState(false);
 
   const navigate = useNavigate();
   const [showNavDialog, setShowNavDialog] = useState(false);
@@ -379,6 +381,35 @@ function PromptBar({
   const resizeHandleRef = useRef(null);
   const resizeHandleHeightRef = useRef(null);
 
+  const handleOpenPromptBarWidth = () => {
+    if (window.innerWidth > 768) {
+      const promptBarTrueWidth = showPromptBar ? commentsWidth + 40 : 0;
+      const maxAvailableWidth = window.innerWidth - 320 - 40 - promptBarTrueWidth;
+      if (width > maxAvailableWidth) {
+        setWidth(maxAvailableWidth);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const initializeWidth = () => {
+      if (window.innerWidth > 768) {
+        const promptBarTrueWidth = showPromptBar ? commentsWidth + 40 : 0;
+        const maxAvailableWidth = window.innerWidth - 320 - 80 - promptBarTrueWidth;
+        const initialWidth = Math.min(500, maxAvailableWidth); // Default to 500 or less if space is limited
+        setWidth(initialWidth);
+      }
+    };
+
+    initializeWidth();
+  }, []); // Run once on mount
+
+  useEffect(() => {
+    if (showPromptBar) {
+      handleOpenPromptBarWidth();
+    }
+  }, [showComments, showPromptBar, commentsWidth]);
+
   // Effect for adjusting the promptBar width on drag
   useEffect(() => {
     const promptBar = promptBarRef.current;
@@ -389,17 +420,20 @@ function PromptBar({
 
     const handleMouseDown = (e) => {
       e.preventDefault();
-      if (window.innerWidth <= 600) {
+      if (window.innerWidth <= 768) {
         promptBar.style.width = "auto";
-        setIsLess600(true);
+        setIsLess768(true);
         return;
-      } else setIsLess600(false);
+      } else setIsLess768(false);
 
       const initialX = e.clientX;
       const handleMouseMove = (e) => {
         const newWidth = width + resizeFactor * (e.clientX - initialX);
         if (newWidth > 0 && newWidth <= window.innerWidth * 0.75) {
-          if (window.innerWidth - (newWidth + 80) >= 320) {
+          const commentSectionTrueWidth = showComments ? commentsWidth + 40 : 0;
+          const maxAvailableWidth = window.innerWidth - 320 - 80 - commentSectionTrueWidth;
+          if (newWidth <= maxAvailableWidth) {
+            // 80 is width padding, 320 is working area (middle part)
             setWidth(newWidth);
             setIsSmallWidth(newWidth <= 380);
           }
@@ -418,13 +452,15 @@ function PromptBar({
     resizeHandleRef.current.addEventListener("mousedown", handleMouseDown);
 
     const handleResize = () => {
-      if (window.innerWidth <= 600) {
+      if (window.innerWidth <= 768) {
         promptBar.style.width = "auto";
         setIsSmallWidth(window.innerWidth <= 380);
-        setIsLess600(true);
+        setIsLess768(true);
       } else {
+        handleOpenPromptBarWidth();
         promptBar.style.width = `${width}px`;
-        setIsLess600(false);
+
+        setIsLess768(false);
       }
     };
     window.addEventListener("resize", handleResize);
@@ -435,7 +471,7 @@ function PromptBar({
       }
       window.removeEventListener("resize", handleResize);
     };
-  }, [width]);
+  }, [width, showComments]);
 
   // Effect for adjusting the promptBar height on drag
   useEffect(() => {
@@ -460,7 +496,7 @@ function PromptBar({
         // );
 
         // Adjust height
-        if (window.innerWidth <= 600) {
+        if (window.innerWidth <= 768) {
           const initHeight = window.innerHeight - 154;
           if (newHeight >= initHeight - 40) {
             newHeight = initHeight - 40;
@@ -491,7 +527,7 @@ function PromptBar({
 
     // Handle screen resize adjustments
     const handleResizeHeight = () => {
-      if (window.innerWidth <= 600) {
+      if (window.innerWidth <= 768) {
         promptBar.style.height = `${height}px`;
       } else {
         promptBar.style.height = "100%";
@@ -512,14 +548,14 @@ function PromptBar({
     setWidth(prevWidth ?? width);
     setHeight(prevHeight ?? height);
 
-    if (window.innerWidth <= 600) {
+    if (window.innerWidth <= 768) {
       promptBar.style.width = "auto";
       promptBar.style.height = `${prevHeight ?? height}`;
-      setIsLess600(true);
+      setIsLess768(true);
     } else {
       promptBar.style.width = `${prevWidth ?? width}`;
       promptBar.style.height = "100%";
-      setIsLess600(false);
+      setIsLess768(false);
     }
   }, [showPromptBar]);
 
@@ -975,20 +1011,20 @@ function PromptBar({
     <>
       <CssVarsProvider theme={theme}>
         <div className="promptBar" ref={promptBarRef}>
-          <div className={window.innerWidth > 600 ? "resizeHandle" : ""} ref={resizeHandleRef}>
-            <div className={window.innerWidth > 600 ? "resizeHandleChildDiv" : ""}>
-              <div className={window.innerWidth > 600 ? "sliderIndicator" : ""}></div>
+          <div className={window.innerWidth > 768 ? "resizeHandle" : ""} ref={resizeHandleRef}>
+            <div className={window.innerWidth > 768 ? "resizeHandleChildDiv" : ""}>
+              <div className={window.innerWidth > 768 ? "sliderIndicator" : ""}></div>
             </div>
           </div>
           <div
-            className={window.innerWidth <= 600 ? "resizeHandle height" : ""}
+            className={window.innerWidth <= 768 ? "resizeHandle height" : ""}
             ref={resizeHandleHeightRef}
           >
-            <div className={window.innerWidth <= 600 ? "resizeHandleChildDiv" : ""}>
-              <div className={window.innerWidth <= 600 ? "sliderIndicator" : ""}></div>
+            <div className={window.innerWidth <= 768 ? "resizeHandleChildDiv" : ""}>
+              <div className={window.innerWidth <= 768 ? "sliderIndicator" : ""}></div>
             </div>
           </div>
-          {isLess600 && (
+          {isLess768 && (
             <IconButton
               sx={{
                 color: "var(--color-white)",

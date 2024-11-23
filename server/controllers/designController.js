@@ -1104,7 +1104,7 @@ exports.updateDesignVersionImageDescription = async (req, res) => {
     }
     const previousImages = designVersionDoc.data().images;
     const updatedImages = previousImages.map((img) =>
-      img.id === imageId ? { ...img, description } : img
+      img.imageId === imageId ? { ...img, description } : img
     );
     updatedDocuments.push({
       collection: "designVersions",

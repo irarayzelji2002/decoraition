@@ -22,16 +22,22 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
     isDesign ? object?.designName ?? "Untitled Design" : object?.projectName ?? "Untitled Project"
   );
   const [error, setError] = useState("");
+  const [isRenameBtnDisabled, setIsRenameBtnDisabled] = useState(false);
 
   const onSubmit = async () => {
-    const result = await handleRename(newName);
-    if (!result.success) {
-      if (result.message === "Name is the same as the current name") setError(result.message);
-      else showToast("error", result.message);
-      return;
+    setIsRenameBtnDisabled(true);
+    try {
+      const result = await handleRename(newName);
+      if (!result.success) {
+        if (result.message === "Name is the same as the current name") setError(result.message);
+        else showToast("error", result.message);
+        return;
+      }
+      showToast("success", "Design name updated successfully");
+      handleClose();
+    } finally {
+      setIsRenameBtnDisabled(false);
     }
-    showToast("success", "Design name updated successfully");
-    handleClose();
   };
 
   const handleClose = () => {
@@ -80,7 +86,10 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
         <TextField
           placeholder="New Name"
           value={newName}
-          onChange={(e) => setNewName(e.target.value)}
+          onChange={(e) => {
+            setNewName(e.target.value);
+            setError("");
+          }}
           helperText={error}
           FormHelperTextProps={{
             sx: {
@@ -98,7 +107,20 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
         />
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
-        <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={onSubmit}
+          sx={{
+            ...gradientButtonStyles,
+            opacity: isRenameBtnDisabled ? "0.5" : "1",
+            cursor: isRenameBtnDisabled ? "default" : "pointer",
+            "&:hover": {
+              backgroundImage: !isRenameBtnDisabled && "var(--gradientButtonHover)",
+            },
+          }}
+          disabled={isRenameBtnDisabled}
+        >
           Rename
         </Button>
         <Button

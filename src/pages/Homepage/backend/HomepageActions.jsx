@@ -231,14 +231,13 @@ export const formatDate = (timestamp) => {
 
 // For tiled view
 export const formatDateLong = (timestamp) => {
-  const seconds = timestamp.seconds || timestamp._seconds;
-  const nanoseconds = timestamp.nanoseconds || timestamp._nanoseconds;
-
+  // Handle both formats of timestamp (_seconds and seconds)
+  const seconds = timestamp._seconds || timestamp.seconds;
+  const nanoseconds = timestamp._nanoseconds || timestamp.nanoseconds;
   if (seconds === undefined || nanoseconds === undefined) {
-    console.error("Invalid timestamp:", timestamp); // Debug log
+    console.error("Invalid timestamp:", timestamp);
     return "Invalid date";
   }
-
   const date = new Date(seconds * 1000 + nanoseconds / 1000000);
 
   const dateAgo = formatDateAgo(date);

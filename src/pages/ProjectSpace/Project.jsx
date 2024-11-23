@@ -20,7 +20,7 @@ import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import { fetchProjectDesigns, handleCreateDesignWithLoading } from "./backend/ProjectDetails";
+import { handleCreateDesignWithLoading } from "./backend/ProjectDetails";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, TiledIcon, VerticalIcon } from "./svg/ExportIcon";
 import { Typography } from "@mui/material";
@@ -29,10 +29,7 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 import LoadingPage from "../../components/LoadingPage";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { formatDateLong, getUsername } from "../Homepage/backend/HomepageActions";
-import axios from "axios";
 import HomepageTable from "../Homepage/HomepageTable";
-import { usePreventNavigation } from "../../hooks/usePreventNavigation";
-import { set } from "lodash";
 
 function Project() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -69,7 +66,7 @@ function Project() {
     setMenuOpen(!menuOpen);
   };
 
-  const applyFilters = (sortBy, order) => {
+  const applyFilters = async (sortBy, order) => {
     let sortedDesigns = [...designs];
 
     if (sortBy && sortBy !== "none" && order && order !== "none") {
@@ -86,7 +83,16 @@ function Project() {
       });
     }
 
-    setFilteredDesignsForTable(sortedDesigns);
+    const tableData = await Promise.all(
+      sortedDesigns.map(async (design) => ({
+        ...design,
+        owner: await getUsername(design.owner),
+        formattedCreatedAt: formatDateLong(design.createdAt),
+        formattedModifiedAt: formatDateLong(design.modifiedAt),
+      }))
+    );
+
+    setFilteredDesignsForTable(tableData);
   };
 
   useEffect(() => {

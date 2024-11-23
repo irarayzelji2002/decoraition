@@ -69,6 +69,26 @@ function Project() {
     setMenuOpen(!menuOpen);
   };
 
+  const applyFilters = (sortBy, order) => {
+    let sortedDesigns = [...designs];
+
+    if (sortBy && sortBy !== "none" && order && order !== "none") {
+      sortedDesigns = sortedDesigns.sort((a, b) => {
+        let comparison = 0;
+        if (sortBy === "name") {
+          comparison = a.designName.localeCompare(b.designName);
+        } else if (sortBy === "created") {
+          comparison = a.createdAt.toMillis() - b.createdAt.toMillis();
+        } else if (sortBy === "modified") {
+          comparison = a.modifiedAt.toMillis() - b.modifiedAt.toMillis();
+        }
+        return order === "ascending" ? comparison : -comparison;
+      });
+    }
+
+    setFilteredDesignsForTable(sortedDesigns);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (user) {
@@ -134,6 +154,10 @@ function Project() {
     return () => unsubscribe(); // Cleanup listener on component unmount
   }, [projectId]);
 
+  useEffect(() => {
+    applyFilters(sortBy, order);
+  }, [designs, sortBy, order]);
+
   const closeModal = () => {
     setModalOpen(false);
     setModalContent(null);
@@ -188,7 +212,13 @@ function Project() {
         </Paper>
         {!isVertical && (
           <div className="dropdown-container">
-            <Dropdowns sortBy={sortBy} order={order} isDesign={true} />
+            <Dropdowns
+              sortBy={sortBy}
+              order={order}
+              isDesign={true}
+              onSortByChange={setSortBy}
+              onOrderChange={setOrder}
+            />
           </div>
         )}
         <div
@@ -280,7 +310,7 @@ function Project() {
             {isVertical ? (
               <HomepageTable
                 isDesign={true}
-                data={designs}
+                data={filteredDesignsForTable}
                 isHomepage={false}
                 numToShowMore={numToShowMoreDesign}
                 optionsState={optionsState}
@@ -288,7 +318,7 @@ function Project() {
               />
             ) : (
               <>
-                {designs.slice(0, 6 + numToShowMoreDesign).map((design) => (
+                {filteredDesignsForTable.slice(0, 6 + numToShowMoreDesign).map((design) => (
                   <DesignIcon
                     key={design.id}
                     id={design.id}

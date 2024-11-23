@@ -82,6 +82,11 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
   const handleAddColorPalette = async () => {
     console.log("add color palette - clicked");
     let formErrors = { paletteName: "", colors: "" };
+    if (colorPalette.colors.length > 5) {
+      formErrors.colors = "Color palette limit reached";
+      setErrors(formErrors);
+      return;
+    }
     const result = await handleAddColorPaletteBackend(colorPalette, user, userDoc);
     if (!result.success) {
       if (result.message === "Color palette name is required")
@@ -492,6 +497,11 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                     setColorPalette({ ...colorPalette, colors: newColors });
                     setColorToEdit("");
                   } else {
+                    if (colorPalette.colors.length >= 5) {
+                      setErrors({ ...errors, colors: "Color palette limit reached" });
+                      handlePickColorModalClose();
+                      return;
+                    }
                     const newColors = [...colorPalette.colors, pickedColor];
                     setColorPalette({ ...colorPalette, colors: newColors });
                     clearFieldError("colors");

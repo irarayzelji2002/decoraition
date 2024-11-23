@@ -34,44 +34,6 @@ function ProjBudget() {
     fetchData();
   }, [user, projectId]);
 
-  useEffect(() => {
-    const auth = getAuth();
-
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        setUserId(user.uid);
-
-        const fetchProjectDetails = async () => {
-          try {
-            const projectRef = doc(db, "projects", projectId);
-            const projectSnapshot = await getDoc(projectRef);
-            if (projectSnapshot.exists()) {
-              // Listen for real-time updates to the project document
-              const unsubscribeProject = onSnapshot(projectRef, (doc) => {
-                if (doc.exists()) {
-                  const updatedProject = doc.data();
-                }
-              });
-
-              // Cleanup listener on component unmount
-              return () => unsubscribeProject();
-            } else {
-              console.error("Project not found");
-            }
-          } catch (error) {
-            console.error("Error fetching project details:", error);
-          }
-        };
-
-        fetchProjectDetails();
-      } else {
-        console.error("User is not authenticated");
-      }
-    });
-
-    return () => unsubscribe(); // Cleanup listener on component unmount
-  }, [projectId]);
-
   const totalProjectBudget = designs.reduce((total, design) => {
     const totalCost = designBudgetItems[design.id]?.reduce(
       (sum, item) => sum + parseFloat(item.cost),

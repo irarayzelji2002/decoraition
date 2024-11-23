@@ -20,7 +20,7 @@ import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import { fetchProjectDesigns } from "./backend/ProjectDetails";
+import { fetchProjectDesigns, handleCreateDesignWithLoading } from "./backend/ProjectDetails";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, TiledIcon, VerticalIcon } from "./svg/ExportIcon";
 import { Typography } from "@mui/material";
@@ -32,6 +32,7 @@ import { formatDateLong, getUsername } from "../Homepage/backend/HomepageActions
 import axios from "axios";
 import HomepageTable from "../Homepage/HomepageTable";
 import { usePreventNavigation } from "../../hooks/usePreventNavigation";
+import { set } from "lodash";
 
 function Project() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -115,7 +116,9 @@ function Project() {
 
     fetchData();
   }, [user, projectId, userDesign]);
-
+  useEffect(() => {
+    loadProjectDataForView();
+  }, [designs]);
   useEffect(() => {
     const auth = getAuth();
 
@@ -164,16 +167,20 @@ function Project() {
     setLoadingDesigns(true);
     if (designs.length > 0) {
       const designsByLatest = [...designs].sort((a, b) => {
-        const modifiedAtA = a.modifiedAt.toDate ? a.modifiedAt.toDate() : new Date(a.modifiedAt);
-        const modifiedAtB = b.modifiedAt.toDate ? b.modifiedAt.toDate() : new Date(b.modifiedAt);
-        return modifiedAtB - modifiedAtA; // Modified latest first
+        const aModifiedAt = a.modifiedAt?.toMillis
+          ? a.modifiedAt.toMillis()
+          : new Date(a.modifiedAt).getTime();
+        const bModifiedAt = b.modifiedAt?.toMillis
+          ? b.modifiedAt.toMillis()
+          : new Date(b.modifiedAt).getTime();
+        return bModifiedAt - aModifiedAt;
       });
+      console.log("Designs by latest:", designsByLatest); // Debug log
+
       setLoadingDesigns(false);
       const tableData = await Promise.all(
         designsByLatest.map(async (design) => {
           const username = await getUsername(design.owner);
-          console.log("Design createdAt:", design.createdAt); // Debug log
-          console.log("Design modifiedAt:", design.modifiedAt); // Debug log
           const createdAtTimestamp =
             design.createdAt && design.createdAt.toMillis
               ? design.createdAt.toMillis()
@@ -184,60 +191,19 @@ function Project() {
               : new Date(design.modifiedAt).getTime();
           return {
             ...design,
-            ownerId: design.owner,
-            owner: username,
-            formattedCreatedAt: formatDateLong(design.createdAt),
-            createdAtTimestamp,
-            formattedModifiedAt: formatDateLong(design.modifiedAt),
-            modifiedAtTimestamp,
+            username,
+            createdAt: createdAtTimestamp,
+            modifiedAt: modifiedAtTimestamp,
           };
         })
       );
+
       setFilteredDesignsForTable(tableData);
-    } else {
-      setFilteredDesignsForTable([]);
-      setLoadingDesigns(false); // Set loading to false if no designs
     }
   };
-
-  useEffect(() => {
-    loadProjectDataForView();
-  }, [designs]);
-
   const closeModal = () => {
     setModalOpen(false);
     setModalContent(null);
-  };
-
-  const handleCreateDesign = async (projectId) => {
-    try {
-      const token = await auth.currentUser.getIdToken();
-      const response = await axios.post(
-        `/api/project/${projectId}/create-design`,
-        {
-          userId: auth.currentUser.uid,
-          designName: "Untitled Design",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (response.status === 200) {
-        showToast("success", "Design created successfully");
-        await fetchProjectDesigns(projectId, setDesigns); // Refresh designs list
-      }
-    } catch (error) {
-      console.error("Error creating design:", error);
-      showToast("error", "Error creating design! Please try again.");
-    }
-  };
-
-  const handleCreateDesignWithLoading = async (projectId) => {
-    setIsDesignButtonDisabled(true);
-    await handleCreateDesign(projectId);
-    setIsDesignButtonDisabled(false);
   };
 
   if (loadingImage) {
@@ -386,7 +352,7 @@ function Project() {
             {loadingDesigns ? (
               <Loading />
             ) : isVertical ? (
-              designs.length > 0 && (
+              filteredDesignsForTable.length > 0 && (
                 <HomepageTable
                   isDesign={true}
                   data={filteredDesignsForTable}

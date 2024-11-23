@@ -28,18 +28,24 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
     : object?.projectName ?? "Untitled Project";
   const [confirmText, setConfirmText] = useState("");
   const [error, setError] = useState("");
+  const [isDeleteBtnDisabled, setIsDeleteBtnDisabled] = useState(false);
 
   const onSubmit = async () => {
-    if (confirmText !== initConfirmText) {
-      setError("Incorrect value entered");
-      return;
+    setIsDeleteBtnDisabled(true);
+    try {
+      if (confirmText !== initConfirmText) {
+        setError("Incorrect value entered");
+        return;
+      }
+      const result = await handleDelete();
+      if (!result.success) {
+        setError(result.message);
+        return;
+      }
+      handleClose();
+    } finally {
+      setIsDeleteBtnDisabled(false);
     }
-    const result = await handleDelete();
-    if (!result.success) {
-      setError(result.message);
-      return;
-    }
-    handleClose();
   };
 
   const handleClose = () => {
@@ -82,7 +88,10 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
         <TextField
           placeholder={initConfirmText}
           value={confirmText}
-          onChange={(e) => setConfirmText(e.target.value)}
+          onChange={(e) => {
+            setConfirmText(e.target.value);
+            setError("");
+          }}
           helperText={error}
           variant="outlined"
           fullWidth
@@ -94,7 +103,20 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
         />
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
-        <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={onSubmit}
+          sx={{
+            ...gradientButtonStyles,
+            opacity: isDeleteBtnDisabled ? "0.5" : "1",
+            cursor: isDeleteBtnDisabled ? "default" : "pointer",
+            "&:hover": {
+              backgroundImage: !isDeleteBtnDisabled && "var(--gradientButtonHover)",
+            },
+          }}
+          disabled={isDeleteBtnDisabled}
+        >
           Delete
         </Button>
         <Button

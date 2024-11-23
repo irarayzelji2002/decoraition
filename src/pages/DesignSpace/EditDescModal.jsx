@@ -19,17 +19,23 @@ import { textFieldInputProps, textFieldStyles } from "./DesignSettings";
 const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) => {
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const [addEdiBtnDisabled, setAddEdiBtnDisabled] = useState(false);
 
   const onSubmit = async () => {
-    const result = await handleEdit(imageId, description);
-    if (!result.success) {
-      if (result.message === "Description is the same as the current description")
-        setError(result.message);
-      else showToast("error", result.message);
-      return;
+    setAddEdiBtnDisabled(true);
+    try {
+      const result = await handleEdit(imageId, description);
+      if (!result.success) {
+        if (result.message === "Description is the same as the current description")
+          setError(result.message);
+        else showToast("error", result.message);
+        return;
+      }
+      showToast("success", `Image ${getImageIndex() + 1} description updated successfully`);
+      handleClose();
+    } finally {
+      setAddEdiBtnDisabled(false);
     }
-    showToast("success", `Image ${getImageIndex() + 1} description updated successfully`);
-    handleClose();
   };
 
   const handleClose = () => {
@@ -39,15 +45,15 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
   };
 
   const getImageDescription = () => {
-    console.log("imageId", imageId);
-    console.log("designVersion", designVersion);
+    console.log("editdesc - imageId", imageId);
+    console.log("editdesc - designVersion", designVersion);
     const designVersionImages = designVersion?.images;
-    const image = designVersionImages.find((image) => image.id === imageId);
+    const image = designVersionImages.find((image) => image.imageId === imageId);
     return image?.description ?? "";
   };
 
   const getImageIndex = () => {
-    return designVersion?.images.findIndex((image) => image.id === imageId);
+    return designVersion?.images?.findIndex((image) => image.imageId === imageId);
   };
 
   useEffect(() => {
@@ -68,7 +74,7 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
             whiteSpace: "normal",
           }}
         >
-          {`Image ${imageId} Description`}
+          {`Image ${getImageIndex() + 1} description`}
         </Typography>
         <IconButton
           onClick={handleClose}
@@ -88,7 +94,10 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
         <TextField
           placeholder="Description"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            setError("");
+          }}
           helperText={error}
           variant="outlined"
           fullWidth
@@ -100,7 +109,20 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
         />
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
-        <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={onSubmit}
+          sx={{
+            ...gradientButtonStyles,
+            opacity: addEdiBtnDisabled ? "0.5" : "1",
+            cursor: addEdiBtnDisabled ? "default" : "pointer",
+            "&:hover": {
+              backgroundImage: !addEdiBtnDisabled && "var(--gradientButtonHover)",
+            },
+          }}
+          disabled={addEdiBtnDisabled}
+        >
           {`${getImageDescription() ? "Edit" : "Add"} description`}
         </Button>
         <Button

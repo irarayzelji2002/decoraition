@@ -122,8 +122,8 @@ function Design() {
     console.log("got imageId", imageId);
     console.log("got description", description);
     const designVersionImages = designVersion?.images;
-    const image = designVersionImages.find((image) => image.id === imageId);
-    if (image.description === description.trim()) {
+    const image = designVersionImages.find((image) => image?.imageId === imageId);
+    if (image?.description === description.trim()) {
       return { success: false, message: "Description is the same as the current description" };
     }
     try {
@@ -988,7 +988,9 @@ function Design() {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
-                                        setImageDescToEdit(image.id);
+                                        console.log("editdesc - Image object:", image); // Add this
+                                        console.log("editdesc - Image ID:", image.imageId); // Add this
+                                        setImageDescToEdit(image.imageId);
                                         setIsEditDescModalOpen(true);
                                       }}
                                     >

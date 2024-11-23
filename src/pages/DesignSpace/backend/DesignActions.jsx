@@ -249,6 +249,7 @@ export const handleEditDescription = async (
   userDoc
 ) => {
   try {
+    console.log("editdesc - data", { description, imageId, userId: userDoc.id });
     const response = await axios.put(
       `/api/design/${designId}/design-version/${designVersionId}/update-desc`,
       { description, imageId, userId: userDoc.id },

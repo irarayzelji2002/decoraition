@@ -536,7 +536,7 @@ export const updateDesignProjectId = async (designId, projectId) => {
     const token = await auth.currentUser.getIdToken();
     await axios.put(
       `/api/design/${designId}/update-project`,
-      { projectId },
+      { projectId, modifiedAt: new Date() },
       {
         headers: {
           Authorization: `Bearer ${token}`,

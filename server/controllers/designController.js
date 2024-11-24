@@ -1801,7 +1801,7 @@ exports.updateDesignProjectId = async (req, res) => {
     const { projectId } = req.body;
 
     const designRef = db.collection("designs").doc(designId);
-    await designRef.update({ projectId });
+    await designRef.update({ projectId, modifiedAt: new Date() });
 
     res.status(200).json({ message: "Design projectId updated successfully" });
   } catch (error) {

@@ -1792,3 +1792,18 @@ exports.deleteDesign = async (req, res) => {
     });
   }
 };
+
+exports.updateDesignProjectId = async (req, res) => {
+  try {
+    const { designId } = req.params;
+    const { projectId } = req.body;
+
+    const designRef = db.collection("designs").doc(designId);
+    await designRef.update({ projectId, modifiedAt: new Date() });
+
+    res.status(200).json({ message: "Design projectId updated successfully" });
+  } catch (error) {
+    console.error("Error updating design projectId:", error);
+    res.status(500).json({ message: "Failed to update design projectId" });
+  }
+};

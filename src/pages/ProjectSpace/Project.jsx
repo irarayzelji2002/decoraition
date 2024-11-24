@@ -2,7 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { onSnapshot, doc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { Paper, IconButton, InputBase, Button } from "@mui/material";
+import {
+  Paper,
+  IconButton,
+  InputBase,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import {
   Search as SearchIcon,
   CloseRounded as CloseRoundedIcon,
@@ -20,7 +29,11 @@ import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import { handleCreateDesign as handleCreateDesignBackend } from "./backend/ProjectDetails";
+import {
+  handleCreateDesign as handleCreateDesignBackend,
+  fetchUserDesigns,
+  updateDesignProjectId,
+} from "./backend/ProjectDetails";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, TiledIcon, VerticalIcon } from "./svg/ExportIcon";
 import { Typography } from "@mui/material";
@@ -35,6 +48,7 @@ import {
   handleDeleteDesign,
 } from "../Homepage/backend/HomepageActions";
 import HomepageTable from "../Homepage/HomepageTable";
+import ImportDesignModal from "../../components/ImportDesignModal"; // Add this import
 import deepEqual from "deep-equal";
 import { gradientButtonStyles } from "../DesignSpace/PromptBar";
 import { set } from "lodash";
@@ -75,6 +89,10 @@ function Project() {
   const [loadingDesigns, setLoadingDesigns] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [selectedDesignId, setSelectedDesignId] = useState("");
+  const userDesignsWithoutProject = userDesigns.filter((design) => !design.projectId);
 
   // Get project
   useEffect(() => {
@@ -276,6 +294,26 @@ function Project() {
   if (loadingProject || !project) {
     return <LoadingPage message="Fetching designs for this project." />;
   }
+
+  const handleCreateDesign = async () => {
+    setIsDesignButtonDisabled(true);
+    await handleCreateDesignWithLoading(projectId, setDesigns);
+    setIsDesignButtonDisabled(false);
+  };
+
+  const handleImportDesign = () => {
+    setImportModalOpen(true);
+  };
+
+  const handleConfirmImport = async () => {
+    if (selectedDesignId) {
+      await updateDesignProjectId(selectedDesignId, projectId);
+      setImportModalOpen(false);
+      setSelectedDesignId("");
+      const updatedDesigns = userDesigns.filter((design) => design.projectId === projectId);
+      setDesigns(updatedDesigns);
+    }
+  };
 
   return (
     <ProjectSpace
@@ -529,13 +567,22 @@ function Project() {
         </div>
       )}
 
+      <ImportDesignModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        userDesignsWithoutProject={userDesignsWithoutProject}
+        selectedDesignId={selectedDesignId}
+        setSelectedDesignId={setSelectedDesignId}
+        handleConfirmImport={handleConfirmImport}
+      />
+
       {/* Action Buttons */}
       <div className="circle-button-container">
         {menuOpen && (
           <div className="small-buttons">
             <div
               className="small-button-container"
-              onClick={() => !isDesignButtonDisabled && handleCreateDesign(projectId)}
+              onClick={handleImportDesign}
               style={{
                 opacity: isDesignButtonDisabled ? "0.5" : "1",
                 cursor: isDesignButtonDisabled ? "default" : "pointer",
@@ -548,7 +595,7 @@ function Project() {
             </div>
             <div
               className="small-button-container"
-              onClick={() => !isDesignButtonDisabled && {}}
+              onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
               style={{
                 opacity: isDesignButtonDisabled ? "0.5" : "1",
                 cursor: isDesignButtonDisabled ? "default" : "pointer",

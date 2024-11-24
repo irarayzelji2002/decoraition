@@ -11,9 +11,9 @@ import Item from "./Item";
 import {
   AddIconGradient,
   EditIconSmallGradient,
-  DeleteIcon,
+  DeleteIconWhite,
   AddIcon,
-  EditIcon,
+  EditIconWhite,
   DeleteIconGradient,
 } from "../../components/svg/DefaultMenuIcons";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -688,7 +688,7 @@ function Budget() {
                   >
                     <span className="small-button-text">Delete Budget</span>
                     <div className="small-circle-button">
-                      <DeleteIcon />
+                      <DeleteIconWhite />
                     </div>
                   </div>
                 )}
@@ -700,7 +700,7 @@ function Budget() {
                     {budgetAmount > 0 ? "Edit the budget" : "Add a Budget"}
                   </span>
                   <div className="small-circle-button">
-                    {budgetAmount > 0 ? <EditIcon /> : <AddBudget />}
+                    {budgetAmount > 0 ? <EditIconWhite /> : <AddBudget />}
                   </div>
                 </div>
                 <div

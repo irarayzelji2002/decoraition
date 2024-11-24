@@ -45,6 +45,7 @@
 
 .priceSum.budget {
   margin-top: 0;
+  color: var(--always-white) !important;
 }
 
 .pinSpace {

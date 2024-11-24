@@ -1,9 +1,9 @@
 .details-container {
   background-color: var(--bgcolor);
-  margin-top: 20px;
+  /* margin-top: 20px; */
   color: var(--color-white);
   overflow-x: hidden !important;
-  /* padding: 50px; */
+  padding: 20px;
   /* height: calc(100vh - 86px); */
   /* to change */
   overflow-y: auto;

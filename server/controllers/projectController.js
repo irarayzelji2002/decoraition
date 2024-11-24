@@ -1143,6 +1143,89 @@ exports.importDesignToProject = async (req, res) => {
   }
 };
 
+exports.removeDesignFromProject = async (req, res) => {
+  const updatedDocuments = [];
+  try {
+    const { projectId } = req.params;
+    const { userId, designId } = req.body;
+
+    // Verify the existence of the project
+    const projectRef = db.collection("projects").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    // Check user role in design
+    const allowAction = isContentManagerProject(projectDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to remove design from this project" });
+    }
+
+    // Get the design document
+    const designRef = db.collection("designs").doc(designId);
+    const designDoc = await designRef.get();
+    if (!designDoc.exists) {
+      return res.status(404).json({ error: "Design not found" });
+    }
+
+    // Update design's projectId
+    const previousProjectId = designDoc.data().projectId || [];
+    updatedDocuments.push({
+      collection: "designs",
+      id: designId,
+      field: "projectId",
+      previousValue: previousProjectId || null,
+    });
+    await designDoc.ref.update({
+      projectId: null,
+      modifiedAt: new Date(),
+    });
+
+    // Update the project's designs field
+    const previousDesigns = projectDoc.data().designs || [];
+    updatedDocuments.push({
+      collection: "projects",
+      id: projectId,
+      field: "designs",
+      previousValue: previousDesigns,
+    });
+    const newDesigns = previousDesigns.filter((id) => id !== designId);
+    await projectRef.update({
+      designs: newDesigns,
+      modifiedAt: new Date(),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Design removed from project",
+    });
+  } catch (error) {
+    console.error("Error removing design from project:", error);
+
+    // Rollback updates to existing documents
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to remove design from project",
+    });
+  }
+};
+
 // Delete Project
 exports.deleteProject = async (req, res) => {
   const deletedDocuments = [];

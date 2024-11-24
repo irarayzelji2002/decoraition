@@ -22,6 +22,7 @@ import "../../css/homepage.css";
 import { projectId } from "../../../server/firebaseConfig";
 import { TablePagination } from "@mui/material";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { CloseRounded as CloseRoundedIcon } from "@mui/icons-material";
 
 function EnhancedTableHead(props) {
   const {
@@ -33,6 +34,7 @@ function EnhancedTableHead(props) {
     rowCount,
     onRequestSort,
     sortOrders,
+    isProjectSpace,
   } = props;
   const createSortHandler = (property) => (event) => {
     event.stopPropagation();
@@ -108,6 +110,26 @@ function EnhancedTableHead(props) {
               </TableCell>
             )
         )}
+        {isProjectSpace && (
+          <TableCell
+            sx={{
+              paddingTop: "5px",
+              paddingBottom: "5px",
+              width: "34px",
+              backgroundColor: "var(--bgMain)",
+              color: "var(--color-white)",
+              borderBottom: "1px solid var(--table-stroke)",
+              "&:hover": {
+                backgroundColor: "var(--bgMain)",
+                color: "var(--color-white)",
+              },
+            }}
+          >
+            <IconButton aria-label="expand row" size="small" sx={{ visibility: "hidden" }}>
+              <CloseRoundedIcon />
+            </IconButton>
+          </TableCell>
+        )}
         <TableCell
           sx={{
             paddingTop: "5px",
@@ -155,6 +177,8 @@ function EnhancedTable({
   optionsState,
   setOptionsState,
   isHomepage,
+  isProjectSpace,
+  openConfirmRemove,
 }) {
   const navigate = useNavigate();
   const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
@@ -357,6 +381,7 @@ function EnhancedTable({
               onRequestSort={onRequestSort}
               rowCount={rows.length}
               sortOrders={sortOrders}
+              isProjectSpace={isProjectSpace}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
@@ -426,6 +451,34 @@ function EnhancedTable({
                         )
                       );
                     })}
+                    {isProjectSpace && (
+                      <TableCell
+                        sx={{
+                          paddingTop: "5px",
+                          paddingBottom: "5px",
+                          width: "34px",
+                          borderBottom: "1px solid var(--table-stroke)",
+                          color: "var(--color-white)",
+                          backgroundColor: "var(--table-rows)",
+                          "&:hover": {
+                            color: "var(--color-white)",
+                            backgroundColor: "var(--table-rows-hover)",
+                          },
+                        }}
+                      >
+                        <IconButton
+                          aria-label="expand row"
+                          size="small"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openConfirmRemove(row.id);
+                          }}
+                          sx={{ color: "var(--color-white)" }}
+                        >
+                          <CloseRoundedIcon />
+                        </IconButton>
+                      </TableCell>
+                    )}
                     <TableCell
                       sx={{
                         paddingTop: "5px",
@@ -527,6 +580,8 @@ export default function HomepageTable({
   handleOpenMenu = () => {},
   optionsState = {},
   setOptionsState = () => {},
+  isProjectSpace = false,
+  openConfirmRemove = () => {},
 }) {
   const columns = [
     {
@@ -676,6 +731,8 @@ export default function HomepageTable({
       optionsState={optionsState}
       setOptionsState={setOptionsState}
       isHomepage={isHomepage}
+      isProjectSpace={isProjectSpace}
+      openConfirmRemove={openConfirmRemove}
     />
   );
 }

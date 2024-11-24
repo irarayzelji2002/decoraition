@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import "../css/homepage.css";
 import HomepageOptions from "../pages/Homepage/HomepageOptions";
 import { useSharedProps } from "../contexts/SharedPropsContext";
+import { IconButton } from "@mui/material";
+import { CloseRounded as CloseRoundedIcon } from "@mui/icons-material";
+import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
 
 function DesignIcon({
   id,
@@ -12,6 +15,8 @@ function DesignIcon({
   optionsState = {},
   design = {},
   setOptionsState = () => {},
+  isProjectSpace = false,
+  openConfirmRemove = () => {},
 }) {
   const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
     useSharedProps();
@@ -76,6 +81,35 @@ function DesignIcon({
         toggleOptions={toggleOptions}
         object={design}
       />
+      {isProjectSpace && (
+        <div
+          className="options"
+          style={{ right: "54px", width: "35px", height: "35px" }}
+          data-options
+        >
+          <div className="selectOption" style={{ position: "absolute" }}>
+            <IconButton
+              sx={{
+                ...iconButtonStyles,
+                color: "var(--color-white)",
+                padding: "5.5px",
+                "&:hover": {
+                  backgroundColor: "var(--nav-card-modal) !important",
+                },
+                "& .MuiTouchRipple-root span": {
+                  backgroundColor: "var(--nav-card-modal) !important",
+                },
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                openConfirmRemove(id);
+              }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+          </div>
+        </div>
+      )}
       {/* Design image */}
       <div className="homepage-thumbnail" onClick={onOpen}>
         <img

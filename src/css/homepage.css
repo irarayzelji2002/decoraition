@@ -540,6 +540,13 @@ tr:hover td {
   margin-right: 10px;
 }
 
+.confirm-remove-design-box {
+  margin-top: 20px;
+  background-color: var(--iconBgHover);
+  border-radius: 10px;
+  padding: 10px !important;
+}
+
 @media (max-width: 830px) {
   .layout {
     width: 104%;

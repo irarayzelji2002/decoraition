@@ -234,6 +234,11 @@ router.put(
   authenticateUser,
   projectController.importDesignToProject
 );
+router.put(
+  "/project/:projectId/remove-design",
+  authenticateUser,
+  projectController.removeDesignFromProject
+);
 
 // Network check
 router.get("/health-check", (req, res) => {

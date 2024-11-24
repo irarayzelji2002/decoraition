@@ -575,3 +575,26 @@ export const importDesignToProject = async (projectId, selectedDesignId, user, u
     return { success: false, message: error?.response?.data?.error || "Failed to import design" };
   }
 };
+
+export const removeDesignFromProject = async (projectId, designId, user, userDoc) => {
+  try {
+    const response = await axios.put(
+      `/api/project/${projectId}/remove-design`,
+      { userId: userDoc.id, designId },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Design removed from project" };
+    }
+  } catch (error) {
+    console.error("Error removing design from project:", error);
+    return {
+      success: false,
+      message: error?.response?.data?.error || "Failed to remove design from project",
+    };
+  }
+};

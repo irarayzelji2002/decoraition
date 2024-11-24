@@ -50,7 +50,7 @@ const ImportDesignModal = ({ open, onClose, project }) => {
   const [designOptionClicked, setDesignOptionClicked] = useState(null);
   const [openDesignOptions, setOpenDesignOptions] = useState(false);
   const [error, setError] = useState("");
-  const [isImportBtnDisabled, setIsImportBtnDisabled] = useState(true);
+  const [isImportBtnDisabled, setIsImportBtnDisabled] = useState(false);
 
   const selectDesignRef = useRef(null);
 
@@ -117,6 +117,12 @@ const ImportDesignModal = ({ open, onClose, project }) => {
     console.log("input", input);
     if (input?.trim()) {
       const filtered = originalDesignOptions
+        // First filter out designs that are already in project or selected
+        .filter(
+          (design) =>
+            !project?.designs?.includes(design.id) && // not in project
+            design.id !== selectedDesignId // not currently selected
+        )
         .map((design) => ({
           ...design,
           score: calculateMatchScore(design, input.trim()),
@@ -126,7 +132,11 @@ const ImportDesignModal = ({ open, onClose, project }) => {
       setDesignOptions(filtered);
       setOpenDesignOptions(filtered.length > 0);
     } else {
-      setDesignOptions(originalDesignOptions);
+      // When no input, show all designs except those in project and selected
+      const filtered = originalDesignOptions.filter(
+        (design) => !project?.designs?.includes(design.id) && design.id !== selectedDesignId
+      );
+      setDesignOptions(filtered);
       setOpenDesignOptions(false);
     }
   };
@@ -263,7 +273,7 @@ const ImportDesignModal = ({ open, onClose, project }) => {
                   borderRadius: "10px",
                 }}
               >
-                {designOptions.slice(0, 5).map((design, index) => (
+                {designOptions.slice(0, 10).map((design, index) => (
                   <CustomMenuItem
                     key={design.id}
                     onClick={() => setDesignOptionClicked(design)}
@@ -436,7 +446,13 @@ export const DesignInfoTooltip = ({ design, userDesigns, userDesignVersions, use
   </Box>
 );
 
-export const DesignInfoBox = ({ design, userDesigns, userDesignVersions, users }) => (
+export const DesignInfoBox = ({
+  design,
+  userDesigns,
+  userDesignVersions,
+  users,
+  className = "",
+}) => (
   <Box
     sx={{
       display: "flex",
@@ -444,6 +460,7 @@ export const DesignInfoBox = ({ design, userDesigns, userDesignVersions, users }
       justifyContent: "center",
       padding: "0",
     }}
+    className={className}
   >
     <Box sx={{ marginRight: "20px" }}>
       <div className="select-image-preview" style={{ margin: "0", width: "63px", height: "63px" }}>

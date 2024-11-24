@@ -43,6 +43,7 @@ import LoadingPage from "../../components/LoadingPage";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { formatDateLong, getUsername } from "../Homepage/backend/HomepageActions";
 import HomepageTable from "../Homepage/HomepageTable";
+import ImportDesignModal from "../../components/ImportDesignModal"; // Add this import
 
 function Project() {
   const { isDarkMode } = useSharedProps();
@@ -383,7 +384,15 @@ function Project() {
               </>
             )}
           </div>
-        </div>
+        </div>{" "}
+        <ImportDesignModal
+          open={importModalOpen}
+          onClose={() => setImportModalOpen(false)}
+          userDesignsWithoutProject={userDesignsWithoutProject}
+          selectedDesignId={selectedDesignId}
+          setSelectedDesignId={setSelectedDesignId}
+          handleConfirmImport={handleConfirmImport}
+        />
         <div
           className="center-me"
           style={{ display: "inline-flex", marginTop: "20px", position: "relative" }}
@@ -447,40 +456,6 @@ function Project() {
           {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
       </div>
-
-      {importModalOpen && (
-        <Modal open={importModalOpen} onClose={() => setImportModalOpen(false)}>
-          <div className="modalContent" style={{ padding: "20px", textAlign: "center" }}>
-            <h2>Import a Design</h2>
-            <FormControl fullWidth style={{ marginBottom: "20px" }}>
-              <InputLabel id="select-design-label">Select Design</InputLabel>
-              <Select
-                labelId="select-design-label"
-                value={selectedDesignId}
-                onChange={(e) => setSelectedDesignId(e.target.value)}
-              >
-                {userDesignsWithoutProject.map((design) => (
-                  <MenuItem key={design.id} value={design.id}>
-                    {design.designName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleConfirmImport}
-              disabled={!selectedDesignId}
-              style={{ marginRight: "10px" }}
-            >
-              Confirm
-            </Button>
-            <Button variant="outlined" onClick={() => setImportModalOpen(false)}>
-              Cancel
-            </Button>
-          </div>
-        </Modal>
-      )}
 
       {modalOpen && <Modal onClose={closeModal} />}
 

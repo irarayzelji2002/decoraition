@@ -321,7 +321,15 @@ const ImportDesignModal = ({ open, onClose, project }) => {
           fullWidth
           variant="contained"
           onClick={handleImportDesign}
-          sx={gradientButtonStyles}
+          sx={{
+            ...gradientButtonStyles,
+            opacity: isImportBtnDisabled ? "0.5" : "1",
+            cursor: isImportBtnDisabled ? "default" : "pointer",
+            "&:hover": {
+              backgroundImage: !isImportBtnDisabled && "var(--gradientButtonHover)",
+            },
+          }}
+          disabled={isImportBtnDisabled}
         >
           Import design
         </Button>

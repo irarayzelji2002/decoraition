@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { onSnapshot, doc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -11,6 +11,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Box,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -52,6 +53,7 @@ import ImportDesignModal from "../../components/ImportDesignModal";
 import deepEqual from "deep-equal";
 import { gradientButtonStyles } from "../DesignSpace/PromptBar";
 import { set } from "lodash";
+import { circleButtonStyles } from "../Homepage/Homepage";
 
 function Project() {
   const { projectId } = useParams();
@@ -185,62 +187,98 @@ function Project() {
     applyFilters(searchQuery, selectedOwner, range);
   };
 
-  const applyFilters = (searchQuery, owner, dateRange, sortBy, order) => {
-    let filteredDesigns = origFilteredDesigns.filter((design) => {
-      const matchesSearchQuery = design.designName
-        .toLowerCase()
-        .includes(searchQuery.trim().toLowerCase());
-      const matchesOwner = owner ? design.owner === owner : true;
-      const matchesDateRange =
-        dateRange.start && dateRange.end
-          ? design.modifiedAt.toMillis() >= new Date(dateRange.start).getTime() &&
-            design.modifiedAt.toMillis() <= new Date(dateRange.end).getTime()
-          : true;
-      return matchesSearchQuery && matchesOwner && matchesDateRange;
-    });
-
-    // sorting logic for tiled view
-    filteredDesigns.sort((a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis());
-
-    if (sortBy && sortBy !== "none" && order && order !== "none") {
-      filteredDesigns = filteredDesigns.sort((a, b) => {
-        let comparison = 0;
-        if (sortBy === "name") {
-          comparison = a.designName.localeCompare(b.designName);
-        } else if (sortBy === "owner") {
-          comparison = users
-            .find((user) => user.id === a.owner)
-            ?.username.localeCompare(users.find((user) => user.id === b.owner)?.username);
-        } else if (sortBy === "created") {
-          comparison = a.createdAt.toMillis() - b.createdAt.toMillis();
-        } else if (sortBy === "modified") {
-          comparison = a.modifiedAt.toMillis() - b.modifiedAt.toMillis();
-        }
-        return order === "ascending" ? comparison : -comparison;
-      });
-    }
-
-    setDisplayedDesigns(filteredDesigns);
-    setPage(1); // Reset to the first page after filtering
+  // Add handler for search input
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
   };
+
+  const applyFilters = useCallback(
+    (searchQuery, owner, dateRange, sortBy, order) => {
+      if (!filteredDesigns) return;
+      let filtered = [...filteredDesigns];
+      // Apply search filter
+      if (searchQuery.trim()) {
+        filtered = filtered.filter((design) =>
+          design.designName.toLowerCase().includes(searchQuery.trim().toLowerCase())
+        );
+      }
+      // Apply owner filter
+      if (owner) {
+        filtered = filtered.filter((design) => design.owner === owner);
+      }
+      // Apply date range filter
+      if (dateRange.start && dateRange.end) {
+        filtered = filtered.filter(
+          (design) =>
+            design.modifiedAt?.toMillis() >= new Date(dateRange.start).getTime() &&
+            design.modifiedAt?.toMillis() <= new Date(dateRange.end).getTime()
+        );
+      }
+      // Apply sorting
+      if (sortBy && sortBy !== "none" && order && order !== "none") {
+        filtered.sort((a, b) => {
+          let comparison = 0;
+          switch (sortBy) {
+            case "name":
+              comparison = a.designName.localeCompare(b.designName);
+              break;
+            case "owner":
+              comparison = (
+                users.find((user) => user.id === a.owner)?.username || ""
+              ).localeCompare(users.find((user) => user.id === b.owner)?.username || "");
+              break;
+            case "created":
+              comparison = (a.createdAt?.toMillis() || 0) - (b.createdAt?.toMillis() || 0);
+              break;
+            case "modified":
+              comparison = (a.modifiedAt?.toMillis() || 0) - (b.modifiedAt?.toMillis() || 0);
+              break;
+            default:
+              comparison = 0;
+          }
+          return order === "ascending" ? comparison : -comparison;
+        });
+      } else {
+        // Default sort by latest modified
+        filtered.sort((a, b) => (b.modifiedAt?.toMillis() || 0) - (a.modifiedAt?.toMillis() || 0));
+      }
+
+      setDisplayedDesigns(filtered);
+      console.log("Applied filters:", {
+        searchQuery,
+        owner,
+        dateRange,
+        sortBy,
+        order,
+        filteredCount: filtered.length,
+      });
+    },
+    [filteredDesigns, users]
+  );
 
   useEffect(() => {
     applyFilters(searchQuery, selectedOwner, dateRange, sortBy, order);
-  }, [designs, userDesigns, searchQuery, selectedOwner, dateRange, sortBy, order]);
+  }, [searchQuery, selectedOwner, dateRange, sortBy, order, applyFilters]);
 
   useEffect(() => {
     setLoadingDesigns(true);
     if (filteredDesigns.length > 0) {
       // Set number of pages
-      const totalPages = Math.ceil(filteredDesigns.length / 18);
+      const itemsPerPage = 18;
+      const totalPages = Math.ceil(filteredDesigns.length / itemsPerPage);
       setTotalPages(totalPages);
 
       // Set contents of the page
-      const itemsPerPage = 18;
       const startIndex = (page - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const paginatedDesigns = filteredDesigns.slice(startIndex, endIndex);
+
+      // Update displayed designs
       setDisplayedDesigns(paginatedDesigns);
+
+      console.log("Project Design - page", page);
+      console.log("Project Design - filteredDesigns", filteredDesigns);
+      console.log("Project Design - displayedDesigns", paginatedDesigns);
     } else {
       setTotalPages(0);
       setDisplayedDesigns([]);
@@ -253,6 +291,12 @@ function Project() {
     console.log("Project Design - Available userDesigns:", userDesigns);
     console.log("Project Design - Available designs:", designs);
   }, [project, userDesigns, designs]);
+
+  useEffect(() => {
+    console.log("Project Design - filteredDesigns", filteredDesigns);
+    console.log("Project Design - displayedDesigns", displayedDesigns);
+    console.log("Project Design - page", page);
+  }, [displayedDesigns, filteredDesigns, page]);
 
   const handlePageClick = (pageNumber) => {
     setPage(pageNumber);
@@ -306,6 +350,7 @@ function Project() {
       showToast("error", "Failed to create design for this project.");
     } finally {
       setIsDesignButtonDisabled(false);
+      setMenuOpen(false);
     }
   };
 
@@ -370,7 +415,9 @@ function Project() {
           <InputBase
             sx={{ ml: 1, flex: 1, color: "var(--color-white)" }}
             placeholder="Search designs on this project"
-            inputProps={{ "aria-label": "search google maps" }}
+            inputProps={{ "aria-label": "search designs" }}
+            value={searchQuery}
+            onChange={handleSearchChange}
           />
         </Paper>
         {!isVertical && (
@@ -601,18 +648,31 @@ function Project() {
                 <AddDesign />
               </div>
             </div>
-            <div
-              className="small-button-container"
-              onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
-              style={{
-                opacity: isDesignButtonDisabled ? "0.5" : "1",
-                cursor: isDesignButtonDisabled ? "default" : "pointer",
-              }}
-            >
+            <div className="small-button-container">
               <span className="small-button-text">Create a Design</span>
-              <div className="small-circle-button">
+              <div className="small-circle-button"></div>
+              <Box
+                onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
+                sx={{
+                  ...circleButtonStyles,
+                  opacity: isDesignButtonDisabled ? "0.5" : "1",
+                  cursor: isDesignButtonDisabled ? "default" : "pointer",
+                  "&:hover": {
+                    backgroundImage: isDesignButtonDisabled
+                      ? "var(--gradientCircle)"
+                      : "var(--gradientCircleHover)",
+                  },
+                  "& svg": {
+                    marginRight: "-2px",
+                  },
+                  "@media (max-width: 768px)": {
+                    width: "50px",
+                    height: "50px",
+                  },
+                }}
+              >
                 <AddProject />
-              </div>
+              </Box>
             </div>
           </div>
         )}

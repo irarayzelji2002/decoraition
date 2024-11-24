@@ -35,13 +35,17 @@ import {
 import ImageFrame from "../../components/ImageFrame";
 import LoadingPage from "../../components/LoadingPage";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import ProjectSpace from "./ProjectSpace";
+import deepEqual from "deep-equal";
 
 function PlanMap() {
+  const { projectId } = useParams();
+  const { isDarkMode, projects, userProjects } = useSharedProps();
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
-  const { projectId } = useParams();
-  const { isDarkMode } = useSharedProps();
+  const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
+  const [project, setProject] = useState({});
   const [pins, setPins] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -53,6 +57,23 @@ function PlanMap() {
   const [initPlanImage, setInitPlanImage] = useState(null);
   const planImageFileInputRef = useRef(null);
   const [loadingImage, setLoadingImage] = useState(true);
+  const [loadingProject, setLoadingProject] = useState(true);
+
+  // Get project
+  useEffect(() => {
+    if (projectId && userProjects.length > 0) {
+      const fetchedProject =
+        userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
+
+      if (!fetchedProject) {
+        console.error("Project not found.");
+      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+        setProject(fetchedProject);
+        console.log("current project:", fetchedProject);
+      }
+    }
+    setLoadingProject(false);
+  }, [projectId, projects, userProjects]);
 
   useEffect(() => {
     if (user) {
@@ -180,98 +201,107 @@ function PlanMap() {
 
   return (
     <>
-      <ProjectHead />
-      {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
-      <div className="sectionBudget" style={{ background: "none", maxWidth: "100%" }}>
-        <div className="budgetSpaceImg" style={{ background: "none", height: "100%" }}>
-          {planImage ? (
-            <ImageFrame
-              src={planImage}
-              alt="design preview"
-              pins={pins}
-              projectId={projectId}
-              setPins={setPins}
-              draggable={false} // Ensure this line is present
-            />
-          ) : (
-            <div className="no-content" style={{ height: "80vh" }}>
-              <p>Please upload an image to place your pins</p>
-            </div>
-          )}
-        </div>
-        <div className="budgetSpaceImg">
-          {pins.length > 0 ? (
-            pins
-              .sort((a, b) => a.order - b.order) // Sort pins by design.order
-              .map((design) => {
-                return (
-                  <>
-                    <MapPin
-                      title={design.designName}
-                      pinColor={design.color}
-                      pinNo={design.order}
-                      pinId={design.id}
-                      designId={design.designId}
-                      deletePin={() => deletePin(design.id)} // Pass design.id to deletePin
-                      editPin={() => navigateToEditPin(design.id)} // Pass design.id to editPin
-                    />
-                  </>
-                );
-              })
-          ) : (
-            <div className="no-content" style={{ height: "80vh" }}>
-              <img
-                src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
-                alt="No designs yet"
+      <ProjectSpace
+        project={project}
+        projectId={projectId}
+        inDesign={false}
+        inPlanMap={true}
+        inTimeline={false}
+        inBudget={false}
+        changeMode={changeMode}
+        setChangeMode={setChangeMode}
+      >
+        {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
+        <div className="sectionBudget" style={{ background: "none", maxWidth: "100%" }}>
+          <div className="budgetSpaceImg" style={{ background: "none", height: "100%" }}>
+            {planImage ? (
+              <ImageFrame
+                src={planImage}
+                alt="design preview"
+                pins={pins}
+                projectId={projectId}
+                setPins={setPins}
+                draggable={false} // Ensure this line is present
               />
-              <p>No designs yet. Start creating.</p>
+            ) : (
+              <div className="no-content" style={{ height: "80vh" }}>
+                <p>Please upload an image to place your pins</p>
+              </div>
+            )}
+          </div>
+          <div className="budgetSpaceImg">
+            {pins.length > 0 ? (
+              pins
+                .sort((a, b) => a.order - b.order) // Sort pins by design.order
+                .map((design) => {
+                  return (
+                    <>
+                      <MapPin
+                        title={design.designName}
+                        pinColor={design.color}
+                        pinNo={design.order}
+                        pinId={design.id}
+                        designId={design.designId}
+                        deletePin={() => deletePin(design.id)} // Pass design.id to deletePin
+                        editPin={() => navigateToEditPin(design.id)} // Pass design.id to editPin
+                      />
+                    </>
+                  );
+                })
+            ) : (
+              <div className="no-content" style={{ height: "80vh" }}>
+                <img
+                  src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                  alt="No designs yet"
+                />
+                <p>No designs yet. Start creating.</p>
+              </div>
+            )}
+            <div className="bottom-filler" />
+          </div>
+        </div>
+
+        {/* Floating Action Button */}
+        <div className="circle-button-container">
+          {menuOpen && (
+            <div className="small-buttons" style={{ cursor: "pointer" }}>
+              <div className="small-button-container" onClick={handleStyleRefModalOpen}>
+                <span className="small-button-text">Change plan</span>
+                <div className="small-circle-button">
+                  <ChangePlan />
+                </div>
+              </div>
+              <div
+                className="small-button-container"
+                onClick={planImage ? navigateToPinLayout : null}
+              >
+                <span className="small-button-text">Change pins order</span>
+                <div className="small-circle-button">
+                  <ChangeOrder />
+                </div>
+              </div>
+              <div
+                className="small-button-container"
+                onClick={planImage ? navigateToAdjustPin : null}
+              >
+                <span className="small-button-text">Adjust Pins</span>
+                <div className="small-circle-button">
+                  <AdjustPin />
+                </div>
+              </div>
+              <div className="small-button-container" onClick={planImage ? navigateToAddPin : null}>
+                <span className="small-button-text">Add a Pin</span>
+                <div className="small-circle-button">
+                  <AddPin />
+                </div>
+              </div>
             </div>
           )}
-          <div className="bottom-filler" />
-        </div>
-      </div>
-
-      {/* Floating Action Button */}
-      <div className="circle-button-container">
-        {menuOpen && (
-          <div className="small-buttons" style={{ cursor: "pointer" }}>
-            <div className="small-button-container" onClick={handleStyleRefModalOpen}>
-              <span className="small-button-text">Change plan</span>
-              <div className="small-circle-button">
-                <ChangePlan />
-              </div>
-            </div>
-            <div
-              className="small-button-container"
-              onClick={planImage ? navigateToPinLayout : null}
-            >
-              <span className="small-button-text">Change pins order</span>
-              <div className="small-circle-button">
-                <ChangeOrder />
-              </div>
-            </div>
-            <div
-              className="small-button-container"
-              onClick={planImage ? navigateToAdjustPin : null}
-            >
-              <span className="small-button-text">Adjust Pins</span>
-              <div className="small-circle-button">
-                <AdjustPin />
-              </div>
-            </div>
-            <div className="small-button-container" onClick={planImage ? navigateToAddPin : null}>
-              <span className="small-button-text">Add a Pin</span>
-              <div className="small-circle-button">
-                <AddPin />
-              </div>
-            </div>
+          <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
+            {menuOpen ? <AddIcon /> : <AddIcon />}
           </div>
-        )}
-        <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
-          {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
-      </div>
-      <BottomBarDesign PlanMap={true} projId={projectId} />
+      </ProjectSpace>
 
       {/* Change Plan Modal */}
       <Dialog open={styleRefModalOpen} onClose={handleStyleRefModalClose} sx={dialogStyles}>

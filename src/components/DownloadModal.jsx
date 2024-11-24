@@ -239,7 +239,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
       const project = object;
       setProject(project);
       // Designs: has related designs
-      if (project.designs.length > 0) {
+      if (project?.designs?.length > 0) {
         if (!filteredOptions?.includes("Designs")) {
           filteredOptions.push("Designs");
         }

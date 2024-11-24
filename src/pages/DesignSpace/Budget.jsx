@@ -623,7 +623,7 @@ function Budget() {
                       style={{ border: index === viewingImage && "2px solid var(--brightFont)" }}
                       onClick={() => setViewingImage(index)}
                     >
-                      <img src={img ?? "/img/transparent-image.png"} alt="" />
+                      <img src={img || "/img/transparent-image.png"} alt="" />
                     </div>
                   </div>
                 );
@@ -635,7 +635,7 @@ function Budget() {
                 <span>No design yet</span>
               </div>
               <img
-                src={imagesLink[viewingImage] ?? "/img/transparent-image.png"}
+                src={imagesLink[viewingImage] || "/img/transparent-image.png"}
                 alt=""
                 className="image-preview"
               />

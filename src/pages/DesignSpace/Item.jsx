@@ -302,7 +302,7 @@ function Item({ item, onEdit, setDesignItems, budgetId, isOwnerEditor, changeMod
       >
         <span style={{ fontSize: "12px" }}> x {item.quantity}</span>
       </div> */}
-      <img src={item.image ?? "/img/transparent-image.png"} alt="" className="thumbnail" />
+      <img src={item.image || "/img/transparent-image.png"} alt="" className="thumbnail" />
       <div
         style={{
           display: "flex",

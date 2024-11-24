@@ -1738,14 +1738,14 @@ function SelectMaskCanvas({
             ref={canvasStackRef}
           >
             <img
-              ref={initImageRef ?? "/img/transparent-image.png"}
+              ref={initImageRef || "/img/transparent-image.png"}
               src={selectedImage.link}
               style={styles.baseImage}
               alt=""
             />
             <div ref={samCanvasRef} style={styles.samCanvas}>
               <img
-                src={samMaskMask ?? "/img/transparent-image.png"}
+                src={samMaskMask || "/img/transparent-image.png"}
                 alt=""
                 style={styles.samMaskImage}
               />
@@ -1828,13 +1828,13 @@ function SelectMaskCanvas({
               className="actualCanvas"
             >
               <img
-                src={selectedImage.link ?? "/img/transparent-image.png"}
+                src={selectedImage.link || "/img/transparent-image.png"}
                 style={styles.previewBaseImage}
                 alt=""
               />
               <div ref={previewCanvasRef} style={styles.previewMask}>
                 <img
-                  src={previewMask ?? "/img/transparent-image.png"}
+                  src={previewMask || "/img/transparent-image.png"}
                   style={styles.previewMaskImage}
                   alt=""
                 />

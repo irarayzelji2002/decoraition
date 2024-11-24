@@ -179,16 +179,18 @@ exports.createDesignProject = async (req, res) => {
     const { projectId } = req.params;
     const { userId, designName } = req.body;
 
-    // Validate input data
-    if (!projectId || !userId || !designName) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
     // Verify the existence of the project
     const projectRef = db.collection("projects").doc(projectId);
     const projectDoc = await projectRef.get();
     if (!projectDoc.exists) {
       return res.status(404).json({ message: "Project not found" });
+    }
+    // Check user role in design
+    const allowAction = isContributorProject(projectDoc, userId);
+    if (!allowAction) {
+      return res
+        .status(403)
+        .json({ error: "User does not have permission to create a design for this project" });
     }
 
     // Create design document
@@ -228,30 +230,15 @@ exports.createDesignProject = async (req, res) => {
       link: `/design/${designId}`,
     });
 
-    // Create associated budget document
-    const budgetData = {
-      designId: designId,
-      budget: {
-        amount: 0,
-        currency: getPHCurrency(), //default
-      },
-      items: [],
-      createdAt: new Date(),
-      modifiedAt: new Date(),
-    };
-
-    const budgetRef = await db.collection("budgets").add(budgetData);
-    const budgetId = budgetRef.id;
-    createdDocuments.push({ collection: "budgets", id: budgetId });
-
-    // Update design document with budgetId
+    // Update project's designs
+    const previousDesigns = projectDoc.data().designs || [];
     updatedDocuments.push({
-      ref: designRef,
-      data: { budgetId: null }, // Correctly reference the rollback data
-      collection: "designs",
-      id: designRef.id,
+      collection: "projects",
+      id: projectId,
+      field: "designs",
+      previousValue: previousDesigns,
     });
-    await designRef.update({ budgetId });
+    await projectRef.update({ designs: [...previousDesigns, designId], modifiedAt: new Date() });
 
     // Update user's designs array
     const userRef = db.collection("users").doc(userId);
@@ -270,10 +257,9 @@ exports.createDesignProject = async (req, res) => {
       id: designId,
       ...designData,
       link: `/design/${designId}`,
-      budgetId,
     });
   } catch (error) {
-    console.error("Error creating design:", error);
+    console.error("Error creating design for the project:", error);
 
     // Rollback updates
     for (const doc of updatedDocuments) {
@@ -295,7 +281,7 @@ exports.createDesignProject = async (req, res) => {
       }
     }
 
-    res.status(500).json({ message: "Error creating design", error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 

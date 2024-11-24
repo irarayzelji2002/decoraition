@@ -2,7 +2,7 @@ import "../../css/project.css";
 import ProjectHead from "./ProjectHead";
 import BottomBarDesign from "./BottomBarProject";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import ExportIcon from "./svg/ExportIcon";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, doc, onSnapshot, getDoc } from "firebase/firestore";
@@ -13,11 +13,17 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { fetchVersionDetails, getDesignImage } from "../DesignSpace/backend/DesignActions";
 import CircularProgress from "@mui/material/CircularProgress";
 import Loading from "../../components/Loading";
+import deepEqual from "deep-equal";
+import ProjectSpace from "./ProjectSpace";
 
 function ProjBudget() {
   const { projectId } = useParams();
-  const { isDarkMode } = useSharedProps();
+  const { isDarkMode, projects, userProjects } = useSharedProps();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
+  const [project, setProject] = useState({});
+
   const [designs, setDesigns] = useState([]);
   const {
     user,
@@ -33,6 +39,23 @@ function ProjBudget() {
   const [loading, setLoading] = useState(true);
   const [designImages, setDesignImages] = useState({});
   const [itemImages, setItemImages] = useState({});
+  const [loadingProject, setLoadingProject] = useState(true);
+
+  // Get project
+  useEffect(() => {
+    if (projectId && userProjects.length > 0) {
+      const fetchedProject =
+        userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
+
+      if (!fetchedProject) {
+        console.error("Project not found.");
+      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+        setProject(fetchedProject);
+        console.log("current project:", fetchedProject);
+      }
+    }
+    setLoadingProject(false);
+  }, [projectId, projects, userProjects]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -145,8 +168,16 @@ function ProjBudget() {
   }, 0);
 
   return (
-    <>
-      <ProjectHead />
+    <ProjectSpace
+      project={project}
+      projectId={projectId}
+      inDesign={false}
+      inPlanMap={false}
+      inTimeline={false}
+      inBudget={true}
+      changeMode={changeMode}
+      setChangeMode={setChangeMode}
+    >
       <div className="budgetHolder">
         <span
           className="priceSum"
@@ -241,9 +272,7 @@ function ProjBudget() {
         </div>
       </div>
       <div className="bottom-filler" />
-
-      <BottomBarDesign Budget={true} projId={projectId} />
-    </>
+    </ProjectSpace>
   );
 }
 

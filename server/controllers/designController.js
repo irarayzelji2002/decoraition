@@ -227,9 +227,7 @@ exports.updateDesignName = async (req, res) => {
     // Check user role in design
     const allowAction = isOwnerEditorDesign(designDoc, userId);
     if (!allowAction) {
-      return res
-        .status(403)
-        .json({ error: "User does not have permission to create design version" });
+      return res.status(403).json({ error: "User does not have permission to rename a design" });
     }
 
     const previousName = designDoc.data().designName;

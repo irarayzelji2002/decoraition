@@ -1,20 +1,44 @@
 import "../../css/bottomBar.css";
-import { Link } from "react-router-dom";
 import Button from "@mui/material/Button";
+import { Link, useNavigate } from "react-router-dom";
 
-function BottomBarDesign({
+function BottomBarProject({
   Design = false,
   PlanMap = false,
   Timeline = false,
   Budget = false,
   projId,
+  changeMode,
 }) {
+  const navigate = useNavigate();
+  const handleDesignClick = () => {
+    navigate(`/project/${projId}`, {
+      state: { changeMode },
+    });
+  };
+  const handlePlanMapClick = () => {
+    navigate(`/planMap/${projId}`, {
+      state: { changeMode },
+    });
+  };
+
+  const handleTimelineClick = () => {
+    navigate(`/timeline/${projId}`, {
+      state: { changeMode },
+    });
+  };
+
+  const handleBudgetClick = () => {
+    navigate(`/projectBudget/${projId}`, {
+      state: { changeMode },
+    });
+  };
+
   return (
     <div className="bottomBar">
       <Button
         size="md"
-        component={Link}
-        to={`/project/${projId}`}
+        onClick={handleDesignClick}
         sx={{
           mr: 2,
           ":hover": {
@@ -84,8 +108,7 @@ function BottomBarDesign({
       </Button>
       <Button
         size="md"
-        component={Link}
-        to={`/timeline/${projId}`}
+        onClick={handleTimelineClick}
         sx={{
           ":hover": {
             backgroundColor: "var(--iconBg)",
@@ -153,8 +176,7 @@ function BottomBarDesign({
       </Button>
       <Button
         size="md"
-        component={Link}
-        to={`/planMap/${projId}`}
+        onClick={handlePlanMapClick}
         sx={{
           ":hover": {
             backgroundColor: "var(--iconBg)",
@@ -266,8 +288,7 @@ function BottomBarDesign({
       </Button>
       <Button
         size="md"
-        component={Link}
-        to={`/projectBudget/${projId}`}
+        onClick={handleBudgetClick}
         sx={{
           ":hover": {
             backgroundColor: "var(--iconBg)",
@@ -358,4 +379,4 @@ function BottomBarDesign({
   );
 }
 
-export default BottomBarDesign;
+export default BottomBarProject;

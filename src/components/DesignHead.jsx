@@ -42,12 +42,12 @@ function DesignHead({
   isSelectingMask = false,
 }) {
   const { user, userDoc, handleLogout } = useSharedProps();
+  const { designId } = useParams();
   const isOnline = useNetworkStatus();
   const navigate = useNavigate();
   const location = useLocation();
   const isDesignPath = location.pathname.startsWith("/design");
   const navigateFrom = location.pathname;
-  const { designId } = useParams();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [anchorElShare, setAnchorElShare] = useState(null);

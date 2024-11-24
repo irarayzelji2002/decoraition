@@ -486,37 +486,25 @@ export const fetchPlanImage = async (projectId, setPlanImage) => {
   }
 };
 
-export const handleCreateDesign = async (projectId, setDesigns) => {
+export const handleCreateDesign = async (projectId, projectName, user, userDoc) => {
   try {
-    const token = await auth.currentUser.getIdToken();
     const response = await axios.post(
       `/api/project/${projectId}/create-design`,
       {
-        userId: auth.currentUser.uid,
-        designName: "Untitled Design",
+        userId: userDoc.id,
+        designName: `Untitled Design for ${projectName}`,
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${await user.getIdToken()}`,
         },
       }
     );
     if (response.status === 200) {
-      showToast("success", "Design created successfully");
-      await fetchProjectDesigns(projectId, setDesigns); // Refresh designs list
+      return { success: true, message: "Design created successfully" };
     }
   } catch (error) {
-    console.error("Error creating design:", error);
-    showToast("error", "Error creating design! Please try again.");
+    console.error("Error creating design:", error.message);
+    return { success: false, message: error?.response?.data?.error || "Failed to create design" };
   }
-};
-
-export const handleCreateDesignWithLoading = async (
-  projectId,
-  setDesigns,
-  setIsDesignButtonDisabled
-) => {
-  setIsDesignButtonDisabled(true);
-  await handleCreateDesign(projectId, setDesigns);
-  setIsDesignButtonDisabled(false);
 };

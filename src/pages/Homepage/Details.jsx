@@ -9,6 +9,9 @@ import { capitalizeFieldName } from "../../functions/utils";
 import Button from "@mui/material/Button";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import LoadingPage from "../../components/LoadingPage";
+import ManageAcessModal from "../../components/ManageAccessModal";
+import { getDesignImage, getProjectImage } from "../DesignSpace/backend/DesignActions";
 
 const theme = createTheme({
   components: {
@@ -16,14 +19,16 @@ const theme = createTheme({
       styleOverrides: {
         text: {
           color: "var(--color-white)",
-          position: "relative",
+          backgroundColor: "var(--bgcolor)",
           textTransform: "none",
           width: "100%",
           fontFamily: '"Inter", sans-serif !important',
           fontSize: "1rem",
           fontWeight: 400,
           borderTop: "1px solid var(--table-stroke)",
-          borderBottom: "1px solid var(--table-stroke)",
+          position: "absolute",
+          bottom: "0",
+          // borderBottom: "1px solid var(--table-stroke)",
           padding: "20px",
           borderRadius: 0,
           "&:hover": {
@@ -49,14 +54,16 @@ function Details() {
   const navigateFrom = location.pathname;
 
   const { id, type } = useParams();
-  const { user, users, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
+  const { user, users, userDoc, designs, userDesigns, projects, userProjects, userDesignVersions } =
+    useSharedProps();
   const [loading, setLoading] = useState(true);
+  const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
   const [design, setDesign] = useState({});
   const [designId, setDesignId] = useState("");
   const [project, setProject] = useState({});
   const [projectId, setProjectId] = useState("");
   const [ownerName, setOwnerName] = useState("");
-  const [managerNames, setManagerNames] = useState("");
+  const [managers, setManagers] = useState("");
   const [createdAtDisplay, setCreatedAtDisplay] = useState("");
   const [modifiedAtDisplay, setModifiedAtDisplay] = useState("");
 
@@ -73,7 +80,9 @@ function Details() {
         console.error("Design not found.");
       } else {
         setDesign(fetchedDesign);
-        setOwnerName(users.find((user) => user.id === design.owner)?.username);
+        setOwnerName(
+          users.find((user) => user.id === design.owner || user.id === design.ownerId)?.username
+        );
         console.log("fetchedDesign", fetchedDesign);
         setCreatedAtDisplay(formatDateDetail(fetchedDesign.createdAt));
         setModifiedAtDisplay(formatDateDetail(fetchedDesign.modifiedAt));
@@ -91,10 +100,10 @@ function Details() {
         console.error("Project not found.");
       } else {
         setProject(fetchedProject);
-        const projectManagers = (fetchedProject.managers || []).map(
-          (id) => users.find((user) => user.id === id)?.username
+        const projectManagers = (fetchedProject?.managers || []).map(
+          (id) => users?.find((user) => user?.id === id)?.username || ""
         );
-        setManagerNames(projectManagers.join(", "));
+        setManagers(projectManagers);
         console.log("fetchedProject", fetchedProject);
         setCreatedAtDisplay(formatDateDetail(fetchedProject.createdAt));
         setModifiedAtDisplay(formatDateDetail(fetchedProject.modifiedAt));
@@ -106,41 +115,17 @@ function Details() {
     }
   }, [designs, projects, userDesigns, userProjects]);
 
-  useEffect(() => {
-    if (type === "design" && designId && userDesigns.length > 0) {
-      const fetchedDesign =
-        userDesigns.find((design) => design.id === designId) ||
-        designs.find((design) => design.id === designId);
+  const handleOpenViewCollabModal = () => {
+    setIsViewCollabModalOpen(true);
+  };
 
-      if (!fetchedDesign) {
-        console.error("Design not found.");
-      } else if (!deepEqual(design, fetchedDesign)) {
-        setDesign(fetchedDesign);
-        getUsername(fetchedDesign.owner).then((username) => setOwnerName(username));
-        console.log("fetchedDesign", fetchedDesign);
-        setCreatedAtDisplay(formatDateDetail(fetchedDesign.createdAt));
-        setModifiedAtDisplay(formatDateDetail(fetchedDesign.modifiedAt));
-      }
-    }
-  }, [designId, designs, userDesigns]);
+  const handleCloseViewCollabModal = () => {
+    setIsViewCollabModalOpen(false);
+  };
 
-  useEffect(() => {
-    if (type === "project" && projectId && userProjects.length > 0) {
-      const fetchedProject =
-        userProjects.find((project) => project.id === projectId) ||
-        projects.find((project) => project.id === projectId);
-
-      if (!fetchedProject) {
-        console.error("Project not found.");
-      } else if (!deepEqual(project, fetchedProject)) {
-        setProject(fetchedProject);
-        getUsernames(fetchedProject.managers).then((usernames) => setManagerNames(usernames));
-        console.log("fetchedProject", fetchedProject);
-        setCreatedAtDisplay(formatDateDetail(fetchedProject.createdAt));
-        setModifiedAtDisplay(formatDateDetail(fetchedProject.modifiedAt));
-      }
-    }
-  }, [projectId, projects, userProjects]);
+  if (loading) {
+    return <LoadingPage message={`Fetching ${type} details.`} />;
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -151,7 +136,14 @@ function Details() {
             {type === "design" && id && design.designName ? (
               <>
                 <div className="room-image-div">
-                  <img className="room-image" src="../../img/logoWhitebg.png" alt="Room 1803" />
+                  <img
+                    className="room-image"
+                    src={
+                      getDesignImage(designId, userDesigns, userDesignVersions, 0) ||
+                      "/img/transparent-image.png"
+                    }
+                    alt=""
+                  />
                 </div>
                 <div className="room-info">
                   <h1>{design.designName}</h1>
@@ -168,7 +160,20 @@ function Details() {
             ) : type === "project" && id && project.projectName ? (
               <>
                 <div className="room-image-div">
-                  <img className="room-image" src="../../img/logoWhitebg.png" alt="Room 1803" />
+                  <img
+                    className="room-image"
+                    src={
+                      getProjectImage(
+                        projectId,
+                        userProjects,
+                        projects,
+                        userDesigns,
+                        userDesignVersions,
+                        0
+                      ) || "/img/transparent-image.png"
+                    }
+                    alt=""
+                  />
                 </div>
                 <div className="room-info">
                   <h1>{project.projectName}</h1>
@@ -180,8 +185,8 @@ function Details() {
                   <p>{modifiedAtDisplay}</p>
                   <p className="category">Managers</p>
                   <p>
-                    {managerNames.slice(0, 3).join(", ")}
-                    {managerNames.length > 3 ? ", and more" : ""}
+                    {managers?.slice(0, 3).join(", ")}
+                    {managers?.length > 3 ? ", and more" : ""}
                   </p>
                 </div>
               </>
@@ -191,7 +196,7 @@ function Details() {
           </div>
         </div>
         {type === "design" && id && design.designName ? (
-          <Button variant="text">
+          <Button variant="text" onClick={handleOpenViewCollabModal}>
             <div className="content">
               <div style={{ width: "100%", maxWidth: "768px", margin: "0 auto" }}>
                 <div
@@ -209,8 +214,7 @@ function Details() {
             </div>
           </Button>
         ) : type === "project" && id && project.projectName ? (
-          <Button variant="text">
-            Who has access{" "}
+          <Button variant="text" onClick={handleOpenViewCollabModal}>
             <div className="content">
               <div style={{ width: "100%", maxWidth: "768px", margin: "0 auto" }}>
                 <div
@@ -232,6 +236,14 @@ function Details() {
         )}
         <div></div>
       </div>
+      <ManageAcessModal
+        isOpen={isViewCollabModalOpen}
+        onClose={handleCloseViewCollabModal}
+        handleAccessChange={() => {}}
+        isDesign={type === "design" ? true : false}
+        object={design}
+        isViewCollab={true}
+      />
     </ThemeProvider>
   );
 }

@@ -34,85 +34,45 @@ import { handleNameChange } from "./backend/ProjectDetails";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 import deepEqual from "deep-equal";
 
-function ProjectHead() {
+function ProjectHead({ project, changeMode, setChangeMode }) {
+  const { user, userDoc, handleLogout } = useSharedProps();
+  const { projectId } = useParams();
+  const isOnline = useNetworkStatus();
+  const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
 
-  const { user, userDoc, handleLogout } = useSharedProps();
-  const isOnline = useNetworkStatus();
   const [anchorEl, setAnchorEl] = useState(null);
   const [anchorElShare, setAnchorElShare] = useState(null);
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
 
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
+  const [isChangeModeVisible, setIsChangeModeVisible] = useState(false);
+  const [role, setRole] = useState(0); //0 for viewer (default), 1 for editor, 2 for commenter, 3 for owner
+
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isManageAccessModalOpen, setIsManageAccessModalOpen] = useState(false);
   const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
   const [isViewCollab, setIsViewCollab] = useState(true);
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleteVisible, setIsDeleteVisible] = useState(false);
+
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [isDownloadVisible, setIsDownloadVisible] = useState(false);
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [isRenameVisible, setIsRenameVisible] = useState(false);
   const [newName, setNewName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
+
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [newCollaborator, setNewCollaborator] = useState("");
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userId, setUserId] = useState(null);
-  const [projectData, setProjectData] = useState(null);
-  const [project, setProject] = useState(null);
-  const { projectId } = useParams();
-
-  const navigate = useNavigate();
-
-  useProjectDetails(projectId, setUserId, setProjectData, setNewName);
-  useEffect(() => {
-    const auth = getAuth();
-
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        setUserId(user.uid);
-
-        const fetchProjectDetails = async () => {
-          try {
-            const projectRef = doc(db, "projects", projectId);
-            const projectSnapshot = await getDoc(projectRef);
-            if (projectSnapshot.exists()) {
-              const project = projectSnapshot.data();
-              setProject(project);
-              setNewName(project.name);
-
-              // Listen for real-time updates to the project document
-              const unsubscribeProject = onSnapshot(projectRef, (doc) => {
-                if (doc.exists()) {
-                  const updatedProject = doc.data();
-                  setProject(updatedProject);
-                  setNewName(updatedProject.name);
-                }
-              });
-
-              // Cleanup listener on component unmount
-              return () => unsubscribeProject();
-            } else {
-              console.error("Project not found");
-            }
-          } catch (error) {
-            console.error("Error fetching project details:", error);
-          }
-        };
-
-        fetchProjectDetails();
-      } else {
-        console.error("User is not authenticated");
-      }
-    });
-
-    return () => unsubscribe(); // Cleanup listener on component unmount
-  }, [projectId]);
 
   useEffect(() => {
     // Find access level of the user (to display Manage Access/View Collaborators in ShareMenu)

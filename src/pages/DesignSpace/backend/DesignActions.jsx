@@ -76,6 +76,29 @@ export const getDesignImage = (designId, userDesigns, userDesignVersions, index 
   return fetchedLatestDesignVersion.images[index].link || "";
 };
 
+export const getProjectImage = (
+  projectId,
+  userProjects,
+  projects,
+  userDesigns,
+  userDesignVersions,
+  index = 0
+) => {
+  // Get the project
+  const fetchedProject =
+    userProjects.find((project) => project.id === projectId) ||
+    projects.find((project) => project.id === projectId);
+  if (!fetchedProject || fetchedProject.designs.length === 0) {
+    return "";
+  }
+
+  // Get the latest designId (the last one in the designIds array)
+  const latestDesignId = fetchedProject.designs[fetchedProject.designs.length - 1];
+
+  // Return the design image by calling getDesignImage
+  return getDesignImage(latestDesignId, userDesigns, userDesignVersions, index);
+};
+
 export const handleNameChange = async (designId, newName, user, userDoc, setIsEditingName) => {
   console.log("handleNameChange - newName", { designId, newName, user, userDoc, setIsEditingName });
   try {

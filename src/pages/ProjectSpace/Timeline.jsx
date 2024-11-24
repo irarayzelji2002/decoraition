@@ -21,12 +21,18 @@ import { Button, IconButton } from "@mui/material";
 import { CalendarIcon, ListIconTimeline, SingleIconTimeline } from "./svg/ExportIcon";
 import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import ProjectSpace from "./ProjectSpace";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function Timeline() {
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
+  const { isDarkMode, projects, userProjects } = useSharedProps();
+  const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
+  const [project, setProject] = useState({});
+  const [loadingProject, setLoadingProject] = useState(true);
 
   const [date, setDate] = useState(new Date());
   const [tasks, setTasks] = useState([]);
@@ -195,8 +201,16 @@ function Timeline() {
   };
 
   return (
-    <>
-      <ProjectHead />
+    <ProjectSpace
+      project={project}
+      projectId={projectId}
+      inDesign={false}
+      inPlanMap={false}
+      inTimeline={true}
+      inBudget={false}
+      changeMode={changeMode}
+      setChangeMode={setChangeMode}
+    >
       <div className="timeline-container">
         <div className="center-me" style={{ flexDirection: "row", marginBottom: "20px" }}>
           <IconButton
@@ -392,8 +406,7 @@ function Timeline() {
         />
       </div>
       <div className="bottom-filler" />
-      <BottomBarDesign Timeline={true} projId={projectId} />
-    </>
+    </ProjectSpace>
   );
 }
 

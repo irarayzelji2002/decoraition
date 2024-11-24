@@ -69,13 +69,21 @@ function ProjectOptionsHome({
 
   const getLatestDesignImage = (projectId) => {
     console.log("getLatestDesignImage called with projectId:", projectId); // Debug log
-    const design = userDesigns.find((design) => design.projectId === projectId);
-    if (!design) {
-      console.log("No design found for project:", projectId); // Debug log
+    const designsForProject = userDesigns.filter((design) => design.projectId === projectId);
+    if (designsForProject.length === 0) {
+      console.log("No designs found for project:", projectId); // Debug log
       return "";
     }
 
-    const latestDesignVersionId = design.history[design.history.length - 1];
+    const latestDesign = designsForProject.sort(
+      (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
+    )[0];
+    if (!latestDesign) {
+      console.log("No latest design found for project:", projectId); // Debug log
+      return "";
+    }
+
+    const latestDesignVersionId = latestDesign.history[latestDesign.history.length - 1];
     const fetchedLatestDesignVersion =
       userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
       designVersions.find((designVer) => designVer.id === latestDesignVersionId);

@@ -174,7 +174,11 @@ const MapPin = ({
             alignItems: "center",
           }}
         >
-          <img src={getDesignImage(designId)} alt={`design preview`} className="image-pin" />
+          <img
+            src={getDesignImage(designId) || "../../img/design-placeholder.png"}
+            className="image-pin"
+            alt={`design preview`}
+          />
           <span className="pinName">{title}</span>
         </div>
         <div style={{ display: "flex", width: "50%", justifyContent: "flex-end" }}>
@@ -201,6 +205,7 @@ const MapPin = ({
         </div>
       </div>
       <SimpleDeleteConfirmation
+        item={"pin"}
         open={deleteConfirmOpen}
         handleClose={() => setDeleteConfirmOpen(false)}
         handleDelete={handleDelete}

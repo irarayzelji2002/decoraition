@@ -362,7 +362,7 @@ const EditItem = () => {
       <TopBar state={"Edit Item"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="add-item-container">
         <div className="left-column">
-          <TextField
+          {/* <TextField
             placeholder="Search for an item"
             InputProps={{
               startAdornment: (
@@ -382,7 +382,7 @@ const EditItem = () => {
             }}
             fullWidth
             inputProps={{ ...textFieldInputProps, maxLength: 100 }}
-          />
+          /> */}
           <div
             className="upload-section"
             onDragEnter={handleDragEnter}
@@ -444,7 +444,7 @@ const EditItem = () => {
             <label htmlFor="item-name" className="item-name-label">
               Item name
             </label>
-            <div className="input-group">
+            <div className="input-group add">
               <TextField
                 id="item-name"
                 type="text"
@@ -465,7 +465,7 @@ const EditItem = () => {
             <label htmlFor="item-description" className="item-name-label">
               Item Description
             </label>
-            <div className="input-group">
+            <div className="input-group add">
               <TextField
                 id="item-description"
                 type="text"

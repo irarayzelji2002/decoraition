@@ -20,12 +20,14 @@ import {
   formatDate,
   formatDateLong,
   getUsername,
+  handleCreateDesign,
 } from "./backend/HomepageActions";
 import { TiledIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
-import { Button, IconButton } from "@mui/material";
+import { Box, Button, IconButton } from "@mui/material";
 import { iconButtonStyles } from "./DrawerComponent.jsx";
 import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
 import { AddDesign } from "../DesignSpace/svg/AddImage.jsx";
+import { circleButtonStyles } from "./Homepage.jsx";
 
 export default function SeeAllDesigns() {
   const navigate = useNavigate();
@@ -52,6 +54,7 @@ export default function SeeAllDesigns() {
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [sortBy, setSortBy] = useState("none");
   const [order, setOrder] = useState("none");
+  const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
 
   const loadDesignDataForView = async () => {
     if (userDesigns.length > 0) {
@@ -209,8 +212,10 @@ export default function SeeAllDesigns() {
     setMenuOpen(!menuOpen);
   };
 
-  const toggleModal = () => {
-    // Your modal toggle logic here
+  const handleCreateDesignWithLoading = async () => {
+    setIsDesignButtonDisabled(true);
+    await handleCreateDesign(user, userDoc.id, navigate);
+    setIsDesignButtonDisabled(false);
   };
 
   return (
@@ -401,11 +406,30 @@ export default function SeeAllDesigns() {
       <div className="circle-button-container" style={{ bottom: "30px" }}>
         {menuOpen && (
           <div className="small-buttons">
-            <div className="small-button-container" onClick={toggleModal}>
+            <div className="small-button-container" onClick={handleCreateDesignWithLoading}>
               <span className="small-button-text">Create a Design</span>
-              <div className="small-circle-button">
+              <Box
+                onClick={handleCreateDesignWithLoading}
+                sx={{
+                  ...circleButtonStyles,
+                  opacity: isDesignButtonDisabled ? "0.5" : "1",
+                  cursor: isDesignButtonDisabled ? "default" : "pointer",
+                  "&:hover": {
+                    backgroundImage: isDesignButtonDisabled
+                      ? "var(--gradientCircle)"
+                      : "var(--gradientCircleHover)",
+                  },
+                  "& svg": {
+                    marginRight: "-2px",
+                  },
+                  "@media (max-width: 768px)": {
+                    width: "50px",
+                    height: "50px",
+                  },
+                }}
+              >
                 <AddDesign />
-              </div>
+              </Box>
             </div>
             <div
               className="small-button-container"

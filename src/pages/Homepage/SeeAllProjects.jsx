@@ -8,7 +8,7 @@ import Loading from "../../components/Loading.jsx";
 import Dropdowns from "../../components/Dropdowns.jsx";
 import ProjectOptionsHome from "../../components/ProjectOptionsHome.jsx";
 import HomepageTable from "./HomepageTable.jsx";
-import { Button, IconButton } from "@mui/material";
+import { Box, Button, IconButton } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import { AddIcon } from "../../components/svg/DefaultMenuIcons.jsx";
 import {
@@ -26,6 +26,7 @@ import { HorizontalIcon, ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportI
 import { iconButtonStyles } from "./DrawerComponent.jsx";
 import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
 import { AddProject } from "../DesignSpace/svg/AddImage.jsx";
+import { circleButtonStyles } from "./Homepage.jsx";
 
 export default function SeeAllProjects() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ export default function SeeAllProjects() {
   const [sortBy, setSortBy] = useState("none");
   const [order, setOrder] = useState("none");
 
-  const [isCreateProjectButtonDisabled, setIsCreateProjectButtonDisabled] = useState(false);
+  const [isProjectButtonDisabled, setIsProjectButtonDisabled] = useState(false);
 
   const loadProjectDataForView = async () => {
     if (userProjects.length > 0) {
@@ -222,14 +223,10 @@ export default function SeeAllProjects() {
     setMenuOpen(!menuOpen);
   };
 
-  const toggleModal = () => {
-    // Your modal toggle logic here
-  };
-
   const handleCreateProjectWithLoading = async () => {
-    setIsCreateProjectButtonDisabled(true);
+    setIsProjectButtonDisabled(true);
     // Your create project logic here
-    setIsCreateProjectButtonDisabled(false);
+    setIsProjectButtonDisabled(false);
   };
 
   return (
@@ -425,19 +422,30 @@ export default function SeeAllProjects() {
       <div className="circle-button-container" style={{ bottom: "30px" }}>
         {menuOpen && (
           <div className="small-buttons">
-            <div className="small-button-container" onClick={handleCreateProjectWithLoading}>
-              <span
-                className="small-button-text"
-                style={{
-                  opacity: isCreateProjectButtonDisabled ? "0.5" : "1",
-                  cursor: isCreateProjectButtonDisabled ? "default" : "pointer",
+            <div className="small-button-container">
+              <span className="small-button-text">Create a Project</span>
+              <Box
+                onClick={handleCreateProjectWithLoading}
+                sx={{
+                  ...circleButtonStyles,
+                  opacity: isProjectButtonDisabled ? "0.5" : "1",
+                  cursor: isProjectButtonDisabled ? "default" : "pointer",
+                  "&:hover": {
+                    backgroundImage: isProjectButtonDisabled
+                      ? "var(--gradientCircle)"
+                      : "var(--gradientCircleHover)",
+                  },
+                  "& svg": {
+                    marginRight: "-2px",
+                  },
+                  "@media (max-width: 768px)": {
+                    width: "50px",
+                    height: "50px",
+                  },
                 }}
               >
-                Create a Project
-              </span>
-              <div className="small-circle-button">
                 <AddProject />
-              </div>
+              </Box>
             </div>
             <div
               className="small-button-container"

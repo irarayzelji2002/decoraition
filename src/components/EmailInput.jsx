@@ -17,6 +17,7 @@ import { AddCollaborators } from "../pages/DesignSpace/svg/AddImage";
 import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import { useSharedProps } from "../contexts/SharedPropsContext";
 import { stringAvatarColor, stringAvatarInitials } from "../functions/utils";
+import { priceTextFieldStyles } from "../pages/DesignSpace/AddItem";
 
 const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
   const { users } = useSharedProps();
@@ -222,12 +223,13 @@ const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
         sx={{ "& svg": { minWidth: "25px", minHeight: "25px" } }}
       >
         <AddCollaborators />
-        <input // Input field at the top
+        <TextField // Input field at the top
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Enter email addresses"
-          style={{
+          sx={{
+            ...priceTextFieldStyles,
             backgroundColor: "transparent",
             color: "var(--color-white)",
             border: "none",

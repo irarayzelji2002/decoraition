@@ -318,7 +318,7 @@ const AddItem = () => {
       <TopBar state={"Add Item"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="add-item-container">
         <div className="left-column">
-          <TextField
+          {/* <TextField
             placeholder="Search for an item"
             InputProps={{
               startAdornment: (
@@ -338,7 +338,7 @@ const AddItem = () => {
             }}
             fullWidth
             inputProps={{ ...textFieldInputProps, maxLength: 100 }}
-          />
+          /> */}
 
           <div
             className="upload-section"
@@ -572,6 +572,7 @@ export const textFieldInputProps = {
 export const priceTextFieldStyles = {
   input: { color: "var(--color-white)" },
   height: "fit-content",
+  width: "100%",
   borderRadius: "10px",
   "& .MuiOutlinedInput-notchedOutline": {
     borderWidth: 2, // border thickness

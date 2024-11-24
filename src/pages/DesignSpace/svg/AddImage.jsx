@@ -286,7 +286,7 @@ export function AddCollaborators() {
       viewBox="0 0 18 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ margin: "16px", marginLeft: "20px" }}
+      style={{ margin: "16px", marginLeft: "20px", minWidth: "25px", minHeight: "25px" }}
     >
       <g filter="url(#filter0_d_1625_51363)">
         <path

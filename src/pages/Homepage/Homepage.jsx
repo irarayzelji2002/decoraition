@@ -744,7 +744,7 @@ function Homepage() {
 
 export default Homepage;
 
-const circleButtonStyles = {
+export const circleButtonStyles = {
   backgroundImage: "var(--gradientCircle)",
   color: "var(--color-white)",
   borderRadius: "50%",

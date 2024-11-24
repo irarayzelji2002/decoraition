@@ -326,7 +326,6 @@ export const formatDateDetailComma = (timestamp) => {
 
 export const formatDateAgo = (date) => {
   const now = new Date();
-
   const diffInSeconds = Math.floor((now - date) / 1000);
 
   if (diffInSeconds < 60) {
@@ -335,14 +334,21 @@ export const formatDateAgo = (date) => {
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
+    const remainingSeconds = diffInSeconds % 60;
+    return `${diffInMinutes} ${
+      diffInMinutes === 1 ? "minute" : "minutes"
+    } and ${remainingSeconds} ${remainingSeconds === 1 ? "second" : "seconds"} ago`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+    const remainingMinutes = diffInMinutes % 60;
+    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} and ${remainingMinutes} ${
+      remainingMinutes === 1 ? "minute" : "minutes"
+    } ago`;
   }
 
+  // Handle dates beyond 24 hours ago (optional)
   return null;
 };
 

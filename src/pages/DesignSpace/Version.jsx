@@ -292,7 +292,9 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                     <div className="versionTitle">{version.displayDate}</div>
                     {version.isRestored && (
                       <div className="copyByTitle">
-                        <span>Restored from version at</span>
+                        <span>{`Restored from version ${
+                          version.isRestoredFrom.displayDate?.includes(",") ? "at" : ""
+                        }`}</span>
                         <span>{version.isRestoredFrom.displayDate}</span>
                       </div>
                     )}
@@ -618,8 +620,9 @@ const ConfirmRestoreModal = ({
     </DialogTitle>
     <DialogContent sx={dialogContentStyles}>
       <Typography variant="body1" sx={{ textAlign: "center", maxWidth: "500px" }}>
-        Are you sure you want to restore the design to the version at{" "}
-        {selectedDesignVersionDetails.displayDate}?
+        {`Are you sure you want to restore the design to the version ${
+          selectedDesignVersionDetails.displayDate?.includes(",") ? "at " : ""
+        }${selectedDesignVersionDetails.displayDate}?`}
       </Typography>
     </DialogContent>
     <DialogActions sx={dialogActionsStyles}>

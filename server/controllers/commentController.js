@@ -91,7 +91,11 @@ exports.addComment = async (req, res) => {
     });
 
     // Notification
-    await notifController.sendCommentNotifications(designDoc, userId, "comment", mentions);
+    try {
+      await notifController.sendCommentNotifications(designDoc, userId, "comment", mentions);
+    } catch (notifError) {
+      console.log("Notification error (non-critical):", notifError.message);
+    }
 
     res.status(200).json({
       success: true,
@@ -219,45 +223,49 @@ exports.changeCommentStatus = async (req, res) => {
     await commentRef.update({ status });
 
     // Notification
-    const designOwner = designDoc.data().owner;
-    const editors = designDoc.data().editors || [];
-    const commenters = designDoc.data().commenters || [];
+    try {
+      const designOwner = designDoc.data().owner;
+      const editors = designDoc.data().editors || [];
+      const commenters = designDoc.data().commenters || [];
 
-    const userDocs = await Promise.all([
-      db.collection("users").doc(designOwner).get(),
-      ...editors.map((id) => db.collection("users").doc(id).get()),
-      ...commenters.map((id) => db.collection("users").doc(id).get()),
-    ]);
+      const userDocs = await Promise.all([
+        db.collection("users").doc(designOwner).get(),
+        ...editors.map((id) => db.collection("users").doc(id).get()),
+        ...commenters.map((id) => db.collection("users").doc(id).get()),
+      ]);
 
-    for (const userDoc of userDocs) {
-      if (!userDoc.exists || !userDoc.data().notifSettings.allowNotif) continue;
-      const settings = userDoc.data().notifSettings;
-      const isOwner = userDoc.id === designOwner;
-      const isCollaborator = editors.includes(userDoc.id) || commenters.includes(userDoc.id);
-      if (isOwner && settings.commentStatusChangeAsOwner && userId !== designOwner) {
-        await notifController.createNotification(
-          userDoc.id,
-          "comment",
-          `Comment ${status ? "Resolved" : "Reopened"}`,
-          `A comment on your design "${designDoc.data().designName}" was ${
-            status ? "resolved" : "reopened"
-          }`
-        );
-      } else if (
-        isCollaborator &&
-        settings.commentStatusChangeAsCollab &&
-        !editors.includes(userId) &&
-        !commenters.includes(userId)
-      ) {
-        await notifController.createNotification(
-          userDoc.id,
-          "comment",
-          `Comment ${status ? "Resolved" : "Reopened"}`,
-          `A comment on design "${designDoc.data().designName}" was ${
-            status ? "resolved" : "reopened"
-          }`
-        );
+      for (const userDoc of userDocs) {
+        if (!userDoc.exists || !userDoc.data().notifSettings.allowNotif) continue;
+        const settings = userDoc.data().notifSettings;
+        const isOwner = userDoc.id === designOwner;
+        const isCollaborator = editors.includes(userDoc.id) || commenters.includes(userDoc.id);
+        if (isOwner && settings.commentStatusChangeAsOwner && userId !== designOwner) {
+          await notifController.createNotification(
+            userDoc.id,
+            "comment",
+            `Comment ${status ? "Resolved" : "Reopened"}`,
+            `A comment on your design "${designDoc.data().designName}" was ${
+              status ? "resolved" : "reopened"
+            }`
+          );
+        } else if (
+          isCollaborator &&
+          settings.commentStatusChangeAsCollab &&
+          !editors.includes(userId) &&
+          !commenters.includes(userId)
+        ) {
+          await notifController.createNotification(
+            userDoc.id,
+            "comment",
+            `Comment ${status ? "Resolved" : "Reopened"}`,
+            `A comment on design "${designDoc.data().designName}" was ${
+              status ? "resolved" : "reopened"
+            }`
+          );
+        }
       }
+    } catch (notifError) {
+      console.log("Notification error (non-critical):", notifError.message);
     }
 
     res.status(200).json({

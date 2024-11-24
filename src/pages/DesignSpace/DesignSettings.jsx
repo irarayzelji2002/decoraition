@@ -386,6 +386,7 @@ const SettingsContent = ({
               paddingLeft: "100px",
               paddingRight: "100px",
               margin: "0px 10px",
+              maxWidth: "235px",
               opacity: isDesignButtonDisabled ? "0.5" : "1",
               cursor: isDesignButtonDisabled ? "default" : "pointer",
               "&:hover": {
@@ -412,6 +413,7 @@ const SettingsContent = ({
               paddingLeft: "100px",
               paddingRight: "100px",
               margin: "0px 10px",
+              maxWidth: "235px",
             }}
             onMouseOver={(e) =>
               (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")

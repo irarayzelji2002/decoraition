@@ -31,7 +31,12 @@ const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
   useEffect(() => {
     // Filter to valid user data
     const trueUsers = users.filter(
-      (user) => user?.email && user?.username && user?.firstName && user?.lastName
+      (user) =>
+        user?.email &&
+        user?.username &&
+        user?.firstName &&
+        user?.lastName &&
+        user?.notifSettings?.allowNotif !== undefined
     );
     // Filter out users that are already collaborators
     const filteredUsers = trueUsers.filter(

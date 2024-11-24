@@ -486,6 +486,7 @@ const ProjectSettings = () => {
                   textTransform: "none",
                   width: "230px",
                   margin: "0px 10px",
+                  maxWidth: "235px",
                   opacity: isSaveButtonDisabled ? "0.5" : "1",
                   cursor: isSaveButtonDisabled ? "default" : "pointer",
                   "&:hover": {
@@ -510,6 +511,7 @@ const ProjectSettings = () => {
                   textTransform: "none",
                   width: "230px",
                   margin: "0px 10px",
+                  maxWidth: "235px",
                 }}
                 onMouseOver={(e) =>
                   (e.target.style.backgroundImage =

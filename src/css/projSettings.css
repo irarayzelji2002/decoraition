@@ -95,6 +95,8 @@
   justify-content: center;
   margin-top: 2rem;
   margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .saveButton.MuiButton-root {

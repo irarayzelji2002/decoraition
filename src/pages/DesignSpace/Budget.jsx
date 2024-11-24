@@ -239,7 +239,7 @@ function Budget() {
 
   // Get latest design version
   useEffect(() => {
-    console.log("Init Budget page - deisgn", design);
+    console.log("Init Budget page - design", design);
     console.log("Init Budget page - design?.history", design?.history);
     if (design?.history && design.history.length > 0) {
       const latestDesignVersionId = design.history[design.history.length - 1];

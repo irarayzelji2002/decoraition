@@ -133,7 +133,6 @@ body {
   font-size: var(--font-size-tiny);
   font-weight: bold;
   color: var(--color-white);
-  padding: 6px;
   width: fit-content;
   border-radius: 24px;
   background-color: var(--budget-capsule);

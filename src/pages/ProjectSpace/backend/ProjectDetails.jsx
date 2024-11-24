@@ -493,6 +493,7 @@ export const handleCreateDesign = async (projectId, projectName, user, userDoc) 
       {
         userId: userDoc.id,
         designName: `Untitled Design for ${projectName}`,
+        projectId,
       },
       {
         headers: {
@@ -501,11 +502,18 @@ export const handleCreateDesign = async (projectId, projectName, user, userDoc) 
       }
     );
     if (response.status === 200) {
-      return { success: true, message: "Design created successfully" };
+      return {
+        success: true,
+        message: "Design created successfully",
+        designId: response.data.designId,
+      };
     }
   } catch (error) {
     console.error("Error creating design:", error);
-    return { success: false, message: error?.response?.data?.error || "Failed to create design" };
+    return {
+      success: false,
+      message: error?.response?.data?.error || "Failed to create design",
+    };
   }
 };
 
@@ -545,5 +553,25 @@ export const updateDesignProjectId = async (designId, projectId) => {
   } catch (error) {
     console.error("Error updating design projectId:", error);
     showToast("error", "Failed to import design");
+  }
+};
+
+export const importDesignToProject = async (projectId, selectedDesignId, user, userDoc) => {
+  try {
+    const response = await axios.put(
+      `/api/project/${projectId}/import-design`,
+      { userId: userDoc.id, designId: selectedDesignId },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      return { success: true, message: "Design imported successfully" };
+    }
+  } catch (error) {
+    console.error("Error importing design:", error);
+    return { success: false, message: error?.response?.data?.error || "Failed to import design" };
   }
 };

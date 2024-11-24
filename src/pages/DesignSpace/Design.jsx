@@ -115,7 +115,7 @@ function Design() {
   const [validateApplyMask, setValidateApplyMask] = useState(null);
 
   // Comment
-  // userDesignComments & userComments for the designs's latest deisgn version
+  // userDesignComments & userComments for the designs's latest design version
   const [designComments, setDesignComments] = useState([]);
   const [commentTypeTab, setCommentTypeTab] = useState(true); // true for Open, false for Resolved
   const [isPinpointing, setIsPinpointing] = useState(false);

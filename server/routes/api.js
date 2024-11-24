@@ -229,6 +229,11 @@ router.post(
   upload.single("file"),
   planMapController.handlePlanImageUpload
 );
+router.put(
+  "/project/:projectId/import-design",
+  authenticateUser,
+  projectController.importDesignToProject
+);
 
 // Network check
 router.get("/health-check", (req, res) => {

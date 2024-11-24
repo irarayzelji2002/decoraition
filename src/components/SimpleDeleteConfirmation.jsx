@@ -51,11 +51,11 @@ const SimpleDeleteConfirmation = ({ open, handleClose, handleDelete }) => {
         </Typography>
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
-        <Button fullWidth onClick={handleClose} sx={outlinedButtonStyles}>
-          Cancel
-        </Button>
         <Button fullWidth onClick={handleDelete} sx={gradientButtonStyles}>
           Delete
+        </Button>
+        <Button fullWidth onClick={handleClose} sx={outlinedButtonStyles}>
+          Cancel
         </Button>
       </DialogActions>
     </Dialog>

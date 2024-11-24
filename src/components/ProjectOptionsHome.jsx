@@ -34,6 +34,7 @@ function ProjectOptionsHome({
 
   useEffect(() => {
     toggleOptions(clickedId);
+    console.log(project.id);
   }, [clickedId]);
 
   const getDesignImage = (designId) => {
@@ -66,20 +67,35 @@ function ProjectOptionsHome({
     return fetchedLatestDesignVersion.images[0].link || "";
   };
 
-  const getProjectImage = (projectId) => {
-    // Get the project
-    const fetchedProject =
-      userProjects.find((project) => project.id === projectId) ||
-      projects.find((project) => project.id === projectId);
-    if (!fetchedProject || fetchedProject.designs.length === 0) {
+  const getLatestDesignImage = (projectId) => {
+    console.log("getLatestDesignImage called with projectId:", projectId); // Debug log
+    const designsForProject = userDesigns.filter((design) => design.projectId === projectId);
+    if (designsForProject.length === 0) {
+      console.log("No designs found for project:", projectId); // Debug log
       return "";
     }
 
-    // Get the latest designId (the last one in the designIds array)
-    const latestDesignId = fetchedProject.designs[fetchedProject.designs.length - 1];
+    const latestDesign = designsForProject.sort(
+      (a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis()
+    )[0];
+    if (!latestDesign) {
+      console.log("No latest design found for project:", projectId); // Debug log
+      return "";
+    }
 
-    // Return the design image by calling getDesignImage
-    return getDesignImage(latestDesignId);
+    const latestDesignVersionId = latestDesign.history[latestDesign.history.length - 1];
+    const fetchedLatestDesignVersion =
+      userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
+      designVersions.find((designVer) => designVer.id === latestDesignVersionId);
+
+    if (!fetchedLatestDesignVersion?.images?.length) {
+      console.log("No images found for latest design version:", latestDesignVersionId); // Debug log
+      return "";
+    }
+
+    const imageUrl = fetchedLatestDesignVersion.images[0].link || "";
+    console.log("Image URL found:", imageUrl); // Debug log
+    return imageUrl;
   };
 
   return (
@@ -98,7 +114,7 @@ function ProjectOptionsHome({
       {/* Design image */}
       <div className="homepage-thumbnail" onClick={onOpen}>
         <img
-          src={getProjectImage(project.id)}
+          src={getLatestDesignImage(project.id)}
           className="pic"
           alt=""
           style={{ objectFit: "cover", objectPosition: "center" }}

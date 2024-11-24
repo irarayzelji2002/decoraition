@@ -91,6 +91,12 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
             setError("");
           }}
           helperText={error}
+          FormHelperTextProps={{
+            sx: {
+              color:
+                error === "Name is the same as the current name" ? "var(--errorText)" : "inherit",
+            },
+          }}
           variant="outlined"
           fullWidth
           sx={{

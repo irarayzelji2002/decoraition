@@ -20,7 +20,7 @@ import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import { fetchProjectDesigns } from "./backend/ProjectDetails";
+import { handleCreateDesignWithLoading } from "./backend/ProjectDetails";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, TiledIcon, VerticalIcon } from "./svg/ExportIcon";
 import { Typography } from "@mui/material";
@@ -29,9 +29,7 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 import LoadingPage from "../../components/LoadingPage";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { formatDateLong, getUsername } from "../Homepage/backend/HomepageActions";
-import axios from "axios";
 import HomepageTable from "../Homepage/HomepageTable";
-import { usePreventNavigation } from "../../hooks/usePreventNavigation";
 
 function Project() {
   const { isDarkMode } = useSharedProps();
@@ -43,7 +41,7 @@ function Project() {
   const [projectData, setProjectData] = useState(null);
   const [designs, setDesigns] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, userDesign } = useSharedProps();
+  const { user, userDesigns } = useSharedProps();
   const [isVertical, setIsVertical] = useState(false);
   const navigate = useNavigate();
   const [optionsState, setOptionsState] = useState({
@@ -69,34 +67,33 @@ function Project() {
     setMenuOpen(!menuOpen);
   };
 
-  const handleSortByChange = (value) => {
-    setSortBy(value);
-    sortDesigns(value, order);
-  };
+  const applyFilters = async (sortBy, order) => {
+    let sortedDesigns = [...designs];
 
-  const handleOrderChange = (value) => {
-    setOrder(value);
-    sortDesigns(sortBy, value);
-  };
-
-  const sortDesigns = (sortBy, order) => {
-    const sortedDesigns = [...designs].sort((a, b) => {
-      let comparison = 0;
-      if (sortBy && sortBy !== "none" && order && order !== "none") {
+    if (sortBy && sortBy !== "none" && order && order !== "none") {
+      sortedDesigns = sortedDesigns.sort((a, b) => {
+        let comparison = 0;
         if (sortBy === "name") {
           comparison = a.designName.localeCompare(b.designName);
-        } else if (sortBy === "owner") {
-          comparison = a.owner.localeCompare(b.owner);
         } else if (sortBy === "created") {
-          comparison = a.createdAtTimestamp - b.createdAtTimestamp;
+          comparison = a.createdAt.toMillis() - b.createdAt.toMillis();
         } else if (sortBy === "modified") {
-          comparison = a.modifiedAtTimestamp - b.modifiedAtTimestamp;
+          comparison = a.modifiedAt.toMillis() - b.modifiedAt.toMillis();
         }
         return order === "ascending" ? comparison : -comparison;
-      }
-      return [...designs];
-    });
-    setFilteredDesignsForTable(sortedDesigns);
+      });
+    }
+
+    const tableData = await Promise.all(
+      sortedDesigns.map(async (design) => ({
+        ...design,
+        owner: await getUsername(design.owner),
+        formattedCreatedAt: formatDateLong(design.createdAt),
+        formattedModifiedAt: formatDateLong(design.modifiedAt),
+      }))
+    );
+
+    setFilteredDesignsForTable(tableData);
   };
 
   useEffect(() => {
@@ -104,7 +101,10 @@ function Project() {
       if (user) {
         try {
           console.log(`Fetching designs for projectId: ${projectId}`); // Debug log
-          await fetchProjectDesigns(projectId, setDesigns);
+          const projectDesigns = userDesigns
+            .filter((design) => design.projectId === projectId)
+            .sort((a, b) => b.modifiedAt.toMillis() - a.modifiedAt.toMillis());
+          setDesigns(projectDesigns);
           setLoadingImage(false); // Set loading to false after fetching
         } catch (error) {
           showToast("error", `Error fetching project designs: ${error.message}`);
@@ -115,7 +115,7 @@ function Project() {
     };
 
     fetchData();
-  }, [user, projectId, userDesign]);
+  }, [user, projectId, userDesigns]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -161,84 +161,13 @@ function Project() {
     return () => unsubscribe(); // Cleanup listener on component unmount
   }, [projectId]);
 
-  const loadProjectDataForView = async () => {
-    setLoadingDesigns(true);
-    if (designs.length > 0) {
-      const designsByLatest = [...designs].sort((a, b) => {
-        const modifiedAtA = a.modifiedAt.toDate ? a.modifiedAt.toDate() : new Date(a.modifiedAt);
-        const modifiedAtB = b.modifiedAt.toDate ? b.modifiedAt.toDate() : new Date(b.modifiedAt);
-        return modifiedAtB - modifiedAtA; // Modified latest first
-      });
-      setLoadingDesigns(false);
-      const tableData = await Promise.all(
-        designsByLatest.map(async (design) => {
-          const username = await getUsername(design.owner);
-          console.log("Design createdAt:", design.createdAt); // Debug log
-          console.log("Design modifiedAt:", design.modifiedAt); // Debug log
-          const createdAtTimestamp =
-            design.createdAt && design.createdAt.toMillis
-              ? design.createdAt.toMillis()
-              : new Date(design.createdAt).getTime();
-          const modifiedAtTimestamp =
-            design.modifiedAt && design.modifiedAt.toMillis
-              ? design.modifiedAt.toMillis()
-              : new Date(design.modifiedAt).getTime();
-          return {
-            ...design,
-            ownerId: design.owner,
-            owner: username,
-            formattedCreatedAt: formatDateLong(design.createdAt),
-            createdAtTimestamp,
-            formattedModifiedAt: formatDateLong(design.modifiedAt),
-            modifiedAtTimestamp,
-          };
-        })
-      );
-      setFilteredDesignsForTable(tableData);
-    } else {
-      setFilteredDesignsForTable([]);
-      setLoadingDesigns(false); // Set loading to false if no designs
-    }
-  };
-
   useEffect(() => {
-    loadProjectDataForView();
-  }, [designs]);
+    applyFilters(sortBy, order);
+  }, [designs, sortBy, order]);
 
   const closeModal = () => {
     setModalOpen(false);
     setModalContent(null);
-  };
-
-  const handleCreateDesign = async (projectId) => {
-    try {
-      const token = await auth.currentUser.getIdToken();
-      const response = await axios.post(
-        `/api/project/${projectId}/create-design`,
-        {
-          userId: auth.currentUser.uid,
-          designName: "Untitled Design",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (response.status === 200) {
-        showToast("success", "Design created successfully");
-        await fetchProjectDesigns(projectId, setDesigns); // Refresh designs list
-      }
-    } catch (error) {
-      console.error("Error creating design:", error);
-      showToast("error", "Error creating design! Please try again.");
-    }
-  };
-
-  const handleCreateDesignWithLoading = async (projectId) => {
-    setIsDesignButtonDisabled(true);
-    await handleCreateDesign(projectId);
-    setIsDesignButtonDisabled(false);
   };
 
   if (loadingImage) {
@@ -293,9 +222,9 @@ function Project() {
             <Dropdowns
               sortBy={sortBy}
               order={order}
-              onSortByChange={handleSortByChange}
-              onOrderChange={handleOrderChange}
               isDesign={true}
+              onSortByChange={setSortBy}
+              onOrderChange={setOrder}
             />
           </div>
         )}
@@ -380,43 +309,41 @@ function Project() {
             style={{
               width: "100%",
               display: "flex",
+              alignItems: "center",
               justifyContent: "center",
               flexDirection: "column",
             }}
           >
-            {loadingDesigns ? (
-              <Loading />
-            ) : isVertical ? (
-              designs.length > 0 && (
-                <HomepageTable
-                  isDesign={true}
-                  data={filteredDesignsForTable}
-                  isHomepage={false}
-                  optionsState={optionsState}
-                  setOptionsState={setOptionsState}
-                />
-              )
+            {isVertical ? (
+              <HomepageTable
+                isDesign={true}
+                data={filteredDesignsForTable}
+                isHomepage={false}
+                numToShowMore={numToShowMoreDesign}
+                optionsState={optionsState}
+                setOptionsState={setOptionsState}
+              />
             ) : (
-              designs.length > 0 &&
-              designs.slice(0, 6 + numToShowMoreDesign).map((design) => (
-                <DesignIcon
-                  key={design.id}
-                  id={design.id}
-                  name={design.designName}
-                  design={design}
-                  onOpen={() =>
-                    navigate(`/design/${design.id}`, {
-                      state: { designId: design.id },
-                    })
-                  }
-                  owner={getUsername(design.owner)}
-                  projectType={true}
-                  createdAt={formatDateLong(design.createdAt)}
-                  modifiedAt={formatDateLong(design.modifiedAt)}
-                  optionsState={optionsState}
-                  setOptionsState={setOptionsState}
-                />
-              ))
+              <>
+                {filteredDesignsForTable.slice(0, 6 + numToShowMoreDesign).map((design) => (
+                  <DesignIcon
+                    key={design.id}
+                    id={design.id}
+                    name={design.designName}
+                    design={design}
+                    onOpen={() =>
+                      navigate(`/design/${design.id}`, {
+                        state: { designId: design.id },
+                      })
+                    }
+                    owner={getUsername(design.owner)}
+                    createdAt={formatDateLong(design.createdAt)}
+                    modifiedAt={formatDateLong(design.modifiedAt)}
+                    optionsState={optionsState}
+                    setOptionsState={setOptionsState}
+                  />
+                ))}
+              </>
             )}
           </div>
         </div>

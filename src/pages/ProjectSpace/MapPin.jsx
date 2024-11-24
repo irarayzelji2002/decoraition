@@ -175,10 +175,13 @@ const MapPin = ({
           }}
         >
           <img
-            src={getDesignImage(designId) || "../../img/design-placeholder.png"}
+            src={getDesignImage(designId) || "/img/design-placeholder.png"}
             className="image-pin"
             alt={`design preview`}
           />
+          {/* {getDesignImage(designId) && (
+            <img src={getDesignImage(designId)} className="image-pin" alt={`design preview`} />
+          )} */}
           <span className="pinName">{title}</span>
         </div>
         <div style={{ display: "flex", width: "50%", justifyContent: "flex-end" }}>

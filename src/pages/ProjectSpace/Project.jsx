@@ -177,6 +177,13 @@ function Project() {
   if (!projectData) {
     return <LoadingPage />;
   }
+
+  const handleCreateDesign = async () => {
+    setIsDesignButtonDisabled(true);
+    await handleCreateDesignWithLoading(projectId, setDesigns);
+    setIsDesignButtonDisabled(false);
+  };
+
   return (
     <>
       <ProjectHead project={projectData} />
@@ -380,7 +387,7 @@ function Project() {
           <div className="small-buttons">
             <div
               className="small-button-container"
-              onClick={() => !isDesignButtonDisabled && handleCreateDesignWithLoading(projectId)}
+              onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
               style={{
                 opacity: isDesignButtonDisabled ? "0.5" : "1",
                 cursor: isDesignButtonDisabled ? "default" : "pointer",
@@ -393,7 +400,7 @@ function Project() {
             </div>
             <div
               className="small-button-container"
-              onClick={() => !isDesignButtonDisabled && handleCreateDesignWithLoading(projectId)}
+              onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
               style={{
                 opacity: isDesignButtonDisabled ? "0.5" : "1",
                 cursor: isDesignButtonDisabled ? "default" : "pointer",

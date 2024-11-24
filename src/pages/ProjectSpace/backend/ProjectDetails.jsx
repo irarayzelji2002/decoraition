@@ -511,12 +511,6 @@ export const handleCreateDesign = async (projectId, setDesigns) => {
   }
 };
 
-export const handleCreateDesignWithLoading = async (
-  projectId,
-  setDesigns,
-  setIsDesignButtonDisabled
-) => {
-  setIsDesignButtonDisabled(true);
+export const handleCreateDesignWithLoading = async (projectId, setDesigns) => {
   await handleCreateDesign(projectId, setDesigns);
-  setIsDesignButtonDisabled(false);
 };

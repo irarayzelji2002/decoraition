@@ -101,7 +101,7 @@ const FAQ = () => {
         </div>
       </div>
       <footer className="faq-footer">
-        <img src="../../img/logo-White.png" alt="DecorAltion Icon" className="faq-decoricon" />
+        <img src="/img/Logo-White.png" alt="DecorAltion Icon" className="faq-decoricon" />
         <p style={{ color: "white" }}>DecorAltion</p>
       </footer>
     </div>

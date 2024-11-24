@@ -93,7 +93,7 @@ const Landing = () => {
         </div>
       </div>
       <footer className="footer">
-        <img src="../../img/logo-White.png" alt="DecorAltion Icon" className="decoricon" />
+        <img src="/img/Logo-White.png" alt="DecorAltion Icon" className="decoricon" />
         <p>DecorAltion </p>
       </footer>
     </div>

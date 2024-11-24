@@ -514,3 +514,38 @@ export const handleCreateDesign = async (projectId, setDesigns) => {
 export const handleCreateDesignWithLoading = async (projectId, setDesigns) => {
   await handleCreateDesign(projectId, setDesigns);
 };
+
+export const fetchUserDesigns = async (userId) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.get(`/api/design/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user designs:", error);
+    showToast("error", "Failed to fetch user designs");
+    return [];
+  }
+};
+
+export const updateDesignProjectId = async (designId, projectId) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    await axios.put(
+      `/api/design/${designId}/update-project`,
+      { projectId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    showToast("success", "Design imported successfully");
+  } catch (error) {
+    console.error("Error updating design projectId:", error);
+    showToast("error", "Failed to import design");
+  }
+};

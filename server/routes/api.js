@@ -149,6 +149,11 @@ router.post(
   authenticateUser,
   designController.updateDesignVersionCombinedMask
 );
+router.put(
+  "/design/:designId/update-project",
+  authenticateUser,
+  designController.updateDesignProjectId
+);
 
 // Comment routes
 router.post(

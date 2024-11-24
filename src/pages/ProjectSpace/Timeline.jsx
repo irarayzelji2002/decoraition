@@ -386,6 +386,7 @@ function Timeline() {
           </div>
         )}
         <SimpleDeleteConfirmation
+          item={"task"}
           open={showDeleteModal}
           handleClose={closeDeleteModal}
           handleDelete={handleDelete}

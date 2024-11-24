@@ -2,7 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { onSnapshot, doc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { Paper, IconButton, InputBase, Button } from "@mui/material";
+import {
+  Paper,
+  IconButton,
+  InputBase,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import {
   Search as SearchIcon,
   CloseRounded as CloseRoundedIcon,
@@ -20,7 +29,11 @@ import DesignIcon from "../../components/DesignIcon";
 import Dropdowns from "../../components/Dropdowns";
 import "../../css/seeAll.css";
 import "../../css/project.css";
-import { handleCreateDesignWithLoading } from "./backend/ProjectDetails";
+import {
+  handleCreateDesignWithLoading,
+  fetchUserDesigns,
+  updateDesignProjectId,
+} from "./backend/ProjectDetails";
 import { AddDesign, AddProject } from "../DesignSpace/svg/AddImage";
 import { HorizontalIcon, TiledIcon, VerticalIcon } from "./svg/ExportIcon";
 import { Typography } from "@mui/material";
@@ -56,6 +69,9 @@ function Project() {
   const [numToShowMoreDesign, setNumToShowMoreDesign] = useState(0);
   const [thresholdDesign, setThresholdDesign] = useState(6);
   const [loadingImage, setLoadingImage] = useState(true);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [selectedDesignId, setSelectedDesignId] = useState("");
+  const userDesignsWithoutProject = userDesigns.filter((design) => !design.projectId);
 
   const handleVerticalClick = () => {
     setIsVertical(true);
@@ -177,6 +193,27 @@ function Project() {
   if (!projectData) {
     return <LoadingPage />;
   }
+
+  const handleCreateDesign = async () => {
+    setIsDesignButtonDisabled(true);
+    await handleCreateDesignWithLoading(projectId, setDesigns);
+    setIsDesignButtonDisabled(false);
+  };
+
+  const handleImportDesign = () => {
+    setImportModalOpen(true);
+  };
+
+  const handleConfirmImport = async () => {
+    if (selectedDesignId) {
+      await updateDesignProjectId(selectedDesignId, projectId);
+      setImportModalOpen(false);
+      setSelectedDesignId("");
+      const updatedDesigns = userDesigns.filter((design) => design.projectId === projectId);
+      setDesigns(updatedDesigns);
+    }
+  };
+
   return (
     <>
       <ProjectHead project={projectData} />
@@ -380,7 +417,7 @@ function Project() {
           <div className="small-buttons">
             <div
               className="small-button-container"
-              onClick={() => !isDesignButtonDisabled && handleCreateDesignWithLoading(projectId)}
+              onClick={handleImportDesign}
               style={{
                 opacity: isDesignButtonDisabled ? "0.5" : "1",
                 cursor: isDesignButtonDisabled ? "default" : "pointer",
@@ -393,7 +430,7 @@ function Project() {
             </div>
             <div
               className="small-button-container"
-              onClick={() => !isDesignButtonDisabled && handleCreateDesignWithLoading(projectId)}
+              onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
               style={{
                 opacity: isDesignButtonDisabled ? "0.5" : "1",
                 cursor: isDesignButtonDisabled ? "default" : "pointer",
@@ -410,6 +447,40 @@ function Project() {
           {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
       </div>
+
+      {importModalOpen && (
+        <Modal open={importModalOpen} onClose={() => setImportModalOpen(false)}>
+          <div className="modalContent" style={{ padding: "20px", textAlign: "center" }}>
+            <h2>Import a Design</h2>
+            <FormControl fullWidth style={{ marginBottom: "20px" }}>
+              <InputLabel id="select-design-label">Select Design</InputLabel>
+              <Select
+                labelId="select-design-label"
+                value={selectedDesignId}
+                onChange={(e) => setSelectedDesignId(e.target.value)}
+              >
+                {userDesignsWithoutProject.map((design) => (
+                  <MenuItem key={design.id} value={design.id}>
+                    {design.designName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleConfirmImport}
+              disabled={!selectedDesignId}
+              style={{ marginRight: "10px" }}
+            >
+              Confirm
+            </Button>
+            <Button variant="outlined" onClick={() => setImportModalOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </Modal>
+      )}
 
       {modalOpen && <Modal onClose={closeModal} />}
 

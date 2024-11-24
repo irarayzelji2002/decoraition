@@ -362,32 +362,34 @@ export default function SeeAllDesigns() {
               />
             </IconButton>
 
-            {/* Map over an array to create pagination buttons */}
-            {Array.from({ length: totalPages }, (_, index) => (
-              <Button
-                key={index + 1}
-                onClick={() => handlePageClick(index + 1)}
-                sx={{
-                  ...gradientButtonStyles,
-                  aspectRatio: "1/1",
-                  color: "var(--color-white)",
-                  background:
-                    page === index + 1
-                      ? "var(--gradientButton) !important"
-                      : "var(--iconBg) !important",
-
-                  minWidth: page === index + 1 ? "40px" : "36.5px",
-                  "&:hover": {
+            <div className="pagination-controls pages">
+              {/* Map over an array to create pagination buttons */}
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Button
+                  key={index + 1}
+                  onClick={() => handlePageClick(index + 1)}
+                  sx={{
+                    ...gradientButtonStyles,
+                    aspectRatio: "1/1",
+                    color: "var(--color-white)",
                     background:
                       page === index + 1
-                        ? "var(--gradientButtonHover) !important"
-                        : "var(--iconBgHover) !important",
-                  },
-                }}
-              >
-                {index + 1}
-              </Button>
-            ))}
+                        ? "var(--gradientButton) !important"
+                        : "var(--iconBg) !important",
+
+                    minWidth: page === index + 1 ? "40px" : "36.5px",
+                    "&:hover": {
+                      background:
+                        page === index + 1
+                          ? "var(--gradientButtonHover) !important"
+                          : "var(--iconBgHover) !important",
+                    },
+                  }}
+                >
+                  {index + 1}
+                </Button>
+              ))}
+            </div>
 
             {/* Next Page Button */}
             <IconButton

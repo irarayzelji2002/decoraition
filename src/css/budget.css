@@ -228,6 +228,10 @@
   margin-right: 4.55px;
 }
 
+.small-button-container.budget {
+  cursor: pointer;
+}
+
 .small-button-text {
   color: var(--always-white);
   font-size: var(--font-size-small);

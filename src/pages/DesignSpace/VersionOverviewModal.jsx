@@ -106,9 +106,9 @@ function VersionOverviewModal({
   }, [selectedDesignVersionDetails]);
 
   // Budget & Item Functions
-  const getBudgetColor = (budgetAmount, totalCost) => {
+  const getBudgetColor = (budgetAmount, totalCost, isDarkMode) => {
     if (budgetAmount === 0) {
-      return "var(--inputBg)"; // no budget
+      return isDarkMode ? "var(--inputBg)" : "var(--bright-grey)"; // no budget
     } else if (totalCost <= budgetAmount) {
       return "var(--green)"; // within budget
     } else {
@@ -286,7 +286,7 @@ function VersionOverviewModal({
                 <span
                   className="priceSum"
                   style={{
-                    backgroundColor: getBudgetColor(budgetAmount, totalCost),
+                    backgroundColor: getBudgetColor(budgetAmount, totalCost, isDarkMode),
                     marginTop: "0px",
                     marginBottom: "10px",
                   }}

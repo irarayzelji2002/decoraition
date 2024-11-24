@@ -21,6 +21,7 @@ import {
   formatDate,
   formatDateLong,
   getUsernames,
+  handleCreateProject,
 } from "./backend/HomepageActions";
 import { HorizontalIcon, ListIcon, TiledIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
 import { iconButtonStyles } from "./DrawerComponent.jsx";
@@ -225,7 +226,7 @@ export default function SeeAllProjects() {
 
   const handleCreateProjectWithLoading = async () => {
     setIsProjectButtonDisabled(true);
-    // Your create project logic here
+    await handleCreateProject(user, userDoc.id, navigate);
     setIsProjectButtonDisabled(false);
   };
 
@@ -378,32 +379,34 @@ export default function SeeAllProjects() {
               />
             </IconButton>
 
-            {/* Map over an array to create pagination buttons */}
-            {Array.from({ length: totalPages }, (_, index) => (
-              <Button
-                key={index + 1}
-                onClick={() => handlePageClick(index + 1)}
-                sx={{
-                  ...gradientButtonStyles,
-                  aspectRatio: "1/1",
-                  color: "var(--color-white)",
-                  background:
-                    page === index + 1
-                      ? "var(--gradientButton) !important"
-                      : "var(--iconBg) !important",
-
-                  minWidth: page === index + 1 ? "40px" : "36.5px",
-                  "&:hover": {
+            <div className="pagination-controls pages">
+              {/* Map over an array to create pagination buttons */}
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Button
+                  key={index + 1}
+                  onClick={() => handlePageClick(index + 1)}
+                  sx={{
+                    ...gradientButtonStyles,
+                    aspectRatio: "1/1",
+                    color: "var(--color-white)",
                     background:
                       page === index + 1
-                        ? "var(--gradientButtonHover) !important"
-                        : "var(--iconBgHover) !important",
-                  },
-                }}
-              >
-                {index + 1}
-              </Button>
-            ))}
+                        ? "var(--gradientButton) !important"
+                        : "var(--iconBg) !important",
+
+                    minWidth: page === index + 1 ? "40px" : "36.5px",
+                    "&:hover": {
+                      background:
+                        page === index + 1
+                          ? "var(--gradientButtonHover) !important"
+                          : "var(--iconBgHover) !important",
+                    },
+                  }}
+                >
+                  {index + 1}
+                </Button>
+              ))}
+            </div>
 
             {/* Next Page Button */}
             <IconButton

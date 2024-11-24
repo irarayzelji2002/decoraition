@@ -54,17 +54,29 @@ const ShareMenu = ({
         <ListItemText primary="Share" />
       </CustomMenuItem>
       {!isViewCollab && ( // Only show for editors/owners
-        <CustomMenuItem onClick={onOpenShareModal}>
+        <CustomMenuItem onClick={(e) => (isHomepage ? onOpenShareModal(e) : onOpenShareModal)}>
           <ListItemText primary="Add Collaborators" />
         </CustomMenuItem>
       )}
       <CustomMenuItem
-        onClick={isViewCollab ? onOpenManageAccessModalView : onOpenManageAccessModal}
+        onClick={(e) =>
+          isViewCollab && isHomepage
+            ? onOpenManageAccessModalView(3)
+            : isViewCollab
+            ? onOpenManageAccessModalView
+            : isHomepage
+            ? onOpenManageAccessModal(e)
+            : onOpenManageAccessModal
+        }
       >
         <ListItemText primary={isViewCollab ? "View collaborators" : "Manage Access"} />
       </CustomMenuItem>
       {!isViewCollab && ( // Only show for editors/owners since manage access is shown above
-        <CustomMenuItem onClick={onOpenManageAccessModalView}>
+        <CustomMenuItem
+          onClick={(e) =>
+            isHomepage ? onOpenManageAccessModalView(e) : onOpenManageAccessModalView
+          }
+        >
           <ListItemText primary="View collaborators" />
         </CustomMenuItem>
       )}

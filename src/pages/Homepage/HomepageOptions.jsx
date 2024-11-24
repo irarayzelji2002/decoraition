@@ -133,14 +133,19 @@ function HomepageOptions({
   };
 
   const handleClickOutside = (event) => {
-    if (optionsRef.current && !optionsRef.current.contains(event.target)) {
+    if (
+      optionsRef.current &&
+      !optionsRef.current.contains(event.target) &&
+      !event.target.closest(".MuiDialog-root")
+    ) {
       toggleOptions(id);
       setIsShareMenuOpen(false);
     }
   };
 
   // Share Functions
-  const openShareModal = () => {
+  const openShareModal = (e) => {
+    if (e) e.stopPropagation();
     setShowShareModal(true);
   };
 
@@ -149,7 +154,8 @@ function HomepageOptions({
     toggleOptions(id);
   };
 
-  const openManageAccessModal = () => {
+  const openManageAccessModal = (e) => {
+    if (e) e.stopPropagation();
     setShowManageAccessModal(true);
   };
 
@@ -158,7 +164,8 @@ function HomepageOptions({
     toggleOptions(id);
   };
 
-  const openViewCollabModal = () => {
+  const openViewCollabModal = (e) => {
+    if (e) e.stopPropagation();
     setShowViewCollabModal(true);
   };
 
@@ -191,7 +198,8 @@ function HomepageOptions({
   };
 
   // Download Functions
-  const openDownloadModal = () => {
+  const openDownloadModal = (e) => {
+    if (e) e.stopPropagation();
     setShowDownloadModal(true);
   };
 
@@ -324,7 +332,8 @@ function HomepageOptions({
   };
 
   // Make a Copy Functions
-  const openCopyModal = () => {
+  const openCopyModal = (e) => {
+    if (e) e.stopPropagation();
     setShowCopyModal(true);
   };
 
@@ -359,7 +368,8 @@ function HomepageOptions({
   };
 
   // Rename Functions
-  const openRenameModal = () => {
+  const openRenameModal = (e) => {
+    if (e) e.stopPropagation();
     setShowRenameModal(true);
   };
 
@@ -408,7 +418,8 @@ function HomepageOptions({
   };
 
   // Delete Functions
-  const openDeleteModal = () => {
+  const openDeleteModal = (e) => {
+    if (e) e.stopPropagation();
     setShowDeleteModal(true);
   };
 
@@ -504,27 +515,29 @@ function HomepageOptions({
                 </div>
                 Settings
               </div>
-              <div className="dropdown-item" onClick={openDownloadModal}>
-                <div className="icon">
-                  <DownloadIcon style={{ fontSize: 20 }} className="icon" />
+              {!((isDrawer || isTable) && isDesign) && (
+                <div className="dropdown-item" onClick={(e) => openDownloadModal(e)}>
+                  <div className="icon">
+                    <DownloadIcon style={{ fontSize: 20 }} className="icon" />
+                  </div>
+                  Download
                 </div>
-                Download
-              </div>
-              {isDesign && (
-                <div className="dropdown-item" onClick={openCopyModal}>
+              )}
+              {!(isDrawer || isTable) && isDesign && (
+                <div className="dropdown-item" onClick={(e) => openCopyModal(e)}>
                   <div className="icon">
                     <MakeACopyIcon style={{ fontSize: 20 }} className="icon" />
                   </div>
                   Make a copy
                 </div>
               )}
-              <div className="dropdown-item" onClick={openRenameModal}>
+              <div className="dropdown-item" onClick={(e) => openRenameModal(e)}>
                 <div className="icon">
                   <RenameIcon style={{ fontSize: 20 }} className="icon" />
                 </div>
                 Rename
               </div>
-              <div className="dropdown-item" onClick={openDeleteModal}>
+              <div className="dropdown-item" onClick={(e) => openDeleteModal(e)}>
                 <div className="icon">
                   <DeleteIcon style={{ fontSize: 20 }} className="icon" />
                 </div>

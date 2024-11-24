@@ -120,8 +120,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
+  margin: 30px 20px 60px 20px;
   gap: 10px;
+}
+
+.pagination-controls.pages {
+  flex-wrap: wrap;
+  margin: 0;
 }
 
 .pagination-button {
@@ -225,5 +230,11 @@
   .dropdown-container {
     margin-bottom: 15px;
     margin-top: 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pagination-controls {
+    margin: 30px 10px 50px 10px;
   }
 }

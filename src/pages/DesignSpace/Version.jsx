@@ -46,7 +46,8 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
   const [viewingImage, setViewingImage] = useState(0);
   const [openConfirmRestoreModal, setOpenConfirmRestoreModal] = useState(false);
 
-  const handleSelectVersion = (versionId) => {
+  const handleSelectVersion = (e, versionId) => {
+    if (e) e.stopPropagation();
     console.log("Selected version:", versionId);
     setSelectedDesignVersionId(versionId);
     // Find the matching version and set its formatted date
@@ -68,7 +69,8 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (e) => {
+    if (e) e.stopPropagation();
     onClose();
     if (isHistory) {
       setSelectedDesignVersionId("");
@@ -76,14 +78,14 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
     }
   };
 
-  const handleRestore = async (selectedDesignVersionId) => {
+  const handleRestore = async (e, selectedDesignVersionId) => {
     if (!selectedDesignVersionId) {
       showToast("error", "Select a version to restore");
     }
     try {
       const result = await handleRestoreDesignVersion(design, selectedDesignVersionId, user);
       if (result.success) {
-        handleClose();
+        handleClose(e);
         showToast(
           "success",
           `Design restored${
@@ -220,7 +222,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
         open={isDrawerOpen}
         onClose={onClose}
         sx={{
-          zIndex: "1000",
+          zIndex: "1300 !important",
           "& .MuiDrawer-paper": {
             width: { xs: "100%", sm: "85%", md: "50%", xl: "40%" },
             minWidth: "300px",
@@ -238,7 +240,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
         <AppBar
           position="sticky"
           sx={{
-            zIndex: 900,
+            zIndex: 1300,
             backgroundColor: "var(--color-tertiary)",
             boxShadow: "none",
             padding: "10px 20px",
@@ -251,7 +253,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
               color="var(--color-white)"
               aria-label="open drawer"
               sx={{ mr: 0.2, backgroundColor: "transparent" }}
-              onClick={handleClose}
+              onClick={(e) => handleClose(e)}
             >
               <ArrowBackIosNewRoundedIcon sx={{ color: "var(--color-white)" }} />
             </IconButton>
@@ -273,7 +275,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                 {/* Original Version */}
                 <div className="origDesign">
                   <div
-                    onClick={() => handleSelectVersion(version.id)}
+                    onClick={(e) => handleSelectVersion(e, version.id)}
                     style={{ marginBottom: "11px" }}
                   >
                     <div
@@ -314,7 +316,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                       .map((copiedVersion, index, array) => (
                         <React.Fragment key={copiedVersion.id}>
                           <div key={copiedVersion.id} className="copiedVersionItem">
-                            <div onClick={() => handleSelectVersion(copiedVersion.id)}>
+                            <div onClick={(e) => handleSelectVersion(e, copiedVersion.id)}>
                               <div
                                 className="selectVersionImgContainer"
                                 style={{
@@ -396,9 +398,10 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
               <>
                 <Button
                   variant="contained"
-                  onClick={() => {
+                  onClick={(e) => {
+                    if (e) e.stopPropagation();
                     setOpenViewModal(true);
-                    handleSelectVersion(selectedDesignVersionId);
+                    handleSelectVersion(e, selectedDesignVersionId);
                     setViewingImage(0);
                   }}
                   sx={{
@@ -418,9 +421,10 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                 {selectedDesignVersionId !== versionDetails[0]?.id && (
                   <Button
                     variant="contained"
-                    onClick={() => {
+                    onClick={(e) => {
+                      if (e) e.stopPropagation();
                       setOpenConfirmRestoreModal(true);
-                      handleSelectVersion(selectedDesignVersionId);
+                      handleSelectVersion(e, selectedDesignVersionId);
                     }}
                     sx={{
                       background: "var(--gradientButton)", // Gradient background
@@ -442,9 +446,10 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
               <>
                 <Button
                   variant="contained"
-                  onClick={() => {
+                  onClick={(e) => {
+                    if (e) e.stopPropagation();
                     setOpenViewModal(true);
-                    handleSelectVersion(selectedDesignVersionId);
+                    handleSelectVersion(e, selectedDesignVersionId);
                     setViewingImage(0);
                   }}
                   sx={{
@@ -464,6 +469,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                 <Button
                   variant="contained"
                   onClick={(e) => {
+                    if (e) e.stopPropagation();
                     if (designLinkRef.current && !designLinkRef.current.contains(e.target)) {
                       designLinkRef.current.click();
                     }
@@ -496,9 +502,10 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
               <>
                 <Button
                   variant="contained"
-                  onClick={() => {
+                  onClick={(e) => {
+                    if (e) e.stopPropagation();
                     handleSelect(selectedDesignVersionId);
-                    handleClose();
+                    handleClose(e);
                   }}
                   sx={{
                     background: "var(--gradientButton)", // Gradient background
@@ -516,7 +523,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                 </Button>
                 <Button
                   variant="contained"
-                  onClick={handleClose}
+                  onClick={(e) => handleClose(e)}
                   sx={{
                     color: "var(--color-white)",
                     background: "transparent",
@@ -596,7 +603,10 @@ const ConfirmRestoreModal = ({
         Confirm Restore
       </Typography>
       <IconButton
-        onClick={() => setOpenConfirmRestoreModal(false)}
+        onClick={(e) => {
+          if (e) e.stopPropagation();
+          setOpenConfirmRestoreModal(false);
+        }}
         sx={{
           ...iconButtonStyles,
           flexShrink: 0,
@@ -616,7 +626,7 @@ const ConfirmRestoreModal = ({
       {/* Yes Button */}
       <Button
         variant="contained"
-        onClick={() => handleRestore(selectedDesignVersionId)}
+        onClick={(e) => handleRestore(e, selectedDesignVersionId)}
         sx={gradientButtonStyles}
       >
         Yes
@@ -625,7 +635,10 @@ const ConfirmRestoreModal = ({
       {/* No Button */}
       <Button
         variant="contained"
-        onClick={() => setOpenConfirmRestoreModal(false)}
+        onClick={(e) => {
+          if (e) e.stopPropagation();
+          setOpenConfirmRestoreModal(false);
+        }}
         sx={outlinedButtonStyles}
         onMouseOver={(e) =>
           (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")

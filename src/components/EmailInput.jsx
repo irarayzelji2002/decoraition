@@ -215,7 +215,12 @@ const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Box display="flex" justifyContent="start" alignItems="center">
+      <Box
+        display="flex"
+        justifyContent="start"
+        alignItems="center"
+        sx={{ "& svg": { minWidth: "25px", minHeight: "25px" } }}
+      >
         <AddCollaborators />
         <input // Input field at the top
           value={inputValue}
@@ -228,6 +233,8 @@ const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
             border: "none",
             outline: "none",
             fontSize: "1rem",
+            wordWrap: "break-word",
+            width: "100%",
           }}
         />
       </Box>

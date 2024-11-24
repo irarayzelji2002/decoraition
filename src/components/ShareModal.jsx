@@ -259,7 +259,10 @@ const ShareModal = ({
             <Select
               value={role}
               onChange={(e) => setRole(parseInt(e.target.value, 10))}
-              sx={selectStyles}
+              sx={{
+                ...selectStyles,
+                "& .MuiOutlinedInput-input": { paddingRight: "10px !important" },
+              }}
               MenuProps={{
                 PaperProps: {
                   sx: {

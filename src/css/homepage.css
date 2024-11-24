@@ -324,10 +324,11 @@ tr:hover td {
   border-radius: 10px;
   padding: 10px 0;
   box-shadow: -4px 4px 10px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+  z-index: 800;
   width: 200px;
   border: 1px solid var(--table-stroke);
   overflow: hidden;
+  padding: 0;
 }
 
 .dropdown-menu-other {
@@ -364,8 +365,9 @@ tr:hover td {
   color: var(--color-white);
   display: flex;
   align-items: center;
-  font-size: var(--font-size-small);
+  font-size: 0.875rem;
   cursor: pointer;
+  align-items: center;
 }
 
 .dropdown-item:hover {
@@ -373,11 +375,36 @@ tr:hover td {
 }
 
 .dropdown-item .icon {
-  margin-right: 12px;
+  margin-right: 15px;
+  align-items: center;
+  display: flex;
 }
 .dropdown-item .icon2 {
-  margin-right: 12px;
+  margin-right: 15px;
+  align-items: center;
+  display: flex;
 }
+
+.shareMenuHome {
+  position: absolute;
+  top: 5px !important;
+  right: -50px !important;
+  background-color: var(--nav-card-modal);
+  border-radius: 10px;
+  padding: 0;
+  box-shadow: -4px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 800;
+  width: 200px;
+  border: 1px solid var(--table-stroke);
+  overflow: hidden;
+  padding: 0;
+}
+
+.shareMenuHome.drawer {
+  top: 7px !important;
+  right: -20px !important;
+}
+
 .dateModified {
   font-size: var(--font-size-tiny);
   color: var(--color-white);

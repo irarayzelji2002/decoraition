@@ -336,6 +336,22 @@ exports.fetchUserProjects = async (req, res) => {
   }
 };
 
+// Get role name
+const getRoleNameProject = (role) => {
+  switch (role) {
+    case 0:
+      return "Viewer";
+    case 1:
+      return "Content Manager";
+    case 2:
+      return "Contributor";
+    case 3:
+      return "Manager";
+    default:
+      return "";
+  }
+};
+
 // Check if user is manage (manage), manager not in generalAccessRole
 const isManagerProject = (projectDoc, userId) => {
   const projectData = projectDoc.data();
@@ -600,11 +616,11 @@ const sendEmailBcc = async (to, bcc, subject, body) => {
 
 exports.shareProject = async (req, res) => {
   const updatedDocuments = [];
-  const createdDocuments = [];
 
   try {
     const { projectId } = req.params;
     const { userId, emails, role, message, notifyPeople } = req.body;
+    console.log("sharedata - ", { projectId, userId, emails, role, message, notifyPeople });
 
     const getRoleField = (role) => {
       switch (role) {
@@ -629,9 +645,7 @@ exports.shareProject = async (req, res) => {
     // Check user role in project
     const allowAction = isManagerProject(projectDoc, userId);
     if (!allowAction) {
-      return res
-        .status(403)
-        .json({ error: "User does not have permission to create project version" });
+      return res.status(403).json({ error: "User does not have permission to share project" });
     }
 
     // Get owner data for email notification
@@ -648,6 +662,11 @@ exports.shareProject = async (req, res) => {
     const batch = db.batch();
     const userEmails = [];
     const nonUserEmails = [];
+    const usersToAdd = {
+      editors: [],
+      commenters: [],
+      viewers: [],
+    };
 
     for (const email of emails) {
       const userSnapshot = await db.collection("users").where("email", "==", email).get();
@@ -684,63 +703,42 @@ exports.shareProject = async (req, res) => {
         if (roleField) {
           const currentRoleArray = projectData[roleField] || [];
           if (!currentRoleArray.includes(collaboratorId)) {
-            updatedDocuments.push({
-              collection: "projects",
-              id: projectId,
-              field: roleField,
-              previousValue: currentRoleArray,
-            });
-            batch.update(projectRef, {
-              [roleField]: [...currentRoleArray, collaboratorId],
-            });
+            usersToAdd[roleField].push(collaboratorId);
           }
-        }
-      } else {
-        // User doesn't exist - add to nonUserInvites
-        nonUserEmails.push(email);
-        const nonUserRef = db.collection("nonUserInvites").doc(email);
-        const nonUserDoc = await nonUserRef.get();
-
-        if (nonUserDoc.exists) {
-          const currentProjects = nonUserDoc.data().projects || [];
-          const newProject = { projectId, role };
-
-          if (!currentProjects.some((project) => project.projectId === projectId)) {
-            updatedDocuments.push({
-              collection: "nonUserInvites",
-              id: email,
-              field: "projects",
-              previousValue: currentProjects,
-            });
-            batch.update(nonUserRef, {
-              projects: [...currentProjects, newProject],
-            });
-          }
-        } else {
-          batch.set(nonUserRef, {
-            email,
-            projects: [{ projectId, role }],
-            designs: [],
-          });
-          createdDocuments.push({
-            collection: "nonUserInvites",
-            id: email,
-          });
         }
       }
     }
 
+    // Update project document with all users at once
+    Object.entries(usersToAdd).forEach(([roleField, userIds]) => {
+      if (userIds.length > 0) {
+        const currentRoleArray = projectData[roleField] || [];
+        const newRoleArray = [...new Set([...currentRoleArray, ...userIds])];
+        updatedDocuments.push({
+          collection: "projects",
+          id: projectId,
+          field: roleField,
+          previousValue: currentRoleArray,
+        });
+        batch.update(projectRef, {
+          [roleField]: newRoleArray,
+        });
+      }
+    });
+
     // Commit all updates
     await batch.commit();
+    console.log("sharedata - upfatedDocuments - ", updatedDocuments);
 
     // Send emails if notifyPeople is true
     if (notifyPeople) {
-      const emailBody = `<p>You have been added as a ${role} in this project.</p>
+      const emailBody = `<p>You have been added as a <strong>${getRoleNameProject(
+        role
+      )}</strong> in this project.</p>
         <p>You can access the project here: <a href="${appURL}/project/${projectId}">${
         projectData.projectName
       }</a></p>
-        <p>Message from ${ownerUsername} (${ownerEmail}):</p>
-        <p>${message || "No message provided"}</p>`;
+        ${message && `<p>Message from ${ownerUsername} (${ownerEmail}):</p><p>${message}</p>`}`;
 
       await sendEmailBcc(
         ownerEmail, // primary recipient
@@ -772,16 +770,6 @@ exports.shareProject = async (req, res) => {
       }
     }
 
-    // Rollback created documents
-    for (const doc of createdDocuments) {
-      try {
-        await db.collection(doc.collection).doc(doc.id).delete();
-        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
-      } catch (deleteError) {
-        console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
-      }
-    }
-
     res.status(500).json({
       success: false,
       error: "Failed to share project",
@@ -794,7 +782,16 @@ exports.changeAccessProject = async (req, res) => {
 
   try {
     const { projectId } = req.params;
-    const { userId, initEmailsWithRole, emailsWithRole } = req.body;
+    const { userId, initEmailsWithRole, emailsWithRole, generalAccessSetting, generalAccessRole } =
+      req.body;
+    console.log("changeAccessProject - ", {
+      projectId,
+      userId,
+      initEmailsWithRole,
+      emailsWithRole,
+      generalAccessSetting,
+      generalAccessRole,
+    });
 
     // Get project document
     const projectRef = db.collection("projects").doc(projectId);
@@ -811,7 +808,7 @@ exports.changeAccessProject = async (req, res) => {
     if (!allowAction) {
       return res
         .status(403)
-        .json({ error: "User does not have permission to create project version" });
+        .json({ error: "User does not have permission to update collaborators' access" });
     }
 
     // Get all users by email
@@ -820,7 +817,7 @@ exports.changeAccessProject = async (req, res) => {
       .where(
         "email",
         "in",
-        emailsWithRole.map((e) => e.email.toLowerCase())
+        initEmailsWithRole.map((e) => e.email.toLowerCase())
       )
       .get();
 
@@ -833,8 +830,8 @@ exports.changeAccessProject = async (req, res) => {
     });
 
     // Update parent documents (users) first
-    for (const { email, role } of emailsWithRole) {
-      const lowerEmail = email.toLowerCase();
+    for (const initUser of initEmailsWithRole) {
+      const lowerEmail = initUser.toLowerCase();
       const user = usersByEmail[lowerEmail];
       if (!user) continue;
 
@@ -845,29 +842,42 @@ exports.changeAccessProject = async (req, res) => {
       // Update user's projects array
       const userProjects = userData.projects || [];
       const projectIndex = userProjects.findIndex((d) => d.projectId === projectId);
-
-      if (projectIndex >= 0) {
-        userProjects[projectIndex].role = role;
-      } else {
-        userProjects.push({ projectId, role });
+      // Check if user is in emailsWithRole
+      const updatedUser = emailsWithRole.find((e) => e.email.toLowerCase() === lowerEmail);
+      if (!updatedUser) {
+        // Remove access if user is not in emailsWithRole
+        if (projectIndex >= 0) {
+          userProjects.splice(projectIndex, 1);
+          updatedDocuments.push({
+            ref: userRef,
+            field: "projects",
+            previousValue: userData.projects,
+          });
+          await userRef.update({ projects: userProjects });
+        }
+      } else if (updatedUser.role !== initUser.role) {
+        // Update role if it changed
+        if (projectIndex >= 0) {
+          userProjects[projectIndex].role = updatedUser.role;
+          updatedDocuments.push({
+            ref: userRef,
+            field: "projects",
+            previousValue: userData.projects,
+          });
+          await userRef.update({ projects: userProjects });
+        }
       }
-
-      updatedDocuments.push({
-        ref: userRef,
-        field: "projects",
-        previousValue: userData.projects,
-      });
-      await userRef.update({ projects: userProjects });
     }
 
     // Update project document (child)
-    const editors = [...(projectData.editors || [])];
-    const commenters = [...(projectData.commenters || [])];
+    const contributors = [...(projectData.contributors || [])];
+    const contentManagers = [...(projectData.contentManagers || [])];
+    const managers = [...(projectData.managers || [])];
     const viewers = [...(projectData.viewers || [])];
 
-    // Remove users from their previous roles first
-    for (const { email } of initEmailsWithRole) {
-      const lowerEmail = email.toLowerCase();
+    // Remove users from their previous roles and add to new roles
+    for (const initUser of initEmailsWithRole) {
+      const lowerEmail = initUser.email.toLowerCase();
       const user = usersByEmail[lowerEmail];
       if (!user) continue;
 
@@ -876,12 +886,16 @@ exports.changeAccessProject = async (req, res) => {
       // Remove from previous role array
       switch (initRole) {
         case 1:
-          const editorIndex = editors.indexOf(user.id);
-          if (editorIndex > -1) editors.splice(editorIndex, 1);
+          const contributorIndex = contributors.indexOf(user.id);
+          if (contributorIndex > -1) contributors.splice(contributorIndex, 1);
           break;
         case 2:
-          const commenterIndex = commenters.indexOf(user.id);
-          if (commenterIndex > -1) commenters.splice(commenterIndex, 1);
+          const contentManagerIndex = contentManagers.indexOf(user.id);
+          if (contentManagerIndex > -1) contentManagers.splice(contentManagerIndex, 1);
+          break;
+        case 3:
+          const managerIndex = managers.indexOf(user.id);
+          if (managerIndex > -1) managers.splice(managerIndex, 1);
           break;
         case 0:
           const viewerIndex = viewers.indexOf(user.id);
@@ -890,48 +904,66 @@ exports.changeAccessProject = async (req, res) => {
         default:
           break;
       }
-    }
 
-    // Add users to their new roles
-    for (const { email, role } of emailsWithRole) {
-      const lowerEmail = email.toLowerCase();
-      const user = usersByEmail[lowerEmail];
-      if (!user) continue;
-
-      // Add to new role array
-      switch (role) {
-        case 1:
-          if (!editors.includes(user.id)) editors.push(user.id);
-          break;
-        case 2:
-          if (!commenters.includes(user.id)) commenters.push(user.id);
-          break;
-        case 0:
-          if (!viewers.includes(user.id)) viewers.push(user.id);
-          break;
-        default:
-          break;
+      // Add to new role array if user is in emailsWithRole
+      const updatedUser = emailsWithRole.find((e) => e.email.toLowerCase() === lowerEmail);
+      if (updatedUser) {
+        switch (updatedUser.role) {
+          case 1:
+            if (!contributors.includes(user.id)) contributors.push(user.id);
+            break;
+          case 2:
+            if (!contentManagers.includes(user.id)) contentManagers.push(user.id);
+            break;
+          case 3:
+            if (!managers.includes(user.id)) managers.push(user.id);
+            break;
+          case 0:
+            if (!viewers.includes(user.id)) viewers.push(user.id);
+            break;
+          default:
+            break;
+        }
       }
     }
 
+    // Prepare the update object
+    const updateObject = {
+      contributors,
+      contentManagers,
+      managers,
+      viewers,
+      modifiedAt: new Date(),
+    };
+
+    // Add project settings update if they've changed
+    if (typeof generalAccessSetting !== "undefined" || typeof generalAccessRole !== "undefined") {
+      updateObject.projectSettings = {
+        ...projectData.projectSettings,
+        ...(typeof generalAccessSetting !== "undefined" && { generalAccessSetting }),
+        ...(typeof generalAccessRole !== "undefined" && { generalAccessRole }),
+      };
+    }
+
+    const previousProjectSettings = {
+      ...projectData.projectSettings,
+    };
     updatedDocuments.push({
       ref: projectRef,
       previousValue: {
-        editors: projectData.editors,
-        commenters: projectData.commenters,
+        contributors: projectData.contributors,
+        contentManagers: projectData.contentManagers,
+        managers: projectData.managers,
         viewers: projectData.viewers,
+        projectSettings: previousProjectSettings,
       },
     });
-    await projectRef.update({
-      editors,
-      commenters,
-      viewers,
-      modifiedAt: new Date(),
-    });
+    await projectRef.update(updateObject);
+    console.log("changeAccessProject - updatedDocuments - ", updatedDocuments);
 
     res.status(200).json({
       success: true,
-      message: "Project collaborators' access changed",
+      message: "Project access changed",
     });
   } catch (error) {
     console.error("Error updating project:", error);

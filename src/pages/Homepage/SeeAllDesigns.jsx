@@ -29,7 +29,7 @@ import { AddDesign } from "../DesignSpace/svg/AddImage.jsx";
 
 export default function SeeAllDesigns() {
   const navigate = useNavigate();
-  const { user, users, userDoc, designs, userDesigns } = useSharedProps();
+  const { user, users, userDoc, designs, userDesigns, isDarkMode } = useSharedProps();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredDesigns, setFilteredDesigns] = useState([]);
@@ -333,7 +333,10 @@ export default function SeeAllDesigns() {
                   )
                 ) : (
                   <div className="no-content">
-                    <img src="/img/design-placeholder.png" alt="No designs yet" />
+                    <img
+                      src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                      alt="No designs yet"
+                    />
                     <p>No designs yet. Start creating.</p>
                   </div>
                 )

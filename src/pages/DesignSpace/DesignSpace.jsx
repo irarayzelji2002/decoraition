@@ -10,11 +10,12 @@ function DesignSpace({
   designId,
   setShowComments = () => {},
   isSelectingMask = false,
+  changeMode,
+  setChangeMode,
   children,
 }) {
   const { user, userDoc } = useSharedProps();
   const location = useLocation();
-  const [changeMode, setChangeMode] = useState(location.state?.changeMode || "Viewing");
   const [showBudget, setShowBudget] = useState(false);
 
   useEffect(() => {

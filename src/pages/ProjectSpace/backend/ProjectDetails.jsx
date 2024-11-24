@@ -351,12 +351,13 @@ export const handleAddCollaborators = async (
   role,
   message,
   notifyPeople,
-  user
+  user,
+  userDoc
 ) => {
   try {
     const response = await axios.post(
       `/api/project/${project.id}/share`,
-      { userId: user.id, emails, role, message, notifyPeople },
+      { userId: userDoc.id, emails, role, message, notifyPeople },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -384,11 +385,25 @@ export const handleAddCollaborators = async (
   }
 };
 
-export const handleAccessChange = async (project, initEmailsWithRole, emailsWithRole, user) => {
+export const handleAccessChange = async (
+  project,
+  initEmailsWithRole,
+  emailsWithRole,
+  generalAccessSetting,
+  generalAccessRole,
+  user,
+  userDoc
+) => {
   try {
     const response = await axios.post(
       `/api/project/${project.id}/change-access`,
-      { userId: user.id, initEmailsWithRole, emailsWithRole },
+      {
+        userId: userDoc.id,
+        initEmailsWithRole,
+        emailsWithRole,
+        generalAccessSetting,
+        generalAccessRole,
+      },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -399,19 +414,19 @@ export const handleAccessChange = async (project, initEmailsWithRole, emailsWith
     if (response.data.success) {
       return {
         success: true,
-        message: "Project collaborators' access changed",
+        message: "Project access changed",
       };
     } else {
       return {
         success: false,
-        message: "Failed to change access of project collaborators",
+        message: "Failed to change access of project",
       };
     }
   } catch (error) {
-    console.error("Error changing access of project collaborators:", error);
+    console.error("Error changing access of project:", error);
     return {
       success: false,
-      message: error.response?.data?.error || "Failed to change access of project collaborators",
+      message: error.response?.data?.error || "Failed to change access of project",
     };
   }
 };

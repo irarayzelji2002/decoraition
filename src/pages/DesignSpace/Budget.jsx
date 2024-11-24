@@ -80,9 +80,11 @@ function Budget() {
     userItems,
   } = useSharedProps();
   const { designId } = useParams();
+  const { isDarkMode } = useSharedProps();
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
+  const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
 
   const [design, setDesign] = useState({});
   const [designVersion, setDesignVersion] = useState({});
@@ -499,7 +501,13 @@ function Budget() {
 
   return (
     <div className={`budget-page ${menuOpen ? "" : ""}`}>
-      <DesignSpace design={design} isDesign={false} designId={designId}>
+      <DesignSpace
+        design={design}
+        isDesign={false}
+        designId={designId}
+        changeMode={changeMode}
+        setChangeMode={setChangeMode}
+      >
         {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
         <div className="previewBudgetCont">
           <span
@@ -619,7 +627,11 @@ function Budget() {
               ))
             ) : (
               <div className="placeholderDiv">
-                <img src={"../../img/design-placeholder.png"} style={{ width: "100px" }} alt="" />
+                <img
+                  src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                  style={{ width: "100px" }}
+                  alt=""
+                />
                 <p className="grey-text center">No items added yet.</p>
                 <p className="grey-text center">Start adding.</p>
               </div>

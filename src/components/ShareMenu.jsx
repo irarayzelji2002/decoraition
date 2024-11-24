@@ -22,6 +22,8 @@ const ShareMenu = ({
   onOpenManageAccessModalView,
   isViewCollab,
   isFromMenu = true,
+  isHomepage = false,
+  isDrawer = false,
 }) => {
   // Copy Link Action
   const handleCopyLink = async () => {
@@ -37,7 +39,7 @@ const ShareMenu = ({
   };
 
   return (
-    <>
+    <div className={`${isHomepage ? "shareMenuHome" : ""} ${isDrawer ? "drawer" : ""}`}>
       <CustomMenuItem
         onClick={onBackToMenu}
         sx={{ borderBottom: "1px solid var(--inputBg)", fontWeight: "bold" }}
@@ -69,7 +71,7 @@ const ShareMenu = ({
       <CustomMenuItem onClick={handleCopyLink}>
         <ListItemText primary="Copy Link" />
       </CustomMenuItem>
-    </>
+    </div>
   );
 };
 

@@ -79,7 +79,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
       <AppBar
         position="sticky"
         sx={{
-          zIndex: 1200,
+          zIndex: 900,
           backgroundColor: "transparent",
           boxShadow: "none",
           paddingTop: "10px",

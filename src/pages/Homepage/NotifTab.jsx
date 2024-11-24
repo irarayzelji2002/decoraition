@@ -20,7 +20,7 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
       open={Boolean(isNotifOpen)}
       onClose={onClose}
       sx={{
-        zIndex: "13001",
+        zIndex: "1000",
         "& .MuiDrawer-paper": {
           width: { xs: "90%", sm: "50%", md: "35%", lg: "25%" },
           minWidth: "350px",

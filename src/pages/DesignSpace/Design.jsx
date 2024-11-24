@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import Draggable from "react-draggable";
@@ -42,10 +42,28 @@ import LoadingPage from "../../components/LoadingPage";
 import { formatDateDetailComma } from "../Homepage/backend/HomepageActions";
 
 function Design() {
-  const { user, userDoc, designs, userDesigns, designVersions, userDesignVersions, comments } =
-    useSharedProps();
+  const {
+    user,
+    users,
+    userDoc,
+    designs,
+    userDesigns,
+    designVersions,
+    userDesignVersions,
+    comments,
+  } = useSharedProps();
   const { designId } = useParams(); // Get designId from the URL
+  const { isDarkMode } = useSharedProps();
+  const location = useLocation();
+  const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
+
   const [design, setDesign] = useState({});
+
+  const [isOwner, setIsOwner] = useState(false);
+  const [isOwnerEditor, setIsOwnerEditor] = useState(false);
+  const [isOwnerEditorCommenter, setIsOwnerEditorCommenter] = useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
+
   const [designVersion, setDesignVersion] = useState({});
   const [designVersionImages, setDesignVersionImages] = useState([]);
   const [isNextGeneration, setIsNextGeneration] = useState(false);
@@ -117,6 +135,114 @@ function Design() {
   const [generatedImagesPreview, setGeneratedImagesPreview] = useState([]);
   const [generatedImages, setGeneratedImages] = useState([]);
   const [generationErrors, setGenerationErrors] = useState({});
+
+  // Check if user is owner (manage)
+  const isOwnerDesign = (design, userId) => {
+    const isOwner = design.owner === userId;
+    return isOwner;
+  };
+
+  // Check if user is owner or editor in design (editing)
+  const isOwnerEditorDesign = (design, userId) => {
+    if (design.designSettings.generalAccessSetting === 0) {
+      // Restricted Access
+      const isOwner = design.owner === userId;
+      const isEditor = design.editors.includes(userId);
+      return isOwner || isEditor;
+    } else {
+      // Anyone with the link
+      if (design.designSettings.generalAccessRole === 1) return true;
+      const isOwner = design.owner === userId;
+      const isEditor = design.editors.includes(userId);
+      return isOwner || isEditor;
+    }
+  };
+
+  // Check if user is owner, editor, commenter (commenting)
+  const isOwnerEditorCommenterDesign = (design, userId) => {
+    if (design.designSettings.generalAccessSetting === 0) {
+      // Restricted Access
+      const isOwner = design.owner === userId;
+      const isEditor = design.editors.includes(userId);
+      const isCommenter = design.commenters.includes(userId);
+      return isOwner || isEditor || isCommenter;
+    } else {
+      // Anyone with the link
+      if (
+        design.designSettings.generalAccessRole === 2 ||
+        design.designSettings.generalAccessRole === 1
+      )
+        return true;
+      const isOwner = design.owner === userId;
+      const isEditor = design.editors.includes(userId);
+      const isCommenter = design.commenters.includes(userId);
+      return isOwner || isEditor || isCommenter;
+    }
+  };
+
+  // Check if user is owner, editor, commenter, viewer (viewing)
+  const isCollaboratorDesign = (design, userId) => {
+    if (design.designSettings.generalAccessSetting === 0) {
+      // Restricted Access
+      const isOwner = design.owner === userId;
+      const isEditor = design.editors.includes(userId);
+      const isCommenter = design.commenters.includes(userId);
+      const isViewer = design.viewers.includes(userId);
+      return isOwner || isEditor || isCommenter || isViewer;
+    } else {
+      // Anyone with the link
+      if (
+        design.designSettings.generalAccessRole === 0 ||
+        design.designSettings.generalAccessRole === 1 ||
+        design.designSettings.generalAccessRole === 2
+      )
+        return true;
+      const isOwner = design.owner === userId;
+      const isEditor = design.editors.includes(userId);
+      const isCommenter = design.commenters.includes(userId);
+      const isViewer = design.viewers.includes(userId);
+      return isOwner || isEditor || isCommenter || isViewer;
+    }
+  };
+
+  // Initialize access rights
+  useEffect(() => {
+    if (!design?.designSettings || !userDoc?.id) return;
+    setIsOwner(isOwnerDesign(design, userDoc.id));
+    setIsOwnerEditor(isOwnerEditorDesign(design, userDoc.id));
+    setIsOwnerEditorCommenter(isOwnerEditorCommenterDesign(design, userDoc.id));
+    setIsCollaborator(isCollaboratorDesign(design, userDoc.id));
+  }, [design, userDoc]);
+
+  useEffect(() => {
+    if (isOwner || isOwnerEditor) {
+      setShowPromptBar(true);
+      setShowComments(false); // initially hide comments
+    } else if (isOwnerEditorCommenter || isCollaborator) {
+      setShowPromptBar(false);
+      setShowComments(true); // initially show comments
+    }
+    if (!changeMode) {
+      if (isOwner) setChangeMode("Editing");
+      else if (isOwnerEditor) setChangeMode("Editing");
+      else if (isOwnerEditorCommenter) setChangeMode("Commenting");
+      else if (isCollaborator) setChangeMode("Viewing");
+    }
+    console.log(
+      `commentCont - isOwner: ${isOwner}, isOwnerEditor: ${isOwnerEditor}, isOwnerEditorCommenter: ${isOwnerEditorCommenter}, isCollaborator: ${isCollaborator}`
+    );
+  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator]);
+
+  useEffect(() => {
+    console.log(`commentCont - changeMode: ${changeMode}`);
+    if (changeMode === "Editing") {
+      setShowPromptBar(true);
+      setShowComments(false); // initially hide comments
+    } else if (changeMode === "Commenting" || changeMode === "Viewing") {
+      setShowPromptBar(false);
+      setShowComments(true); // initially show comments
+    }
+  }, [changeMode]);
 
   const handleEdit = async (imageId, description) => {
     console.log("got imageId", imageId);
@@ -487,11 +613,13 @@ function Design() {
         designId={designId}
         setShowComments={setShowComments}
         isSelectingMask={isSelectingMask}
+        changeMode={changeMode}
+        setChangeMode={setChangeMode}
       >
         <div className="create-design">
           <div className="workspace">
             <div className={isMobileLayout ? "hiddenHeaders open" : ""}>
-              {showPromptBar && (
+              {showPromptBar && isOwnerEditor && changeMode === "Editing" && (
                 <div
                   style={{
                     paddingBottom: isMobileLayout && !showComments ? "61px" : "0px",
@@ -570,7 +698,10 @@ function Design() {
               {isMobileLayout && showComments && (
                 <div
                   style={{
-                    paddingBottom: isMobileLayout && !showPromptBar ? "61px" : "0px",
+                    paddingBottom:
+                      isMobileLayout && !showPromptBar && isOwnerEditor && changeMode === "Editing"
+                        ? "61px"
+                        : "0px",
                     height: "100%",
                   }}
                 >
@@ -605,13 +736,16 @@ function Design() {
                     commentTypeTab={commentTypeTab}
                     setCommentTypeTab={setCommentTypeTab}
                     setSelectedImage={setSelectedImage}
+                    isOwnerEditorCommenter={isOwnerEditorCommenter}
+                    isCollaborator={isCollaborator}
+                    changeMode={changeMode}
                   />
                 </div>
               )}
             </div>
 
             <div className="hiddenHeaders">
-              {!showPromptBar && (
+              {!showPromptBar && isOwnerEditor && changeMode === "Editing" && (
                 <div
                   className="promptBarHiddenHeader"
                   style={{ cursor: "pointer" }}
@@ -705,34 +839,36 @@ function Design() {
 
             <div className="working-area" ref={workingAreaRef} onClick={handleWorkingAreaClick}>
               {/* Hide/Show PromptBar and CommentTabs IconButtons */}
-              <IconButton
-                sx={{
-                  color: "var(--color-white)",
-                  position: "absolute",
-                  borderRadius: "50%",
-                  left: "8px",
-                  top: "8px",
-                  marginTop: "10px",
-                  zIndex: "49",
-                  height: "40px",
-                  width: "40px",
-                  "&:hover": {
-                    backgroundColor: "var(--iconButtonHover)",
-                  },
-                  "& .MuiTouchRipple-root span": {
-                    backgroundColor: "var(--iconButtonActive)",
-                  },
-                }}
-                onClick={() => togglePromptBar(setShowPromptBar)}
-                className="promptBarIconButton"
-              >
-                <ArrowBackIosRoundedIcon
+              {isOwnerEditor && changeMode === "Editing" && (
+                <IconButton
                   sx={{
-                    color: "var(--color-white) !important",
-                    transform: !showPromptBar ? "rotate(180deg)" : "",
+                    color: "var(--color-white)",
+                    position: "absolute",
+                    borderRadius: "50%",
+                    left: "8px",
+                    top: "8px",
+                    marginTop: "10px",
+                    zIndex: "49",
+                    height: "40px",
+                    width: "40px",
+                    "&:hover": {
+                      backgroundColor: "var(--iconButtonHover)",
+                    },
+                    "& .MuiTouchRipple-root span": {
+                      backgroundColor: "var(--iconButtonActive)",
+                    },
                   }}
-                />
-              </IconButton>
+                  onClick={() => togglePromptBar(setShowPromptBar)}
+                  className="promptBarIconButton"
+                >
+                  <ArrowBackIosRoundedIcon
+                    sx={{
+                      color: "var(--color-white) !important",
+                      transform: !showPromptBar ? "rotate(180deg)" : "",
+                    }}
+                  />
+                </IconButton>
+              )}
               <Box
                 sx={{
                   position: "absolute",
@@ -978,24 +1114,26 @@ function Design() {
                                         </Typography>
                                       )}
                                     </div>
-                                    <IconButton
-                                      sx={{
-                                        ...iconButtonStyles,
-                                        opacity: "0.3",
-                                        width: "40px",
-                                        height: "40px",
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        console.log("editdesc - Image object:", image); // Add this
-                                        console.log("editdesc - Image ID:", image.imageId); // Add this
-                                        setImageDescToEdit(image.imageId);
-                                        setIsEditDescModalOpen(true);
-                                      }}
-                                    >
-                                      <EditIcon />
-                                    </IconButton>
+                                    {isOwnerEditor && changeMode === "Editing" && (
+                                      <IconButton
+                                        sx={{
+                                          ...iconButtonStyles,
+                                          opacity: "0.3",
+                                          width: "40px",
+                                          height: "40px",
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          e.preventDefault();
+                                          console.log("editdesc - Image object:", image); // Add this
+                                          console.log("editdesc - Image ID:", image.imageId); // Add this
+                                          setImageDescToEdit(image.imageId);
+                                          setIsEditDescModalOpen(true);
+                                        }}
+                                      >
+                                        <EditIcon />
+                                      </IconButton>
+                                    )}
                                     <IconButton
                                       sx={{
                                         color: "var(--color-white)",
@@ -1127,7 +1265,11 @@ function Design() {
                 </>
               ) : (
                 <div className="noDesignVersionsCont">
-                  <img src={"../../img/design-placeholder.png"} style={{ width: "100px" }} alt="" />
+                  <img
+                    src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                    style={{ width: "100px" }}
+                    alt=""
+                  />
                   <p className="grey-text">No images generated yet.</p>
                   <p className="grey-text">Start generating.</p>
                 </div>
@@ -1174,6 +1316,9 @@ function Design() {
                     commentTypeTab={commentTypeTab}
                     setCommentTypeTab={setCommentTypeTab}
                     setSelectedImage={setSelectedImage}
+                    isOwnerEditorCommenter={isOwnerEditorCommenter}
+                    isCollaborator={isCollaborator}
+                    changeMode={changeMode}
                   />
                 </div>
               </div>

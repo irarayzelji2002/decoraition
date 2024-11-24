@@ -77,6 +77,7 @@ export const getDesignImage = (designId, userDesigns, userDesignVersions, index 
 };
 
 export const handleNameChange = async (designId, newName, user, userDoc, setIsEditingName) => {
+  console.log("handleNameChange - newName", { designId, newName, user, userDoc, setIsEditingName });
   try {
     const response = await axios.put(
       `/api/design/${designId}/update-name`,
@@ -144,11 +145,17 @@ export const handleRestoreDesignVersion = async (design, designVersionId, user, 
   }
 };
 
-export const handleCopyDesign = async (design, designVersionId, shareWithCollaborators, user) => {
+export const handleCopyDesign = async (
+  design,
+  designVersionId,
+  shareWithCollaborators,
+  user,
+  userDoc
+) => {
   try {
     const response = await axios.post(
       `/api/design/${design.id}/copy/${designVersionId}`,
-      { userId: user.id, shareWithCollaborators },
+      { userId: userDoc.id, shareWithCollaborators },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -176,11 +183,19 @@ export const handleCopyDesign = async (design, designVersionId, shareWithCollabo
   }
 };
 
-export const handleAddCollaborators = async (design, emails, role, message, notifyPeople, user) => {
+export const handleAddCollaborators = async (
+  design,
+  emails,
+  role,
+  message,
+  notifyPeople,
+  user,
+  userDoc
+) => {
   try {
     const response = await axios.post(
       `/api/design/${design.id}/share`,
-      { userId: user.id, emails, role, message, notifyPeople },
+      { userId: userDoc.id, emails, role, message, notifyPeople },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -200,7 +215,7 @@ export const handleAddCollaborators = async (design, emails, role, message, noti
       };
     }
   } catch (error) {
-    console.error("Error sharing design:", error);
+    console.error("Error sharing design:", error.message);
     return {
       success: false,
       message: error.response?.data?.error || "Failed to share design",
@@ -208,11 +223,25 @@ export const handleAddCollaborators = async (design, emails, role, message, noti
   }
 };
 
-export const handleAccessChange = async (design, initEmailsWithRole, emailsWithRole, user) => {
+export const handleAccessChange = async (
+  design,
+  initEmailsWithRole,
+  emailsWithRole,
+  generalAccessSetting,
+  generalAccessRole,
+  user,
+  userDoc
+) => {
   try {
     const response = await axios.post(
       `/api/design/${design.id}/change-access`,
-      { userId: user.id, initEmailsWithRole, emailsWithRole },
+      {
+        userId: userDoc.id,
+        initEmailsWithRole,
+        emailsWithRole,
+        generalAccessSetting,
+        generalAccessRole,
+      },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -223,19 +252,19 @@ export const handleAccessChange = async (design, initEmailsWithRole, emailsWithR
     if (response.data.success) {
       return {
         success: true,
-        message: "Design collaborators' access changed",
+        message: "Design access changed",
       };
     } else {
       return {
         success: false,
-        message: "Failed to change access of design collaborators",
+        message: "Failed to change access of design",
       };
     }
   } catch (error) {
-    console.error("Error changing access of design collaborators:", error);
+    console.error("Error changing access of design:", error);
     return {
       success: false,
-      message: error.response?.data?.error || "Failed to change access of design collaborators",
+      message: error.response?.data?.error || "Failed to change access of design",
     };
   }
 };

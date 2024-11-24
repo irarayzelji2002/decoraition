@@ -7,8 +7,14 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 import {
   handleNameChange as handleNameChangeDesign,
   handleCopyDesign,
-} from "../DesignSpace/backend/DesignActions";
-import { handleNameChange as handleNameChangeProject } from "../ProjectSpace/backend/ProjectDetails";
+  handleAddCollaborators as handleAddCollaboratorsDesign,
+  handleAccessChange as handleAccessChangeDesign,
+} from "../DesignSpace/backend/DesignActions.jsx";
+import {
+  handleNameChange as handleNameChangeProject,
+  handleAddCollaborators as handleAddCollaboratorsProject,
+  handleAccessChange as handleAccessChangeProject,
+} from "../ProjectSpace/backend/ProjectDetails.jsx";
 
 import ShareModal from "../../components/ShareModal";
 import ManageAccessModal from "../../components/ManageAccessModal.jsx";
@@ -35,6 +41,7 @@ import {
 } from "../../components/svg/DefaultMenuIcons";
 
 import { OpenInNew as OpenInNewIcon } from "@mui/icons-material";
+import deepEqual from "deep-equal";
 
 function HomepageOptions({
   isDesign,
@@ -83,9 +90,8 @@ function HomepageOptions({
     if (isDesign) {
       const design = object;
       if (!design || !user || !userDoc) return;
-
       // Check if user is owner or editor (manage access), then commenters and viewers (view only)
-      if (userDoc.id === design.owner) {
+      if (userDoc.id === design.owner || userDoc.id === design.ownerId) {
         setIsViewCollab(false);
         return;
       }
@@ -136,29 +142,29 @@ function HomepageOptions({
   // Share Functions
   const openShareModal = () => {
     setShowShareModal(true);
-    toggleOptions(id);
   };
 
   const closeShareModal = () => {
     setShowShareModal(false);
+    toggleOptions(id);
   };
 
   const openManageAccessModal = () => {
     setShowManageAccessModal(true);
-    toggleOptions(id);
   };
 
   const closeManageAccessModal = () => {
     setShowManageAccessModal(false);
+    toggleOptions(id);
   };
 
   const openViewCollabModal = () => {
     setShowViewCollabModal(true);
-    toggleOptions(id);
   };
 
   const closeViewCollabModal = () => {
     setShowViewCollabModal(false);
+    toggleOptions(id);
   };
 
   // Copy Link Functions
@@ -187,21 +193,144 @@ function HomepageOptions({
   // Download Functions
   const openDownloadModal = () => {
     setShowDownloadModal(true);
-    toggleOptions(id);
   };
 
   const closeDownloadModal = () => {
     setShowDownloadModal(false);
+    toggleOptions(id);
+  };
+
+  // Add Collaborators Modal Action
+  const handleShare = async (object, emails, role, message, notifyPeople = false) => {
+    if (emails.length === 0) {
+      return { success: false, message: "No email addresses added" };
+    }
+    if (!role) {
+      return { success: false, message: "Select a role" };
+    }
+    try {
+      let result;
+      if (isDesign) {
+        result = await handleAddCollaboratorsDesign(
+          object,
+          emails,
+          role,
+          message,
+          notifyPeople,
+          user,
+          userDoc
+        );
+      } else {
+        result = await handleAddCollaboratorsProject(
+          object,
+          emails,
+          role,
+          message,
+          notifyPeople,
+          user,
+          userDoc
+        );
+      }
+      if (result.success) {
+        closeShareModal();
+        return {
+          success: true,
+          message: `${isDesign ? "Design" : "Project"} shared to collaborators`,
+        };
+      } else {
+        return {
+          success: false,
+          message: `Failed to share ${isDesign ? "design" : "project"} to collaborators`,
+        };
+      }
+    } catch (error) {
+      console.error(`Error sharing ${isDesign ? "design" : "project"}:`, error);
+      return {
+        success: false,
+        message: `Failed to share ${isDesign ? "design" : "project"} to collaborators`,
+      };
+    }
+  };
+
+  // Manage Access Modal Action
+  const handleAccessChange = async (
+    object,
+    initEmailsWithRole,
+    emailsWithRole,
+    generalAccessSetting,
+    generalAccessRole
+  ) => {
+    // If no roles have changed, return early
+    if (isDesign) {
+      if (
+        deepEqual(initEmailsWithRole, emailsWithRole) &&
+        generalAccessSetting === object?.designSettings?.generalAccessSetting &&
+        generalAccessRole === object?.designSettings?.generalAccessRole
+      ) {
+        return { success: false, message: "Nothing changed" };
+      }
+    } else {
+      if (
+        deepEqual(initEmailsWithRole, emailsWithRole) &&
+        generalAccessSetting === object?.projectSettings?.generalAccessSetting &&
+        generalAccessRole === object?.projectSettings?.generalAccessRole
+      ) {
+        return { success: false, message: "Nothing changed" };
+      }
+    }
+
+    try {
+      let result;
+      if (isDesign) {
+        result = await handleAccessChangeDesign(
+          object,
+          initEmailsWithRole,
+          emailsWithRole,
+          generalAccessSetting,
+          generalAccessRole,
+          user,
+          userDoc
+        );
+      } else {
+        result = await handleAccessChangeProject(
+          object,
+          initEmailsWithRole,
+          emailsWithRole,
+          generalAccessSetting,
+          generalAccessRole,
+          user,
+          userDoc
+        );
+      }
+      if (result.success) {
+        closeManageAccessModal();
+        return {
+          success: true,
+          message: `${isDesign ? "Design" : "Project"} access changed`,
+        };
+      } else {
+        return {
+          success: false,
+          message: `Failed to change access of ${isDesign ? "design" : "project"}`,
+        };
+      }
+    } catch (error) {
+      console.error(`Error changing access of ${isDesign ? "design" : "project"}`, error);
+      return {
+        success: false,
+        message: `Failed to change access of ${isDesign ? "design" : "project"}`,
+      };
+    }
   };
 
   // Make a Copy Functions
   const openCopyModal = () => {
     setShowCopyModal(true);
-    toggleOptions(id);
   };
 
   const closeCopyModal = () => {
     setShowCopyModal(false);
+    toggleOptions(id);
   };
 
   // Make a Copy Modal Action
@@ -210,7 +339,13 @@ function HomepageOptions({
       return { success: false, message: "Select a version to copy" };
     }
     try {
-      const result = await handleCopyDesign(design, designVersionId, shareWithCollaborators, user);
+      const result = await handleCopyDesign(
+        design,
+        designVersionId,
+        shareWithCollaborators,
+        user,
+        userDoc
+      );
       if (result.success) {
         closeCopyModal();
         return { success: true, message: "Design copied" };
@@ -226,11 +361,11 @@ function HomepageOptions({
   // Rename Functions
   const openRenameModal = () => {
     setShowRenameModal(true);
-    toggleOptions(id);
   };
 
   const closeRenameModal = () => {
     setShowRenameModal(false);
+    toggleOptions(id);
   };
 
   const handleRename = async (newName) => {
@@ -244,9 +379,12 @@ function HomepageOptions({
       }
     }
     try {
-      const result = (await isDesign)
-        ? handleNameChangeDesign(object.id, newName, user, setIsEditingName)
-        : handleNameChangeProject(object.id, newName, user, setIsEditingName);
+      let result;
+      if (isDesign) {
+        result = await handleNameChangeDesign(object.id, newName, user, userDoc, setIsEditingName);
+      } else {
+        result = await handleNameChangeProject(object.id, newName, user, userDoc, setIsEditingName);
+      }
       console.log("result", result);
       if (result.success) {
         closeRenameModal();
@@ -272,11 +410,11 @@ function HomepageOptions({
   // Delete Functions
   const openDeleteModal = () => {
     setShowDeleteModal(true);
-    toggleOptions(id);
   };
 
   const closeDeleteModal = () => {
     setShowDeleteModal(false);
+    toggleOptions(id);
   };
 
   const handleDelete = (userId, id, navigate) => {
@@ -307,11 +445,12 @@ function HomepageOptions({
   return (
     <>
       {/* Options button */}
-      <div className={isTable ? "options-table" : "options"}>
+      <div className={isTable ? "options-table" : "options"} data-options>
         {!isTable && (
           <h3 className="selectOption">
             <IconButton
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 handleToggleOptions(id);
               }}
               sx={{ color: "var(--color-white)" }}
@@ -330,6 +469,8 @@ function HomepageOptions({
               onOpenManageAccessModal={openManageAccessModal}
               onOpenManageAccessModalView={openViewCollabModal}
               isViewCollab={isViewCollab}
+              isHomepage={true}
+              isDrawer={isDrawer}
             />
           ) : (
             <div
@@ -337,7 +478,6 @@ function HomepageOptions({
               className={`dropdown-menu ${isTable ? "table" : ""} ${isDrawer ? "drawer" : ""}`}
               style={{
                 position: "absolute",
-
                 top: isTable ? "0" : "0",
                 marginTop: isTable ? "0" : "10px",
               }}
@@ -404,17 +544,25 @@ function HomepageOptions({
       <ShareModal
         isOpen={showShareModal}
         onClose={closeShareModal}
-        handleShare={() => {}}
+        handleShare={handleShare}
         isDesign={isDesign}
         object={object}
+        onShowViewCollab={() => {
+          closeShareModal();
+          setShowViewCollabModal(true);
+        }}
       />
       <ManageAccessModal
         isOpen={showManageAccessModal}
         onClose={closeManageAccessModal}
-        handleSave={() => {}}
+        handleAccessChange={handleAccessChange}
         isDesign={isDesign}
         object={object}
         isViewCollab={false}
+        onShowViewCollab={() => {
+          closeManageAccessModal();
+          setShowViewCollabModal(true);
+        }}
       />
       <ManageAccessModal
         isOpen={showViewCollabModal}

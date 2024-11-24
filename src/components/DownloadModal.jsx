@@ -35,7 +35,8 @@ import {
 
 const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
   // object is a design if isDesign is true else its a project object
-  const { user, userBudgets, userPlanMaps, userTimelines, userProjectBudgets } = useSharedProps();
+  const { user, userBudgets, userPlanMaps, userTimelines, userProjectBudgets, isDarkMode } =
+    useSharedProps();
   const sharedProps = useSharedProps();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
@@ -180,7 +181,8 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
         setSelectedDesignVersionBudgetId(selectedVersion?.budgetId);
       }
     } else {
-      setSelectedDesignVersionDate("");setSelectedDesignVersionBudgetId("");
+      setSelectedDesignVersionDate("");
+      setSelectedDesignVersionBudgetId("");
     }
   };
 
@@ -576,7 +578,10 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
                 justifyContent: "center",
               }}
             >
-              <img src="/img/design-placeholder.png" alt="No designs yet" />
+              <img
+                src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                alt="No designs yet"
+              />
               <p style={{ color: "var(--noContent)", fontWeight: "500", marginBottom: 0 }}>
                 Nothing to download.
               </p>

@@ -29,7 +29,7 @@ import { AddProject } from "../DesignSpace/svg/AddImage.jsx";
 
 export default function SeeAllProjects() {
   const navigate = useNavigate();
-  const { user, users, userDoc, projects, userProjects } = useSharedProps();
+  const { user, users, userDoc, projects, userProjects, isDarkMode } = useSharedProps();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProjects, setFilteredProjects] = useState([]);
@@ -357,7 +357,10 @@ export default function SeeAllProjects() {
                   )
                 ) : (
                   <div className="no-content">
-                    <img src="/img/project-placeholder.png" alt="No projects yet" />
+                    <img
+                      src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                      alt="No projects yet"
+                    />
                     <p>No projects yet. Start creating.</p>
                   </div>
                 )

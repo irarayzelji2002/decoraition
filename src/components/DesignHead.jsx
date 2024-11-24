@@ -32,6 +32,7 @@ import { handleDeleteDesign } from "../pages/Homepage/backend/HomepageActions.js
 import { useSharedProps } from "../contexts/SharedPropsContext.js";
 import { toggleComments } from "../pages/DesignSpace/backend/DesignActions.jsx";
 import { useNetworkStatus } from "../hooks/useNetworkStatus.js";
+import deepEqual from "deep-equal";
 
 function DesignHead({
   design,
@@ -312,7 +313,8 @@ function DesignHead({
         role,
         message,
         notifyPeople,
-        user
+        user,
+        userDoc
       );
       if (result.success) {
         handleClose();
@@ -328,40 +330,41 @@ function DesignHead({
   };
 
   // Manage Access Modal Action
-  const handleAccessChange = async (design, initEmailsWithRole, emailsWithRole) => {
-    // Filter emails with role changes and create synchronized lists
-    const changedEmailsWithRole = emailsWithRole.filter((email) => {
-      const initialEmail = initEmailsWithRole.find(
-        (initEmail) => initEmail.userId === email.userId
-      );
-      return initialEmail && initialEmail.role !== email.role;
-    });
-
-    const changedInitEmailsWithRole = initEmailsWithRole.filter((initEmail) =>
-      changedEmailsWithRole.some((email) => email.userId === initEmail.userId)
-    );
-
+  const handleAccessChange = async (
+    design,
+    initEmailsWithRole,
+    emailsWithRole,
+    generalAccessSetting,
+    generalAccessRole
+  ) => {
     // If no roles have changed, return early
-    if (changedEmailsWithRole.length === 0) {
-      return { success: false, message: "No email addresses changed" };
+    if (
+      deepEqual(initEmailsWithRole, emailsWithRole) &&
+      generalAccessSetting === design?.designSettings?.generalAccessSetting &&
+      generalAccessRole === design?.designSettings?.generalAccessRole
+    ) {
+      return { success: false, message: "Nothing changed" };
     }
     try {
       const result = await handleAccessChangeDesign(
         design,
-        changedInitEmailsWithRole,
-        changedEmailsWithRole,
-        user
+        initEmailsWithRole,
+        emailsWithRole,
+        generalAccessSetting,
+        generalAccessRole,
+        user,
+        userDoc
       );
       if (result.success) {
         handleClose();
         handleCloseManageAccessModal();
-        return { success: true, message: "Design collaborators' access changed" };
+        return { success: true, message: "Design access changed" };
       } else {
-        return { success: false, message: "Failed to change access of collaborators" };
+        return { success: false, message: "Failed to change access of design" };
       }
     } catch (error) {
-      console.error("Error changing access of collaborators:", error);
-      return { success: false, message: "Failed to change access of collaborators" };
+      console.error("Error changing access of design:", error);
+      return { success: false, message: "Failed to change access of design" };
     }
   };
 
@@ -371,7 +374,13 @@ function DesignHead({
       return { success: false, message: "Select a version to copy" };
     }
     try {
-      const result = await handleCopyDesign(design, designVersionId, shareWithCollaborators, user);
+      const result = await handleCopyDesign(
+        design,
+        designVersionId,
+        shareWithCollaborators,
+        user,
+        userDoc
+      );
       if (result.success) {
         handleClose();
         handleCloseMakeCopyModal();
@@ -478,7 +487,7 @@ function DesignHead({
           <MenuIcon sx={{ color: "var(--color-white)" }} />
         </IconButton>
         <div className="design-name-section">
-          {isEditingName ? (
+          {isEditingName && isRenameVisible ? (
             <>
               <TextField
                 placeholder="Design Name"
@@ -731,6 +740,10 @@ function DesignHead({
         handleShare={handleShare}
         isDesign={true}
         object={design}
+        onShowViewCollab={() => {
+          handleCloseShareModal();
+          setIsViewCollabModalOpen(true);
+        }}
       />
       <ManageAccessModal
         isOpen={isManageAccessModalOpen}
@@ -739,6 +752,10 @@ function DesignHead({
         isDesign={true}
         object={design}
         isViewCollab={false}
+        onShowViewCollab={() => {
+          handleCloseManageAccessModal();
+          setIsViewCollabModalOpen(true);
+        }}
       />
       <ManageAccessModal
         isOpen={isViewCollabModalOpen}

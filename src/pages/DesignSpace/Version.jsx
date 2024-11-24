@@ -220,7 +220,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
         open={isDrawerOpen}
         onClose={onClose}
         sx={{
-          zIndex: "13001",
+          zIndex: "1000",
           "& .MuiDrawer-paper": {
             width: { xs: "100%", sm: "85%", md: "50%", xl: "40%" },
             minWidth: "300px",
@@ -238,7 +238,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
         <AppBar
           position="sticky"
           sx={{
-            zIndex: 1200,
+            zIndex: 900,
             backgroundColor: "var(--color-tertiary)",
             boxShadow: "none",
             padding: "10px 20px",

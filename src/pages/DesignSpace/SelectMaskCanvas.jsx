@@ -136,7 +136,7 @@ function SelectMaskCanvas({
   const containerRef = useRef(null);
 
   // Show/Hide States
-  const [showAllOptions, setShowAllOptions] = useState(true);
+  const [showAllOptions, setShowAllOptions] = useState(false);
   const [showGeneralOptions, setShowGeneralOptions] = useState(true);
   const [showAddRemoveOptions, setShowAddRemoveOptions] = useState(true);
   const [showSamOptions, setShowSamOptions] = useState(true);

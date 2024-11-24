@@ -35,7 +35,7 @@ function VersionOverviewModal({
   setViewingImage,
   design,
 }) {
-  const { userDesigns, userDesignVersions, budgets, userBudgets, items, userItems } =
+  const { userDesigns, userDesignVersions, budgets, userBudgets, items, userItems, isDarkMode } =
     useSharedProps();
   const [versionDetailTypeTab, setVersionDetailTypeTab] = useState(true); // true for Design, false for Budget
   const [versionBudget, setVersionBudget] = useState(null);
@@ -399,7 +399,7 @@ function VersionOverviewModal({
                   ) : (
                     <div className="placeholderDiv" style={{ margin: "0 !important" }}>
                       <img
-                        src={"../../img/design-placeholder.png"}
+                        src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
                         style={{ width: "100px" }}
                         alt=""
                       />

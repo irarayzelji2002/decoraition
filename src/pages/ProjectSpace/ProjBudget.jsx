@@ -13,6 +13,7 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function ProjBudget() {
   const { projectId } = useParams();
+  const { isDarkMode } = useSharedProps();
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
   const [designs, setDesigns] = useState([]);
@@ -163,7 +164,10 @@ function ProjBudget() {
             })
           ) : (
             <div className="no-content" style={{ height: "80vh" }}>
-              <img src="/img/design-placeholder.png" alt="No designs yet" />
+              <img
+                src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                alt="No designs yet"
+              />
               <p>No designs yet. Start creating.</p>
             </div>
           )}

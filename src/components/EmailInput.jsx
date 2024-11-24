@@ -18,7 +18,7 @@ import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import { useSharedProps } from "../contexts/SharedPropsContext";
 import { stringAvatarColor, stringAvatarInitials } from "../functions/utils";
 
-const EmailInput = ({ emails, setEmails, error, setError }) => {
+const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
   const { users } = useSharedProps();
   const [inputValue, setInputValue] = useState("");
   const [originalUserOptions, setOriginalUserOptions] = useState([]);
@@ -29,12 +29,24 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
   const userOptionsRef = useRef(null);
 
   useEffect(() => {
-    const filteredUsers = users.filter(
+    // Filter to valid user data
+    const trueUsers = users.filter(
       (user) => user?.email && user?.username && user?.firstName && user?.lastName
     );
-    setUserOptions(filteredUsers);
-    setOriginalUserOptions(filteredUsers);
-  }, []);
+    // Filter out users that are already collaborators
+    const filteredUsers = trueUsers.filter(
+      (user) => !collaborators?.some((collaborator) => collaborator.id === user.id)
+    );
+    // Filter out users that are already added
+    const filteredNotAddedUsers = filteredUsers.filter(
+      (user) => !emails.some((email) => email.toLowerCase() === user.email.toLowerCase())
+    );
+    console.log("share - trueUsers", trueUsers);
+    console.log("share - filteredUsers", filteredUsers);
+    console.log("share - filteredNotAddedUsers", filteredNotAddedUsers);
+    setUserOptions(filteredNotAddedUsers);
+    setOriginalUserOptions(filteredNotAddedUsers);
+  }, [users, collaborators, emails]);
 
   useEffect(() => {
     let user;
@@ -220,7 +232,7 @@ const EmailInput = ({ emails, setEmails, error, setError }) => {
           sx={{
             position: "absolute",
             zIndex: 1000,
-            maxHeight: "295px",
+            maxHeight: "294px", //350px
             overflow: "auto",
             width: "100%",
             left: "30px",

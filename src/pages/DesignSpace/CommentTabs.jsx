@@ -43,8 +43,11 @@ function CommentTabs({
   commentTypeTab,
   setCommentTypeTab,
   setSelectedImage,
+  isOwnerEditorCommenter,
+  changeMode,
 }) {
-  const { user, userDoc, userComments, userReplies, userDesignsComments } = useSharedProps();
+  const { user, userDoc, userComments, userReplies, userDesignsComments, isDarkMode } =
+    useSharedProps();
   const [commentForTab, setCommentForTab] = useState(true); // true for All Comments, false for For You
   const [userOwnedComments, setUserOwnedComments] = useState([]);
   const [userOwnedReplies, setUserOwnedReplies] = useState([]);
@@ -558,11 +561,17 @@ function CommentTabs({
               setSelectedId={setSelectedId}
               activeComment={activeComment}
               setActiveComment={setActiveComment}
+              isOwnerEditorCommenter={isOwnerEditorCommenter}
+              changeMode={changeMode}
             />
           ))}
           {filteredAndSortedComments.length === 0 && (
             <div className="placeholderDiv">
-              <img src={"/img/design-placeholder.png"} style={{ width: "100px" }} alt="" />
+              <img
+                src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                style={{ width: "100px" }}
+                alt=""
+              />
               {commentForTab && commentTypeTab && (
                 <>
                   <p className="grey-text center">No opened comments yet.</p>
@@ -593,7 +602,7 @@ function CommentTabs({
       )}
 
       {/* Add a comment button */}
-      {!isAddingComment && (
+      {!isAddingComment && isOwnerEditorCommenter && (
         <Box sx={{ margin: "0px 20px 0px 20px" }}>
           <Button
             fullWidth

@@ -171,7 +171,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
       open={Boolean(isDrawerOpen)}
       onClose={onClose}
       sx={{
-        zIndex: "13001",
+        zIndex: "1000",
         "& .MuiDrawer-paper": {
           width: { xs: "90%", sm: "50%", md: "35%", lg: "25%" },
           minWidth: "350px",
@@ -335,11 +335,19 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           userDesignsLatest.slice(0, 3).map((design, index) => (
             <ListItemButton
               key={design.id}
-              onClick={() =>
+              onClick={(e) => {
+                if (
+                  e.target.closest(".options-table") ||
+                  e.target.closest("[data-options]") ||
+                  e.target.closest(".dropdown-item") ||
+                  e.target.closest(".MuiMenu-paper")
+                ) {
+                  return; // Don't navigate if clicked within options
+                }
                 navigate(`/design/${design.id}`, {
                   state: { designId: design.id },
-                })
-              }
+                });
+              }}
               sx={listItemStyles}
             >
               <div className="miniThumbnail">
@@ -357,7 +365,10 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
               <IconButton
                 edge="end"
                 aria-label="more"
-                onClick={(e) => handleOptionsClick(design.id, e)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOptionsClick(design.id, e);
+                }}
                 sx={iconButtonStyles}
               >
                 <MoreHorizIcon />

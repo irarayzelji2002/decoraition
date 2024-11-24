@@ -386,7 +386,7 @@ export const getUsernames = async (userIds) => {
       return usernames;
     }
   } catch (error) {
-    console.error("Error fetching usernames:", error);
+    console.error("Error fetching usernames:", error.message);
   }
   return [];
 };

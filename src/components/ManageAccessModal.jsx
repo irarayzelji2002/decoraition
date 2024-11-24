@@ -24,6 +24,7 @@ import {
   ViewerIcon as DesignViewerIcon,
   RestrictedIcon,
   AnyoneWithLinkIcon,
+  NoAccessIcon,
 } from "../pages/DesignSpace/svg/DesignAccessIcons";
 import {
   ContributorIcon,
@@ -31,6 +32,7 @@ import {
   ManagerIcon,
   ViewerIcon as ProjectViewerIcon,
 } from "../pages/ProjectSpace/svg/ProjectAccessIcons";
+import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import { showToast, stringAvatarColor, stringAvatarInitials } from "../functions/utils";
 import { useSharedProps } from "../contexts/SharedPropsContext";
 import {
@@ -42,6 +44,7 @@ import {
 import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
 import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
 import { selectStyles, selectStylesDisabled } from "../pages/DesignSpace/DesignSettings";
+import { DeleteIconGradient } from "./svg/DefaultMenuIcons";
 
 const ManageAcessModal = ({
   isOpen,
@@ -50,6 +53,7 @@ const ManageAcessModal = ({
   isDesign,
   object,
   isViewCollab,
+  onShowViewCollab = () => {},
 }) => {
   const { users } = useSharedProps();
   // object is design if isDesign is true, else it is project
@@ -69,6 +73,7 @@ const ManageAcessModal = ({
   const [hideLabels, setHideLabels] = useState(false);
   const labelWidth = isDesign ? 185 - 90 : 200 - 90;
   const [prevWidth, setPrevWidth] = useState(window.innerWidth);
+  const [isSaveBtnDisabled, setIsSaveBtnDisabled] = useState(false);
   const contentRef = useRef(null);
 
   // For testing
@@ -95,14 +100,49 @@ const ManageAcessModal = ({
 
   // Save button function
   const onSubmit = async () => {
-    const result = await handleAccessChange(object, initEmailsWithRole, emailsWithRole);
-    if (!result.success) {
-      if (result.message === "No email addresses changed") setError(result.message);
-      else showToast("error", result.message);
-      return;
+    setIsSaveBtnDisabled(true);
+    try {
+      const filteredEmailsWithRole = emailsWithRole.filter((u) => u.role !== 4);
+      console.log("manage access - onSubmit full data", {
+        object,
+        initEmailsWithRole,
+        filteredEmailsWithRole,
+        generalAccessSetting,
+        generalAccessRole,
+      });
+      // Compare the arrays to see what's being removed
+      const removedUsers = initEmailsWithRole.filter(
+        (initUser) =>
+          !filteredEmailsWithRole.some((filteredUser) => filteredUser.userId === initUser.userId)
+      );
+      console.log("manage access - onSubmit Users being removed:", removedUsers);
+
+      const result = await handleAccessChange(
+        object,
+        initEmailsWithRole,
+        filteredEmailsWithRole,
+        generalAccessSetting,
+        generalAccessRole
+      );
+      if (!result.success) {
+        if (result.message === "No email addresses changed") {
+          setError(result.message);
+          showToast("error", result.message);
+        } else showToast("error", result.message);
+        return;
+      }
+      showToast("success", result.message);
+    } finally {
+      setIsSaveBtnDisabled(false);
+      if (onShowViewCollab) {
+        setError("");
+        setInitEmailsWithRole([]);
+        setEmailsWithRole([]);
+        onShowViewCollab();
+      } else {
+        handleClose();
+      }
     }
-    showToast("success", result.message);
-    handleClose();
   };
 
   // Initialize collaborators
@@ -114,7 +154,9 @@ const ManageAcessModal = ({
       setRoles([
         { value: 1, label: "Editor", icon: <EditorIcon /> },
         { value: 2, label: "Commenter", icon: <CommenterIcon /> },
+        { value: 3, label: "Owner", icon: <ManagerIcon /> },
         { value: 0, label: "Viewer", icon: <DesignViewerIcon /> },
+        { value: 4, label: "No Access", icon: <NoAccessIcon /> },
       ]);
       setGeneralAccessRoles([
         { value: 0, label: "Viewer", icon: <DesignViewerIcon /> },
@@ -136,6 +178,7 @@ const ManageAcessModal = ({
           email: ownerUser.email,
           role: 3,
           roleLabel: "Owner",
+          profilePic: ownerUser.profilePic,
         });
       }
 
@@ -149,6 +192,7 @@ const ManageAcessModal = ({
             email: editorUser.email,
             role: 1,
             roleLabel: "Editor",
+            profilePic: editorUser.profilePic,
           });
         }
       });
@@ -164,6 +208,7 @@ const ManageAcessModal = ({
             email: commenterUser.email,
             role: 2,
             roleLabel: "Commenter",
+            profilePic: commenterUser.profilePic,
           });
         }
       });
@@ -178,12 +223,14 @@ const ManageAcessModal = ({
             email: viewerUser.email,
             role: 0,
             roleLabel: "Viewer",
+            profilePic: viewerUser.profilePic,
           });
         }
       });
 
       setInitEmailsWithRole(collaborators);
       setEmailsWithRole(collaborators);
+      console.log("manage access - initEmailsWithRole:", initEmailsWithRole);
     } else {
       const project = object;
       setRoles([
@@ -191,6 +238,7 @@ const ManageAcessModal = ({
         { value: 2, label: "Content Manager", icon: <ContentManagerIcon /> },
         { value: 3, label: "Manager", icon: <ManagerIcon /> },
         { value: 0, label: "Viewer", icon: <ProjectViewerIcon /> },
+        { value: 4, label: "No Access", icon: <NoAccessIcon /> },
       ]);
       setGeneralAccessRoles([
         { value: 0, label: "Viewer", icon: <ProjectViewerIcon /> },
@@ -340,6 +388,13 @@ const ManageAcessModal = ({
     if (isOpen) checkOverflow();
   }, [isOpen, generalAccessRole, emailsWithRole]);
 
+  useEffect(() => {
+    console.log("manage access - initEmailsWithRole:", initEmailsWithRole);
+  }, [initEmailsWithRole]);
+  useEffect(() => {
+    console.log("manage access - emailsWithRole:", emailsWithRole);
+  }, [emailsWithRole]);
+
   return (
     <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
       <DialogTitle sx={dialogTitleStyles}>
@@ -424,7 +479,7 @@ const ManageAcessModal = ({
                           ...stringAvatarColor(user.username),
                         }}
                         children={stringAvatarInitials(user.username)}
-                        src={""}
+                        src={user.profilePic ?? ""}
                       />
                     </Box>
                   </div>
@@ -444,14 +499,14 @@ const ManageAcessModal = ({
                       variant="caption"
                       style={{ fontSize: "0.75rem", lineHeight: "1.5" }}
                     >
-                      {currentUser?.roleLabel}
+                      {`${!isViewCollab ? "Previous role: " : ""}${user.roleLabel}`}
                     </Typography>
                   </div>
                   {!isViewCollab && (
                     <Select
-                      value={currentUser?.role ?? 1} // editor (design) or contributor (project)
+                      value={currentUser?.role ?? 1}
                       onChange={(e) => {
-                        const newRole = e.target.value;
+                        const newRole = parseInt(e.target.value, 10);
                         const roleLabel = roles.find((r) => r.value === newRole)?.label;
 
                         // Update emailsWithRole while preserving at least one manager for projects
@@ -476,8 +531,16 @@ const ManageAcessModal = ({
                       sx={{
                         ...(isDisabled ? selectStylesDisabled : selectStyles),
                         marginLeft: "auto",
-                        width: hideLabels ? "90px" : isDesign ? "185px" : "200px",
+                        width: hideLabels ? "90px" : isDesign ? "188px" : "200px",
                         height: "100%",
+                        "&.Mui-disabled": {
+                          ...selectStylesDisabled["&.Mui-disabled"],
+                          "& .MuiSelect-select": {
+                            ...selectStylesDisabled["&.Mui-disabled"]["& .MuiSelect-select"],
+                            padding: "12px 40px 12px 20px",
+                            opacity: 0,
+                          },
+                        },
                       }}
                       MenuProps={{
                         PaperProps: {
@@ -485,6 +548,9 @@ const ManageAcessModal = ({
                             borderRadius: "10px",
                             "& .MuiMenu-list": {
                               padding: 0,
+                            },
+                            "& .MuiMenuItem-root[aria-disabled='true']": {
+                              display: "none",
                             },
                           },
                         },
@@ -500,6 +566,7 @@ const ManageAcessModal = ({
                           key={roleOption.value}
                           value={roleOption.value}
                           sx={menuItemStyles}
+                          disabled={roleOption.value === 3 && managerCount <= 1}
                         >
                           <div style={{ display: "flex", alignItems: "center" }}>
                             <div style={{ marginRight: "10px", display: "flex" }}>
@@ -612,7 +679,7 @@ const ManageAcessModal = ({
                   sx={{
                     ...selectStyles,
                     marginLeft: "-2px",
-                    width: hideLabels ? "90px" : isDesign ? "185px" : "200px",
+                    width: hideLabels ? "90px" : isDesign ? "188px" : "200px",
                     "& .MuiOutlinedInput-notchedOutline": {
                       borderTopRightRadius: "10px",
                       borderBottomRightRadius: "10px",
@@ -657,7 +724,20 @@ const ManageAcessModal = ({
         <DialogActions
           sx={{ ...dialogActionsStyles, margin: "0px", marginBottom: 0, padding: "18px" }}
         >
-          <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={onSubmit}
+            sx={{
+              ...gradientButtonStyles,
+              opacity: isSaveBtnDisabled ? "0.5" : "1",
+              cursor: isSaveBtnDisabled ? "default" : "pointer",
+              "&:hover": {
+                backgroundImage: !isSaveBtnDisabled && "var(--gradientButtonHover)",
+              },
+            }}
+            disabled={isSaveBtnDisabled}
+          >
             Save
           </Button>
           <Button

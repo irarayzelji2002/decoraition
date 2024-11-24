@@ -32,7 +32,8 @@ import { Box } from "@mui/material";
 
 function Homepage() {
   const navigate = useNavigate();
-  const { user, users, userDoc, designs, userDesigns, projects, userProjects } = useSharedProps();
+  const { user, users, userDoc, designs, userDesigns, projects, userProjects, isDarkMode } =
+    useSharedProps();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredDesigns, setFilteredDesigns] = useState([]);
@@ -456,7 +457,10 @@ function Homepage() {
                   )
                 ) : (
                   <div className="no-content">
-                    <img src="/img/design-placeholder.png" alt="No designs yet" />
+                    <img
+                      src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                      alt="No designs yet"
+                    />
                     <p>No designs yet. Start creating.</p>
                   </div>
                 )
@@ -623,7 +627,10 @@ function Homepage() {
                   )
                 ) : (
                   <div className="no-content">
-                    <img src="/img/project-placeholder.png" alt="No projects yet" />
+                    <img
+                      src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+                      alt="No projects yet"
+                    />
                     <p>No projects yet. Start creating.</p>
                   </div>
                 )

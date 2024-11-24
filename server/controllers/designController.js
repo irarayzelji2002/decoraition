@@ -122,6 +122,22 @@ exports.fetchUserDesigns = async (req, res) => {
   }
 };
 
+// Get role name
+const getRoleNameDesign = (role) => {
+  switch (role) {
+    case 0:
+      return "Viewer";
+    case 1:
+      return "Editor";
+    case 2:
+      return "Commenter";
+    case 3:
+      return "Owner";
+    default:
+      return "";
+  }
+};
+
 // Check if user is owner (manage)
 const isOwnerDesign = (designDoc, userId) => {
   const designData = designDoc.data();
@@ -721,11 +737,11 @@ const sendEmailBcc = async (to, bcc, subject, body) => {
 
 exports.shareDesign = async (req, res) => {
   const updatedDocuments = [];
-  const createdDocuments = [];
 
   try {
     const { designId } = req.params;
     const { userId, emails, role, message, notifyPeople } = req.body;
+    console.log("sharedata - ", { designId, userId, emails, role, message, notifyPeople });
 
     const getRoleField = (role) => {
       switch (role) {
@@ -750,9 +766,7 @@ exports.shareDesign = async (req, res) => {
     // Check user role in design
     const allowAction = isOwnerEditorDesign(designDoc, userId);
     if (!allowAction) {
-      return res
-        .status(403)
-        .json({ error: "User does not have permission to create design version" });
+      return res.status(403).json({ error: "User does not have permission to share design" });
     }
 
     // Get owner data for email notification
@@ -769,6 +783,11 @@ exports.shareDesign = async (req, res) => {
     const batch = db.batch();
     const userEmails = [];
     const nonUserEmails = [];
+    const usersToAdd = {
+      editors: [],
+      commenters: [],
+      viewers: [],
+    };
 
     for (const email of emails) {
       const userSnapshot = await db.collection("users").where("email", "==", email).get();
@@ -805,63 +824,42 @@ exports.shareDesign = async (req, res) => {
         if (roleField) {
           const currentRoleArray = designData[roleField] || [];
           if (!currentRoleArray.includes(collaboratorId)) {
-            updatedDocuments.push({
-              collection: "designs",
-              id: designId,
-              field: roleField,
-              previousValue: currentRoleArray,
-            });
-            batch.update(designRef, {
-              [roleField]: [...currentRoleArray, collaboratorId],
-            });
+            usersToAdd[roleField].push(collaboratorId);
           }
-        }
-      } else {
-        // User doesn't exist - add to nonUserInvites
-        nonUserEmails.push(email);
-        const nonUserRef = db.collection("nonUserInvites").doc(email);
-        const nonUserDoc = await nonUserRef.get();
-
-        if (nonUserDoc.exists) {
-          const currentDesigns = nonUserDoc.data().designs || [];
-          const newDesign = { designId, role };
-
-          if (!currentDesigns.some((design) => design.designId === designId)) {
-            updatedDocuments.push({
-              collection: "nonUserInvites",
-              id: email,
-              field: "designs",
-              previousValue: currentDesigns,
-            });
-            batch.update(nonUserRef, {
-              designs: [...currentDesigns, newDesign],
-            });
-          }
-        } else {
-          batch.set(nonUserRef, {
-            email,
-            designs: [{ designId, role }],
-            projects: [],
-          });
-          createdDocuments.push({
-            collection: "nonUserInvites",
-            id: email,
-          });
         }
       }
     }
 
+    // Update design document with all users at once
+    Object.entries(usersToAdd).forEach(([roleField, userIds]) => {
+      if (userIds.length > 0) {
+        const currentRoleArray = designData[roleField] || [];
+        const newRoleArray = [...new Set([...currentRoleArray, ...userIds])];
+        updatedDocuments.push({
+          collection: "designs",
+          id: designId,
+          field: roleField,
+          previousValue: currentRoleArray,
+        });
+        batch.update(designRef, {
+          [roleField]: newRoleArray,
+        });
+      }
+    });
+
     // Commit all updates
     await batch.commit();
+    console.log("sharedata - upfatedDocuments - ", updatedDocuments);
 
     // Send emails if notifyPeople is true
     if (notifyPeople) {
-      const emailBody = `<p>You have been added as a ${role} in this design.</p>
+      const emailBody = `<p>You have been added as a <strong>${getRoleNameDesign(
+        role
+      )}</strong> in this design.</p>
         <p>You can access the design here: <a href="${appURL}/design/${designId}">${
         designData.designName
       }</a></p>
-        <p>Message from ${ownerUsername} (${ownerEmail}):</p>
-        <p>${message || "No message provided"}</p>`;
+        ${message && `<p>Message from ${ownerUsername} (${ownerEmail}):</p><p>${message}</p>`}`;
 
       await sendEmailBcc(
         ownerEmail, // primary recipient
@@ -893,16 +891,6 @@ exports.shareDesign = async (req, res) => {
       }
     }
 
-    // Rollback created documents
-    for (const doc of createdDocuments) {
-      try {
-        await db.collection(doc.collection).doc(doc.id).delete();
-        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
-      } catch (deleteError) {
-        console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
-      }
-    }
-
     res.status(500).json({
       success: false,
       error: "Failed to share design",
@@ -915,7 +903,16 @@ exports.changeAccessDesign = async (req, res) => {
 
   try {
     const { designId } = req.params;
-    const { userId, initEmailsWithRole, emailsWithRole } = req.body;
+    const { userId, initEmailsWithRole, emailsWithRole, generalAccessSetting, generalAccessRole } =
+      req.body;
+    console.log("changeAccessDesign - ", {
+      designId,
+      userId,
+      initEmailsWithRole,
+      emailsWithRole,
+      generalAccessSetting,
+      generalAccessRole,
+    });
 
     // Get design document
     const designRef = db.collection("designs").doc(designId);
@@ -932,7 +929,7 @@ exports.changeAccessDesign = async (req, res) => {
     if (!allowAction) {
       return res
         .status(403)
-        .json({ error: "User does not have permission to create design version" });
+        .json({ error: "User does not have permission to update collaborators' access" });
     }
 
     // Get all users by email
@@ -941,7 +938,7 @@ exports.changeAccessDesign = async (req, res) => {
       .where(
         "email",
         "in",
-        emailsWithRole.map((e) => e.email.toLowerCase())
+        initEmailsWithRole.map((e) => e.email.toLowerCase())
       )
       .get();
 
@@ -954,8 +951,8 @@ exports.changeAccessDesign = async (req, res) => {
     });
 
     // Update parent documents (users) first
-    for (const { email, role } of emailsWithRole) {
-      const lowerEmail = email.toLowerCase();
+    for (const initUser of initEmailsWithRole) {
+      const lowerEmail = initUser.email.toLowerCase();
       const user = usersByEmail[lowerEmail];
       if (!user) continue;
 
@@ -966,19 +963,31 @@ exports.changeAccessDesign = async (req, res) => {
       // Update user's designs array
       const userDesigns = userData.designs || [];
       const designIndex = userDesigns.findIndex((d) => d.designId === designId);
-
-      if (designIndex >= 0) {
-        userDesigns[designIndex].role = role;
-      } else {
-        userDesigns.push({ designId, role });
+      // Check if user is in emailsWithRole
+      const updatedUser = emailsWithRole.find((e) => e.email.toLowerCase() === lowerEmail);
+      if (!updatedUser) {
+        // Remove access if user is not in emailsWithRole
+        if (designIndex >= 0) {
+          userDesigns.splice(designIndex, 1);
+          updatedDocuments.push({
+            ref: userRef,
+            field: "designs",
+            previousValue: userData.designs,
+          });
+          await userRef.update({ designs: userDesigns });
+        }
+      } else if (updatedUser.role !== initUser.role) {
+        // Update role if it changed
+        if (designIndex >= 0) {
+          userDesigns[designIndex].role = updatedUser.role;
+          updatedDocuments.push({
+            ref: userRef,
+            field: "designs",
+            previousValue: userData.designs,
+          });
+          await userRef.update({ designs: userDesigns });
+        }
       }
-
-      updatedDocuments.push({
-        ref: userRef,
-        field: "designs",
-        previousValue: userData.designs,
-      });
-      await userRef.update({ designs: userDesigns });
     }
 
     // Update design document (child)
@@ -986,16 +995,14 @@ exports.changeAccessDesign = async (req, res) => {
     const commenters = [...(designData.commenters || [])];
     const viewers = [...(designData.viewers || [])];
 
-    // Remove users from their previous roles first
-    for (const { email } of initEmailsWithRole) {
-      const lowerEmail = email.toLowerCase();
+    // Remove users from their previous roles and add to new roles
+    for (const initUser of initEmailsWithRole) {
+      const lowerEmail = initUser.email.toLowerCase();
       const user = usersByEmail[lowerEmail];
       if (!user) continue;
 
-      const initRole = initEmailsWithRole.find((e) => e.email.toLowerCase() === lowerEmail)?.role;
-
       // Remove from previous role array
-      switch (initRole) {
+      switch (initUser.role) {
         case 1:
           const editorIndex = editors.indexOf(user.id);
           if (editorIndex > -1) editors.splice(editorIndex, 1);
@@ -1011,48 +1018,61 @@ exports.changeAccessDesign = async (req, res) => {
         default:
           break;
       }
-    }
 
-    // Add users to their new roles
-    for (const { email, role } of emailsWithRole) {
-      const lowerEmail = email.toLowerCase();
-      const user = usersByEmail[lowerEmail];
-      if (!user) continue;
-
-      // Add to new role array
-      switch (role) {
-        case 1:
-          if (!editors.includes(user.id)) editors.push(user.id);
-          break;
-        case 2:
-          if (!commenters.includes(user.id)) commenters.push(user.id);
-          break;
-        case 0:
-          if (!viewers.includes(user.id)) viewers.push(user.id);
-          break;
-        default:
-          break;
+      // Add to new role array if user is in emailsWithRole
+      const updatedUser = emailsWithRole.find((e) => e.email.toLowerCase() === lowerEmail);
+      if (updatedUser) {
+        switch (updatedUser.role) {
+          case 1:
+            if (!editors.includes(user.id)) editors.push(user.id);
+            break;
+          case 2:
+            if (!commenters.includes(user.id)) commenters.push(user.id);
+            break;
+          case 0:
+            if (!viewers.includes(user.id)) viewers.push(user.id);
+            break;
+          default:
+            break;
+        }
       }
     }
 
+    // Prepare the update object
+    const updateObject = {
+      editors,
+      commenters,
+      viewers,
+      modifiedAt: new Date(),
+    };
+
+    // Add design settings update if they've changed
+    if (typeof generalAccessSetting !== "undefined" || typeof generalAccessRole !== "undefined") {
+      updateObject.designSettings = {
+        ...designData.designSettings,
+        ...(typeof generalAccessSetting !== "undefined" && { generalAccessSetting }),
+        ...(typeof generalAccessRole !== "undefined" && { generalAccessRole }),
+      };
+    }
+
+    const previousDesignSettings = {
+      ...designData.designSettings,
+    };
     updatedDocuments.push({
       ref: designRef,
       previousValue: {
         editors: designData.editors,
         commenters: designData.commenters,
         viewers: designData.viewers,
+        designSettings: previousDesignSettings,
       },
     });
-    await designRef.update({
-      editors,
-      commenters,
-      viewers,
-      modifiedAt: new Date(),
-    });
+    await designRef.update(updateObject);
+    console.log("changeAccessDesign - updatedDocuments - ", updatedDocuments);
 
     res.status(200).json({
       success: true,
-      message: "Design collaborators' access changed",
+      message: "Design access changed",
     });
   } catch (error) {
     console.error("Error updating design:", error);

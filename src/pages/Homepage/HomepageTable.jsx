@@ -174,6 +174,19 @@ function EnhancedTable({
   };
 
   const handleClick = (event, id, isDesign, navigate) => {
+    // Check if the click originated from the options menu or its children
+    if (
+      event.target.closest(".options-table") ||
+      event.target.closest("[data-options]") ||
+      event.target.closest(".dropdown-item") ||
+      event.target.closest(".MuiMenu-paper")
+    ) {
+      return; // Don't navigate if clicked within options
+    }
+    handleClickAction(id, isDesign, navigate);
+  };
+
+  const handleClickAction = (id, isDesign, navigate) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
 
@@ -327,7 +340,7 @@ function EnhancedTable({
                       .slice(rowIndex + 1)
                       .reduce((total, row) => total + getCurrentRowHeight(row), 0);
                     // Return dropdown height minus height of rows below
-                    return 477 - heightOfRowsBelow;
+                    return 381 - heightOfRowsBelow;
                   }
                   return 0; // Default padding when dropdown isn't near bottom
                 })()}px`
@@ -430,7 +443,10 @@ function EnhancedTable({
                       <IconButton
                         aria-label="expand row"
                         size="small"
-                        onClick={(event) => handleOptionsClick(row.id, event)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleOptionsClick(row.id, event);
+                        }}
                         sx={{ color: "var(--color-white)" }}
                       >
                         <MoreVertIcon />
@@ -442,7 +458,10 @@ function EnhancedTable({
                             isDesign={isDesign}
                             isTable={true}
                             id={row.id}
-                            onOpen={(event) => handleClick(event, row.id, isDesign, navigate)}
+                            onOpen={(event) => {
+                              event.stopPropagation();
+                              handleClickAction(row.id, isDesign, navigate);
+                            }}
                             optionsState={optionsState}
                             setOptionsState={setOptionsState}
                             object={row}

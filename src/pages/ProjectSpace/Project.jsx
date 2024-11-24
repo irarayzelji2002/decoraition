@@ -34,6 +34,7 @@ import HomepageTable from "../Homepage/HomepageTable";
 import { usePreventNavigation } from "../../hooks/usePreventNavigation";
 
 function Project() {
+  const { isDarkMode } = useSharedProps();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
   const { projectId } = useParams();
@@ -438,7 +439,10 @@ function Project() {
         </div>
         {filteredDesignsForTable.length === 0 && (
           <div className="no-content">
-            <img src="/img/design-placeholder.png" alt="No designs yet" />
+            <img
+              src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
+              alt="No designs yet"
+            />
             <p>No designs yet. Start creating.</p>
           </div>
         )}

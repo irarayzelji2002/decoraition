@@ -43,6 +43,12 @@ import {
   dialogTitleStyles,
 } from "../../components/RenameModal";
 import { textFieldInputProps } from "./DesignSettings";
+import {
+  isOwnerDesign,
+  isOwnerEditorDesign,
+  isOwnerEditorCommenterDesign,
+  isCollaboratorDesign,
+} from "./Design";
 
 const style = {
   position: "absolute",
@@ -87,6 +93,10 @@ function Budget() {
   const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
 
   const [design, setDesign] = useState({});
+  const [isOwner, setIsOwner] = useState(false);
+  const [isOwnerEditor, setIsOwnerEditor] = useState(false);
+  const [isOwnerEditorCommenter, setIsOwnerEditorCommenter] = useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
   const [designVersion, setDesignVersion] = useState({});
   const [budget, setBudget] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
@@ -115,6 +125,28 @@ function Budget() {
 
   const [currencyDetails, setCurrencyDetails] = useState([]);
 
+  // Initialize access rights
+  useEffect(() => {
+    if (!design?.designSettings || !userDoc?.id) return;
+    setIsOwner(isOwnerDesign(design, userDoc.id));
+    setIsOwnerEditor(isOwnerEditorDesign(design, userDoc.id));
+    setIsOwnerEditorCommenter(isOwnerEditorCommenterDesign(design, userDoc.id));
+    setIsCollaborator(isCollaboratorDesign(design, userDoc.id));
+  }, [design, userDoc]);
+
+  useEffect(() => {
+    if (!changeMode) {
+      if (isOwner) setChangeMode("Editing");
+      else if (isOwnerEditor) setChangeMode("Editing");
+      else if (isOwnerEditorCommenter) setChangeMode("Commenting");
+      else if (isCollaborator) setChangeMode("Viewing");
+    }
+    console.log(
+      `commentCont - isOwner: ${isOwner}, isOwnerEditor: ${isOwnerEditor}, isOwnerEditorCommenter: ${isOwnerEditorCommenter}, isCollaborator: ${isCollaborator}`
+    );
+  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator]);
+
+  // Currency Functions
   const isoToFlagEmoji = (isoCode) => {
     return isoCode
       .toUpperCase() // Ensure uppercase
@@ -546,28 +578,30 @@ function Budget() {
               }
             })()}
           </span>
-          <div style={{ display: "flex", gap: "5px" }}>
-            {budgetAmount > 0 ? (
-              <>
-                <IconButton onClick={() => toggleBudgetModal(true, true)} sx={iconButtonStyles}>
-                  <EditIconSmallGradient />
+          {isOwnerEditor && changeMode === "Editing" && (
+            <div style={{ display: "flex", gap: "5px" }}>
+              {budgetAmount > 0 ? (
+                <>
+                  <IconButton onClick={() => toggleBudgetModal(true, true)} sx={iconButtonStyles}>
+                    <EditIconSmallGradient />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => {
+                      setIsRemoveBudgetModalOpen(true);
+                      setMenuOpen(false);
+                    }}
+                    sx={iconButtonStyles}
+                  >
+                    <DeleteIconGradient />
+                  </IconButton>
+                </>
+              ) : (
+                <IconButton onClick={() => toggleBudgetModal(true, false)} sx={iconButtonStyles}>
+                  <AddIconGradient />
                 </IconButton>
-                <IconButton
-                  onClick={() => {
-                    setIsRemoveBudgetModalOpen(true);
-                    setMenuOpen(false);
-                  }}
-                  sx={iconButtonStyles}
-                >
-                  <DeleteIconGradient />
-                </IconButton>
-              </>
-            ) : (
-              <IconButton onClick={() => toggleBudgetModal(true, false)} sx={iconButtonStyles}>
-                <AddIconGradient />
-              </IconButton>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="cutoff">
           <div className="budgetSpaceImg pic">
@@ -623,6 +657,8 @@ function Budget() {
                   }
                   setDesignItems={setDesignItems}
                   budgetId={budget.id}
+                  isOwnerEditor={isOwnerEditor}
+                  changeMode={changeMode}
                 />
               ))
             ) : (
@@ -638,53 +674,55 @@ function Budget() {
             )}
           </div>
         </div>
-        <div className="circle-button-container">
-          {menuOpen && (
-            <div className="small-buttons">
-              {budgetAmount > 0 && (
+        {isOwnerEditor && changeMode === "Editing" && (
+          <div className="circle-button-container">
+            {menuOpen && (
+              <div className="small-buttons">
+                {budgetAmount > 0 && (
+                  <div
+                    className="small-button-container"
+                    onClick={() => {
+                      setIsRemoveBudgetModalOpen(true);
+                      setMenuOpen(false);
+                    }}
+                  >
+                    <span className="small-button-text">Delete Budget</span>
+                    <div className="small-circle-button">
+                      <DeleteIcon />
+                    </div>
+                  </div>
+                )}
                 <div
                   className="small-button-container"
-                  onClick={() => {
-                    setIsRemoveBudgetModalOpen(true);
-                    setMenuOpen(false);
-                  }}
+                  onClick={() => toggleBudgetModal(true, budgetAmount > 0)}
                 >
-                  <span className="small-button-text">Delete Budget</span>
+                  <span className="small-button-text">
+                    {budgetAmount > 0 ? "Edit the budget" : "Add a Budget"}
+                  </span>
                   <div className="small-circle-button">
-                    <DeleteIcon />
+                    {budgetAmount > 0 ? <EditIcon /> : <AddBudget />}
                   </div>
                 </div>
-              )}
-              <div
-                className="small-button-container"
-                onClick={() => toggleBudgetModal(true, budgetAmount > 0)}
-              >
-                <span className="small-button-text">
-                  {budgetAmount > 0 ? "Edit the budget" : "Add a Budget"}
-                </span>
-                <div className="small-circle-button">
-                  {budgetAmount > 0 ? <EditIcon /> : <AddBudget />}
+                <div
+                  className="small-button-container"
+                  onClick={() =>
+                    navigate(`/addItem/${budget.id}`, {
+                      state: { navigateFrom: navigateFrom },
+                    })
+                  }
+                >
+                  <span className="small-button-text">Add an Item</span>
+                  <div className="small-circle-button">
+                    <AddItem />
+                  </div>
                 </div>
               </div>
-              <div
-                className="small-button-container"
-                onClick={() =>
-                  navigate(`/addItem/${budget.id}`, {
-                    state: { navigateFrom: navigateFrom },
-                  })
-                }
-              >
-                <span className="small-button-text">Add an Item</span>
-                <div className="small-circle-button">
-                  <AddItem />
-                </div>
-              </div>
+            )}
+            <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
+              {menuOpen ? <AddIcon /> : <AddIcon />}
             </div>
-          )}
-          <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
-            {menuOpen ? <AddIcon /> : <AddIcon />}
           </div>
-        </div>
+        )}
 
         {/* {isBudgetModalOpen && (
         <div className="modal-overlay">

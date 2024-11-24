@@ -45,7 +45,7 @@ const style = {
   boxShadow: 24,
 };
 
-function Item({ item, onEdit, setDesignItems, budgetId }) {
+function Item({ item, onEdit, setDesignItems, budgetId, isOwnerEditor, changeMode }) {
   const { user } = useSharedProps();
   const [itemPrice, setItemPrice] = useState("");
   const [open, setOpen] = useState(false);
@@ -317,59 +317,63 @@ function Item({ item, onEdit, setDesignItems, budgetId }) {
           {item.cost.currency?.currencyCode + " " + formatNumber(item.cost.amount)}
         </span>
       </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          marginLeft: "auto",
-          marginRight: "10px",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          gap: "10px",
-        }}
-      >
-        <div>
-          <Checkbox
-            checked={item.includedInTotal === true || item.includedInTotal === "true"}
-            onChange={() => {
-              toggleIncludedInTotal();
-              handleIncludedInTotalChange(item.id);
-            }}
-            value="included-in-total"
-            sx={{
-              color: "var(--color-white)",
-              "&.Mui-checked": {
-                color: "var(--brightFont)",
-              },
-              borderRadius: "50%",
-              "& .MuiSvgIcon-root": {
-                fontSize: 28,
-              },
-              "&:hover": {
-                backgroundColor: "var(--iconButtonHover)",
-              },
-              "&:active": {
-                backgroundColor: "var(--iconButtonActive)",
-              },
-              "& svg": {
-                transform: "scale(0.88)",
-              },
-            }}
-            icon={<CheckboxIcon />}
-            checkedIcon={<CheckboxCheckedIcon />}
-          />
-        </div>
-
-        <IconButton onClick={onEdit} sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}>
-          <EditIconSmallGradient />
-        </IconButton>
-        <IconButton
-          onClick={handleOpenDelete}
-          sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+      {isOwnerEditor && changeMode === "Editing" && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            marginLeft: "auto",
+            marginRight: "10px",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: "10px",
+          }}
         >
-          <DeleteIconGradient />
-        </IconButton>
-      </div>
+          {/* CheckBox */}
+          <div>
+            <Checkbox
+              checked={item.includedInTotal === true || item.includedInTotal === "true"}
+              onChange={() => {
+                toggleIncludedInTotal();
+                handleIncludedInTotalChange(item.id);
+              }}
+              value="included-in-total"
+              sx={{
+                color: "var(--color-white)",
+                "&.Mui-checked": {
+                  color: "var(--brightFont)",
+                },
+                borderRadius: "50%",
+                "& .MuiSvgIcon-root": {
+                  fontSize: 28,
+                },
+                "&:hover": {
+                  backgroundColor: "var(--iconButtonHover)",
+                },
+                "&:active": {
+                  backgroundColor: "var(--iconButtonActive)",
+                },
+                "& svg": {
+                  transform: "scale(0.88)",
+                },
+              }}
+              icon={<CheckboxIcon />}
+              checkedIcon={<CheckboxCheckedIcon />}
+            />
+          </div>
+          {/* Edit */}
+          <IconButton onClick={onEdit} sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}>
+            <EditIconSmallGradient />
+          </IconButton>
+          {/* Delete */}
+          <IconButton
+            onClick={handleOpenDelete}
+            sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+          >
+            <DeleteIconGradient />
+          </IconButton>
+        </div>
+      )}
     </div>
   );
 }

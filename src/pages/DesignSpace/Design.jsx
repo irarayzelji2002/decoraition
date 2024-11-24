@@ -136,75 +136,6 @@ function Design() {
   const [generatedImages, setGeneratedImages] = useState([]);
   const [generationErrors, setGenerationErrors] = useState({});
 
-  // Check if user is owner (manage)
-  const isOwnerDesign = (design, userId) => {
-    const isOwner = design.owner === userId;
-    return isOwner;
-  };
-
-  // Check if user is owner or editor in design (editing)
-  const isOwnerEditorDesign = (design, userId) => {
-    if (design.designSettings.generalAccessSetting === 0) {
-      // Restricted Access
-      const isOwner = design.owner === userId;
-      const isEditor = design.editors.includes(userId);
-      return isOwner || isEditor;
-    } else {
-      // Anyone with the link
-      if (design.designSettings.generalAccessRole === 1) return true;
-      const isOwner = design.owner === userId;
-      const isEditor = design.editors.includes(userId);
-      return isOwner || isEditor;
-    }
-  };
-
-  // Check if user is owner, editor, commenter (commenting)
-  const isOwnerEditorCommenterDesign = (design, userId) => {
-    if (design.designSettings.generalAccessSetting === 0) {
-      // Restricted Access
-      const isOwner = design.owner === userId;
-      const isEditor = design.editors.includes(userId);
-      const isCommenter = design.commenters.includes(userId);
-      return isOwner || isEditor || isCommenter;
-    } else {
-      // Anyone with the link
-      if (
-        design.designSettings.generalAccessRole === 2 ||
-        design.designSettings.generalAccessRole === 1
-      )
-        return true;
-      const isOwner = design.owner === userId;
-      const isEditor = design.editors.includes(userId);
-      const isCommenter = design.commenters.includes(userId);
-      return isOwner || isEditor || isCommenter;
-    }
-  };
-
-  // Check if user is owner, editor, commenter, viewer (viewing)
-  const isCollaboratorDesign = (design, userId) => {
-    if (design.designSettings.generalAccessSetting === 0) {
-      // Restricted Access
-      const isOwner = design.owner === userId;
-      const isEditor = design.editors.includes(userId);
-      const isCommenter = design.commenters.includes(userId);
-      const isViewer = design.viewers.includes(userId);
-      return isOwner || isEditor || isCommenter || isViewer;
-    } else {
-      // Anyone with the link
-      if (
-        design.designSettings.generalAccessRole === 0 ||
-        design.designSettings.generalAccessRole === 1 ||
-        design.designSettings.generalAccessRole === 2
-      )
-        return true;
-      const isOwner = design.owner === userId;
-      const isEditor = design.editors.includes(userId);
-      const isCommenter = design.commenters.includes(userId);
-      const isViewer = design.viewers.includes(userId);
-      return isOwner || isEditor || isCommenter || isViewer;
-    }
-  };
-
   // Initialize access rights
   useEffect(() => {
     if (!design?.designSettings || !userDoc?.id) return;
@@ -1644,6 +1575,75 @@ export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
       </Box>
     </Box>
   );
+};
+
+// Check if user is owner (manage)
+export const isOwnerDesign = (design, userId) => {
+  const isOwner = design.owner === userId;
+  return isOwner;
+};
+
+// Check if user is owner or editor in design (editing)
+export const isOwnerEditorDesign = (design, userId) => {
+  if (design.designSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isOwner = design.owner === userId;
+    const isEditor = design.editors.includes(userId);
+    return isOwner || isEditor;
+  } else {
+    // Anyone with the link
+    if (design.designSettings.generalAccessRole === 1) return true;
+    const isOwner = design.owner === userId;
+    const isEditor = design.editors.includes(userId);
+    return isOwner || isEditor;
+  }
+};
+
+// Check if user is owner, editor, commenter (commenting)
+export const isOwnerEditorCommenterDesign = (design, userId) => {
+  if (design.designSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isOwner = design.owner === userId;
+    const isEditor = design.editors.includes(userId);
+    const isCommenter = design.commenters.includes(userId);
+    return isOwner || isEditor || isCommenter;
+  } else {
+    // Anyone with the link
+    if (
+      design.designSettings.generalAccessRole === 2 ||
+      design.designSettings.generalAccessRole === 1
+    )
+      return true;
+    const isOwner = design.owner === userId;
+    const isEditor = design.editors.includes(userId);
+    const isCommenter = design.commenters.includes(userId);
+    return isOwner || isEditor || isCommenter;
+  }
+};
+
+// Check if user is owner, editor, commenter, viewer (viewing)
+export const isCollaboratorDesign = (design, userId) => {
+  if (design.designSettings.generalAccessSetting === 0) {
+    // Restricted Access
+    const isOwner = design.owner === userId;
+    const isEditor = design.editors.includes(userId);
+    const isCommenter = design.commenters.includes(userId);
+    const isViewer = design.viewers.includes(userId);
+    return isOwner || isEditor || isCommenter || isViewer;
+  } else {
+    // Anyone with the link
+    if (
+      design.designSettings.generalAccessRole === 0 ||
+      design.designSettings.generalAccessRole === 1 ||
+      design.designSettings.generalAccessRole === 2
+    )
+      return true;
+    const isOwner = design.owner === userId;
+    const isEditor = design.editors.includes(userId);
+    const isCommenter = design.commenters.includes(userId);
+    const isViewer = design.viewers.includes(userId);
+    return isOwner || isEditor || isCommenter || isViewer;
+  }
 };
 
 // <BorderLinearProgress variant="determinate" value={50} />;

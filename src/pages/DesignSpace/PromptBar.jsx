@@ -1073,7 +1073,7 @@ function PromptBar({
             >
               <FormControl>
                 <Textarea
-                  placeholder="Enter a prompt"
+                  placeholder="Enter a prompt (e.g. 'A futuristic room with neon lights')"
                   value={prompt}
                   onChange={(e) => {
                     setPrompt(e.target.value);

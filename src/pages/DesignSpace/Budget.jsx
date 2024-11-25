@@ -128,6 +128,14 @@ function Budget() {
   // Initialize access rights
   useEffect(() => {
     if (!design?.designSettings || !userDoc?.id) return;
+    // Check if user has any access
+    const hasAccess = isCollaboratorDesign(design, userDoc.id);
+    if (!hasAccess) {
+      showToast("error", "You don't have access to this design");
+      navigate("/");
+      return;
+    }
+    // If they have access, proceed with setting roles
     setIsOwner(isOwnerDesign(design, userDoc.id));
     setIsOwnerEditor(isOwnerEditorDesign(design, userDoc.id));
     setIsOwnerEditorCommenter(isOwnerEditorCommenterDesign(design, userDoc.id));

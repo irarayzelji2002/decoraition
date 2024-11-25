@@ -23,6 +23,7 @@ import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import ProjectSpace from "./ProjectSpace";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import deepEqual from "deep-equal";
 
 function Timeline() {
   const navigate = useNavigate();
@@ -42,6 +43,23 @@ function Timeline() {
   const [timelineId, setTimelineId] = useState(null); // Add state for timelineId
   const [taskIdToDelete, setTaskIdToDelete] = useState(null); // Add state for taskId to delete
   const [loadingTasks, setLoadingTasks] = useState(true); // Add loading state for tasks
+
+  // Get project
+  useEffect(() => {
+    if (projectId && userProjects.length > 0) {
+      const fetchedProject =
+        userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
+
+      if (!fetchedProject) {
+        console.error("Project not found.");
+        setLoadingProject(false);
+      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+        setProject(fetchedProject);
+        console.log("current project:", fetchedProject);
+      }
+    }
+    setLoadingProject(false);
+  }, [projectId, projects, userProjects]);
 
   const openDeleteModal = (taskId) => {
     setTaskIdToDelete(taskId);

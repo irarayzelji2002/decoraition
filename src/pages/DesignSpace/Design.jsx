@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import Draggable from "react-draggable";
@@ -54,6 +54,7 @@ function Design() {
   } = useSharedProps();
   const { designId } = useParams(); // Get designId from the URL
   const { isDarkMode } = useSharedProps();
+  const navigate = useNavigate();
   const location = useLocation();
   const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
 
@@ -137,43 +138,51 @@ function Design() {
   const [generationErrors, setGenerationErrors] = useState({});
 
   // Initialize access rights
-  useEffect(() => {
-    if (!design?.designSettings || !userDoc?.id) return;
-    setIsOwner(isOwnerDesign(design, userDoc.id));
-    setIsOwnerEditor(isOwnerEditorDesign(design, userDoc.id));
-    setIsOwnerEditorCommenter(isOwnerEditorCommenterDesign(design, userDoc.id));
-    setIsCollaborator(isCollaboratorDesign(design, userDoc.id));
-  }, [design, userDoc]);
+  // useEffect(() => {
+  //   if (!design?.designSettings || !userDoc?.id) return;
+  //   // Check if user has any access
+  //   const hasAccess = isCollaboratorDesign(design, userDoc.id);
+  //   if (!hasAccess) {
+  //     showToast("error", "You don't have access to this design");
+  //     navigate("/");
+  //     return;
+  //   }
+  //   // If they have access, proceed with setting roles
+  //   setIsOwner(isOwnerDesign(design, userDoc.id));
+  //   setIsOwnerEditor(isOwnerEditorDesign(design, userDoc.id));
+  //   setIsOwnerEditorCommenter(isOwnerEditorCommenterDesign(design, userDoc.id));
+  //   setIsCollaborator(isCollaboratorDesign(design, userDoc.id));
+  // }, [design, userDoc]);
 
-  useEffect(() => {
-    if (isOwner || isOwnerEditor) {
-      setShowPromptBar(true);
-      setShowComments(false); // initially hide comments
-    } else if (isOwnerEditorCommenter || isCollaborator) {
-      setShowPromptBar(false);
-      setShowComments(true); // initially show comments
-    }
-    if (!changeMode) {
-      if (isOwner) setChangeMode("Editing");
-      else if (isOwnerEditor) setChangeMode("Editing");
-      else if (isOwnerEditorCommenter) setChangeMode("Commenting");
-      else if (isCollaborator) setChangeMode("Viewing");
-    }
-    console.log(
-      `commentCont - isOwner: ${isOwner}, isOwnerEditor: ${isOwnerEditor}, isOwnerEditorCommenter: ${isOwnerEditorCommenter}, isCollaborator: ${isCollaborator}`
-    );
-  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator]);
+  // useEffect(() => {
+  //   if (isOwner || isOwnerEditor) {
+  //     setShowPromptBar(true);
+  //     setShowComments(false); // initially hide comments
+  //   } else if (isOwnerEditorCommenter || isCollaborator) {
+  //     setShowPromptBar(false);
+  //     setShowComments(true); // initially show comments
+  //   }
+  //   if (!changeMode) {
+  //     if (isOwner) setChangeMode("Editing");
+  //     else if (isOwnerEditor) setChangeMode("Editing");
+  //     else if (isOwnerEditorCommenter) setChangeMode("Commenting");
+  //     else if (isCollaborator) setChangeMode("Viewing");
+  //   }
+  //   console.log(
+  //     `commentCont - isOwner: ${isOwner}, isOwnerEditor: ${isOwnerEditor}, isOwnerEditorCommenter: ${isOwnerEditorCommenter}, isCollaborator: ${isCollaborator}`
+  //   );
+  // }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator]);
 
-  useEffect(() => {
-    console.log(`commentCont - changeMode: ${changeMode}`);
-    if (changeMode === "Editing") {
-      setShowPromptBar(true);
-      setShowComments(false); // initially hide comments
-    } else if (changeMode === "Commenting" || changeMode === "Viewing") {
-      setShowPromptBar(false);
-      setShowComments(true); // initially show comments
-    }
-  }, [changeMode]);
+  // useEffect(() => {
+  //   console.log(`commentCont - changeMode: ${changeMode}`);
+  //   if (changeMode === "Editing") {
+  //     setShowPromptBar(true);
+  //     setShowComments(false); // initially hide comments
+  //   } else if (changeMode === "Commenting" || changeMode === "Viewing") {
+  //     setShowPromptBar(false);
+  //     setShowComments(true); // initially show comments
+  //   }
+  // }, [changeMode]);
 
   const handleEdit = async (imageId, description) => {
     console.log("got imageId", imageId);
@@ -821,8 +830,24 @@ function Design() {
                             createdAt={designVersion.createdAt}
                           />
                         }
+                        placement="bottom"
                         PopperProps={{
-                          disablePortal: true,
+                          modifiers: [
+                            {
+                              name: "preventOverflow",
+                              options: {
+                                boundary: window,
+                                altAxis: true,
+                                padding: 8,
+                              },
+                            },
+                            {
+                              name: "flip",
+                              options: {
+                                fallbackPlacements: ["bottom", "left"],
+                              },
+                            },
+                          ],
                         }}
                         onClose={() => setOpenDescTooltip(false)}
                         open={openDescTooltip}
@@ -1515,7 +1540,7 @@ const CustomTooltip = styled(({ className, ...props }) => (
           {
             name: "offset",
             options: {
-              offset: [0, -6],
+              offset: [-8, -6],
             },
           },
         ],
@@ -1524,7 +1549,7 @@ const CustomTooltip = styled(({ className, ...props }) => (
   />
 ))(({ theme }) => ({
   [`& .${tooltipClasses.arrow}`]: {
-    color: "var(--iconBg)",
+    color: "transparent",
   },
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: "var(--iconBg)",
@@ -1535,6 +1560,9 @@ const CustomTooltip = styled(({ className, ...props }) => (
     boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
     border: "1px solid var(--table-stroke)",
     padding: "0",
+    whiteSpace: "pre-wrap",
+    overflowWrap: "break-word",
+    transform: "translateX(-20px) !important",
   },
 }));
 
@@ -1548,19 +1576,18 @@ export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
         alignItems: "center",
         justifyContent: "center",
         p: "5px",
-        textAlign: "center",
-        width: "100%",
+        textAlign: "justify",
         padding: "5px 10px",
         minWidth: "calc(320px - 40px)",
       }}
     >
-      <Box sx={{ width: "100%" }}>
+      <Box>
         {description && (
           <Typography
             sx={{
               color: "var(--color-white)",
               fontSize: "0.875rem",
-              fontWeight: "bold",
+              fontWeight: "500",
               wordBreak: "break-word",
             }}
           >
@@ -1568,7 +1595,7 @@ export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
           </Typography>
         )}
         {createdAt && (
-          <Typography sx={{ color: "var(--color-white)", fontSize: "0.7rem" }}>
+          <Typography sx={{ color: "var(--greyText)", fontSize: "0.7rem", textAlign: "center" }}>
             {`Version created ${displayDate?.includes(",") ? "at " : ""}${displayDate}`}
           </Typography>
         )}
@@ -1577,74 +1604,70 @@ export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
   );
 };
 
-// Check if user is owner (manage)
-export const isOwnerDesign = (design, userId) => {
-  const isOwner = design.owner === userId;
-  return isOwner;
-};
+// Check if user is manager (manage)
+// export const isManagerDesign = (project, userId) => {
+//   const isManager = project.managers.includes(userId);
+//   return isManager;
+// };
 
-// Check if user is owner or editor in design (editing)
-export const isOwnerEditorDesign = (design, userId) => {
-  if (design.designSettings.generalAccessSetting === 0) {
-    // Restricted Access
-    const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    return isOwner || isEditor;
-  } else {
-    // Anyone with the link
-    if (design.designSettings.generalAccessRole === 1) return true;
-    const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    return isOwner || isEditor;
-  }
-};
+// // Check if user is manager or content manager in project (adding, editing, deleting)
+// export const isContentManagerProject = (project, userId) => {
+//   if (project.projectSettings.generalAccessSetting === 0) {
+//     // Restricted Access
+//     const isManager = project.managers.includes(userId);
+//     const isContentManager = project.contentManager === userId;
+//     return isManager || isContentManager;
+//   } else {
+//     // Anyone with the link
+//     if (project.projectSettings.generalAccessRole === 2) return true;
+//     const isManager = project.managers.includes(userId);
+//     const isContentManager = project.contentManager === userId;
+//     return isManager || isContentManager;
+//   }
+// };
 
-// Check if user is owner, editor, commenter (commenting)
-export const isOwnerEditorCommenterDesign = (design, userId) => {
-  if (design.designSettings.generalAccessSetting === 0) {
-    // Restricted Access
-    const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    const isCommenter = design.commenters.includes(userId);
-    return isOwner || isEditor || isCommenter;
-  } else {
-    // Anyone with the link
-    if (
-      design.designSettings.generalAccessRole === 2 ||
-      design.designSettings.generalAccessRole === 1
-    )
-      return true;
-    const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    const isCommenter = design.commenters.includes(userId);
-    return isOwner || isEditor || isCommenter;
-  }
-};
+// // Check if user is manager, content manager, contributor (adding, editing)
+// export const isContributorProject = (project, userId) => {
+//   if (project.projectSettings.generalAccessSetting === 0) {
+//     // Restricted Access
+//     const isOwner = project.owner === userId;
+//     const isEditor = project.editors.includes(userId);
+//     const isCommenter = project.commenters.includes(userId);
+//     return isOwner || isEditor || isCommenter;
+//   } else {
+//     // Anyone with the link
+//     if (project.projectSettings.generalAccessRole === 1) return true;
+//     const isOwner = project.owner === userId;
+//     const isEditor = project.editors.includes(userId);
+//     const isCommenter = project.commenters.includes(userId);
+//     return isOwner || isEditor || isCommenter;
+//   }
+// };
 
-// Check if user is owner, editor, commenter, viewer (viewing)
-export const isCollaboratorDesign = (design, userId) => {
-  if (design.designSettings.generalAccessSetting === 0) {
-    // Restricted Access
-    const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    const isCommenter = design.commenters.includes(userId);
-    const isViewer = design.viewers.includes(userId);
-    return isOwner || isEditor || isCommenter || isViewer;
-  } else {
-    // Anyone with the link
-    if (
-      design.designSettings.generalAccessRole === 0 ||
-      design.designSettings.generalAccessRole === 1 ||
-      design.designSettings.generalAccessRole === 2
-    )
-      return true;
-    const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    const isCommenter = design.commenters.includes(userId);
-    const isViewer = design.viewers.includes(userId);
-    return isOwner || isEditor || isCommenter || isViewer;
-  }
-};
+// // Check if user is owner, editor, commenter, viewer (viewing)
+// export const isCollaboratorProject = (project, userId) => {
+//   if (project.projectSettings.generalAccessSetting === 0) {
+//     // Restricted Access
+//     const isOwner = project.owner === userId;
+//     const isEditor = project.editors.includes(userId);
+//     const isCommenter = project.commenters.includes(userId);
+//     const isViewer = project.viewers.includes(userId);
+//     return isOwner || isEditor || isCommenter || isViewer;
+//   } else {
+//     // Anyone with the link
+//     if (
+//       project.projectSettings.generalAccessRole === 0 ||
+//       project.projectSettings.generalAccessRole === 1 ||
+//       project.projectSettings.generalAccessRole === 2
+//     )
+//       return true;
+//     const isOwner = project.owner === userId;
+//     const isEditor = project.editors.includes(userId);
+//     const isCommenter = project.commenters.includes(userId);
+//     const isViewer = project.viewers.includes(userId);
+//     return isOwner || isEditor || isCommenter || isViewer;
+//   }
+// };
 
 // <BorderLinearProgress variant="determinate" value={50} />;
 

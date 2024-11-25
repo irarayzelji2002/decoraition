@@ -81,7 +81,8 @@ function Details() {
       } else {
         setDesign(fetchedDesign);
         setOwnerName(
-          users.find((user) => user.id === design.owner || user.id === design.ownerId)?.username
+          users.find((user) => user.id === fetchedDesign.owner || user.id === fetchedDesign.ownerId)
+            ?.username
         );
         console.log("fetchedDesign", fetchedDesign);
         setCreatedAtDisplay(formatDateDetail(fetchedDesign.createdAt));

@@ -162,6 +162,12 @@ h2 {
   min-height: 33px;
 }
 
+.projecth2 {
+  color: var(--color-white);
+  font-size: var(--font-size-h4);
+  min-height: 33px;
+}
+
 .no-content p {
   color: var(--noContent);
   font-weight: 500;

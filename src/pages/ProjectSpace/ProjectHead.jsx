@@ -591,7 +591,7 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
         isOpen={isViewCollabModalOpen}
         onClose={handleCloseViewCollabModal}
         handleAccessChange={() => {}}
-        isDesign={true}
+        isDesign={false}
         object={project}
         isViewCollab={true}
       />

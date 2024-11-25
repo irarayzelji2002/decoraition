@@ -579,7 +579,7 @@ function Project() {
         >
           <div style={{ width: "98%" }}>
             <div style={{ display: "flex" }}>
-              <h2>{`${searchQuery ? "Searched " : ""}Designs`}</h2>
+              <h2 className="projecth2">{`${searchQuery ? "Searched " : ""}Designs`}</h2>
               <div className="button-container" style={{ display: "flex", marginLeft: "auto" }}>
                 <IconButton
                   style={{ marginRight: "10px" }}
@@ -688,7 +688,7 @@ function Project() {
 
       {/* Pagination Section */}
       {totalPages > 0 && (
-        <div className="pagination-controls" style={{ marginBottom: "183px" }}>
+        <div className="pagination-controls" style={{ paddingBottom: "183px" }}>
           {/* Previous Page Button */}
           <IconButton onClick={handlePreviousPage} disabled={page === 1} sx={iconButtonStyles}>
             <ArrowBackIosRounded

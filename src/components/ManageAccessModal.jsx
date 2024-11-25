@@ -183,54 +183,60 @@ const ManageAcessModal = ({
       }
 
       // Add editors
-      design.editors?.forEach((editorId) => {
-        const editorUser = users.find((user) => user.id === editorId);
-        if (editorUser) {
-          collaborators.push({
-            userId: editorId,
-            username: editorUser.username ?? `${editorUser.firstName} ${editorUser.lastName}`,
-            email: editorUser.email,
-            role: 1,
-            roleLabel: "Editor",
-            profilePic: editorUser.profilePic,
-          });
-        }
-      });
+      if (design.editors && Array.isArray(design.editors)) {
+        design.editors?.forEach((editorId) => {
+          const editorUser = users.find((user) => user.id === editorId);
+          if (editorUser) {
+            collaborators.push({
+              userId: editorId,
+              username: editorUser.username ?? `${editorUser.firstName} ${editorUser.lastName}`,
+              email: editorUser.email,
+              role: 1,
+              roleLabel: "Editor",
+              profilePic: editorUser.profilePic,
+            });
+          }
+        });
+      }
 
       // Add commenters
-      design.commenters?.forEach((commenterId) => {
-        const commenterUser = users.find((user) => user.id === commenterId);
-        if (commenterUser) {
-          collaborators.push({
-            userId: commenterId,
-            username:
-              commenterUser.username ?? `${commenterUser.firstName} ${commenterUser.lastName}`,
-            email: commenterUser.email,
-            role: 2,
-            roleLabel: "Commenter",
-            profilePic: commenterUser.profilePic,
-          });
-        }
-      });
+      if (design.commenters && Array.isArray(design.commenters)) {
+        design.commenters?.forEach((commenterId) => {
+          const commenterUser = users.find((user) => user.id === commenterId);
+          if (commenterUser) {
+            collaborators.push({
+              userId: commenterId,
+              username:
+                commenterUser.username ?? `${commenterUser.firstName} ${commenterUser.lastName}`,
+              email: commenterUser.email,
+              role: 2,
+              roleLabel: "Commenter",
+              profilePic: commenterUser.profilePic,
+            });
+          }
+        });
+      }
 
       // Add viewers
-      design.viewers?.forEach((viewerId) => {
-        const viewerUser = users.find((user) => user.id === viewerId);
-        if (viewerUser) {
-          collaborators.push({
-            userId: viewerId,
-            username: viewerUser.username ?? `${viewerUser.firstName} ${viewerUser.lastName}`,
-            email: viewerUser.email,
-            role: 0,
-            roleLabel: "Viewer",
-            profilePic: viewerUser.profilePic,
-          });
-        }
-      });
+      if (design.viewers && Array.isArray(design.viewers)) {
+        design.viewers?.forEach((viewerId) => {
+          const viewerUser = users.find((user) => user.id === viewerId);
+          if (viewerUser) {
+            collaborators.push({
+              userId: viewerId,
+              username: viewerUser.username ?? `${viewerUser.firstName} ${viewerUser.lastName}`,
+              email: viewerUser.email,
+              role: 0,
+              roleLabel: "Viewer",
+              profilePic: viewerUser.profilePic,
+            });
+          }
+        });
+      }
 
       setInitEmailsWithRole(collaborators);
       setEmailsWithRole(collaborators);
-      console.log("manage access - initEmailsWithRole:", initEmailsWithRole);
+      console.log("manage access - collaborators:", collaborators);
     } else {
       const project = object;
       setRoles([
@@ -252,67 +258,76 @@ const ManageAcessModal = ({
       const collaborators = [];
 
       // Add managers
-      project.managers?.forEach((managerId) => {
-        const managerUser = users.find((user) => user.id === managerId);
-        if (managerUser) {
-          collaborators.push({
-            userId: managerId,
-            username: managerUser.username ?? `${managerUser.firstName} ${managerUser.lastName}`,
-            email: managerUser.email,
-            role: 3,
-            roleLabel: "Manager",
-          });
-        }
-      });
+      if (project.managers && Array.isArray(project.managers)) {
+        project.managers.forEach((managerId) => {
+          const managerUser = users.find((user) => user.id === managerId);
+          if (managerUser) {
+            collaborators.push({
+              userId: managerId,
+              username: managerUser.username || `${managerUser.firstName} ${managerUser.lastName}`,
+              email: managerUser.email,
+              role: 3,
+              roleLabel: "Manager",
+            });
+          }
+        });
+      }
 
       // Add content managers
-      project.contentManagers?.forEach((contentManagerId) => {
-        const contentManagerUser = users.find((user) => user.id === contentManagerId);
-        if (contentManagerUser) {
-          collaborators.push({
-            userId: contentManagerId,
-            username:
-              contentManagerUser.username ??
-              `${contentManagerUser.firstName} ${contentManagerUser.lastName}`,
-            email: contentManagerUser.email,
-            role: 2,
-            roleLabel: "Content Manager",
-          });
-        }
-      });
+      if (project.contentManagers && Array.isArray(project.contentManagers)) {
+        project.contentManagers.forEach((contentManagerId) => {
+          const contentManagerUser = users.find((user) => user.id === contentManagerId);
+          if (contentManagerUser) {
+            collaborators.push({
+              userId: contentManagerId,
+              username:
+                contentManagerUser.username ||
+                `${contentManagerUser.firstName} ${contentManagerUser.lastName}`,
+              email: contentManagerUser.email,
+              role: 2,
+              roleLabel: "Content Manager",
+            });
+          }
+        });
+      }
 
       // Add contributors
-      project.contributors?.forEach((contributorId) => {
-        const contributorUser = users.find((user) => user.id === contributorId);
-        if (contributorUser) {
-          collaborators.push({
-            userId: contributorId,
-            username:
-              contributorUser.username ??
-              `${contributorUser.firstName} ${contributorUser.lastName}`,
-            email: contributorUser.email,
-            role: 1,
-            roleLabel: "Contributor",
-          });
-        }
-      });
+      if (project.contributors && Array.isArray(project.contributors)) {
+        project.contributors.forEach((contributorId) => {
+          const contributorUser = users.find((user) => user.id === contributorId);
+          if (contributorUser) {
+            collaborators.push({
+              userId: contributorId,
+              username:
+                contributorUser.username ||
+                `${contributorUser.firstName} ${contributorUser.lastName}`,
+              email: contributorUser.email,
+              role: 1,
+              roleLabel: "Contributor",
+            });
+          }
+        });
+      }
 
       // Add viewers
-      project.viewers?.forEach((viewerId) => {
-        const viewerUser = users.find((user) => user.id === viewerId);
-        if (viewerUser) {
-          collaborators.push({
-            userId: viewerId,
-            username: viewerUser.username ?? `${viewerUser.firstName} ${viewerUser.lastName}`,
-            email: viewerUser.email,
-            role: 0,
-            roleLabel: "Viewer",
-          });
-        }
-      });
+      if (project.viewers && Array.isArray(project.viewers)) {
+        project.viewers.forEach((viewerId) => {
+          const viewerUser = users.find((user) => user.id === viewerId);
+          if (viewerUser) {
+            collaborators.push({
+              userId: viewerId,
+              username: viewerUser.username || `${viewerUser.firstName} ${viewerUser.lastName}`,
+              email: viewerUser.email,
+              role: 1,
+              roleLabel: "Viewer",
+            });
+          }
+        });
+      }
 
       setInitEmailsWithRole(collaborators);
       setEmailsWithRole(collaborators);
+      console.log("manage access - collaborators:", collaborators);
     }
   }, [isOpen, users, object]);
 

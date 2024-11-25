@@ -162,11 +162,28 @@ function DesignHead({
   };
 
   const handleShareClick = (event) => {
+    event.stopPropagation();
     console.log("Share clicked");
     console.log("anchorEl", anchorEl);
     setAnchorElShare(event.currentTarget);
     setIsShareMenuOpen(true);
   };
+
+  useEffect(() => {
+    console.log("Share menu state:", {
+      anchorElShare,
+      isShareMenuOpen,
+      isShareModalOpen,
+      isManageAccessModalOpen,
+      isViewCollabModalOpen,
+    });
+  }, [
+    anchorElShare,
+    isShareMenuOpen,
+    isShareModalOpen,
+    isManageAccessModalOpen,
+    isViewCollabModalOpen,
+  ]);
 
   const handleChangeModeClick = () => {
     setIsChangeModeMenuOpen(true);

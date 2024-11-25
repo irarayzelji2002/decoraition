@@ -79,13 +79,15 @@ const DefaultMenu = ({
           <ListItemText primary="Comment" sx={{ color: "var(--color-white)" }} />
         </CustomMenuItem>
       )}
-      <CustomMenuItem onClick={onOpenShareModal} sx={{ paddingRight: "10px" }}>
-        <ListItemIcon>
-          <ShareIcon sx={{ color: "var(--color-white)" }} />
-        </ListItemIcon>
-        <ListItemText primary="Share" sx={{ color: "var(--color-white)" }} />
-        <KeyboardArrowRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
-      </CustomMenuItem>
+      {isDesign && (
+        <CustomMenuItem onClick={onOpenShareModal} sx={{ paddingRight: "10px" }}>
+          <ListItemIcon>
+            <ShareIcon sx={{ color: "var(--color-white)" }} />
+          </ListItemIcon>
+          <ListItemText primary="Share" sx={{ color: "var(--color-white)" }} />
+          <KeyboardArrowRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
+        </CustomMenuItem>
+      )}
       <CustomMenuItem onClick={onCopyLink}>
         <ListItemIcon>
           <CopyLinkIcon sx={{ color: "var(--color-white)" }} />
@@ -113,7 +115,7 @@ const DefaultMenu = ({
           <KeyboardArrowRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
         </CustomMenuItem>
       )}
-      {((isDesign && designSettingsVisibility.isDownloadVisible) ||
+      {/* {((isDesign && designSettingsVisibility.isDownloadVisible) ||
         (!isDesign && projectSettingsVisibility.isDownloadVisible)) && (
         <CustomMenuItem onClick={onOpenDownloadModal}>
           <ListItemIcon>
@@ -121,23 +123,23 @@ const DefaultMenu = ({
           </ListItemIcon>
           <ListItemText primary="Download" sx={{ color: "var(--color-white)" }} />
         </CustomMenuItem>
-      )}
-      {isDesign && designSettingsVisibility.isMakeCopyVisible && (
+      )} */}
+      {/* {isDesign && designSettingsVisibility.isMakeCopyVisible && (
         <CustomMenuItem onClick={onOpenMakeCopyModal}>
           <ListItemIcon>
             <MakeACopyIcon sx={{ color: "var(--color-white)" }} />
           </ListItemIcon>
           <ListItemText primary="Make a Copy" sx={{ color: "var(--color-white)" }} />
         </CustomMenuItem>
-      )}
-      {isDesign && designSettingsVisibility.isRestoreVisible && (
+      )} */}
+      {/* {isDesign && designSettingsVisibility.isRestoreVisible && (
         <CustomMenuItem onClick={onOpenRestoreModal}>
           <ListItemIcon>
             <RestoreIcon sx={{ color: "var(--color-white)" }} />
           </ListItemIcon>
           <ListItemText primary="Restore" sx={{ color: "var(--color-white)" }} />
         </CustomMenuItem>
-      )}
+      )} */}
       {((isDesign && designSettingsVisibility.isRenameVisible) ||
         (!isDesign && projectSettingsVisibility.isRenameVisible)) && (
         <CustomMenuItem onClick={onOpenRenameModal}>
@@ -147,7 +149,7 @@ const DefaultMenu = ({
           <ListItemText primary="Rename" sx={{ color: "var(--color-white)" }} />
         </CustomMenuItem>
       )}
-      {((isDesign && designSettingsVisibility.isDeleteVisible) ||
+      {/* {((isDesign && designSettingsVisibility.isDeleteVisible) ||
         (!isDesign && projectSettingsVisibility.isDeleteVisible)) && (
         <CustomMenuItem onClick={onDelete}>
           <ListItemIcon>
@@ -155,7 +157,7 @@ const DefaultMenu = ({
           </ListItemIcon>
           <ListItemText primary="Delete" sx={{ color: "var(--color-white)" }} />
         </CustomMenuItem>
-      )}
+      )} */}
       <CustomMenuItem onClick={onOpenInfoModal}>
         <ListItemIcon>
           <DetailsIcon sx={{ color: "var(--color-white)" }} />

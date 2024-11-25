@@ -529,7 +529,7 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
           transformOrigin={{ horizontal: "right", vertical: "top" }}
           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
-          {isShareMenuOpen ? (
+          {isShareMenuOpen && false ? (
             <ShareMenu
               onClose={handleClose}
               onBackToMenu={handleBackToMenu}
@@ -538,7 +538,7 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
               onOpenManageAccessModalView={handleOpenViewCollabModal}
               isViewCollab={isViewCollab}
             />
-          ) : isChangeModeMenuOpen ? (
+          ) : isChangeModeMenuOpen && false ? (
             <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
           ) : (
             <DefaultMenu

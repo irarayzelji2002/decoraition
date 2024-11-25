@@ -472,7 +472,7 @@ function HomepageOptions({
         )}
         {optionsState.showOptions &&
           optionsState.selectedId === id &&
-          (isShareMenuOpen ? (
+          (isShareMenuOpen && isDesign ? (
             <ShareMenu
               onClose={() => setIsShareMenuOpen(false)}
               onBackToMenu={() => setIsShareMenuOpen(false)}
@@ -497,12 +497,14 @@ function HomepageOptions({
                 <OpenInNewIcon style={{ fontSize: 20 }} className="icon" />
                 Open
               </div>
-              <div className="dropdown-item" onClick={() => setIsShareMenuOpen(true)}>
-                <div className="icon">
-                  <ShareIcon style={{ fontSize: 20 }} />
+              {isDesign && (
+                <div className="dropdown-item" onClick={() => setIsShareMenuOpen(true)}>
+                  <div className="icon">
+                    <ShareIcon style={{ fontSize: 20 }} />
+                  </div>
+                  Share
                 </div>
-                Share
-              </div>
+              )}
               <div className="dropdown-item" onClick={handleCopyLink}>
                 <div className="icon">
                   <CopyLinkIcon style={{ fontSize: 20 }} className="icon" />
@@ -515,7 +517,7 @@ function HomepageOptions({
                 </div>
                 Settings
               </div>
-              {!((isDrawer || isTable) && isDesign) && (
+              {/* {!((isDrawer || isTable) && isDesign) && (
                 <div className="dropdown-item" onClick={(e) => openDownloadModal(e)}>
                   <div className="icon">
                     <DownloadIcon style={{ fontSize: 20 }} className="icon" />
@@ -530,19 +532,19 @@ function HomepageOptions({
                   </div>
                   Make a copy
                 </div>
-              )}
+              )} */}
               <div className="dropdown-item" onClick={(e) => openRenameModal(e)}>
                 <div className="icon">
                   <RenameIcon style={{ fontSize: 20 }} className="icon" />
                 </div>
                 Rename
               </div>
-              <div className="dropdown-item" onClick={(e) => openDeleteModal(e)}>
+              {/* <div className="dropdown-item" onClick={(e) => openDeleteModal(e)}>
                 <div className="icon">
                   <DeleteIcon style={{ fontSize: 20 }} className="icon" />
                 </div>
                 Delete
-              </div>
+              </div> */}
               <div className="dropdown-item" onClick={handleOpenInfoModal}>
                 <div className="icon">
                   <DetailsIcon style={{ fontSize: 20 }} className="icon" />

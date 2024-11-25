@@ -386,7 +386,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
           ))}
         </div>
         {/* Buttons */}
-        <Toolbar
+        {/* <Toolbar
           sx={{
             backgroundColor: "var(--bgMain)",
             padding: "0px !important",
@@ -551,7 +551,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
               </>
             )}
           </div>
-        </Toolbar>
+        </Toolbar> */}
       </Drawer>
       {openViewModal && (
         <VersionOverviewModal

@@ -729,7 +729,10 @@ export const generateMask = async (
   } catch (error) {
     console.error("Error:", error);
     let errorMessage = "";
-    if (error.message === "NetworkError when attempting to fetch resource.")
+    if (
+      error.message === "NetworkError when attempting to fetch resource." ||
+      error.message === "Failed to fetch"
+    )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || "Failed to generate mask";
     return {
@@ -841,7 +844,10 @@ export const previewMask = async (
     console.log("error catch", error.message);
     let formErrors = {};
     let errorMessage = "";
-    if (error.message === "NetworkError when attempting to fetch resource.")
+    if (
+      error.message === "NetworkError when attempting to fetch resource." ||
+      error.message === "Failed to fetch"
+    )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || "Failed to combine masks";
     formErrors.combinedMask = errorMessage;
@@ -1041,7 +1047,10 @@ export const generateNextImage = async (
   } catch (error) {
     console.error("Error:", error);
     let errorMessage = "";
-    if (error.message === "NetworkError when attempting to fetch resource.")
+    if (
+      error.message === "NetworkError when attempting to fetch resource." ||
+      error.message === "Failed to fetch"
+    )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
     return {
@@ -1130,7 +1139,10 @@ export const generateFirstImage = async (
   } catch (error) {
     console.error("Error:", error);
     let errorMessage = "";
-    if (error.message === "NetworkError when attempting to fetch resource.")
+    if (
+      error.message === "NetworkError when attempting to fetch resource." ||
+      error.message === "Failed to fetch"
+    )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
     return {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
@@ -58,8 +58,9 @@ export const theme = createTheme({
 const DesignSettings = () => {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
   const { designId } = useParams({}); // Get the designId parameter from the URL
+  const navigate = useNavigate();
   const location = useLocation();
-  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateTo = location.state?.navigateFrom || (designId ? `/design/${designId}` : "/");
   const navigateFrom = location.pathname;
 
   const [design, setDesign] = useState({});
@@ -239,6 +240,10 @@ const DesignSettings = () => {
         handleSaveDesignSettings={handleSaveDesignSettings}
         allowEdit={allowEdit}
         isDesignButtonDisabled={isDesignButtonDisabled}
+        navigateTo={navigateTo}
+        navigateFrom={navigateFrom}
+        navigate={navigate}
+        designId={designId}
       />
     </div>
   );
@@ -272,6 +277,9 @@ const SettingsContent = ({
   handleSaveDesignSettings = () => {},
   allowEdit = false,
   isDesignButtonDisabled = false,
+  navigateTo,
+  navigateFrom,
+  navigate,
 }) => (
   <ThemeProvider theme={theme}>
     <div className="settingsContainer">
@@ -399,7 +407,11 @@ const SettingsContent = ({
           </Button>
           <Button
             variant="contained"
-            onClick={() => window.history.back()}
+            onClick={() =>
+              navigate(navigateTo, {
+                state: { navigateFrom: navigateFrom },
+              })
+            }
             sx={{
               color: "var(--color-white)",
               background: "transparent",

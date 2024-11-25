@@ -1,10 +1,14 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../../css/landing.css";
 import IconButton from "@mui/material/IconButton";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
 
   const toggleFaq = (index) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -65,7 +69,7 @@ const FAQ = () => {
           }}
         >
           <IconButton
-            onClick={() => window.history.back()}
+            onClick={() => navigate(navigateTo)}
             style={{
               color: "var(--color-white)",
               fontSize: "2.5rem",

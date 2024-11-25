@@ -31,14 +31,14 @@ const getPHCurrency = () => {
 };
 
 const EditItem = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const navigateTo = location.state?.navigateFrom || "/";
-  const navigateFrom = location.pathname;
-
   const { user, designs, userDesigns, items, userItems, designVersions, userDesignVersions } =
     useSharedProps();
-  const { budgetId, itemId } = useParams();
+  const { designId, budgetId, itemId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || (designId ? `/budget/${designId}` : "/");
+  const navigateFrom = location.pathname;
+
   const [designVersion, setDesignVersion] = useState({});
   const [design, setDesign] = useState({});
   const [item, setItem] = useState({});
@@ -337,7 +337,7 @@ const EditItem = () => {
         if (design) {
           setTimeout(() => navigate(`/budget/${design.id}`), 1000);
         } else {
-          setTimeout(() => window.history.back(), 1000);
+          setTimeout(() => navigateTo, 1000);
         }
       }
     } catch (error) {

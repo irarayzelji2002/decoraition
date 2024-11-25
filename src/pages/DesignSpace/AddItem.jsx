@@ -20,10 +20,10 @@ import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 
 const AddItem = () => {
-  const { budgetId } = useParams();
+  const { designId, budgetId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateTo = location.state?.navigateFrom || (designId ? `/budget/${designId}` : "/");
   const navigateFrom = location.pathname;
 
   const { user, designs, userDesigns, designVersions, userDesignVersions } = useSharedProps();
@@ -293,7 +293,7 @@ const AddItem = () => {
         if (design) {
           setTimeout(() => navigate(`/budget/${design.id}`), 1000);
         } else {
-          setTimeout(() => window.history.back(), 1000);
+          setTimeout(() => navigate(navigateTo), 1000);
         }
       }
     } catch (error) {

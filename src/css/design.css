@@ -227,6 +227,7 @@
   width: 100%;
   /* min-height: calc(100vh - 154px); */
   padding-bottom: 80px;
+  padding-top: 74px;
 }
 .whole {
   min-height: 100%;
@@ -560,12 +561,14 @@ h6 {
   min-height: 83.5vh;
 }
 .stickyMenu {
-  position: -webkit-sticky;
-  position: sticky;
+  /* position: -webkit-sticky;
+  position: sticky; */
+  position: absolute;
   top: 0;
   z-index: 1000;
   background-color: var(--nav-card-modal);
   padding: 10px;
+  width: 100%;
 }
 
 .working-area {
@@ -1390,6 +1393,11 @@ s .dialog .MuiDialog-paper {
     padding: 20px;
     padding-right: 40px;
     padding-top: 0px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+    transition: height 0.1s ease;
   }
   .promptBar .transitionMinHeight {
     padding-top: 20px;

@@ -171,6 +171,9 @@ function PromptBar({
   const navigate = useNavigate();
   const [showNavDialog, setShowNavDialog] = useState(false);
 
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchStartHeight, setTouchStartHeight] = useState(null);
+
   useEffect(() => {
     // Clear any leftover history state when arriving at homepage
     window.history.replaceState(null, "", window.location.pathname);
@@ -1376,6 +1379,7 @@ function PromptBar({
                   flexDirection: isSmallWidth ? "column" : "row",
                   flexFlow: isSmallWidth ? "column" : "row",
                   flexWrap: isSmallWidth ? "wrap" : "nowrap",
+                  gap: "20px",
                 }}
                 className="inline-flex-prompt-bar"
                 onClick={(e) => {
@@ -1506,7 +1510,6 @@ function PromptBar({
                   sx={{
                     borderRadius: "100%",
                     marginTop: isSmallWidth ? "15px" : "4px",
-                    marginLeft: isSmallWidth ? "auto" : "30px",
                     marginRight: isSmallWidth ? "auto" : "0px",
                     marginBottom: "4px",
                     padding: "12px 10px 12px 14px",

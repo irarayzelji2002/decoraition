@@ -24,13 +24,19 @@ import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import ProjectSpace from "./ProjectSpace";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import deepEqual from "deep-equal";
+import {
+  isManagerProject,
+  isManagerContentManagerProject,
+  isManagerContentManagerContributorProject,
+  isCollaboratorProject,
+} from "./Project";
 
 function Timeline() {
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
-  const { isDarkMode, projects, userProjects } = useSharedProps();
+  const { user, userDoc, isDarkMode, projects, userProjects } = useSharedProps();
   const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
   const [project, setProject] = useState({});
   const [loadingProject, setLoadingProject] = useState(true);
@@ -43,6 +49,12 @@ function Timeline() {
   const [timelineId, setTimelineId] = useState(null); // Add state for timelineId
   const [taskIdToDelete, setTaskIdToDelete] = useState(null); // Add state for taskId to delete
   const [loadingTasks, setLoadingTasks] = useState(true); // Add loading state for tasks
+
+  const [isManager, setIsManager] = useState(false);
+  const [isManagerContentManager, setIsManagerContentManager] = useState(false);
+  const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
+    useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
 
   // Get project
   useEffect(() => {
@@ -60,6 +72,43 @@ function Timeline() {
     }
     setLoadingProject(false);
   }, [projectId, projects, userProjects]);
+
+  // Initialize access rights
+  useEffect(() => {
+    if (!project?.projectSettings || !userDoc?.id) return;
+    // Check if user has any access
+    const hasAccess = isCollaboratorProject(project, userDoc.id);
+    if (!hasAccess) {
+      showToast("error", "You don't have access to this project");
+      navigate("/");
+      return;
+    }
+    // If they have access, proceed with setting roles
+    setIsManager(isManagerProject(project, userDoc.id));
+    setIsManagerContentManager(isManagerContentManagerProject(project, userDoc.id));
+    setIsManagerContentManagerContributor(
+      isManagerContentManagerContributorProject(project, userDoc.id)
+    );
+    setIsCollaborator(isCollaboratorProject(project, userDoc.id));
+  }, [project, userDoc]);
+
+  useEffect(() => {
+    if (!changeMode) {
+      if (isManager) setChangeMode("Managing");
+      else if (isManagerContentManager) setChangeMode("Managing Content");
+      else if (isManagerContentManagerContributor) setChangeMode("Contributing");
+      else if (isCollaborator) setChangeMode("Viewing");
+    }
+    console.log(
+      `commentCont - isManager: ${isManager}, isManagerContentManager: ${isManagerContentManager}, isManagerContentManagerContributor: ${isManagerContentManagerContributor}, isCollaborator: ${isCollaborator}`
+    );
+  }, [
+    isManager,
+    isManagerContentManager,
+    isManagerContentManagerContributor,
+    isCollaborator,
+    changeMode,
+  ]);
 
   const openDeleteModal = (taskId) => {
     setTaskIdToDelete(taskId);

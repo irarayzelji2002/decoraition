@@ -214,7 +214,7 @@ function App() {
                 }
               />
               <Route
-                path="/addItem/:budgetId"
+                path="/addItem/:designId/:budgetId"
                 element={
                   <ProtectedRoute>
                     <AddItem />
@@ -222,7 +222,7 @@ function App() {
                 }
               />
               <Route
-                path="/editItem/:budgetId/:itemId"
+                path="/editItem/:designId/:budgetId/:itemId"
                 element={
                   <ProtectedRoute>
                     <EditItem />

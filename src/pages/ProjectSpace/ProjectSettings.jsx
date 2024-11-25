@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
@@ -73,8 +73,9 @@ const ProjectSettings = () => {
     userProjectBudgets,
   } = useSharedProps();
   const { projectId } = useParams({}); // Get the projectId parameter from the URL
+  const navigate = useNavigate();
   const location = useLocation();
-  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateTo = location.state?.navigateFrom || (projectId ? `/project/${projectId}` : "/");
   const navigateFrom = location.pathname;
 
   const [project, setProject] = useState({});
@@ -424,6 +425,9 @@ const ProjectSettings = () => {
                 setNotifyDays={setNotifyDays}
                 allowEdit={allowEdit}
                 activeTab={activeTab} // determines tab
+                navigateTo={navigateTo}
+                navigateFrom={navigateFrom}
+                navigate={navigate}
               />
             ) : activeTab === "Timeline" ? (
               <SettingsContent
@@ -435,6 +439,9 @@ const ProjectSettings = () => {
                 setAllowDownload={setAllowDownloadTimeline}
                 allowEdit={allowEdit}
                 activeTab={activeTab}
+                navigateTo={navigateTo}
+                navigateFrom={navigateFrom}
+                navigate={navigate}
               />
             ) : activeTab === "Plan Map" ? (
               <SettingsContent
@@ -446,6 +453,9 @@ const ProjectSettings = () => {
                 setAllowDownload={setAllowDownloadPlanMap}
                 allowEdit={allowEdit}
                 activeTab={activeTab}
+                navigateTo={navigateTo}
+                navigateFrom={navigateFrom}
+                navigate={navigate}
               />
             ) : (
               activeTab === "Budget" && (
@@ -458,6 +468,9 @@ const ProjectSettings = () => {
                   setAllowDownload={setAllowDownloadBudget}
                   allowEdit={allowEdit}
                   activeTab={activeTab}
+                  navigateTo={navigateTo}
+                  navigateFrom={navigateFrom}
+                  navigate={navigate}
                 />
               )
             )}
@@ -498,7 +511,11 @@ const ProjectSettings = () => {
               </Button>
               <Button
                 variant="contained"
-                onClick={() => window.history.back()}
+                onClick={() =>
+                  navigate(navigateTo, {
+                    state: { navigateFrom: navigateFrom },
+                  })
+                }
                 sx={{
                   color: "var(--color-white)",
                   background: "transparent",
@@ -550,6 +567,9 @@ const SettingsContent = ({
   setNotifyDays = () => {},
   allowEdit = false,
   activeTab = "Project",
+  navigateTo,
+  navigateFrom,
+  navigate,
 }) => (
   <div>
     {/* General Access */}

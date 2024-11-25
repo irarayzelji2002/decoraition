@@ -659,7 +659,7 @@ function Budget() {
                   key={index}
                   item={item}
                   onEdit={() =>
-                    navigate(`/editItem/${budget.id}/${item.id}`, {
+                    navigate(`/editItem/${designId}/${budget.id}/${item.id}`, {
                       state: { navigateFrom: navigateFrom },
                     })
                   }
@@ -714,7 +714,7 @@ function Budget() {
                 <div
                   className="small-button-container budget"
                   onClick={() =>
-                    navigate(`/addItem/${budget.id}`, {
+                    navigate(`/addItem/${designId}/${budget.id}`, {
                       state: { navigateFrom: navigateFrom },
                     })
                   }

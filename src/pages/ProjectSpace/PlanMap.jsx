@@ -37,10 +37,17 @@ import LoadingPage from "../../components/LoadingPage";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import ProjectSpace from "./ProjectSpace";
 import deepEqual from "deep-equal";
+import { showToast } from "../../functions/utils";
+import {
+  isManagerProject,
+  isManagerContentManagerProject,
+  isManagerContentManagerContributorProject,
+  isCollaboratorProject,
+} from "./Project";
 
 function PlanMap() {
   const { projectId } = useParams();
-  const { isDarkMode, projects, userProjects } = useSharedProps();
+  const { userDoc, isDarkMode, projects, userProjects } = useSharedProps();
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
@@ -59,6 +66,12 @@ function PlanMap() {
   const [loadingImage, setLoadingImage] = useState(true);
   const [loadingProject, setLoadingProject] = useState(true);
 
+  const [isManager, setIsManager] = useState(false);
+  const [isManagerContentManager, setIsManagerContentManager] = useState(false);
+  const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
+    useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
+
   // Get project
   useEffect(() => {
     if (projectId && userProjects.length > 0) {
@@ -74,6 +87,43 @@ function PlanMap() {
     }
     setLoadingProject(false);
   }, [projectId, projects, userProjects]);
+
+  // Initialize access rights
+  useEffect(() => {
+    if (!project?.projectSettings || !userDoc?.id) return;
+    // Check if user has any access
+    const hasAccess = isCollaboratorProject(project, userDoc.id);
+    if (!hasAccess) {
+      showToast("error", "You don't have access to this project");
+      navigate("/");
+      return;
+    }
+    // If they have access, proceed with setting roles
+    setIsManager(isManagerProject(project, userDoc.id));
+    setIsManagerContentManager(isManagerContentManagerProject(project, userDoc.id));
+    setIsManagerContentManagerContributor(
+      isManagerContentManagerContributorProject(project, userDoc.id)
+    );
+    setIsCollaborator(isCollaboratorProject(project, userDoc.id));
+  }, [project, userDoc]);
+
+  useEffect(() => {
+    if (!changeMode) {
+      if (isManager) setChangeMode("Managing");
+      else if (isManagerContentManager) setChangeMode("Managing Content");
+      else if (isManagerContentManagerContributor) setChangeMode("Contributing");
+      else if (isCollaborator) setChangeMode("Viewing");
+    }
+    console.log(
+      `commentCont - isManager: ${isManager}, isManagerContentManager: ${isManagerContentManager}, isManagerContentManagerContributor: ${isManagerContentManagerContributor}, isCollaborator: ${isCollaborator}`
+    );
+  }, [
+    isManager,
+    isManagerContentManager,
+    isManagerContentManagerContributor,
+    isCollaborator,
+    changeMode,
+  ]);
 
   useEffect(() => {
     if (user) {

@@ -1557,7 +1557,7 @@ export const CustomTooltip = styled(
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: "var(--iconBg)",
     color: "var(--color-white)",
-    maxWidth: "320px",
+    maxWidth: "600px",
     width: "100%",
     borderRadius: "10px",
     boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
@@ -1581,7 +1581,8 @@ export const DescriptionTooltip = ({ description = "", createdAt = "", image = "
         p: "5px",
         textAlign: "justify",
         padding: "5px 10px",
-        maxWidth: image ? "calc(480px - 40px)" : "calc(320px - 40px)",
+        // minWidth: "calc(320px - 40px)",
+        maxWidth: image !== "" ? "600px" : "calc(320px - 40px)", // Adjust maxWidth based on image presence
       }}
     >
       <Box>
@@ -1617,7 +1618,6 @@ export const DescriptionTooltip = ({ description = "", createdAt = "", image = "
     </Box>
   );
 };
-
 //0 for viewer, 1 for editor, 2 for commenter, 3 for owner
 // Check if user is owner (manage)
 export const isOwnerDesign = (design, userId) => {

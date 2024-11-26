@@ -1444,7 +1444,7 @@ s .dialog .MuiDialog-paper {
   }
   .promptBarIconButtonInside {
     display: block !important;
-    margin-top: 40px !important;
+    margin-top: 60px !important;
     height: 40px;
     width: 40px;
   }

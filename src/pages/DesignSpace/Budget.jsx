@@ -49,6 +49,9 @@ import {
   isOwnerEditorCommenterDesign,
   isCollaboratorDesign,
 } from "./Design";
+import TooltipWithClickAway from "../../components/TooltipWithClickAway";
+import { DescriptionTooltip } from "./Design";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 const style = {
   position: "absolute",
@@ -124,6 +127,9 @@ function Budget() {
   const [imagesLink, setImagesLink] = useState([]);
 
   const [currencyDetails, setCurrencyDetails] = useState([]);
+
+  const [showGuide, setShowGuide] = useState(false);
+  const [showGuideLocked, setShowGuideLocked] = useState(false);
 
   // Initialize access rights
   useEffect(() => {
@@ -608,6 +614,22 @@ function Budget() {
                   <AddIconGradient />
                 </IconButton>
               )}
+              <h6>
+                <TooltipWithClickAway
+                  open={showGuide}
+                  setOpen={setShowGuide}
+                  tooltipClickLocked={showGuideLocked}
+                  setTooltipClickLocked={setShowGuideLocked}
+                  title={
+                    <DescriptionTooltip description="This page is where you can add a budget for your design. It is optional to use this feature." />
+                  }
+                  className="helpTooltip inPromptBar"
+                >
+                  <div style={{ display: "flex" }}>
+                    <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+                  </div>
+                </TooltipWithClickAway>
+              </h6>
             </div>
           )}
         </div>

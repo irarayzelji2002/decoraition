@@ -184,7 +184,7 @@ const MapPin = ({
           )} */}
           <span className="pinName">{title}</span>
         </div>
-        <div style={{ display: "flex", width: "50%", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", width: "100%", justifyContent: "flex-end" }}>
           {!editMode ? (
             <>
               <div aria-label="delete" style={{ cursor: "pointer" }} onClick={handleExportClick}>

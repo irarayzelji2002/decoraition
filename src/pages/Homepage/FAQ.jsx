@@ -45,6 +45,11 @@ const FAQ = () => {
       answer:
         "Not at all! DecorAItion Planner provides an extensive and growing library of styles to suit your tastes. Whether you love modern, rustic, minimalistic, or eclectic designs, you’ll find something perfect for your room.",
     },
+    {
+      question: "Is there a limitation on what the AI can generate?",
+      answer:
+        "The AI stable-diffusion model used by DecorAItion Planner is highly advanced and can generate a wide range of design styles and customizations. However, the AI is still learning and improving, so there may be some limitations on extremely complex or unique designs. For the context of room interior design, the app is intended for designs.",
+    },
   ];
 
   return (

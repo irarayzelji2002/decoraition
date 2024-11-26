@@ -180,6 +180,8 @@ function PromptBar({
   const [showStyleRefHelp, setShowStyleRefHelp] = useState(false);
 
   // Tooltip states
+  const [showGuide, setShowGuide] = useState(false);
+  const [showGuideLocked, setShowGuideLocked] = useState(false);
   const [showPromptTooltip, setShowPromptTooltip] = useState(false);
   const [promptTooltipClickLocked, setPromptTooltipClickLocked] = useState(false);
   const [showNumberOfImagesTooltip, setShowNumberOfImagesTooltip] = useState(false);
@@ -1102,6 +1104,27 @@ function PromptBar({
           style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "662.8px" }}
           className="transitionMinHeight"
         >
+          <h6>
+            Show me a guide
+            <TooltipWithClickAway
+              open={showGuide}
+              setOpen={setShowGuide}
+              tooltipClickLocked={showGuideLocked}
+              setTooltipClickLocked={setShowGuideLocked}
+              title={
+                <DescriptionTooltip
+                  image="/img/design-guide.gif"
+                  description="Here is a guide process"
+                />
+              }
+              className="helpTooltip inPromptBar"
+            >
+              <div style={{ display: "flex" }}>
+                <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+              </div>
+            </TooltipWithClickAway>
+          </h6>
+
           <h3>
             Describe your idea
             <span style={{ color: "var(--color-quaternary)" }}> *</span>

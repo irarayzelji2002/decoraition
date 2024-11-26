@@ -228,10 +228,17 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
               value={colorPalette.paletteName}
               onChange={(e) => {
                 const newPaletteName = e.target.value;
-                setColorPalette({ ...colorPalette, paletteName: newPaletteName.trim() });
-                clearFieldError("paletteName");
+                if (newPaletteName.length <= 30) {
+                  setColorPalette({ ...colorPalette, paletteName: newPaletteName });
+                  clearFieldError("paletteName");
+                } else {
+                  setErrors({ ...errors, paletteName: "Character limit reached" });
+                }
               }}
-              helperText={errors?.paletteName}
+              helperText={
+                errors?.paletteName ||
+                (colorPalette.paletteName.length >= 30 ? "Character limit reached" : "")
+              }
               variant="outlined"
               fullWidth
               sx={{

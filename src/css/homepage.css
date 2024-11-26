@@ -160,6 +160,8 @@ h2 {
   color: var(--color-white);
   font-size: var(--font-size-h4);
   min-height: 33px;
+  display: flex;
+  align-items: center;
 }
 
 .projecth2 {
@@ -216,6 +218,13 @@ h2 {
   background-size: cover;
 }
 .drawerUser {
+  display: flex;
+  gap: 10px;
+  flex-direction: row;
+  margin: 10px 20px;
+}
+
+.drawerUserLong {
   display: flex;
   gap: 10px;
   flex-direction: row;
@@ -568,6 +577,9 @@ tr:hover td {
   .headerPlace {
     animation: moveBackground 20s infinite;
   }
+  .homepageIconButtons {
+    margin-right: 0;
+  }
 }
 @media only screen and (max-width: 720px) {
   .iconFrame {
@@ -591,6 +603,19 @@ tr:hover td {
   }
   .layoutBox {
     width: 100%;
+  }
+  .drawerUserLong {
+    flex-direction: column;
+    align-items: center;
+    column-gap: 10px;
+  }
+  .drawerUserDetails {
+    width: 250px;
+    word-break: break-word;
+    white-space: normal;
+  }
+  .roleIcon {
+    visibility: hidden;
   }
 }
 @media only screen and (max-width: 450px) {
@@ -616,4 +641,18 @@ tr:hover td {
   .homepageIconButtons {
     margin-right: 0;
   }
+}
+
+.info-icon {
+  background-color: var(--nav-card-modal);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.info-window {
+  background-color: var(--nav-card-modal);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }

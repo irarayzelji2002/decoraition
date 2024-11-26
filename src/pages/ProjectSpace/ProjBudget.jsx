@@ -125,26 +125,31 @@ function ProjBudget() {
   useEffect(() => {
     const fetchBudgetData = async () => {
       const budgetItems = {};
-      for (const design of designs) {
-        const result = await fetchVersionDetails(design, user);
-        if (result.success) {
-          const latestVersion = result.versionDetails[0];
-          const budgetId = latestVersion?.budgetId;
-          if (budgetId) {
-            const fetchedBudget =
-              userBudgets.find((b) => b.id === budgetId) || budgets.find((b) => b.id === budgetId);
-            if (fetchedBudget) {
-              const fetchedItems = await Promise.all(
-                fetchedBudget.items.map(async (itemId) => {
-                  const item =
-                    userItems.find((i) => i.id === itemId) || items.find((i) => i.id === itemId);
-                  return item || null;
-                })
-              );
-              budgetItems[design.id] = fetchedItems.filter((item) => item !== null);
+      try {
+        for (const design of designs) {
+          const result = await fetchVersionDetails(design, user);
+          if (result.success) {
+            const latestVersion = result.versionDetails[0];
+            const budgetId = latestVersion?.budgetId;
+            if (budgetId) {
+              const fetchedBudget =
+                userBudgets.find((b) => b.id === budgetId) ||
+                budgets.find((b) => b.id === budgetId);
+              if (fetchedBudget) {
+                const fetchedItems = await Promise.all(
+                  fetchedBudget.items.map(async (itemId) => {
+                    const item =
+                      userItems.find((i) => i.id === itemId) || items.find((i) => i.id === itemId);
+                    return item || null;
+                  })
+                );
+                budgetItems[design.id] = fetchedItems.filter((item) => item !== null);
+              }
             }
           }
         }
+      } catch (error) {
+        console.error("Error fetching budget data:", error);
       }
       setDesignBudgetItems(budgetItems);
       setLoading(false);
@@ -152,6 +157,8 @@ function ProjBudget() {
 
     if (designs.length > 0) {
       fetchBudgetData();
+    } else {
+      setLoading(false);
     }
   }, [designs, user, userBudgets, items, userItems, budgets]);
 

@@ -16,6 +16,7 @@ import {
   ArrowBackIosRounded as ArrowBackIosRoundedIcon,
   KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
   CloseRounded as CloseRoundedIcon,
+  HelpOutline as HelpOutlineIcon,
 } from "@mui/icons-material";
 import {
   Modal,
@@ -59,6 +60,7 @@ import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 import { usePreventNavigation } from "../../hooks/usePreventNavigation";
 import { checkValidServiceWorker } from "../../serviceWorkerRegistration";
 import { AutoTokenizer } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.5.0";
+import HelpTooltip from "./HelpTooltip"; // Import the new component
 
 const theme = extendTheme({
   components: {
@@ -173,6 +175,26 @@ function PromptBar({
 
   const [touchStart, setTouchStart] = useState(null);
   const [touchStartHeight, setTouchStartHeight] = useState(null);
+
+  const [showStyleRefHelp, setShowStyleRefHelp] = useState(false);
+
+  const handleClickOutside = (event) => {
+    if (!event.target.closest(".styleRefHelp")) {
+      setShowStyleRefHelp(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showStyleRefHelp) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showStyleRefHelp]);
 
   useEffect(() => {
     // Clear any leftover history state when arriving at homepage
@@ -1290,7 +1312,10 @@ function PromptBar({
               }}
             >
               <div style={{ width: "100%" }}>
-                <h3 style={{ marginTop: 0 }}>Upload an image for style reference</h3>
+                <h3 style={{ marginTop: 0 }}>
+                  Upload an image for style reference
+                  <HelpTooltip message="Tips: Upload an image that represents the style you want to achieve. This helps in generating more accurate results." />
+                </h3>
                 <h6>optional</h6>
                 {styleRef && (
                   <div className="fileInputChip">

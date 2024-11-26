@@ -31,9 +31,10 @@ import { handleLogout } from "../Homepage/backend/HomepageFunctions";
 import { textFieldInputProps } from "../DesignSpace/DesignSettings";
 import { commonInputStyles } from "../../components/Signup";
 import { CheckboxIcon, CheckboxCheckedIcon } from "../../components/svg/SharedIcons";
-import { fa } from "naughty-words";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function LoginModal() {
+  const { handleLogout, setPersistenceBasedOnRemember } = useAuth() || {};
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,9 +43,11 @@ export default function LoginModal() {
   const [emailLimitReached, setEmailLimitReached] = useState(false);
   const [passwordLimitReached, setPasswordLimitReached] = useState(false);
   const [isLoginDisabled, setIsLoginDisabled] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = (event) => event.preventDefault();
+  const handleRememberMeChange = (event) => setRememberMe(event.target.checked);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -102,6 +105,7 @@ export default function LoginModal() {
       }
 
       // Attempt to sign in
+      await setPersistenceBasedOnRemember(rememberMe);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
@@ -383,6 +387,8 @@ export default function LoginModal() {
               <FormControlLabel
                 control={
                   <Checkbox
+                    checked={rememberMe}
+                    onChange={handleRememberMeChange}
                     value="remember"
                     sx={{
                       color: "var(--color-white)",

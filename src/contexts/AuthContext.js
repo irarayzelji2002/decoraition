@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { setPersistence, browserSessionPersistence, browserLocalPersistence } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import axios from "axios";
 import { showToast } from "../functions/utils";
@@ -119,6 +120,15 @@ export function useAuthProvider() {
     }
   };
 
+  const setPersistenceBasedOnRemember = async (rememberMe) => {
+    try {
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+      console.log(`Persistence set to ${rememberMe ? "local" : "session"}`);
+    } catch (error) {
+      console.error("Error setting persistence:", error);
+    }
+  };
+
   return {
     user,
     setUser,
@@ -128,6 +138,7 @@ export function useAuthProvider() {
     loading,
     setLoading,
     userDocFetched,
+    setPersistenceBasedOnRemember,
   };
 }
 

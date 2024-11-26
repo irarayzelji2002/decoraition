@@ -81,22 +81,22 @@ export function SharedPropsProvider({ children }) {
   const setUserEvents = (userEvents) => setState((prev) => ({ ...prev, userEvents }));
   const setIsDarkMode = (isDarkMode) => setState((prev) => ({ ...prev, isDarkMode }));
 
-  useEffect(() => {
-    const auth = getAuth();
-    setPersistence(auth, browserLocalPersistence)
-      .then(() => {
-        console.log("Persistence set to browserLocalPersistence");
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-          setUser(currentUser);
-          setLoading(false);
-        });
-        return () => unsubscribe();
-      })
-      .catch((error) => {
-        console.error("Error setting persistence:", error);
-        setLoading(false);
-      });
-  }, [setUser, setLoading]);
+  // useEffect(() => {
+  //   const auth = getAuth();
+  //   setPersistence(auth, browserLocalPersistence)
+  //     .then(() => {
+  //       console.log("Persistence set to browserLocalPersistence");
+  //       const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+  //         setUser(currentUser);
+  //         setLoading(false);
+  //       });
+  //       return () => unsubscribe();
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error setting persistence:", error);
+  //       setLoading(false);
+  //     });
+  // }, [setUser, setLoading]);
 
   // Use useFirestoreSnapshots hook to set up real-time listeners
   const generalCollections = [

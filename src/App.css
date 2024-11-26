@@ -248,7 +248,7 @@ select:-webkit-autofill {
 }
 
 .helpTooltip.inPromptBar {
-  transform: translateY(-3px) !important;
+  margin-top: -5px !important;
 }
 
 @media (max-width: 480px) {

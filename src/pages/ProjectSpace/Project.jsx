@@ -68,6 +68,7 @@ import {
   dialogStyles,
   dialogTitleStyles,
 } from "../../components/RenameModal";
+import Error from "../../components/Error";
 
 function Project() {
   const { projectId } = useParams();

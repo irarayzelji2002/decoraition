@@ -13,12 +13,15 @@ const HelpTooltip = ({ message }) => {
   useEffect(() => {
     if (showTooltip) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [showTooltip]);
 
@@ -26,13 +29,9 @@ const HelpTooltip = ({ message }) => {
     <div
       className="helpTooltip"
       style={{ display: "inline-block", position: "relative" }}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => !showTooltip && setShowTooltip(false)}
+      onClick={() => setShowTooltip(!showTooltip)}
     >
-      <HelpOutlineIcon
-        onClick={() => setShowTooltip(!showTooltip)}
-        sx={{ marginLeft: "8px", cursor: "pointer", color: "var(--color-white)" }}
-      />
+      <HelpOutlineIcon sx={{ marginLeft: "8px", cursor: "pointer", color: "var(--color-white)" }} />
       {showTooltip && (
         <div
           style={{
@@ -45,6 +44,7 @@ const HelpTooltip = ({ message }) => {
             boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
             zIndex: 1000,
             marginTop: "5px",
+            marginLeft: "-120px",
           }}
         >
           {message}

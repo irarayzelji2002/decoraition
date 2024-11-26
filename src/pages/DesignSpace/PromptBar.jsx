@@ -1089,7 +1089,9 @@ function PromptBar({
             <h3>
               Describe your idea
               <span style={{ color: "var(--color-quaternary)" }}> *</span>
+              <HelpTooltip message="Tips: Make it as descriptive and objective as possible for the AI to generate more tailored images" />
             </h3>
+
             <div
               onClick={(e) => {
                 if (disabled) showToast("info", "Please select an image first");
@@ -1137,7 +1139,9 @@ function PromptBar({
             <h3 style={{ marginTop: "35px" }}>
               Adjust number of images to generate
               <span style={{ color: "var(--color-quaternary)" }}> *</span>
+              <HelpTooltip message="Tips: Less images quicker results, more images longer waiting time" />
             </h3>
+
             <div
               onClick={(e) => {
                 if (disabled) showToast("info", "Please select an image first");
@@ -1202,7 +1206,11 @@ function PromptBar({
                 }}
               >
                 <div style={{ width: "100%" }}>
-                  <h3 style={{ marginTop: 0 }}>Upload an image of the space</h3>
+                  <h3 style={{ marginTop: 0 }}>
+                    Upload an image of the space{" "}
+                    <HelpTooltip message="Tips: Upload a base image for the AI to decorate the layout a certain room" />
+                  </h3>
+
                   <h6>optional</h6>
                   {baseImage && (
                     <div className="fileInputChip">
@@ -1271,7 +1279,10 @@ function PromptBar({
                 }}
               >
                 <div style={{ width: "100%" }}>
-                  <h3 style={{ margin: 0 }}>Select an area to edit</h3>
+                  <h3 style={{ margin: 0 }}>
+                    Select an area to edit{" "}
+                    <HelpTooltip message="Tips: Describe a certain area to edit, then make another prompt what to edit about it. " />
+                  </h3>
                 </div>
 
                 <div
@@ -1392,8 +1403,13 @@ function PromptBar({
             >
               <div style={{ width: "100%" }}>
                 <div style={{ display: "inline-flex" }} className="inline-flex-prompt-bar-2">
-                  <h3 style={{ marginTop: 0, marginRight: "20px" }}>Use a color palette</h3>
-                  <h6 style={{ marginTop: "2px" }}>optional</h6>
+                  <div style={{ marginTop: 0, marginRight: "20px" }}>
+                    <h3>
+                      Use a color palette
+                      <HelpTooltip message="Tips: Create a color pallete. This helps in generating more accurate color suggestions." />
+                    </h3>
+                    <h6 style={{ marginBottom: "10px" }}>optional</h6>
+                  </div>
                 </div>
               </div>
 

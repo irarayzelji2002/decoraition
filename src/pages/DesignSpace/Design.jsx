@@ -1530,7 +1530,7 @@ export const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const CustomTooltip = styled(
+export const CustomTooltip = styled(
   React.forwardRef(({ className, ...props }, ref) => (
     <Tooltip
       {...props}

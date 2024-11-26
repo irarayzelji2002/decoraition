@@ -77,18 +77,6 @@ const ManageAcessModal = ({
   const contentRef = useRef(null);
 
   // For testing
-  const dummyUsers = [
-    { userId: "1", username: "Guest 1", email: "em1@g.com", role: 3, roleLabel: "Owner" },
-    { userId: "2", username: "Guest 2", email: "em1@g.com", role: 1, roleLabel: "Editor" },
-    { userId: "3", username: "Guest 3", email: "em1@g.com", role: 1, roleLabel: "Editor" },
-    { userId: "4", username: "Guest 4", email: "em1@g.com", role: 1, roleLabel: "Editor" },
-    { userId: "5", username: "Guest 5", email: "em1@g.com", role: 1, roleLabel: "Editor" },
-    { userId: "6", username: "Guest 6", email: "em2@g.com", role: 2, roleLabel: "Commenter" },
-    { userId: "7", username: "Guest 7", email: "em2@g.com", role: 2, roleLabel: "Commenter" },
-    { userId: "8", username: "Guest 8", email: "em2@g.com", role: 2, roleLabel: "Commenter" },
-    { userId: "9", username: "Guest 9", email: "em3@g.com", role: 0, roleLabel: "Viewer" },
-    { userId: "10", username: "Guest 10", email: "em3@g.com", role: 0, roleLabel: "Viewer" },
-  ];
 
   // Close/Cancel button function
   const handleClose = () => {
@@ -500,6 +488,7 @@ const ManageAcessModal = ({
                     </Box>
                   </div>
                   <div
+                    className="drawerUserDetails"
                     style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
                   >
                     <Typography variant="body1" style={{ fontWeight: "bold" }}>
@@ -588,7 +577,7 @@ const ManageAcessModal = ({
                             <div style={{ marginRight: "10px", display: "flex" }}>
                               {roleOption.icon}
                             </div>
-                            {!hideLabels && <div>{roleOption.label}</div>}
+                            <div>{roleOption.label}</div>
                           </div>
                         </MenuItem>
                       ))}
@@ -605,7 +594,7 @@ const ManageAcessModal = ({
             General Access
           </Typography>
 
-          <div className="drawerUser" style={{ gap: "0px" }}>
+          <div className="drawerUserLong">
             <Avatar
               sx={{
                 width: 56,
@@ -631,8 +620,9 @@ const ManageAcessModal = ({
                 </Typography>
               </div>
             ) : (
-              <>
+              <div style={{ display: "flex" }}>
                 <Select
+                  className="drawerUserDetails"
                   value={generalAccessSetting}
                   onChange={(e) => setGeneralAccessSetting(parseInt(e.target.value, 10))}
                   sx={{
@@ -644,6 +634,9 @@ const ManageAcessModal = ({
                       borderTopLeftRadius: "10px",
                       borderBottomLeftRadius: "10px",
                       border: "2px solid var(--borderInput)",
+                    },
+                    "@media (max-width: 768px)": {
+                      maxWidth: "200px",
                     },
                   }}
                   MenuProps={{
@@ -724,12 +717,12 @@ const ManageAcessModal = ({
                         <div style={{ marginRight: "10px", display: "flex" }}>
                           {roleOption.icon}
                         </div>
-                        {!hideLabels && <div>{roleOption.label}</div>}
+                        <div>{roleOption.label}</div>
                       </div>
                     </MenuItem>
                   ))}
                 </Select>
-              </>
+              </div>
             )}
           </div>
         </div>

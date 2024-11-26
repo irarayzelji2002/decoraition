@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MenuItem, ListItemIcon, ListItemText, styled } from "@mui/material";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import {
@@ -58,7 +59,15 @@ const DefaultMenu = ({
   },
   isSelectingMask = false,
 }) => {
+  const location = useLocation();
+  const [isInDesign, setIsInDesign] = useState(false);
   const [changeModeIcon, setChangeModeIcon] = useState(null);
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/design")) {
+      setIsInDesign(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (changeMode === "Editing") {
@@ -71,7 +80,7 @@ const DefaultMenu = ({
   }, [changeMode]);
   return (
     <>
-      {isDesign && !isSelectingMask && (
+      {isDesign && !isSelectingMask && isInDesign && (
         <CustomMenuItem onClick={onComment}>
           <ListItemIcon>
             <CommentIcon sx={{ color: "var(--color-white)" }} />

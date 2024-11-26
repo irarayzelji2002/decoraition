@@ -1724,24 +1724,27 @@ const ConfirmDeleteModal = ({ isOpen, onClose, handleDelete, isReply, date }) =>
   );
 };
 
-export const CustomTooltip = styled(({ className, ...props }) => (
-  <Tooltip
-    {...props}
-    classes={{ popper: className }}
-    slotProps={{
-      popper: {
-        modifiers: [
-          {
-            name: "offset",
-            options: {
-              offset: [0, -6],
+export const CustomTooltip = styled(
+  React.forwardRef(({ className, ...props }, ref) => (
+    <Tooltip
+      {...props}
+      ref={ref}
+      classes={{ popper: className }}
+      slotProps={{
+        popper: {
+          modifiers: [
+            {
+              name: "offset",
+              options: {
+                offset: [0, -6],
+              },
             },
-          },
-        ],
-      },
-    }}
-  />
-))(({ theme }) => ({
+          ],
+        },
+      }}
+    />
+  ))
+)(({ theme }) => ({
   [`& .${tooltipClasses.arrow}`]: {
     color: "var(--iconBg)",
   },

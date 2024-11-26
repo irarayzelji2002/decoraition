@@ -698,9 +698,11 @@ exports.shareProject = async (req, res) => {
     const getRoleField = (role) => {
       switch (role) {
         case 1:
-          return "editors";
+          return "contributors";
         case 2:
-          return "commenters";
+          return "contentManagers";
+        case 3:
+          return "managers";
         case 0:
           return "viewers";
         default:
@@ -721,23 +723,24 @@ exports.shareProject = async (req, res) => {
       return res.status(403).json({ error: "User does not have permission to share project" });
     }
 
-    // Get owner data for email notification
-    const ownerRef = db.collection("users").doc(projectData.owner);
-    const ownerDoc = await ownerRef.get();
-    if (!ownerDoc.exists) {
-      return res.status(404).json({ error: "Owner not found" });
+    // Get user data for email notification
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "User not found" });
     }
-    const ownerData = ownerDoc.data();
-    const ownerUsername = ownerData.username || `${ownerData.firstName} ${ownerData.lastName}`;
-    const ownerEmail = ownerData.email;
+    const userData = userDoc.data();
+    const userUsername = userData.username || `${userData.firstName} ${userData.lastName}`;
+    const userEmail = userData.email;
 
     // Process each email
     const batch = db.batch();
     const userEmails = [];
     const nonUserEmails = [];
     const usersToAdd = {
-      editors: [],
-      commenters: [],
+      managers: [],
+      contentManagers: [],
+      contributors: [],
       viewers: [],
     };
 
@@ -801,7 +804,7 @@ exports.shareProject = async (req, res) => {
 
     // Commit all updates
     await batch.commit();
-    console.log("sharedata - upfatedDocuments - ", updatedDocuments);
+    console.log("sharedata - updatedDocuments - ", updatedDocuments);
 
     // Send emails if notifyPeople is true
     if (notifyPeople) {
@@ -811,10 +814,10 @@ exports.shareProject = async (req, res) => {
         <p>You can access the project here: <a href="${appURL}/project/${projectId}">${
         projectData.projectName
       }</a></p>
-        ${message && `<p>Message from ${ownerUsername} (${ownerEmail}):</p><p>${message}</p>`}`;
+        ${message && `<p>Message from ${userUsername} (${userEmail}):</p><p>${message}</p>`}`;
 
       await sendEmailBcc(
-        ownerEmail, // primary recipient
+        userEmail, // primary recipient
         [...userEmails.map((ue) => ue.email), ...nonUserEmails], // BCC recipients
         "DecorAItion - Project Shared with You",
         emailBody
@@ -904,7 +907,7 @@ exports.changeAccessProject = async (req, res) => {
 
     // Update parent documents (users) first
     for (const initUser of initEmailsWithRole) {
-      const lowerEmail = initUser.toLowerCase();
+      const lowerEmail = initUser.email.toLowerCase();
       const user = usersByEmail[lowerEmail];
       if (!user) continue;
 
@@ -954,10 +957,8 @@ exports.changeAccessProject = async (req, res) => {
       const user = usersByEmail[lowerEmail];
       if (!user) continue;
 
-      const initRole = initEmailsWithRole.find((e) => e.email.toLowerCase() === lowerEmail)?.role;
-
       // Remove from previous role array
-      switch (initRole) {
+      switch (initUser.role) {
         case 1:
           const contributorIndex = contributors.indexOf(user.id);
           if (contributorIndex > -1) contributors.splice(contributorIndex, 1);

@@ -196,7 +196,7 @@ const ProjectSettings = () => {
         userProjectBudgets.find((budget) => budget.id === projectBudgetId) ||
         projectBudgets.find((budget) => budget.id === projectBudgetId);
       if (!fetchedProjectBudget) {
-        console.error("Project Budget not found.");
+        console.warn("Project Budget not found.");
       } else if (
         Object.keys(projectBudget).length === 0 ||
         !deepEqual(projectBudget, fetchedProjectBudget)

@@ -428,26 +428,24 @@ function EnhancedTable({
                       const value = row[column.id];
                       return (
                         !column.hidden && (
-                          <>
-                            <TableCell
-                              key={column.id}
-                              align={column.align}
-                              sx={{
-                                paddingTop: "5px",
-                                paddingBottom: "5px",
-                                borderBottom: "1px solid var(--table-stroke)",
-                                color: "var(--color-white)",
-                                backgroundColor: "var(--table-rows)",
-                                //   "&:hover": {
-                                //     color: "var(--color-white)",
-                                //     backgroundColor: "var(--table-rows-hover)",
-                                //   },
-                              }}
-                              onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
-                            >
-                              {column.format && !column.hidden ? column.format(value) : value}
-                            </TableCell>
-                          </>
+                          <TableCell
+                            key={`${row.id}-${column.id}`}
+                            align={column.align}
+                            sx={{
+                              paddingTop: "5px",
+                              paddingBottom: "5px",
+                              borderBottom: "1px solid var(--table-stroke)",
+                              color: "var(--color-white)",
+                              backgroundColor: "var(--table-rows)",
+                              //   "&:hover": {
+                              //     color: "var(--color-white)",
+                              //     backgroundColor: "var(--table-rows-hover)",
+                              //   },
+                            }}
+                            onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
+                          >
+                            {column.format && !column.hidden ? column.format(value) : value}
+                          </TableCell>
                         )
                       );
                     })}

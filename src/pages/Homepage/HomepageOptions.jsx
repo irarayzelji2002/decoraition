@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import "../../css/homepage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { showToast } from "../../functions/utils";
@@ -75,6 +75,7 @@ function HomepageOptions({
   const [showShareModal, setShowShareModal] = useState(false);
   const [showManageAccessModal, setShowManageAccessModal] = useState(false);
   const [showViewCollabModal, setShowViewCollabModal] = useState(false);
+  const [shouldOpenViewCollab, setShouldOpenViewCollab] = useState(false);
   const [isViewCollab, setIsViewCollab] = useState(true);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
@@ -124,6 +125,13 @@ function HomepageOptions({
       setIsViewCollab(true);
     }
   }, [object, user, userDoc]);
+
+  useEffect(() => {
+    if (shouldOpenViewCollab && !showManageAccessModal) {
+      setShowViewCollabModal(true);
+      setShouldOpenViewCollab(false);
+    }
+  }, [shouldOpenViewCollab, showManageAccessModal]);
 
   const handleToggleOptions = (id) => {
     setClickedId(id);
@@ -213,8 +221,8 @@ function HomepageOptions({
     if (emails.length === 0) {
       return { success: false, message: "No email addresses added" };
     }
-    if (!role) {
-      return { success: false, message: "Select a role" };
+    if (role < 0 || role > 4) {
+      return { success: false, message: "Select a valid role" };
     }
     try {
       let result;
@@ -330,6 +338,14 @@ function HomepageOptions({
       };
     }
   };
+
+  const handleShowViewCollab = useCallback(() => {
+    setShouldOpenViewCollab(true);
+    closeShareModal();
+    setTimeout(() => {
+      setShowViewCollabModal(true);
+    }, 100);
+  }, []);
 
   // Make a Copy Functions
   const openCopyModal = (e) => {
@@ -560,10 +576,7 @@ function HomepageOptions({
         handleShare={handleShare}
         isDesign={isDesign}
         object={object}
-        onShowViewCollab={() => {
-          closeShareModal();
-          setShowViewCollabModal(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={showManageAccessModal}
@@ -572,10 +585,7 @@ function HomepageOptions({
         isDesign={isDesign}
         object={object}
         isViewCollab={false}
-        onShowViewCollab={() => {
-          closeManageAccessModal();
-          setShowViewCollabModal(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={showViewCollabModal}

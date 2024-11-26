@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { IconButton, Menu, TextField } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -55,6 +55,7 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
   const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
   const [isViewCollab, setIsViewCollab] = useState(true);
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
+  const [shouldOpenViewCollab, setShouldOpenViewCollab] = useState(false);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteVisible, setIsDeleteVisible] = useState(false);
@@ -95,6 +96,13 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
 
     setNewName(project?.projectName ?? "Untitled Project");
   }, [project, user, userDoc]);
+
+  useEffect(() => {
+    if (shouldOpenViewCollab && !isManageAccessModalOpen) {
+      setIsViewCollabModalOpen(true);
+      setShouldOpenViewCollab(false);
+    }
+  }, [shouldOpenViewCollab, isManageAccessModalOpen]);
 
   const handleEditNameToggle = () => {
     setIsEditingName((prev) => !prev);
@@ -235,8 +243,8 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
     if (emails.length === 0) {
       return { success: false, message: "No email addresses added" };
     }
-    if (!role) {
-      return { success: false, message: "Select a role" };
+    if (role < 0 || role > 4) {
+      return { success: false, message: "Select a valid role" };
     }
     try {
       const result = await handleAddCollaborators(
@@ -298,6 +306,14 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
       return { success: false, message: "Failed to change access of project" };
     }
   };
+
+  const handleShowViewCollab = useCallback(() => {
+    setShouldOpenViewCollab(true);
+    handleCloseManageAccessModal();
+    setTimeout(() => {
+      setIsViewCollabModalOpen(true);
+    }, 100);
+  }, []);
 
   // Rename Modal Action
   const handleRename = async (newName) => {
@@ -570,22 +586,16 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
         handleShare={handleShare}
         isDesign={false}
         object={project}
-        onShowViewCollab={() => {
-          handleCloseShareModal();
-          setIsViewCollabModalOpen(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={isManageAccessModalOpen}
         onClose={handleCloseManageAccessModal}
-        handleSave={handleAccessChange}
+        handleAccessChange={handleAccessChange}
         isDesign={false}
         object={project}
         isViewCollab={false}
-        onShowViewCollab={() => {
-          handleCloseManageAccessModal();
-          setIsViewCollabModalOpen(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={isViewCollabModalOpen}

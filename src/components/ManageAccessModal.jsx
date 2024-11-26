@@ -134,10 +134,11 @@ const ManageAcessModal = ({
       showToast("success", result.message);
     } finally {
       setIsSaveBtnDisabled(false);
+      setError("");
+      setInitEmailsWithRole([]);
+      setEmailsWithRole([]);
+      console.log("manage access - onShowViewCollab:", onShowViewCollab);
       if (onShowViewCollab) {
-        setError("");
-        setInitEmailsWithRole([]);
-        setEmailsWithRole([]);
         onShowViewCollab();
       } else {
         handleClose();
@@ -318,7 +319,7 @@ const ManageAcessModal = ({
               userId: viewerId,
               username: viewerUser.username || `${viewerUser.firstName} ${viewerUser.lastName}`,
               email: viewerUser.email,
-              role: 1,
+              role: 0,
               roleLabel: "Viewer",
             });
           }
@@ -546,7 +547,7 @@ const ManageAcessModal = ({
                       sx={{
                         ...(isDisabled ? selectStylesDisabled : selectStyles),
                         marginLeft: "auto",
-                        width: hideLabels ? "90px" : isDesign ? "188px" : "200px",
+                        width: hideLabels ? "90px" : isDesign ? "188px" : "230px",
                         height: "100%",
                         "&.Mui-disabled": {
                           ...selectStylesDisabled["&.Mui-disabled"],
@@ -581,7 +582,7 @@ const ManageAcessModal = ({
                           key={roleOption.value}
                           value={roleOption.value}
                           sx={menuItemStyles}
-                          disabled={roleOption.value === 3 && managerCount <= 1}
+                          disabled={isDesign ? roleOption.value === 3 : false}
                         >
                           <div style={{ display: "flex", alignItems: "center" }}>
                             <div style={{ marginRight: "10px", display: "flex" }}>

@@ -822,7 +822,7 @@ function Design() {
               >
                 <Box sx={{ display: "flex" }}>
                   {(designVersion?.description || designVersion?.createdAt) && !isSelectingMask && (
-                    <ClickAwayListener onClickAway={() => setOpenDescTooltip(false)} sx={{}}>
+                    <ClickAwayListener onClickAway={() => setOpenDescTooltip(false)}>
                       <CustomTooltip
                         title={
                           <DescriptionTooltip
@@ -1530,24 +1530,27 @@ export const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const CustomTooltip = styled(({ className, ...props }) => (
-  <Tooltip
-    {...props}
-    classes={{ popper: className }}
-    slotProps={{
-      popper: {
-        modifiers: [
-          {
-            name: "offset",
-            options: {
-              offset: [-8, -6],
+const CustomTooltip = styled(
+  React.forwardRef(({ className, ...props }, ref) => (
+    <Tooltip
+      {...props}
+      ref={ref}
+      classes={{ popper: className }}
+      slotProps={{
+        popper: {
+          modifiers: [
+            {
+              name: "offset",
+              options: {
+                offset: [-8, -6],
+              },
             },
-          },
-        ],
-      },
-    }}
-  />
-))(({ theme }) => ({
+          ],
+        },
+      }}
+    />
+  ))
+)(({ theme }) => ({
   [`& .${tooltipClasses.arrow}`]: {
     color: "transparent",
   },

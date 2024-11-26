@@ -45,7 +45,7 @@ const ShareModal = ({
   // Project: 0 for viewer, 1 for contributor (default), 2 for content manager, 3 for manager
 
   const [emails, setEmails] = useState([]);
-  const [role, setRole] = useState(1);
+  const [role, setRole] = useState(null);
   const [message, setMessage] = useState("");
   const [messageCharCount, setMessageCharCount] = useState(0);
   const maxChars = 1000;
@@ -116,6 +116,10 @@ const ShareModal = ({
     }
   }, [isOpen, users, object, isDesign]);
 
+  useEffect(() => {
+    console.log("new role", role);
+  }, [role]);
+
   const handleInputChange = (event) => {
     const value = event.target.value;
     setMessage(value);
@@ -135,14 +139,25 @@ const ShareModal = ({
   const onSubmit = async () => {
     setIsShareBtnDisabled(true);
     try {
+      // Validation
       if (emails.length === 0) {
         setError("No email addresses added");
         return;
       }
+      if (role === undefined || role === null) {
+        if (role < 0 || role > 4) setError("Select a valid role");
+        else setError("Select a role");
+        return;
+      }
+      console.log("Sharing with role:", role);
       const result = await handleShare(object, emails, role, message, notifyPeople);
       console.log("sharedata", { object, emails, role, message, notifyPeople });
+      console.log("share result", result);
       if (!result.success) {
-        if (result.message === "No email addresses added" || result.message === "Select a role")
+        if (
+          result.message === "No email addresses added" ||
+          result.message === "Select a valid role"
+        )
           setError(result.message);
         else showToast("error", result.message);
         return;
@@ -152,7 +167,6 @@ const ShareModal = ({
       setIsShareBtnDisabled(false);
       if (onShowViewCollab) {
         setEmails([]);
-        setRole(1);
         setMessage("");
         setMessageCharCount(0);
         setNotifyPeople(false);
@@ -165,20 +179,26 @@ const ShareModal = ({
   };
 
   useEffect(() => {
-    if (isDesign)
+    if (isDesign) {
       setRoles([
         { value: 1, label: "Editor" },
         { value: 2, label: "Commenter" },
         { value: 0, label: "Viewer" },
       ]);
-    else
+    } else {
       setRoles([
         { value: 1, label: "Contributor" },
         { value: 2, label: "Content Manager" },
         { value: 3, label: "Manager" },
         { value: 0, label: "Viewer" },
       ]);
-  }, []);
+    }
+  }, [isDesign]);
+
+  useEffect(() => {
+    if (roles.length > 0) setRole(1);
+    else setRole(null);
+  }, [roles]);
 
   return (
     <Dialog
@@ -363,11 +383,6 @@ const ShareModal = ({
               },
               "& .MuiInputBase-input": {
                 minHeight: "125px !important",
-              },
-            }}
-            slotProps={{
-              input: {
-                disableUnderline: true,
               },
             }}
           />

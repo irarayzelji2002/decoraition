@@ -767,15 +767,15 @@ exports.shareDesign = async (req, res) => {
       return res.status(403).json({ error: "User does not have permission to share design" });
     }
 
-    // Get owner data for email notification
-    const ownerRef = db.collection("users").doc(designData.owner);
-    const ownerDoc = await ownerRef.get();
-    if (!ownerDoc.exists) {
-      return res.status(404).json({ error: "Owner not found" });
+    // Get user data for email notification
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "User not found" });
     }
-    const ownerData = ownerDoc.data();
-    const ownerUsername = ownerData.username || `${ownerData.firstName} ${ownerData.lastName}`;
-    const ownerEmail = ownerData.email;
+    const userData = userDoc.data();
+    const userUsername = userData.username || `${userData.firstName} ${userData.lastName}`;
+    const userEmail = userData.email;
 
     // Process each email
     const batch = db.batch();
@@ -857,10 +857,10 @@ exports.shareDesign = async (req, res) => {
         <p>You can access the design here: <a href="${appURL}/design/${designId}">${
         designData.designName
       }</a></p>
-        ${message && `<p>Message from ${ownerUsername} (${ownerEmail}):</p><p>${message}</p>`}`;
+        ${message && `<p>Message from ${userUsername} (${userEmail}):</p><p>${message}</p>`}`;
 
       await sendEmailBcc(
-        ownerEmail, // primary recipient
+        userEmail, // primary recipient
         [...userEmails.map((ue) => ue.email), ...nonUserEmails], // BCC recipients
         "DecorAItion - Design Shared with You",
         emailBody

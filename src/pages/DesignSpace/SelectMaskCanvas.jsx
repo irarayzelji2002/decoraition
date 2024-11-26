@@ -1157,7 +1157,7 @@ function SelectMaskCanvas({
                   setMaskPrompt(e.target.value);
                   clearFieldError("maskPrompt");
                 }}
-                placeholder="Type objects in the image to mask"
+                placeholder="Type objects in the image to mask (ex. 'bed', 'lamp', 'walls')"
                 size="small"
                 helperText={errors?.maskPrompt || generationErrors?.maskPrompt}
                 variant="outlined"

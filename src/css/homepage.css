@@ -221,6 +221,13 @@ h2 {
   flex-direction: row;
   margin: 10px 20px;
 }
+
+.drawerUserLong {
+  display: flex;
+  gap: 10px;
+  flex-direction: row;
+  margin: 10px 20px;
+}
 .layout {
   display: flex;
   width: 108%;
@@ -591,6 +598,19 @@ tr:hover td {
   }
   .layoutBox {
     width: 100%;
+  }
+  .drawerUserLong {
+    flex-direction: column;
+    align-items: center;
+    column-gap: 10px;
+  }
+  .drawerUserDetails {
+    width: 250px;
+    word-break: break-word;
+    white-space: normal;
+  }
+  .roleIcon {
+    visibility: hidden;
   }
 }
 @media only screen and (max-width: 450px) {

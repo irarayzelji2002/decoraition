@@ -239,6 +239,18 @@ select:-webkit-autofill {
   width: 90%;
 }
 
+.helpTooltip {
+  margin-left: 10px !important;
+  padding: 8px !important;
+  height: 35px !important;
+  width: 35px !important;
+  transform: scale(0.9) !important;
+}
+
+.helpTooltip.inPromptBar {
+  transform: translateY(-3px) !important;
+}
+
 @media (max-width: 480px) {
   .shorten-text {
     width: 45px;

@@ -39,7 +39,7 @@ const CustomTooltip = styled(
     padding: "0",
     whiteSpace: "pre-wrap",
     overflowWrap: "break-word",
-    transform: "translateX(-5px) !important", // Adjust this value to move the tooltip to the right
+    // transform: "translateX(-5px) !important",
   },
 }));
 
@@ -62,7 +62,7 @@ export const DescriptionTooltip = ({ description = "" }) => {
             sx={{
               color: "var(--color-white)",
               fontSize: "0.875rem",
-              fontWeight: "500",
+              fontWeight: "400",
               wordBreak: "break-word",
             }}
           >

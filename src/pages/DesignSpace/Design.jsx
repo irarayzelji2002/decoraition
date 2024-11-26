@@ -1569,7 +1569,7 @@ export const CustomTooltip = styled(
   },
 }));
 
-export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
+export const DescriptionTooltip = ({ description = "", createdAt = "", image = "" }) => {
   const displayDate = formatDateDetailComma(createdAt);
 
   return (
@@ -1581,10 +1581,21 @@ export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
         p: "5px",
         textAlign: "justify",
         padding: "5px 10px",
-        minWidth: "calc(320px - 40px)",
+        maxWidth: image ? "calc(480px - 40px)" : "calc(320px - 40px)",
       }}
     >
       <Box>
+        {image && (
+          <Box
+            component="img"
+            src={image}
+            alt="Tooltip"
+            sx={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+          />
+        )}
         {description && (
           <Typography
             sx={{

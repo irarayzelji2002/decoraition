@@ -1,0 +1,31 @@
+.info-icon-container {
+  position: relative;
+}
+
+.info-icon {
+  background-color: var(--nav-card-modal);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.info-window {
+  position: absolute;
+  top: 0;
+  left: 50px; /* Adjusted to appear to the right side of the icon */
+  background-color: var(--nav-card-modal);
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.info-window.fade-in {
+  opacity: 1;
+}
+
+.info-window.fade-out {
+  opacity: 0;
+}

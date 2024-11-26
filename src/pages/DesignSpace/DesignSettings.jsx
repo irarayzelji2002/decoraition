@@ -859,6 +859,16 @@ export const textFieldStyles = {
     marginLeft: 0,
     marginTop: "5px",
   },
+  "& .Mui-error": {
+    color: "var(--color-quaternary) !important",
+    "& fieldset": {
+      borderColor: "var(--color-quaternary) !important",
+      borderRadius: "10px",
+    },
+    "&:hover fieldset": {
+      borderColor: "var(--color-quaternary) !important",
+    },
+  },
 };
 
 export const textFieldInputProps = {

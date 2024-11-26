@@ -73,8 +73,8 @@ router.post("/user/add-color-palette", authenticateUser, userController.addColor
 router.put("/user/update-color-palette", authenticateUser, userController.updateColorPalette);
 router.put("/user/delete-color-palette", authenticateUser, userController.deleteColorPalette);
 router.get("/user/get-other-user-data/:userId", userController.getOtherUserData);
-router.get("/user/check-lockout-status/:userId", userController.checkLockoutStatus);
-router.put("/user/update-failed-attempt/:userId", userController.updateFailedAttempts);
+router.get("/user/check-lockout-status/:email", userController.checkLockoutStatus);
+router.put("/user/update-failed-attempt/:email", userController.updateFailedAttempts);
 
 // Design routes
 router.get("/design/:userId", authenticateUser, designController.fetchUserDesigns);

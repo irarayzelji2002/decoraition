@@ -31,6 +31,7 @@ import { handleLogout } from "../Homepage/backend/HomepageFunctions";
 import { textFieldInputProps } from "../DesignSpace/DesignSettings";
 import { commonInputStyles } from "../../components/Signup";
 import { CheckboxIcon, CheckboxCheckedIcon } from "../../components/svg/SharedIcons";
+import { fa } from "naughty-words";
 
 export default function LoginModal() {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ export default function LoginModal() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailLimitReached, setEmailLimitReached] = useState(false);
   const [passwordLimitReached, setPasswordLimitReached] = useState(false);
+  const [isLoginDisabled, setIsLoginDisabled] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = (event) => event.preventDefault();
@@ -47,11 +49,26 @@ export default function LoginModal() {
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
     setEmailLimitReached(e.target.value.length >= 254);
+    clearFieldError("email");
+    clearFieldError("general");
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
     setPasswordLimitReached(e.target.value.length >= 50);
+    clearFieldError("password");
+    clearFieldError("general");
+  };
+
+  // Remove only the specified field error
+  const clearFieldError = (field) => {
+    setErrors((prevErrors) => {
+      if (prevErrors && prevErrors[field]) {
+        const { [field]: _, ...remainingErrors } = prevErrors;
+        return remainingErrors;
+      }
+      return prevErrors;
+    });
   };
 
   const handleValidation = () => {
@@ -74,14 +91,33 @@ export default function LoginModal() {
     }
 
     try {
+      setIsLoginDisabled(true);
+      // First check lockout status through backend API
+      const lockoutResponse = await axios.get(`/api/user/check-lockout-status/${email}`);
+      if (lockoutResponse.data.isLocked) {
+        setErrors({
+          general: `Account is locked. Please try again in ${lockoutResponse.data.remainingMinutes} minutes.`,
+        });
+        return;
+      }
+
+      // Attempt to sign in
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
         console.error("No user document found!");
+        showToast("error", "Can't find user.");
         handleLogout(navigate);
         return;
       }
+
+      // Reset lockout on successful login
+      await axios.put(`/api/user/update-failed-attempt/${email}`, {
+        reset: true,
+      });
+
       const userDataNoId = userDoc.data();
       const userData = {
         ...userDataNoId,
@@ -90,10 +126,31 @@ export default function LoginModal() {
       showToast("success", "Login successful!");
       setTimeout(() => navigate("/homepage", { state: { userData } }), 1000);
     } catch (error) {
-      console.error("Login error:", error);
-      console.log(error.message);
-      showToast("error", "Login failed. Please try again.");
-      setErrors({ general: "Login failed. Please try again." });
+      console.error("Login error:", {
+        message: error.message,
+        code: error.code,
+        email: email,
+      });
+
+      try {
+        const updateResponse = await axios.put(`/api/user/update-failed-attempt/${email}`, {
+          reset: false,
+        });
+        if (updateResponse.data.isLocked) {
+          setErrors({
+            general: `Account locked. Please try again in ${updateResponse.data.remainingMinutes} minutes.`,
+          });
+        } else {
+          setErrors({
+            general: `Invalid credentials. ${updateResponse.data.attemptsLeft} attempts remaining before lockout.`,
+          });
+        }
+      } catch (updateError) {
+        console.error("Error updating failed attempts:", updateError);
+        setErrors({ general: "Login failed. Please try again." });
+      }
+    } finally {
+      setIsLoginDisabled(false);
     }
   };
 
@@ -265,7 +322,7 @@ export default function LoginModal() {
             inputProps={{ maxLength: 254, ...textFieldInputProps }}
           />
           {emailLimitReached && (
-            <Typography color="error" variant="body2">
+            <Typography color="var(--color-quaternary)" variant="body2">
               Character limit reached!
             </Typography>
           )}
@@ -312,7 +369,11 @@ export default function LoginModal() {
           )}
 
           {errors.general && (
-            <Typography color="error" variant="body2">
+            <Typography
+              color="var(--color-quaternary)"
+              variant="body2"
+              sx={{ marginBottom: "15px" }}
+            >
               {errors.general}
             </Typography>
           )}
@@ -384,10 +445,17 @@ export default function LoginModal() {
               borderRadius: "20px",
               textTransform: "none",
               fontWeight: "bold",
+              opacity: isLoginDisabled ? "0.5" : "1",
+              cursor: isLoginDisabled ? "default" : "pointer",
               "&:hover": {
-                backgroundImage: "var(--gradientButtonHover)",
+                backgroundImage: !isLoginDisabled && "var(--gradientButtonHover)",
+              },
+              "&.Mui-disabled": {
+                opacity: 0.5,
+                color: "var(--color-white)",
               },
             }}
+            disabled={isLoginDisabled}
           >
             Login
           </Button>

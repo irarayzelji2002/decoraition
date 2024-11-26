@@ -35,19 +35,29 @@ export const commonInputStyles = {
     borderRadius: "10px",
     backgroundColor: "var(--nav-card-modal)",
     "& fieldset": {
-      borderColor: "var(--borderInput)", // Border color when not focused
+      borderColor: "var(--borderInput)",
       borderRadius: "10px",
     },
     "&:hover fieldset": {
-      borderColor: "var(--borderInput)", // Border color on hover
+      borderColor: "var(--borderInput)",
     },
     "&.Mui-focused fieldset": {
-      borderColor: "var(--borderInputBrighter)", // Border color when focused
+      borderColor: "var(--borderInputBrighter)",
     },
   },
   "& .MuiFormHelperText-root": {
     color: "var(--color-quaternary)",
     marginLeft: 0,
+  },
+  "& .Mui-error": {
+    color: "var(--color-quaternary) !important",
+    "& fieldset": {
+      borderColor: "var(--color-quaternary) !important",
+      borderRadius: "10px",
+    },
+    "&:hover fieldset": {
+      borderColor: "var(--color-quaternary) !important",
+    },
   },
 };
 

@@ -162,7 +162,7 @@ function Design() {
       setShowPromptBar(false);
       setShowComments(true); // initially show comments
     }
-    if (!changeMode) {
+    if (!location?.state?.changeMode) {
       if (isOwner) setChangeMode("Editing");
       else if (isOwnerEditor) setChangeMode("Editing");
       else if (isOwnerEditorCommenter) setChangeMode("Commenting");
@@ -171,7 +171,7 @@ function Design() {
     console.log(
       `commentCont - isOwner: ${isOwner}, isOwnerEditor: ${isOwnerEditor}, isOwnerEditorCommenter: ${isOwnerEditorCommenter}, isCollaborator: ${isCollaborator}`
     );
-  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator, changeMode]);
+  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator, location?.state?.changeMode]);
 
   useEffect(() => {
     console.log(`commentCont - changeMode: ${changeMode}`);

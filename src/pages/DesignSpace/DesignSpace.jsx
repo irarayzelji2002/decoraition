@@ -51,11 +51,12 @@ function DesignSpace({
     }
 
     // Set role and all dependent flags
-    if (!location.state?.changeMode)
-      setChangeMode(
-        newRole === 1 || newRole === 3 ? "Editing" : newRole === 2 ? "Commenting" : "Viewing"
-      );
-  }, [design, user, userDoc]);
+    if (!location.state?.changeMode) {
+      const defaultMode =
+        newRole === 1 || newRole === 3 ? "Editing" : newRole === 2 ? "Commenting" : "Viewing";
+      setChangeMode(defaultMode);
+    }
+  }, [design, user, userDoc, location?.state?.changeMode]);
 
   return (
     <div className="design-space">

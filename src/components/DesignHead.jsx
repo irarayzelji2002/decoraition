@@ -132,7 +132,45 @@ function DesignHead({
       !!design?.designSettings?.allowViewHistory || newRole === 1 || newRole === 3
     );
     setIsMakeCopyVisible(!!design?.designSettings?.allowCopy || newRole === 1 || newRole === 3);
+
+    handleDefaultChangeMode(newRole);
   }, [design, user, userDoc]);
+
+  useEffect(() => {
+    console.log("DesignHead - changeMode role:", role);
+    console.log("DesignHead - changeMode:", changeMode);
+  }, [role, changeMode]);
+
+  const handleDefaultChangeMode = (role) => {
+    if (!role) return;
+    if (role === 3 || role === 1) {
+      if (!location?.state?.changeMode && !location.pathname.startsWith("/budget"))
+        setChangeMode("Editng");
+      else if (
+        location.pathname.startsWith("/budget") &&
+        location?.state?.changeMode === "Commenting"
+      )
+        setChangeMode("Editing");
+    } else if (role === 2) {
+      if (
+        (!location?.state?.changeMode || location?.state?.changeMode === "Editing") &&
+        !location.pathname.startsWith("/budget")
+      )
+        setChangeMode("Commenting");
+      else if (
+        location.pathname.startsWith("/budget") &&
+        location?.state?.changeMode === "Commenting"
+      )
+        setChangeMode("Viewing");
+    } else if (role === 0) {
+      if (
+        !location?.state?.changeMode ||
+        location?.state?.changeMode === "Editing" ||
+        location?.state?.changeMode === "Commenting"
+      )
+        setChangeMode("Viewing");
+    }
+  };
 
   useEffect(() => {
     if (shouldOpenViewCollab && !isManageAccessModalOpen) {

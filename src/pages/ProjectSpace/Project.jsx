@@ -83,6 +83,7 @@ function Project() {
     userDesignVersions,
   } = useSharedProps();
   const location = useLocation();
+  const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
@@ -222,38 +223,6 @@ function Project() {
     );
     setIsCollaborator(isCollaboratorProject(project, userDoc.id));
   }, [project, userDoc]);
-
-  // Chwange Mode
-  const [changeMode, setChangeMode] = useState(() => {
-    if (location?.state?.changeMode) {
-      return location.state.changeMode;
-    }
-    if (isManager) return "Managing";
-    if (isManagerContentManager) return "Managing Content";
-    if (isManagerContentManagerContributor) return "Contributing";
-    return "Viewing";
-  });
-
-  useEffect(() => {
-    if (!changeMode) {
-      if (isManager) setChangeMode("Managing");
-      else if (isManagerContentManager) setChangeMode("Managing Content");
-      else if (isManagerContentManagerContributor) setChangeMode("Contributing");
-      else if (isCollaborator) setChangeMode("Viewing");
-    }
-  }, [
-    isManager,
-    isManagerContentManager,
-    isManagerContentManagerContributor,
-    isCollaborator,
-    changeMode,
-  ]);
-
-  useEffect(() => {
-    if (location?.state?.changeMode && location.state.changeMode !== changeMode) {
-      setChangeMode(location.state.changeMode);
-    }
-  }, [location?.state?.changeMode]);
 
   // Sorting and filtering
   const handleOwnerChange = (owner) => {

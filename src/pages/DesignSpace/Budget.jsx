@@ -142,18 +142,6 @@ function Budget() {
     setIsCollaborator(isCollaboratorDesign(design, userDoc.id));
   }, [design, userDoc]);
 
-  useEffect(() => {
-    if (!changeMode) {
-      if (isOwner) setChangeMode("Editing");
-      else if (isOwnerEditor) setChangeMode("Editing");
-      else if (isOwnerEditorCommenter) setChangeMode("Commenting");
-      else if (isCollaborator) setChangeMode("Viewing");
-    }
-    console.log(
-      `commentCont - isOwner: ${isOwner}, isOwnerEditor: ${isOwnerEditor}, isOwnerEditorCommenter: ${isOwnerEditorCommenter}, isCollaborator: ${isCollaborator}`
-    );
-  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator]);
-
   // Currency Functions
   const isoToFlagEmoji = (isoCode) => {
     return isoCode

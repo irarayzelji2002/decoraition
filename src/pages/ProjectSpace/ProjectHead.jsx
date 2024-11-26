@@ -49,7 +49,7 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
 
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
   const [isChangeModeVisible, setIsChangeModeVisible] = useState(false);
-  const [role, setRole] = useState(0); //0 for viewer (default), 1 for editor, 2 for commenter, 3 for owner
+  const [role, setRole] = useState(null); //0 for viewer (default), 1 for editor, 2 for commenter, 3 for owner
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isManageAccessModalOpen, setIsManageAccessModalOpen] = useState(false);
@@ -118,19 +118,32 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
   }, [project, user, userDoc]);
 
   useEffect(() => {
-    console.log("ProjectHead - role:", role);
+    console.log("ProjectHead - changeMode role:", role);
     console.log("ProjectHead - changeMode:", changeMode);
   }, [role, changeMode]);
 
   const handleDefaultChangeMode = (role) => {
+    if (!role) return;
     if (role === 3) {
-      setChangeMode("Managing");
+      if (!location?.state?.changeMode) setChangeMode("Managing");
     } else if (role === 2) {
-      setChangeMode("Managing Content");
+      if (!location?.state?.changeMode || location?.state?.changeMode === "Managing")
+        setChangeMode("Managing Content");
     } else if (role === 1) {
-      setChangeMode("Contributing");
-    } else {
-      setChangeMode("Viewing");
+      if (
+        !location?.state?.changeMode ||
+        location?.state?.changeMode === "Managing" ||
+        location?.state?.changeMode === "Managing Content"
+      )
+        setChangeMode("Contributing");
+    } else if (role === 0) {
+      if (
+        !location?.state?.changeMode ||
+        location?.state?.changeMode === "Managing" ||
+        location?.state?.changeMode === "Managing Content" ||
+        location?.state?.changeMode === "Contributing"
+      )
+        setChangeMode("Viewing");
     }
   };
 

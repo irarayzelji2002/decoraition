@@ -92,24 +92,6 @@ function Timeline() {
     setIsCollaborator(isCollaboratorProject(project, userDoc.id));
   }, [project, userDoc]);
 
-  useEffect(() => {
-    if (!changeMode) {
-      if (isManager) setChangeMode("Managing");
-      else if (isManagerContentManager) setChangeMode("Managing Content");
-      else if (isManagerContentManagerContributor) setChangeMode("Contributing");
-      else if (isCollaborator) setChangeMode("Viewing");
-    }
-    console.log(
-      `commentCont - isManager: ${isManager}, isManagerContentManager: ${isManagerContentManager}, isManagerContentManagerContributor: ${isManagerContentManagerContributor}, isCollaborator: ${isCollaborator}`
-    );
-  }, [
-    isManager,
-    isManagerContentManager,
-    isManagerContentManagerContributor,
-    isCollaborator,
-    changeMode,
-  ]);
-
   const openDeleteModal = (taskId) => {
     setTaskIdToDelete(taskId);
     setShowDeleteModal(true);

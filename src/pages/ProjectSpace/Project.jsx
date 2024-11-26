@@ -84,7 +84,6 @@ function Project() {
   } = useSharedProps();
   const location = useLocation();
   const navigate = useNavigate();
-  const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -224,6 +223,17 @@ function Project() {
     setIsCollaborator(isCollaboratorProject(project, userDoc.id));
   }, [project, userDoc]);
 
+  // Chwange Mode
+  const [changeMode, setChangeMode] = useState(() => {
+    if (location?.state?.changeMode) {
+      return location.state.changeMode;
+    }
+    if (isManager) return "Managing";
+    if (isManagerContentManager) return "Managing Content";
+    if (isManagerContentManagerContributor) return "Contributing";
+    return "Viewing";
+  });
+
   useEffect(() => {
     if (!changeMode) {
       if (isManager) setChangeMode("Managing");
@@ -231,9 +241,6 @@ function Project() {
       else if (isManagerContentManagerContributor) setChangeMode("Contributing");
       else if (isCollaborator) setChangeMode("Viewing");
     }
-    console.log(
-      `commentCont - isManager: ${isManager}, isManagerContentManager: ${isManagerContentManager}, isManagerContentManagerContributor: ${isManagerContentManagerContributor}, isCollaborator: ${isCollaborator}`
-    );
   }, [
     isManager,
     isManagerContentManager,
@@ -241,6 +248,12 @@ function Project() {
     isCollaborator,
     changeMode,
   ]);
+
+  useEffect(() => {
+    if (location?.state?.changeMode && location.state.changeMode !== changeMode) {
+      setChangeMode(location.state.changeMode);
+    }
+  }, [location?.state?.changeMode]);
 
   // Sorting and filtering
   const handleOwnerChange = (owner) => {

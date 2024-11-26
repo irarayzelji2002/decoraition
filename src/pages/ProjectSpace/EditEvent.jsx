@@ -242,7 +242,7 @@ function EditEvent() {
     <ThemeProvider theme={theme}>
       <div style={{ overflowX: "hidden" }}>
         <TopBar state={"Edit Event"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
-        <div className="edit-event">
+        <div className="edit-event" style={{ paddingTop: "74px" }}>
           <div className="form-container">
             <div className="form-group">
               <label htmlFor="taskName">Task / Event name </label>

@@ -93,7 +93,7 @@ function PinOrder() {
       options={isMobile ? { enableMouseEvents: true } : undefined}
     >
       <TopBar state={"Change pins order"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
-      <div style={{ width: "95%" }}>
+      <div style={{ width: "95%", paddingTop: "74px" }}>
         <div className="pinSpace">
           {pins.map((pin, index) => (
             <DraggablePin

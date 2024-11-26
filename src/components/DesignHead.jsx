@@ -177,22 +177,6 @@ function DesignHead({
     setIsShareMenuOpen(true);
   };
 
-  useEffect(() => {
-    console.log("Share menu state:", {
-      anchorElShare,
-      isShareMenuOpen,
-      isShareModalOpen,
-      isManageAccessModalOpen,
-      isViewCollabModalOpen,
-    });
-  }, [
-    anchorElShare,
-    isShareMenuOpen,
-    isShareModalOpen,
-    isManageAccessModalOpen,
-    isViewCollabModalOpen,
-  ]);
-
   const handleChangeModeClick = () => {
     setIsChangeModeMenuOpen(true);
   };
@@ -725,6 +709,7 @@ function DesignHead({
               role={role}
               changeMode={changeMode}
               setChangeMode={setChangeMode}
+              isDesign={true}
             />
           ) : (
             <DefaultMenu
@@ -734,7 +719,7 @@ function DesignHead({
               onCopyLink={handleCopyLink}
               setIsSidebarOpen={handleHistoryClick} // design only
               onSetting={handleSettings}
-              onChangeMode={handleChangeModeClick} // design only
+              onChangeMode={handleChangeModeClick}
               changeMode={changeMode}
               onOpenDownloadModal={handleOpenDownloadModal}
               onOpenMakeCopyModal={handleOpenMakeCopyModal} // design only

@@ -16,6 +16,8 @@ import {
   RenameIcon,
   DeleteIcon,
   DetailsIcon,
+  ContentManagingIcon,
+  ContributingIcon,
 } from "./svg/DefaultMenuIcons";
 
 const CustomMenuItem = styled(MenuItem)({
@@ -56,6 +58,7 @@ const DefaultMenu = ({
     isDownloadVisible: false,
     isRenameVisible: false,
     isDeleteVisible: false,
+    isChangeModeVisible: false,
   },
   isSelectingMask = false,
 }) => {
@@ -70,14 +73,30 @@ const DefaultMenu = ({
   }, []);
 
   useEffect(() => {
-    if (changeMode === "Editing") {
-      setChangeModeIcon(<EditIcon sx={{ color: "var(--color-white)" }} />);
-    } else if (changeMode === "Commenting") {
-      setChangeModeIcon(<CommentIcon sx={{ color: "var(--color-white)" }} />);
-    } else if (changeMode === "Viewing") {
-      setChangeModeIcon(<ViewIcon sx={{ color: "var(--color-white)" }} />);
+    console.log("DefaultMenu - changeMode:", changeMode);
+    if (!changeMode) return;
+    if (isDesign) {
+      console.log("changeMode - design", changeMode);
+      if (changeMode === "Editing") {
+        setChangeModeIcon(<EditIcon sx={{ color: "var(--color-white)" }} />);
+      } else if (changeMode === "Commenting") {
+        setChangeModeIcon(<CommentIcon sx={{ color: "var(--color-white)" }} />);
+      } else if (changeMode === "Viewing") {
+        setChangeModeIcon(<ViewIcon sx={{ color: "var(--color-white)" }} />);
+      }
+    } else {
+      console.log("changeMode - project", changeMode);
+      if (changeMode === "Managing") {
+        setChangeModeIcon(<SettingsIcon sx={{ color: "var(--color-white)" }} />);
+      } else if (changeMode === "Managing Content") {
+        setChangeModeIcon(<ContentManagingIcon sx={{ color: "var(--color-white)" }} />);
+      } else if (changeMode === "Contributing") {
+        setChangeModeIcon(<ContributingIcon sx={{ color: "var(--color-white)" }} />);
+      } else if (changeMode === "Viewing") {
+        setChangeModeIcon(<ViewIcon sx={{ color: "var(--color-white)" }} />);
+      }
     }
-  }, [changeMode]);
+  }, [changeMode, isDesign]);
   return (
     <>
       {isDesign && !isSelectingMask && isInDesign && (
@@ -115,7 +134,8 @@ const DefaultMenu = ({
         </ListItemIcon>
         <ListItemText primary="Settings" sx={{ color: "var(--color-white)" }} />
       </CustomMenuItem>
-      {isDesign && designSettingsVisibility.isChangeModeVisible && (
+      {((isDesign && designSettingsVisibility.isChangeModeVisible) ||
+        (!isDesign && projectSettingsVisibility.isChangeModeVisible)) && (
         <CustomMenuItem onClick={onChangeMode} sx={{ paddingRight: "10px" }}>
           <ListItemIcon>{changeModeIcon}</ListItemIcon>
           <ListItemText primary="Change Mode" sx={{ color: "var(--color-white)" }} />

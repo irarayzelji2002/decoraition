@@ -344,206 +344,209 @@ const ProjectSettings = () => {
         state={`Project Settings for ${projectName}`}
         navigateTo={navigateTo}
         navigateFrom={navigateFrom}
+        className="settings"
       />
-      {/* Tab Navigation */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-around",
-          flexWrap: "wrap",
-          marginBottom: "20px",
-          paddingTop: 2,
-          paddingLeft: "15px",
-          paddingRight: "15px",
-          borderBottom: "1px solid var(--inputBg)",
-        }}
-      >
-        {["Project", "Timeline", "Plan Map", "Budget"].map((tab) => (
-          <Typography
-            key={tab}
-            onClick={() => handleTabChange(tab)}
-            sx={{
-              fontSize: 18,
-              fontWeight: "bold",
-              textTransform: "none",
-              cursor: "pointer",
-              padding: 1,
-              paddingTop: 2,
-              paddingBottom: 2,
-              marginBottom: "1px",
-              position: "relative",
+      <div style={{ paddingTop: "74px" }}>
+        {/* Tab Navigation */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-around",
+            flexWrap: "wrap",
+            marginBottom: "20px",
+            paddingTop: 2,
+            paddingLeft: "15px",
+            paddingRight: "15px",
+            borderBottom: "1px solid var(--inputBg)",
+          }}
+        >
+          {["Project", "Timeline", "Plan Map", "Budget"].map((tab) => (
+            <Typography
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              sx={{
+                fontSize: 18,
+                fontWeight: "bold",
+                textTransform: "none",
+                cursor: "pointer",
+                padding: 1,
+                paddingTop: 2,
+                paddingBottom: 2,
+                marginBottom: "1px",
+                position: "relative",
 
-              // Apply gradient border bottom if active
-              "&::after": {
-                content: '""',
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: "-2px",
-                height: "4px",
-                background: activeTab === tab ? "var(--gradientFont)" : "transparent",
-                borderRadius: "0px",
-              },
+                // Apply gradient border bottom if active
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: "-2px",
+                  height: "4px",
+                  background: activeTab === tab ? "var(--gradientFont)" : "transparent",
+                  borderRadius: "0px",
+                },
 
-              color: activeTab === tab ? "transparent" : "var(--color-white)",
-              backgroundImage: activeTab === tab ? "var(--gradientFont)" : "none",
-              backgroundClip: activeTab === tab ? "text" : "unset",
-              WebkitBackgroundClip: activeTab === tab ? "text" : "unset",
+                color: activeTab === tab ? "transparent" : "var(--color-white)",
+                backgroundImage: activeTab === tab ? "var(--gradientFont)" : "none",
+                backgroundClip: activeTab === tab ? "text" : "unset",
+                WebkitBackgroundClip: activeTab === tab ? "text" : "unset",
 
-              "&:focus, &:active": {
-                outline: "none",
-                backgroundColor: "transparent",
-              },
+                "&:focus, &:active": {
+                  outline: "none",
+                  backgroundColor: "transparent",
+                },
 
-              "@media (max-width: 350px)": {
-                justifyContent: "center",
-              },
-            }}
-          >
-            {tab}
-          </Typography>
-        ))}
-      </Box>
-      <ThemeProvider theme={theme}>
-        <div className="settingsContainerProj">
-          <Box sx={{ minHeight: "67vh" }}>
-            {activeTab === "Project" ? (
-              <SettingsContent
-                generalAccessSetting={generalAccessSettingProject}
-                setGeneralAccessSetting={setGeneralAccessSettingProject}
-                generalAccessRole={generalAccessRoleProject}
-                setGeneralAccessRole={setGeneralAccessRoleProject}
-                allowDownload={allowDownloadProject}
-                setAllowDownload={setAllowDownloadProject}
-                inactivityEnabled={inactivityEnabled}
-                setInactivityEnabled={setInactivityEnabled}
-                inactivityDays={inactivityDays}
-                setInactivityDays={setInactivityDays}
-                deletionDays={deletionDays}
-                setDeletionDays={setDeletionDays}
-                notifyDays={notifyDays}
-                setNotifyDays={setNotifyDays}
-                allowEdit={allowEdit}
-                activeTab={activeTab} // determines tab
-                navigateTo={navigateTo}
-                navigateFrom={navigateFrom}
-                navigate={navigate}
-              />
-            ) : activeTab === "Timeline" ? (
-              <SettingsContent
-                generalAccessSetting={generalAccessSettingTimeline}
-                setGeneralAccessSetting={setGeneralAccessSettingTimeline}
-                generalAccessRole={generalAccessRoleTimeline}
-                setGeneralAccessRole={setGeneralAccessRoleTimeline}
-                allowDownload={allowDownloadTimeline}
-                setAllowDownload={setAllowDownloadTimeline}
-                allowEdit={allowEdit}
-                activeTab={activeTab}
-                navigateTo={navigateTo}
-                navigateFrom={navigateFrom}
-                navigate={navigate}
-              />
-            ) : activeTab === "Plan Map" ? (
-              <SettingsContent
-                generalAccessSetting={generalAccessSettingPlanMap}
-                setGeneralAccessSetting={setGeneralAccessSettingPlanMap}
-                generalAccessRole={generalAccessRolePlanMap}
-                setGeneralAccessRole={setGeneralAccessRolePlanMap}
-                allowDownload={allowDownloadPlanMap}
-                setAllowDownload={setAllowDownloadPlanMap}
-                allowEdit={allowEdit}
-                activeTab={activeTab}
-                navigateTo={navigateTo}
-                navigateFrom={navigateFrom}
-                navigate={navigate}
-              />
-            ) : (
-              activeTab === "Budget" && (
+                "@media (max-width: 350px)": {
+                  justifyContent: "center",
+                },
+              }}
+            >
+              {tab}
+            </Typography>
+          ))}
+        </Box>
+        <ThemeProvider theme={theme}>
+          <div className="settingsContainerProj">
+            <Box sx={{ minHeight: "67vh" }}>
+              {activeTab === "Project" ? (
                 <SettingsContent
-                  generalAccessSetting={generalAccessSettingBudget}
-                  setGeneralAccessSetting={setGeneralAccessSettingBudget}
-                  generalAccessRole={generalAccessRoleBudget}
-                  setGeneralAccessRole={setGeneralAccessRoleBudget}
-                  allowDownload={allowDownloadBudget}
-                  setAllowDownload={setAllowDownloadBudget}
+                  generalAccessSetting={generalAccessSettingProject}
+                  setGeneralAccessSetting={setGeneralAccessSettingProject}
+                  generalAccessRole={generalAccessRoleProject}
+                  setGeneralAccessRole={setGeneralAccessRoleProject}
+                  allowDownload={allowDownloadProject}
+                  setAllowDownload={setAllowDownloadProject}
+                  inactivityEnabled={inactivityEnabled}
+                  setInactivityEnabled={setInactivityEnabled}
+                  inactivityDays={inactivityDays}
+                  setInactivityDays={setInactivityDays}
+                  deletionDays={deletionDays}
+                  setDeletionDays={setDeletionDays}
+                  notifyDays={notifyDays}
+                  setNotifyDays={setNotifyDays}
+                  allowEdit={allowEdit}
+                  activeTab={activeTab} // determines tab
+                  navigateTo={navigateTo}
+                  navigateFrom={navigateFrom}
+                  navigate={navigate}
+                />
+              ) : activeTab === "Timeline" ? (
+                <SettingsContent
+                  generalAccessSetting={generalAccessSettingTimeline}
+                  setGeneralAccessSetting={setGeneralAccessSettingTimeline}
+                  generalAccessRole={generalAccessRoleTimeline}
+                  setGeneralAccessRole={setGeneralAccessRoleTimeline}
+                  allowDownload={allowDownloadTimeline}
+                  setAllowDownload={setAllowDownloadTimeline}
                   allowEdit={allowEdit}
                   activeTab={activeTab}
                   navigateTo={navigateTo}
                   navigateFrom={navigateFrom}
                   navigate={navigate}
                 />
-              )
-            )}
-          </Box>
-          {/* Save Button */}
-          {allowEdit && (
-            <Box
-              className="saveButtonContainer"
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                flexWrap: "wrap",
-                margin: "30px auto 0px auto",
-                gap: 2,
-              }}
-            >
-              <Button
-                variant="contained"
-                onClick={handleSaveProjectSettingsWithLoading}
-                disabled={isSaveButtonDisabled}
-                sx={{
-                  background: "var(--gradientButton)",
-                  borderRadius: "20px",
-                  color: "var(--always-white) !important",
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  width: "230px",
-                  margin: "0px 10px",
-                  maxWidth: "235px",
-                  opacity: isSaveButtonDisabled ? "0.5" : "1",
-                  cursor: isSaveButtonDisabled ? "default" : "pointer",
-                  "&:hover": {
-                    background: !isSaveButtonDisabled && "var(--gradientButtonHover)",
-                  },
-                }}
-              >
-                Save
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() =>
-                  navigate(navigateTo, {
-                    state: { navigateFrom: navigateFrom },
-                  })
-                }
-                sx={{
-                  color: "var(--color-white)",
-                  background: "transparent",
-                  border: "2px solid transparent",
-                  borderRadius: "20px",
-                  backgroundImage: "var(--lightGradient), var(--gradientButton)",
-                  backgroundOrigin: "border-box",
-                  backgroundClip: "padding-box, border-box",
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  width: "230px",
-                  margin: "0px 10px",
-                  maxWidth: "235px",
-                }}
-                onMouseOver={(e) =>
-                  (e.target.style.backgroundImage =
-                    "var(--lightGradient), var(--gradientButtonHover)")
-                }
-                onMouseOut={(e) =>
-                  (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
-                }
-              >
-                Cancel
-              </Button>
+              ) : activeTab === "Plan Map" ? (
+                <SettingsContent
+                  generalAccessSetting={generalAccessSettingPlanMap}
+                  setGeneralAccessSetting={setGeneralAccessSettingPlanMap}
+                  generalAccessRole={generalAccessRolePlanMap}
+                  setGeneralAccessRole={setGeneralAccessRolePlanMap}
+                  allowDownload={allowDownloadPlanMap}
+                  setAllowDownload={setAllowDownloadPlanMap}
+                  allowEdit={allowEdit}
+                  activeTab={activeTab}
+                  navigateTo={navigateTo}
+                  navigateFrom={navigateFrom}
+                  navigate={navigate}
+                />
+              ) : (
+                activeTab === "Budget" && (
+                  <SettingsContent
+                    generalAccessSetting={generalAccessSettingBudget}
+                    setGeneralAccessSetting={setGeneralAccessSettingBudget}
+                    generalAccessRole={generalAccessRoleBudget}
+                    setGeneralAccessRole={setGeneralAccessRoleBudget}
+                    allowDownload={allowDownloadBudget}
+                    setAllowDownload={setAllowDownloadBudget}
+                    allowEdit={allowEdit}
+                    activeTab={activeTab}
+                    navigateTo={navigateTo}
+                    navigateFrom={navigateFrom}
+                    navigate={navigate}
+                  />
+                )
+              )}
             </Box>
-          )}
-        </div>
-      </ThemeProvider>
+            {/* Save Button */}
+            {allowEdit && (
+              <Box
+                className="saveButtonContainer"
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                  margin: "30px auto 0px auto",
+                  gap: 2,
+                }}
+              >
+                <Button
+                  variant="contained"
+                  onClick={handleSaveProjectSettingsWithLoading}
+                  disabled={isSaveButtonDisabled}
+                  sx={{
+                    background: "var(--gradientButton)",
+                    borderRadius: "20px",
+                    color: "var(--always-white) !important",
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    width: "230px",
+                    margin: "0px 10px",
+                    maxWidth: "235px",
+                    opacity: isSaveButtonDisabled ? "0.5" : "1",
+                    cursor: isSaveButtonDisabled ? "default" : "pointer",
+                    "&:hover": {
+                      background: !isSaveButtonDisabled && "var(--gradientButtonHover)",
+                    },
+                  }}
+                >
+                  Save
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() =>
+                    navigate(navigateTo, {
+                      state: { navigateFrom: navigateFrom },
+                    })
+                  }
+                  sx={{
+                    color: "var(--color-white)",
+                    background: "transparent",
+                    border: "2px solid transparent",
+                    borderRadius: "20px",
+                    backgroundImage: "var(--lightGradient), var(--gradientButton)",
+                    backgroundOrigin: "border-box",
+                    backgroundClip: "padding-box, border-box",
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    width: "230px",
+                    margin: "0px 10px",
+                    maxWidth: "235px",
+                  }}
+                  onMouseOver={(e) =>
+                    (e.target.style.backgroundImage =
+                      "var(--lightGradient), var(--gradientButtonHover)")
+                  }
+                  onMouseOut={(e) =>
+                    (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+                  }
+                >
+                  Cancel
+                </Button>
+              </Box>
+            )}
+          </div>
+        </ThemeProvider>
+      </div>
     </div>
   );
 };

@@ -3,18 +3,20 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-function TopBar({ state, navigateTo = "/", navigateFrom = "/" }) {
+function TopBar({ state, navigateTo = "/", navigateFrom = "/", className = "" }) {
   const navigate = useNavigate();
 
   return (
-    <div className="itemHead">
+    <div className={`itemHead ${className}`}>
       <IconButton
         onClick={() => navigate(navigateTo, { state: { navigateFrom: navigateFrom } })}
         style={{ color: "var(--color-white)", fontSize: "2.5rem" }}
       >
         <ArrowBackIosNewIcon />
       </IconButton>
-      <span className="searchHead">{state}</span>
+      <div className="searchHead">
+        <span className="searchHeadSpan">{state}</span>
+      </div>
     </div>
   );
 }

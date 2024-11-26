@@ -33,8 +33,9 @@ import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { handleNameChange } from "./backend/ProjectDetails";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 import deepEqual from "deep-equal";
+import _ from "lodash";
 
-function ProjectHead({ project, changeMode, setChangeMode }) {
+function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
   const { user, userDoc, handleLogout } = useSharedProps();
   const { projectId } = useParams();
   const isOnline = useNetworkStatus();
@@ -76,26 +77,66 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Find access level of the user (to display Manage Access/View Collaborators in ShareMenu)
     if (!project || !user || !userDoc) return;
 
-    // Check if user is manager or content manager (manage access), then contributor and viewers (view only)
-    if (project.managers?.includes(userDoc.id)) {
-      setIsViewCollab(false);
-      return;
+    let newRole = 0;
+
+    // First check if restricted access
+    if (project?.projectSettings?.generalAccessSetting === 0) {
+      // Only check explicit roles
+      if (project.managers?.includes(userDoc.id)) newRole = 3;
+      else if (project.contentManager?.includes(userDoc.id)) newRole = 2;
+      else if (project.contributors?.includes(userDoc.id)) newRole = 1;
+      else if (project.viewers?.includes(userDoc.id)) newRole = 0;
+    } else {
+      // Anyone with link - check both explicit roles and general access
+      if (project.managers?.includes(userDoc.id)) newRole = 3;
+      else if (
+        project.contentManager?.includes(userDoc.id) ||
+        project?.projectSettings?.generalAccessRole === 2
+      )
+        newRole = 2;
+      else if (
+        project.contributors?.includes(userDoc.id) ||
+        project?.projectSettings?.generalAccessRole === 1
+      )
+        newRole = 1;
+      else newRole = project?.projectSettings?.generalAccessRole ?? 0;
     }
-    if (project.contentManagers?.includes(userDoc.id)) {
-      setIsViewCollab(false);
-      return;
-    }
-    if (project.contributors?.includes(userDoc.id) || project.viewers?.includes(userDoc.id)) {
-      setIsViewCollab(true);
-      return;
-    }
-    setIsViewCollab(true);
 
     setNewName(project?.projectName ?? "Untitled Project");
+    // Set role and all dependent flags
+    setRole(newRole);
+    setIsViewCollab(newRole < 3);
+    setIsChangeModeVisible(newRole > 0);
+    setIsRenameVisible(newRole === 2 || newRole === 3);
+    setIsDeleteVisible(newRole === 3);
+    // Set visibility based on project settings
+    setIsDownloadVisible(!!project?.projectSettings?.allowDownload || newRole > 0);
+
+    handleDefaultChangeMode(newRole);
   }, [project, user, userDoc]);
+
+  useEffect(() => {
+    console.log("ProjectHead - role:", role);
+    console.log("ProjectHead - changeMode:", changeMode);
+  }, [role, changeMode]);
+
+  const handleDefaultChangeMode = (role) => {
+    if (role === 3) {
+      setChangeMode("Managing");
+    } else if (role === 2) {
+      setChangeMode("Managing Content");
+    } else if (role === 1) {
+      setChangeMode("Contributing");
+    } else {
+      setChangeMode("Viewing");
+    }
+  };
+
+  useEffect(() => {
+    handleDefaultChangeMode(role);
+  }, [role]);
 
   useEffect(() => {
     if (shouldOpenViewCollab && !isManageAccessModalOpen) {
@@ -555,17 +596,32 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
               isViewCollab={isViewCollab}
             />
           ) : isChangeModeMenuOpen ? (
-            <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
+            <ChangeModeMenu
+              onClose={handleClose}
+              onBackToMenu={handleBackToMenu}
+              role={role}
+              changeMode={changeMode}
+              setChangeMode={setChangeMode}
+              isDesign={false}
+            />
           ) : (
             <DefaultMenu
               isDesign={false}
               onOpenShareModal={handleShareClick}
               onCopyLink={handleCopyLink}
               onSetting={handleSettings}
+              onChangeMode={handleChangeModeClick}
+              changeMode={changeMode}
               onOpenDownloadModal={handleOpenDownloadModal}
               onOpenRenameModal={handleOpenRenameModal}
               onDelete={handleOpenDeleteModal}
               onOpenInfoModal={handleOpenInfoModal}
+              projectSettingsVisibility={{
+                isDownloadVisible,
+                isRenameVisible,
+                isDeleteVisible,
+                isChangeModeVisible,
+              }}
             />
           )}
         </Menu>

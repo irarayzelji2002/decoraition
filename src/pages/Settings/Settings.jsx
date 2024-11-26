@@ -829,13 +829,13 @@ function Settings() {
 
   return (
     <>
-      <TopBar state="Settings" navigateTo={navigateTo} navigateFrom={navigateFrom} />
+      <TopBar state="Account Settings" navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <Box
         sx={{
           display: "flex",
           justifyContent: "center",
           flexWrap: "wrap",
-          paddingTop: 2,
+          paddingTop: "90px",
           paddingLeft: "15px",
           paddingRight: "15px",
           borderBottom: "1px solid var(--inputBg)",

@@ -1,18 +1,25 @@
 import "../../css/bottomBar.css";
 import Button from "@mui/joy/Button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { CssVarsProvider } from "@mui/joy/styles";
 
 function BottomBar({ isDesign = true, designId, changeMode, showBudget = false }) {
   const navigate = useNavigate();
-  const handleClick = () => {
+  const location = useLocation();
+  const handleDesignClick = () => {
     navigate(`/design/${designId}`, {
-      state: { changeMode },
+      state: {
+        ...location.state,
+        changeMode: changeMode,
+      },
     });
   };
-  const handleClick2 = () => {
+  const handleBudgetClick = () => {
     navigate(`/budget/${designId}`, {
-      state: { changeMode },
+      state: {
+        ...location.state,
+        changeMode: changeMode,
+      },
     });
   };
 
@@ -28,7 +35,7 @@ function BottomBar({ isDesign = true, designId, changeMode, showBudget = false }
               backgroundColor: "var(--iconBg)",
             },
           }}
-          onClick={handleClick}
+          onClick={handleDesignClick}
         >
           <div
             style={{
@@ -115,7 +122,7 @@ function BottomBar({ isDesign = true, designId, changeMode, showBudget = false }
                 backgroundColor: "var(--iconBg)",
               },
             }}
-            onClick={handleClick2}
+            onClick={handleBudgetClick}
           >
             <div
               style={{

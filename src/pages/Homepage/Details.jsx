@@ -132,110 +132,119 @@ function Details() {
     <ThemeProvider theme={theme}>
       <div style={{ overflowX: "hidden" }}>
         <TopBar state="Details" navigateTo={navigateTo} navigateFrom={navigateFrom} />
-        <div className="details-container">
-          <div className="content">
-            {type === "design" && id && design.designName ? (
-              <>
-                <div className="room-image-div">
-                  <img
-                    className="room-image"
-                    src={
-                      getDesignImage(designId, userDesigns, userDesignVersions, 0) ||
-                      "/img/transparent-image.png"
-                    }
-                    alt=""
-                  />
-                </div>
-                <div className="room-info">
-                  <h1>{design.designName}</h1>
-                  <p className="category">Type</p>
-                  <p>Design</p>
-                  <p className="category">Created</p>
-                  <p>{createdAtDisplay}</p>
-                  <p className="category">Modified</p>
-                  <p>{modifiedAtDisplay}</p>
-                  <p className="category">Owner</p>
-                  <p>{ownerName}</p>
-                </div>
-              </>
-            ) : type === "project" && id && project.projectName ? (
-              <>
-                <div className="room-image-div">
-                  <img
-                    className="room-image"
-                    src={
-                      getProjectImage(
-                        projectId,
-                        userProjects,
-                        projects,
-                        userDesigns,
-                        userDesignVersions,
-                        0
-                      ) || "/img/transparent-image.png"
-                    }
-                    alt=""
-                  />
-                </div>
-                <div className="room-info">
-                  <h1>{project.projectName}</h1>
-                  <p className="category">Type</p>
-                  <p>Project</p>
-                  <p className="category">Created</p>
-                  <p>{createdAtDisplay}</p>
-                  <p className="category">Modified</p>
-                  <p>{modifiedAtDisplay}</p>
-                  <p className="category">Managers</p>
-                  <p>
-                    {managers?.slice(0, 3).join(", ")}
-                    {managers?.length > 3 ? ", and more" : ""}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div>{capitalizeFieldName(type)} details not found</div>
-            )}
+        <div style={{ paddingTop: "74px" }}>
+          <div className="details-container">
+            <div className="content">
+              {type === "design" && id && design.designName ? (
+                <>
+                  <div className="room-image-div">
+                    <img
+                      className="room-image"
+                      src={
+                        getDesignImage(designId, userDesigns, userDesignVersions, 0) ||
+                        "/img/transparent-image.png"
+                      }
+                      alt=""
+                    />
+                  </div>
+                  <div className="room-info">
+                    <h1>{design.designName}</h1>
+                    <p className="category">Type</p>
+                    <p>Design</p>
+                    <p className="category">Created</p>
+                    <p>{createdAtDisplay}</p>
+                    <p className="category">Modified</p>
+                    <p>{modifiedAtDisplay}</p>
+                    <p className="category">Owner</p>
+                    <p>{ownerName}</p>
+                  </div>
+                </>
+              ) : type === "project" && id && project.projectName ? (
+                <>
+                  <div className="room-image-div">
+                    <img
+                      className="room-image"
+                      src={
+                        getProjectImage(
+                          projectId,
+                          userProjects,
+                          projects,
+                          userDesigns,
+                          userDesignVersions,
+                          0
+                        ) || "/img/transparent-image.png"
+                      }
+                      alt=""
+                    />
+                  </div>
+                  <div className="room-info">
+                    <h1>{project.projectName}</h1>
+                    <p className="category">Type</p>
+                    <p>Project</p>
+                    <p className="category">Created</p>
+                    <p>{createdAtDisplay}</p>
+                    <p className="category">Modified</p>
+                    <p>{modifiedAtDisplay}</p>
+                    <p className="category">Managers</p>
+                    <p>
+                      {managers?.slice(0, 3).join(", ")}
+                      {managers?.length > 3 ? ", and more" : ""}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div>{capitalizeFieldName(type)} details not found</div>
+              )}
+            </div>
           </div>
+          {type === "design" && id && design.designName ? (
+            <Button variant="text" onClick={handleOpenViewCollabModal}>
+              <div className="content">
+                <div style={{ width: "100%", maxWidth: "768px", margin: "0 auto" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    Who has access{" "}
+                    <KeyboardArrowRightRoundedIcon
+                      sx={{
+                        color: "var(--color-white)",
+                        fontSize: "2rem",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </Button>
+          ) : type === "project" && id && project.projectName ? (
+            <Button variant="text" onClick={handleOpenViewCollabModal}>
+              <div className="content">
+                <div style={{ width: "100%", maxWidth: "768px", margin: "0 auto" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    Who has access{" "}
+                    <KeyboardArrowRightRoundedIcon
+                      sx={{
+                        color: "var(--color-white)",
+                        fontSize: "2rem",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </Button>
+          ) : (
+            <></>
+          )}
         </div>
-        {type === "design" && id && design.designName ? (
-          <Button variant="text" onClick={handleOpenViewCollabModal}>
-            <div className="content">
-              <div style={{ width: "100%", maxWidth: "768px", margin: "0 auto" }}>
-                <div
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                >
-                  Who has access{" "}
-                  <KeyboardArrowRightRoundedIcon
-                    sx={{
-                      color: "var(--color-white)",
-                      fontSize: "2rem",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </Button>
-        ) : type === "project" && id && project.projectName ? (
-          <Button variant="text" onClick={handleOpenViewCollabModal}>
-            <div className="content">
-              <div style={{ width: "100%", maxWidth: "768px", margin: "0 auto" }}>
-                <div
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                >
-                  Who has access{" "}
-                  <KeyboardArrowRightRoundedIcon
-                    sx={{
-                      color: "var(--color-white)",
-                      fontSize: "2rem",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </Button>
-        ) : (
-          <></>
-        )}
-        <div></div>
       </div>
       <ManageAcessModal
         isOpen={isViewCollabModalOpen}

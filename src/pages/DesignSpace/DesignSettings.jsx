@@ -214,37 +214,39 @@ const DesignSettings = () => {
         navigateTo={navigateTo}
         navigateFrom={navigateFrom}
       />
-      <SettingsContent
-        generalAccessSetting={generalAccessSetting}
-        setGeneralAccessSetting={setGeneralAccessSetting}
-        generalAccessRole={generalAccessRole}
-        setGeneralAccessRole={setGeneralAccessRole}
-        allowDownload={allowDownload}
-        setAllowDownload={setAllowDownload}
-        allowViewHistory={allowViewHistory}
-        setAllowViewHistory={setAllowViewHistory}
-        allowCopy={allowCopy}
-        setAllowCopy={setAllowCopy}
-        documentCopyByOwner={documentCopyByOwner}
-        setDocumentCopyByOwner={setDocumentCopyByOwner}
-        documentCopyByEditor={documentCopyByEditor}
-        setDocumentCopyByEditor={setDocumentCopyByEditor}
-        inactivityEnabled={inactivityEnabled}
-        setInactivityEnabled={setInactivityEnabled}
-        inactivityDays={inactivityDays}
-        setInactivityDays={setInactivityDays}
-        deletionDays={deletionDays}
-        setDeletionDays={setDeletionDays}
-        notifyDays={notifyDays}
-        setNotifyDays={setNotifyDays}
-        handleSaveDesignSettings={handleSaveDesignSettings}
-        allowEdit={allowEdit}
-        isDesignButtonDisabled={isDesignButtonDisabled}
-        navigateTo={navigateTo}
-        navigateFrom={navigateFrom}
-        navigate={navigate}
-        designId={designId}
-      />
+      <div style={{ paddingTop: "74px" }}>
+        <SettingsContent
+          generalAccessSetting={generalAccessSetting}
+          setGeneralAccessSetting={setGeneralAccessSetting}
+          generalAccessRole={generalAccessRole}
+          setGeneralAccessRole={setGeneralAccessRole}
+          allowDownload={allowDownload}
+          setAllowDownload={setAllowDownload}
+          allowViewHistory={allowViewHistory}
+          setAllowViewHistory={setAllowViewHistory}
+          allowCopy={allowCopy}
+          setAllowCopy={setAllowCopy}
+          documentCopyByOwner={documentCopyByOwner}
+          setDocumentCopyByOwner={setDocumentCopyByOwner}
+          documentCopyByEditor={documentCopyByEditor}
+          setDocumentCopyByEditor={setDocumentCopyByEditor}
+          inactivityEnabled={inactivityEnabled}
+          setInactivityEnabled={setInactivityEnabled}
+          inactivityDays={inactivityDays}
+          setInactivityDays={setInactivityDays}
+          deletionDays={deletionDays}
+          setDeletionDays={setDeletionDays}
+          notifyDays={notifyDays}
+          setNotifyDays={setNotifyDays}
+          handleSaveDesignSettings={handleSaveDesignSettings}
+          allowEdit={allowEdit}
+          isDesignButtonDisabled={isDesignButtonDisabled}
+          navigateTo={navigateTo}
+          navigateFrom={navigateFrom}
+          navigate={navigate}
+          designId={designId}
+        />
+      </div>
     </div>
   );
 };

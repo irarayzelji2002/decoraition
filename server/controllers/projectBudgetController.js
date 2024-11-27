@@ -18,7 +18,7 @@ exports.createProjectBudget = async (req, res) => {
       budgets: [],
       budget: {
         amount: totalBudget.amount,
-        currency: totalBudget.currency,
+        currency: totalBudget.currency.currencyCode, // Extract currencyCode from currency object
       },
     };
     await projectBudgetRef.set(projectBudgetData);
@@ -52,10 +52,10 @@ exports.getProjectBudget = async (req, res) => {
 exports.updateProjectBudget = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { amount, currency } = req.body;
+    const { amount, currency } = req.body; // Expect currency object in request body
 
-    if (amount === undefined || currency === undefined) {
-      return res.status(400).json({ message: "Amount and currency are required" });
+    if (amount === undefined || currency === undefined || currency.currencyCode === undefined) {
+      return res.status(400).json({ message: "Amount and currencyCode are required" });
     }
 
     const projectBudgetSnapshot = await db
@@ -68,7 +68,7 @@ exports.updateProjectBudget = async (req, res) => {
 
     const projectBudgetRef = projectBudgetSnapshot.docs[0].ref;
     await projectBudgetRef.update({
-      budget: { amount, currency },
+      budget: { amount, currency: currency.currencyCode }, // Extract currencyCode from currency object
       modifiedAt: new Date(),
     });
 

@@ -19,6 +19,8 @@ const MapPin = ({
   deletePin,
   designId,
   editPin,
+  manager,
+  contributor,
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [value, setValue] = useState("#ffffff");
@@ -190,13 +192,19 @@ const MapPin = ({
               <div aria-label="delete" style={{ cursor: "pointer" }} onClick={handleExportClick}>
                 <ExportIcon />
               </div>
-              <div aria-label="edit" onClick={editPin}>
-                <EditPen />
-              </div>
+              {contributor && (
+                <>
+                  <div aria-label="edit" onClick={editPin}>
+                    <EditPen />
+                  </div>
+                </>
+              )}
 
-              <div aria-label="delete" onClick={() => setDeleteConfirmOpen(true)}>
-                <Trash />
-              </div>
+              {manager && (
+                <div aria-label="delete" onClick={() => setDeleteConfirmOpen(true)}>
+                  <Trash />
+                </div>
+              )}
             </>
           ) : (
             <>

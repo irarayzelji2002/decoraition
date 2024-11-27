@@ -144,10 +144,9 @@ function Project() {
           console.error("No access to project.");
           setLoadingProject(false);
           showToast("error", "You don't have access to this project");
-          navigate("/");
+          navigate("/homepage");
           return;
         }
-
         if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
           setProject(fetchedProject);
           console.log("current project:", fetchedProject);
@@ -464,15 +463,15 @@ function Project() {
   };
 
   if (loadingProject || !project) {
-    return <LoadingPage message="Loading project details1." />;
+    return <LoadingPage message="Loading project details." />;
   }
 
   if (!project.designs) {
-    return <LoadingPage message="Loading project details2." />;
+    return <LoadingPage message="Loading project details." />;
   }
 
   if (loadingDesigns) {
-    return <LoadingPage message="Loading project designs3." />;
+    return <LoadingPage message="Loading project designs." />;
   }
 
   const openImportModal = () => {
@@ -673,6 +672,24 @@ function Project() {
                               isProjectSpace={true}
                               openConfirmRemove={openConfirmRemoveModal}
                               isManagerContentManager={isManagerContentManager}
+                            />
+                          ) : (
+                            <DesignIcon
+                              id={design.id}
+                              name={design.designName}
+                              designId={design.id}
+                              design={design}
+                              onDelete={() => handleDeleteDesign(user, design.id, navigate)}
+                              onOpen={() =>
+                                navigate(`/design/${design.id}`, {
+                                  state: { designId: design.id },
+                                })
+                              }
+                              owner={design.owner}
+                              createdAt={formatDateLong(design.createdAt)}
+                              modifiedAt={formatDateLong(design.modifiedAt)}
+                              optionsState={optionsState}
+                              setOptionsState={setOptionsState}
                             />
                           )}
                         </div>

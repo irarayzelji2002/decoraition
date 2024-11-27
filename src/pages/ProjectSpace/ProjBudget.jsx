@@ -428,28 +428,33 @@ function ProjBudget() {
           })()}
         </span>
 
-        <div style={{ display: "flex", gap: "5px" }}>
-          {projectBudget.amount > 0 ? (
-            <>
-              <IconButton onClick={() => toggleBudgetModal(true, true)} sx={iconButtonStyles}>
-                <EditIconSmallGradient />
+        {isManagerContentManagerContributor && (
+          <div style={{ display: "flex", gap: "5px" }}>
+            {projectBudget.budget?.amount > 0 ? (
+              <>
+                <IconButton onClick={() => toggleBudgetModal(true, true)} sx={iconButtonStyles}>
+                  <EditIconSmallGradient />
+                </IconButton>
+
+                {isManagerContentManager && (
+                  <IconButton
+                    onClick={() => {
+                      setIsRemoveBudgetModalOpen(true);
+                      setMenuOpen(false);
+                    }}
+                    sx={iconButtonStyles}
+                  >
+                    <DeleteIconGradient />
+                  </IconButton>
+                )}
+              </>
+            ) : (
+              <IconButton onClick={() => toggleBudgetModal(true, false)} sx={iconButtonStyles}>
+                <AddIconGradient />
               </IconButton>
-              <IconButton
-                onClick={() => {
-                  setIsRemoveBudgetModalOpen(true);
-                  setMenuOpen(false);
-                }}
-                sx={iconButtonStyles}
-              >
-                <DeleteIconGradient />
-              </IconButton>
-            </>
-          ) : (
-            <IconButton onClick={() => toggleBudgetModal(true, false)} sx={iconButtonStyles}>
-              <AddIconGradient />
-            </IconButton>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         <div style={{ marginBottom: "10%" }}>
           {loading ? (

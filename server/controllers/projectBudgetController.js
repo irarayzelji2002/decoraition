@@ -7,9 +7,19 @@ exports.createProjectBudget = async (req, res) => {
     const projectBudgetRef = db.collection("projectBudgets").doc();
     const projectBudgetData = {
       projectId,
-      totalBudget,
+      link: `/projectBudget/${projectId}`,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      modifiedAt: new Date(),
+      budgetSettings: {
+        generalAccessSetting: 0,
+        generalAccessRole: 0,
+        allowDownload: true,
+      },
+      budgets: [],
+      budget: {
+        amount: totalBudget.amount,
+        currency: totalBudget.currency,
+      },
     };
     await projectBudgetRef.set(projectBudgetData);
     res.status(201).json({ id: projectBudgetRef.id, ...projectBudgetData });
@@ -58,8 +68,8 @@ exports.updateProjectBudget = async (req, res) => {
 
     const projectBudgetRef = projectBudgetSnapshot.docs[0].ref;
     await projectBudgetRef.update({
-      totalBudget: { amount, currency },
-      updatedAt: new Date(),
+      budget: { amount, currency },
+      modifiedAt: new Date(),
     });
 
     res.status(200).json({ message: "Project budget updated successfully" });

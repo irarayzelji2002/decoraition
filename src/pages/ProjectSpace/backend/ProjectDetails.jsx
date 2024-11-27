@@ -598,3 +598,42 @@ export const removeDesignFromProject = async (projectId, designId, user, userDoc
     };
   }
 };
+
+export const fetchProjectBudget = async (projectId, setProjectBudget) => {
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const response = await axios.get(`/api/project/${projectId}/budget`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 200) {
+      setProjectBudget(response.data);
+    } else {
+      showToast("error", "Failed to fetch project budget.");
+    }
+  } catch (error) {
+    console.error("Error fetching project budget:", error);
+    showToast("error", "Failed to fetch project budget");
+  }
+};
+
+export const updateProjectBudget = async (projectId, budgetData, user) => {
+  try {
+    const token = await user.getIdToken();
+    const response = await axios.put(`/api/project/${projectId}/update-budget`, budgetData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.status === 200) {
+      showToast("success", "Project budget updated successfully");
+      return { success: true };
+    }
+  } catch (error) {
+    console.error("Error updating project budget:", error);
+    showToast("error", "Failed to update project budget");
+    return { success: false };
+  }
+};

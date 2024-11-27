@@ -123,7 +123,7 @@ function Project() {
   const [designIdToRemove, setDesignIdToRemove] = useState(null);
   const [designToRemove, setDesignToRemove] = useState(null);
 
-  const [isManager, setIsManager] = useState(false);
+  const [isManager, setIsManager] = useState(true);
   const [isManagerContentManager, setIsManagerContentManager] = useState(false);
   const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
     useState(false);
@@ -629,25 +629,47 @@ function Project() {
                     <div className="layout">
                       {displayedDesigns.map((design) => (
                         <div key={design.id} className="layoutBox">
-                          <DesignIcon
-                            id={design.id}
-                            name={design.designName}
-                            designId={design.id}
-                            design={design}
-                            onDelete={() => handleDeleteDesign(user, design.id, navigate)}
-                            onOpen={() =>
-                              navigate(`/design/${design.id}`, {
-                                state: { designId: design.id },
-                              })
-                            }
-                            owner={design.owner}
-                            createdAt={formatDateLong(design.createdAt)}
-                            modifiedAt={formatDateLong(design.modifiedAt)}
-                            optionsState={optionsState}
-                            setOptionsState={setOptionsState}
-                            isProjectSpace={true}
-                            openConfirmRemove={openConfirmRemoveModal}
-                          />
+                          {isManagerContentManager ? (
+                            // &&
+                            // ["Contributor", "Content Manager", "Manager"].includes(changeMode)
+                            <DesignIcon
+                              id={design.id}
+                              name={design.designName}
+                              designId={design.id}
+                              design={design}
+                              onDelete={() => handleDeleteDesign(user, design.id, navigate)}
+                              onOpen={() =>
+                                navigate(`/design/${design.id}`, {
+                                  state: { designId: design.id },
+                                })
+                              }
+                              owner={design.owner}
+                              createdAt={formatDateLong(design.createdAt)}
+                              modifiedAt={formatDateLong(design.modifiedAt)}
+                              optionsState={optionsState}
+                              setOptionsState={setOptionsState}
+                              isProjectSpace={true}
+                              openConfirmRemove={openConfirmRemoveModal}
+                            />
+                          ) : (
+                            <DesignIcon
+                              id={design.id}
+                              name={design.designName}
+                              designId={design.id}
+                              design={design}
+                              onDelete={() => handleDeleteDesign(user, design.id, navigate)}
+                              onOpen={() =>
+                                navigate(`/design/${design.id}`, {
+                                  state: { designId: design.id },
+                                })
+                              }
+                              owner={design.owner}
+                              createdAt={formatDateLong(design.createdAt)}
+                              modifiedAt={formatDateLong(design.modifiedAt)}
+                              optionsState={optionsState}
+                              setOptionsState={setOptionsState}
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -727,53 +749,59 @@ function Project() {
       />
 
       {/* Action Buttons */}
-      <div className="circle-button-container">
-        {menuOpen && (
-          <div className="small-buttons">
-            <div
-              className="small-button-container"
-              onClick={openImportModal}
-              style={{
-                opacity: isDesignButtonDisabled ? "0.5" : "1",
-                cursor: isDesignButtonDisabled ? "default" : "pointer",
-              }}
-            >
-              <span className="small-button-text">Import a Design</span>
-              <div className="small-circle-button">
-                <AddDesign />
-              </div>
-            </div>
-            <div className="small-button-container">
-              <span className="small-button-text">Create a Design</span>
-              <Box
-                onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
-                sx={{
-                  ...circleButtonStyles,
+      {(isManager || isManagerContentManager || isManagerContentManagerContributor) && (
+        // &&
+        //   (changeMode === "Contributor" ||
+        //     changeMode === "Content Manager" ||
+        //     changeMode === "Manager") &&
+        <div className="circle-button-container">
+          {menuOpen && (
+            <div className="small-buttons">
+              <div
+                className="small-button-container"
+                onClick={openImportModal}
+                style={{
                   opacity: isDesignButtonDisabled ? "0.5" : "1",
                   cursor: isDesignButtonDisabled ? "default" : "pointer",
-                  "&:hover": {
-                    backgroundImage: isDesignButtonDisabled
-                      ? "var(--gradientCircle)"
-                      : "var(--gradientCircleHover)",
-                  },
-                  "& svg": {
-                    marginRight: "-2px",
-                  },
-                  "@media (max-width: 768px)": {
-                    width: "50px",
-                    height: "50px",
-                  },
                 }}
               >
-                <AddProject />
-              </Box>
+                <span className="small-button-text">Import a Design</span>
+                <div className="small-circle-button">
+                  <AddDesign />
+                </div>
+              </div>
+              <div className="small-button-container">
+                <span className="small-button-text">Create a Design</span>
+                <Box
+                  onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
+                  sx={{
+                    ...circleButtonStyles,
+                    opacity: isDesignButtonDisabled ? "0.5" : "1",
+                    cursor: isDesignButtonDisabled ? "default" : "pointer",
+                    "&:hover": {
+                      backgroundImage: isDesignButtonDisabled
+                        ? "var(--gradientCircle)"
+                        : "var(--gradientCircleHover)",
+                    },
+                    "& svg": {
+                      marginRight: "-2px",
+                    },
+                    "@media (max-width: 768px)": {
+                      width: "50px",
+                      height: "50px",
+                    },
+                  }}
+                >
+                  <AddProject />
+                </Box>
+              </div>
             </div>
+          )}
+          <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
+            {menuOpen ? <AddIcon /> : <AddIcon />}
           </div>
-        )}
-        <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
-          {menuOpen ? <AddIcon /> : <AddIcon />}
         </div>
-      </div>
+      )}
 
       {modalOpen && <Modal onClose={closeModal} />}
       <ConfirmRemoveDesign

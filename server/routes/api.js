@@ -241,6 +241,16 @@ router.put(
   authenticateUser,
   projectController.removeDesignFromProject
 );
+router.get(
+  "/project/:projectId/budget",
+  authenticateUser,
+  projectBudgetController.getProjectBudget
+);
+router.put(
+  "/project/:projectId/update-budget",
+  authenticateUser,
+  projectBudgetController.updateProjectBudget
+);
 
 // Network check
 router.get("/health-check", (req, res) => {

@@ -4,15 +4,22 @@ import { useNavigate } from "react-router-dom";
 import { Tabs, Tab } from "@mui/material";
 import { ArrowBackIos } from "@mui/icons-material";
 import Notif from "./Notif";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 const NotifTab = ({ isNotifOpen, onClose }) => {
   // State to handle dark mode
-  const [darkMode, setDarkMode] = useState(true);
+  const { users, notifications, userNotifications, isDarkMode } = useSharedProps();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
+  const [loading, setLoading] = useState(true);
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
+
+  useEffect(() => {
+    // if all Notifs are loaded in <Notif />, set loading to false
+    setLoading(false);
+  }, [userNotifications]);
 
   return (
     <Drawer
@@ -22,13 +29,12 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
       sx={{
         zIndex: "1000",
         "& .MuiDrawer-paper": {
-          width: { xs: "90%", sm: "50%", md: "35%", lg: "25%" },
+          width: { xs: "100%", sm: "75%", md: "40%", xl: "30%" },
           minWidth: "350px",
-          backgroundColor: darkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
-          color: darkMode ? "white" : "black",
-          padding: "20px",
-          height: "calc(100% - 40px)",
-
+          backgroundColor: isDarkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
+          color: isDarkMode ? "white" : "black",
+          padding: "0",
+          height: "100%",
           display: "flex",
           flexDirection: "column",
         },
@@ -43,6 +49,7 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
             display: "flex",
             alignItems: "center",
             spaceBetween: "space-between",
+            padding: "20px 20px 0px 20px",
           }}
         >
           <ArrowBackIos style={{ color: "var(--color-white)" }} onClick={onClose} />
@@ -106,31 +113,15 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
             }}
             label="Mentions"
           />
-        </Tabs>{" "}
-        {activeTab === 0 && (
-          <>
-            <Notif />
-            <Notif />
-            <Notif />
-          </>
-        )}
-        {activeTab === 1 && (
-          <>
-            <Notif />
-            <Notif />
-          </>
-        )}
+        </Tabs>
+        <div>
+          {userNotifications
+            // .filter((notif) => notif.isReadInApp === false)
+            .map((notif) => {
+              return <Notif notif={notif} setLoading={setLoading} />;
+            })}
+        </div>
       </div>
-      <Button
-        onClick={onClose}
-        sx={{
-          color: darkMode ? "white" : "black",
-          mt: 2,
-          marginBottom: "36px",
-        }}
-      >
-        Close
-      </Button>
     </Drawer>
   );
 };

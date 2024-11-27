@@ -18,7 +18,16 @@ const Layout = ({ children }) => {
     }
   }, [userDoc]);
 
+  const sameStyles = {
+    "--always-white": "#ffffff",
+    "--color-yellow": "#f9a754",
+    "--color-orange": "#f26b27",
+    "--color-rose": "#ef4e59",
+    "--color-magenta": "#eb0d79",
+  };
+
   const darkThemeStyles = {
+    ...sameStyles,
     "--bg-header": "url('/img/bg-login.png')",
     "--bg-decor": "url('/img/decorbg.png')",
     "--bg-full": "url('/img/fullbg.png')",
@@ -124,10 +133,10 @@ const Layout = ({ children }) => {
     "--addMask": "#00ff40",
     "--removeMask": "#ff0000",
     "--samMask": "#7543ff",
-    "--always-white": "#ffffff",
   };
 
   const lightThemeStyles = {
+    ...sameStyles,
     "--bg-header": "url('/img/bg-white.png')",
     "--bg-decor": "url('/img/decorbglight.png')",
     "--bg-full": "url('/img/fullbg.png')",

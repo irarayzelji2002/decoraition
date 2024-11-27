@@ -1,20 +1,49 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Avatar, Box } from "@mui/material";
-import { FaCheckCircle, FaEllipsisH, FaCircle } from "react-icons/fa";
-import { stringAvatarColor, stringAvatarInitials } from "../../functions/utils.js";
+import axios from "axios";
+import { Avatar, Box, IconButton, ListItemIcon, ListItemText } from "@mui/material";
+import {
+  SettingsBackupRestoreRounded as ReopenIcon,
+  MoreHoriz as MoreHorizIcon,
+} from "@mui/icons-material";
+import { FaCircle } from "react-icons/fa";
+import { showToast, stringAvatarColor, stringAvatarInitials } from "../../functions/utils.js";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { iconButtonStyles } from "./DrawerComponent.jsx";
+import { CheckIconSmallGradient } from "../DesignSpace/svg/AddColor.jsx";
+import { DeleteIcon } from "../../components/svg/DefaultMenuIcons.jsx";
+import { CustomMenuItem } from "../DesignSpace/CommentContainer.jsx";
+import { formatDateDetail } from "./backend/HomepageActions.jsx";
 
-function Notif() {
-  const { user, userDoc } = useSharedProps();
+function Notif({ notif }) {
+  const { user, users, userDoc } = useSharedProps();
+
+  // Notification data
+  const [type, setType] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [isReadInApp, setIsReadInApp] = useState(false);
+  const [senderUsername, setSenderUsername] = useState("");
+  const [senderProfilePic, setSenderProfilePic] = useState("");
+  const [timeDiff, setTimeDiff] = useState("");
+
   const [showOptions, setShowOptions] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef(null);
 
-  const toggleOptions = (e) => {
-    const rect = e.target.getBoundingClientRect();
-    setMenuPosition({ top: rect.bottom, left: rect.left });
+  useEffect(() => {
+    const senderUser = users.find((user) => user.id === notif.notifBy);
+    const senderProfilePic = senderUser?.profilePic || "";
+    const senderUsername = senderUser?.username || "";
+
+    setType(notif.type);
+    setTitle(notif.title);
+    setContent(notif.content);
+    setIsReadInApp(notif.isReadInApp);
+    setSenderUsername(senderUsername);
+    setSenderProfilePic(senderProfilePic);
+    // calculate time difference from now with notif.createdAt use formatDateDetail then setTimeDiff
+  }, [notif, users]);
+
+  const toggleOptions = () => {
     setShowOptions((prev) => !prev);
   };
 
@@ -31,18 +60,87 @@ function Notif() {
     };
   }, []);
 
+  const handleChangeNotifReadStatus = async () => {
+    // Call changeNotifReadStatus
+    const result = await changeNotifReadStatus(notif.id, isReadInApp, user, userDoc);
+    if (!result.success) {
+      showToast("error", result.message);
+      return;
+    }
+    showToast("success", result.message);
+    toggleOptions();
+  };
+
+  const changeNotifReadStatus = async (notifId, isReadInApp, user, userDoc) => {
+    try {
+      console.log("notif - change status passed data", { notifId, isReadInApp, user, userDoc });
+      const response = await axios.put(
+        `/api/notification/${notifId}/change-notif-status`,
+        { userId: userDoc.id, status: isReadInApp },
+        {
+          headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+        }
+      );
+      if (response.status === 200) {
+        return {
+          success: true,
+          message: `Notification marked as ${!isReadInApp ? "read" : "unread"}`,
+        };
+      }
+    } catch (error) {
+      console.error(
+        `Error marking notification as ${!isReadInApp ? "read" : "unread"}:`,
+        error?.response?.data?.error || error.message
+      );
+      return {
+        success: false,
+        message:
+          error?.response?.data?.error ||
+          `Failed to mark notification as ${!isReadInApp ? "read" : "unread"}`,
+      };
+    }
+  };
+
+  const handleDeleteNotif = async (user, userDoc) => {
+    // Call deleteNotif
+    const result = await deleteNotif(notif.id, user, userDoc);
+    if (!result.success) {
+      showToast("error", result.message);
+      return;
+    }
+    showToast("success", result.message);
+    toggleOptions();
+  };
+
+  const deleteNotif = async (notifId, user, userDoc) => {
+    console.log("notif - delete notif passed data", { notifId, user, userDoc });
+    try {
+      const response = await axios.post(
+        `/api/notification/${notifId}/delete-notif`,
+        { userId: userDoc.id },
+        {
+          headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+        }
+      );
+      if (response.status === 200) {
+        return { success: true, message: "Notification deleted successfully" };
+      }
+    } catch (error) {
+      console.error("Error deleting notification:", error?.response?.data?.error || error.message);
+      return {
+        success: false,
+        message: error?.response?.data?.error || "Failed to delete notification",
+      };
+    }
+  };
+
   return (
     <div>
-      <div className="notif-box">
+      <div className={`notif-box ${!isReadInApp && "unread"}`}>
+        <div className="hoverOverlay"></div>
+        <FaCircle className="unreadCircle" />
         <div className="profile-section">
           <div className="profile-info">
-            <FaCircle
-              style={{
-                marginRight: "4px",
-                color: "red",
-              }}
-            />
-
             <Box
               sx={{
                 width: 42,
@@ -53,7 +151,7 @@ function Notif() {
                 background: "var(--gradientButton)",
                 borderRadius: "50%",
                 padding: "2.5px",
-                marginRight: "10px",
+                marginRight: "15px",
               }}
             >
               <Avatar
@@ -66,19 +164,29 @@ function Notif() {
                   "& .MuiAvatar-img": {
                     borderRadius: "50%",
                   },
-                  ...stringAvatarColor(userDoc?.username),
+                  "& svg": {
+                    marginTop: "10px",
+                  },
+                  ...stringAvatarColor(senderUsername),
                 }}
-                children={stringAvatarInitials(userDoc?.username)}
+                children={stringAvatarInitials(senderUsername)}
               />
             </Box>
             <div className="user-details">
-              <span className="username"></span>
-              <span style={{ fontSize: "0.7rem", color: "var(--color-white)" }} className="date">
-                <strong> Jakob</strong> made a comment on your post
+              <span className="notifTitle">{title}</span>
+              <span className="notifContent">
+                {senderUsername ? (
+                  <>
+                    <strong>{senderUsername}</strong>
+                    <span>{content}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{content}</span>
+                  </>
+                )}
               </span>
-              <span style={{ fontSize: "0.7rem", color: "var(--color-white)" }} className="date">
-                <strong>-</strong> "I like the design!"
-              </span>
+              <span className="notifDate">{timeDiff}</span>
             </div>
           </div>
           <div
@@ -90,32 +198,71 @@ function Notif() {
               flexDirection: "column",
             }}
           >
-            <span style={{ fontSize: "0.5rem", color: "var(--color-white)" }} className="date">
-              <strong>15h</strong>
-            </span>
-            <span
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent the div click event
-                toggleOptions(e); // Toggle the options menu
-              }}
-            >
-              <FaEllipsisH className="options-dots" />
-            </span>
+            {!isReadInApp ? (
+              <IconButton
+                sx={{
+                  ...iconButtonStyles,
+                  padding: "8px",
+                  marginRight: "-50px",
+                  width: "38px",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleChangeNotifReadStatus();
+                }}
+              >
+                <CheckIconSmallGradient />
+              </IconButton>
+            ) : (
+              <IconButton
+                edge="end"
+                aria-label="more"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleOptions();
+                }}
+                sx={iconButtonStyles}
+              >
+                <MoreHorizIcon />
+              </IconButton>
+            )}
 
             {showOptions && (
               <div
-                className="dropdown-menu-other"
-                style={{ top: 0 }} // Adjusted top position
-                ref={dropdownRef}
+                className="dropdown-menu notif-menu"
+                style={{
+                  position: "absolute",
+                  top: "0",
+                  marginTop: "10px",
+                }}
               >
-                <div className="dropdown-item">
-                  <OpenInNewIcon style={{ fontSize: 20 }} className="icon" />
-                  Open
-                </div>
-                <div className="dropdown-item">
-                  <CheckCircleOutlineOutlinedIcon style={{ fontSize: 20 }} className="icon" />
-                  Resolve
-                </div>
+                <CustomMenuItem
+                  className="dropdown-item"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleChangeNotifReadStatus();
+                  }}
+                >
+                  <ListItemIcon>
+                    <ReopenIcon className="notificon" sx={{ color: "var(--color-white)" }} />
+                  </ListItemIcon>
+                  <ListItemText primary="Mark as unread" sx={{ color: "var(--color-white)" }} />
+                </CustomMenuItem>
+                <CustomMenuItem
+                  className="dropdown-item"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteNotif();
+                  }}
+                >
+                  <ListItemIcon>
+                    <DeleteIcon className="icon" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Delete notification"
+                    sx={{ color: "var(--color-white)" }}
+                  />
+                </CustomMenuItem>
               </div>
             )}
           </div>

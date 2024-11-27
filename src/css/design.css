@@ -1083,6 +1083,7 @@ textarea {
   display: flex;
   align-items: center;
   margin-right: 7px;
+  position: relative;
 }
 .profile-pic {
   width: 50px;

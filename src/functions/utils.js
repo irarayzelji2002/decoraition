@@ -2,6 +2,7 @@ import { toast } from "react-toastify";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import InfoIcon from "@mui/icons-material/Info";
+import { AvatarIcon } from "../components/svg/SharedIcons";
 
 // SET ERRORS
 export const handleSetError = (variable, message, errors, setErrors) => {
@@ -39,12 +40,24 @@ export const stringAvatarColor = (passedname) => {
   let name = "";
   let initials = "";
   let bgColor = "#ff6262";
-  if (passedname === undefined || passedname === "undefined") {
+
+  const appPalette = [
+    "var(--color-yellow)",
+    "var(--color-orange)",
+    "var(--color-rose)",
+    "var(--color-magenta)",
+  ];
+  const getRandomColor = () => appPalette[Math.floor(Math.random() * appPalette.length)];
+  const color = getRandomColor();
+
+  if (
+    passedname === undefined ||
+    passedname === "undefined" ||
+    passedname === "Deleted User" ||
+    passedname === ""
+  ) {
     name = "";
-    bgColor = "#F26B27";
-  } else if (passedname === "Deleted User") {
-    name = "";
-    bgColor = "#EF4E59";
+    bgColor = `${color}`;
   } else {
     name = passedname;
     bgColor = stringToColor(name);
@@ -59,17 +72,22 @@ export const stringAvatarColor = (passedname) => {
 export const stringAvatarInitials = (passedname) => {
   let name = "";
   let initials = "";
-  if (passedname === undefined || passedname === "undefined") {
-    name = "";
-  } else if (passedname === "Deleted User") {
-    name = "";
+  let children = "";
+  if (
+    passedname === undefined ||
+    passedname === "undefined" ||
+    passedname === "Deleted User" ||
+    passedname === ""
+  ) {
+    children = <AvatarIcon />;
   } else {
     name = passedname;
     const nameParts = name.split(" ");
     initials = nameParts.length > 1 ? `${nameParts[0][0]}${nameParts[1][0]}` : `${nameParts[0][0]}`;
+    children = initials.toUpperCase();
   }
 
-  return initials.toUpperCase();
+  return children;
 };
 
 export const stringToColor = (string) => {

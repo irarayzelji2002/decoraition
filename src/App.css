@@ -241,7 +241,7 @@ select:-webkit-autofill {
 
 .helpTooltip {
   margin-left: 10px !important;
-  padding: 8px !important;
+  padding: 6px !important;
   height: 35px !important;
   width: 35px !important;
   transform: scale(0.9) !important;
@@ -253,6 +253,26 @@ select:-webkit-autofill {
 
 .helpTooltip.inMeuItem {
   margin-left: 0px !important;
+}
+
+.user-details .notifTitle {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--color-white);
+  margin-bottom: 6px;
+}
+
+.user-details .notifContent {
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--color-white);
+  margin-bottom: 6px;
+}
+
+.user-details .notifDate {
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--greyText);
 }
 
 @media (max-width: 480px) {
@@ -273,6 +293,10 @@ select:-webkit-autofill {
   --color-primary: #faa653;
   --color-secondary: #f04f59;
   --color-tertiary: #27262c;
+  --color-yellow: #f9a754;
+  --color-orange: #f26b27;
+  --color-rose: #ef4e59;
+  --color-magenta: #eb0d79;
   --borders: #5e5e5e;
   --color-grey: #9d9ca6;
   --color-grey2: #c1c0ce;

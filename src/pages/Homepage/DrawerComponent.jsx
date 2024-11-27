@@ -53,10 +53,10 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
     projects,
     userProjects,
     isDarkMode,
+    setIsDarkMode,
   } = useSharedProps();
   const [userDesignsLatest, setUserDesignsLatest] = useState([]);
   const [userProjectsLatest, setUserProjectsLatest] = useState([]);
-  const [darkMode, setDarkMode] = useState(isDarkMode);
 
   // Sorting designs by latest modifiedAt
   useEffect(() => {
@@ -175,8 +175,8 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
         "& .MuiDrawer-paper": {
           width: { xs: "90%", sm: "50%", md: "35%", lg: "25%" },
           minWidth: "350px",
-          backgroundColor: darkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
-          color: darkMode ? "white" : "black",
+          backgroundColor: isDarkMode ? "var(--bgMain)" : "var(--nav-card-modal )",
+          color: isDarkMode ? "white" : "black",
           padding: "20px 0px 20px 0px",
           height: "calc(100% - 40px)",
           display: "flex",
@@ -208,9 +208,9 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           <h2 className="navName drawer">DecorAItion</h2>
           <IconButton
             sx={{ ...iconButtonStyles, marginLeft: "auto" }}
-            onClick={() => toggleDarkMode(user, userDoc?.id, darkMode, setDarkMode)}
+            onClick={() => toggleDarkMode(user, userDoc?.id, isDarkMode, setIsDarkMode)}
           >
-            {darkMode ? <DarkModeIcon /> : <LightModeIcon />}
+            {isDarkMode ? <DarkModeIcon /> : <LightModeIcon />}
           </IconButton>
           <IconButton onClick={handleNotifClick} sx={{ ...iconButtonStyles, marginRight: "15px" }}>
             <NotificationsIcon />

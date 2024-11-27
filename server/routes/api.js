@@ -265,4 +265,16 @@ router.get("/timeline/event/:taskId", authenticateUser, timelineController.getEv
 router.put("/timeline/event/:taskId", authenticateUser, timelineController.updateEvent);
 router.delete("/timeline/event/:taskId", authenticateUser, timelineController.deleteEvent);
 
+// Notification routes
+router.put(
+  "/notification/:notifId/change-notif-status",
+  authenticateUser,
+  notificationController.changeNotifStatus
+);
+router.post(
+  "/notification/:notifId/delete-notif",
+  authenticateUser,
+  notificationController.deleteNotif
+);
+
 module.exports = router;

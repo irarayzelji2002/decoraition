@@ -225,19 +225,28 @@ function Design() {
   }, []);
 
   useEffect(() => {
-    if (designId && userDesigns.length > 0) {
+    if (designId && (userDesigns.length > 0 || designs.length > 0)) {
       const fetchedDesign =
         userDesigns.find((d) => d.id === designId) || designs.find((d) => d.id === designId);
 
       if (!fetchedDesign) {
         console.error("Design not found.");
       } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
+        // Check if user has access
+        const hasAccess = isCollaboratorDesign(fetchedDesign, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to design.");
+          setLoading(false);
+          showToast("error", "You don't have access to this design");
+          navigate("/");
+          return;
+        }
         setDesign(fetchedDesign);
         console.log("current design:", fetchedDesign);
       }
     }
     // setLoading(false);
-  }, [designId, design, userDesigns]);
+  }, [designId, design, designs, userDesigns, isCollaborator]);
 
   useEffect(() => {
     if (

@@ -35,6 +35,7 @@ function EnhancedTableHead(props) {
     onRequestSort,
     sortOrders,
     isProjectSpace,
+    isManagerContentManager,
   } = props;
   const createSortHandler = (property) => (event) => {
     event.stopPropagation();
@@ -110,7 +111,7 @@ function EnhancedTableHead(props) {
               </TableCell>
             )
         )}
-        {isProjectSpace && (
+        {isProjectSpace && isManagerContentManager && (
           <TableCell
             sx={{
               paddingTop: "5px",
@@ -179,6 +180,7 @@ function EnhancedTable({
   isHomepage,
   isProjectSpace,
   openConfirmRemove,
+  isManagerContentManager,
 }) {
   const navigate = useNavigate();
   const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
@@ -382,6 +384,7 @@ function EnhancedTable({
               rowCount={rows.length}
               sortOrders={sortOrders}
               isProjectSpace={isProjectSpace}
+              isManagerContentManager={isManagerContentManager}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
@@ -449,7 +452,7 @@ function EnhancedTable({
                         )
                       );
                     })}
-                    {isProjectSpace && (
+                    {isProjectSpace && isManagerContentManager && (
                       <TableCell
                         sx={{
                           paddingTop: "5px",
@@ -580,6 +583,7 @@ export default function HomepageTable({
   setOptionsState = () => {},
   isProjectSpace = false,
   openConfirmRemove = () => {},
+  isManagerContentManager = false,
 }) {
   const columns = [
     {
@@ -731,6 +735,7 @@ export default function HomepageTable({
       isHomepage={isHomepage}
       isProjectSpace={isProjectSpace}
       openConfirmRemove={openConfirmRemove}
+      isManagerContentManager={isManagerContentManager}
     />
   );
 }

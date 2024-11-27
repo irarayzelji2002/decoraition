@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import deepEqual from "deep-equal";
 import TopBar from "../../components/TopBar";
 import "../../css/details.css";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { getUsername, getUsernames, formatDateDetail } from "./backend/HomepageActions";
-import { capitalizeFieldName } from "../../functions/utils";
+import { capitalizeFieldName, showToast } from "../../functions/utils";
 import Button from "@mui/material/Button";
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import LoadingPage from "../../components/LoadingPage";
 import ManageAcessModal from "../../components/ManageAccessModal";
 import { getDesignImage, getProjectImage } from "../DesignSpace/backend/DesignActions";
+import { isCollaboratorProject } from "../ProjectSpace/Project";
+import { isDate } from "lodash";
+import { isCollaboratorDesign } from "../DesignSpace/Design";
 
 const theme = createTheme({
   components: {
@@ -52,12 +55,23 @@ function Details() {
   const location = useLocation();
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
+  const navigate = useNavigate();
 
   const { id, type } = useParams();
-  const { user, users, userDoc, designs, userDesigns, projects, userProjects, userDesignVersions } =
-    useSharedProps();
+  const {
+    user,
+    users,
+    userDoc,
+    designs,
+    userDesigns,
+    projects,
+    userProjects,
+    designVersions,
+    userDesignVersions,
+  } = useSharedProps();
   const [loading, setLoading] = useState(true);
   const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
   const [design, setDesign] = useState({});
   const [designId, setDesignId] = useState("");
   const [project, setProject] = useState({});
@@ -79,6 +93,16 @@ function Details() {
       if (!fetchedDesign) {
         console.error("Design not found.");
       } else {
+        // Check if user has access
+        const hasAccess = isCollaboratorDesign(fetchedDesign, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to design.");
+          setLoading(false);
+          showToast("error", "You don't have access to this design");
+          navigate("/");
+          return;
+        }
+
         setDesign(fetchedDesign);
         setOwnerName(
           users.find((user) => user.id === fetchedDesign.owner || user.id === fetchedDesign.ownerId)
@@ -89,7 +113,7 @@ function Details() {
         setModifiedAtDisplay(formatDateDetail(fetchedDesign.modifiedAt));
       }
       setLoading(false);
-    } else if (type === "project" && id && userProjects.length > 0) {
+    } else if (type === "project" && id && (userProjects.length > 0 || projects.length > 0)) {
       const projectId = id;
       setProjectId(projectId);
       setLoading(true);
@@ -100,6 +124,16 @@ function Details() {
       if (!fetchedProject) {
         console.error("Project not found.");
       } else {
+        // Check if user has access
+        const hasAccess = isCollaboratorProject(fetchedProject, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to project.");
+          setLoading(false);
+          showToast("error", "You don't have access to this project");
+          navigate("/");
+          return;
+        }
+
         setProject(fetchedProject);
         const projectManagers = (fetchedProject?.managers || []).map(
           (id) => users?.find((user) => user?.id === id)?.username || ""
@@ -114,7 +148,34 @@ function Details() {
       console.log("Type:", type);
       console.log("ID:", id);
     }
-  }, [designs, projects, userDesigns, userProjects]);
+  }, [designs, projects, userDesigns, userProjects, isCollaborator]);
+
+  // Initialize access rights
+  useEffect(() => {
+    if (type === "design") {
+      if (!project?.projectSettings || !userDoc?.id) return;
+      // Check if user has any access
+      const hasAccess = isCollaboratorProject(project, userDoc.id);
+      if (!hasAccess) {
+        showToast("error", "You don't have access to this project");
+        navigate("/");
+        return;
+      }
+      // If they have access, proceed with setting roles
+      setIsCollaborator(isCollaboratorProject(project, userDoc.id));
+    } else {
+      if (!design?.designSettings || !userDoc?.id) return;
+      // Check if user has any access
+      const hasAccess = isCollaboratorDesign(project, userDoc.id);
+      if (!hasAccess) {
+        showToast("error", "You don't have access to this design");
+        navigate("/");
+        return;
+      }
+      // If they have access, proceed with setting roles
+      setIsCollaborator(isCollaboratorDesign(project, userDoc.id));
+    }
+  }, [project, design, userDoc]);
 
   const handleOpenViewCollabModal = () => {
     setIsViewCollabModalOpen(true);
@@ -141,8 +202,14 @@ function Details() {
                     <img
                       className="room-image"
                       src={
-                        getDesignImage(designId, userDesigns, userDesignVersions, 0) ||
-                        "/img/transparent-image.png"
+                        getDesignImage(
+                          designId,
+                          designs,
+                          userDesigns,
+                          designVersions,
+                          userDesignVersions,
+                          0
+                        ) || "/img/transparent-image.png"
                       }
                       alt=""
                     />
@@ -169,7 +236,9 @@ function Details() {
                           projectId,
                           userProjects,
                           projects,
+                          designs,
                           userDesigns,
+                          designVersions,
                           userDesignVersions,
                           0
                         ) || "/img/transparent-image.png"
@@ -251,7 +320,7 @@ function Details() {
         onClose={handleCloseViewCollabModal}
         handleAccessChange={() => {}}
         isDesign={type === "design" ? true : false}
-        object={design}
+        object={type === "design" ? design : project}
         isViewCollab={true}
       />
     </ThemeProvider>

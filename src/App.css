@@ -251,6 +251,10 @@ select:-webkit-autofill {
   margin-top: -5px !important;
 }
 
+.helpTooltip.inMeuItem {
+  margin-left: 0px !important;
+}
+
 @media (max-width: 480px) {
   .shorten-text {
     width: 45px;
@@ -507,8 +511,8 @@ select:-webkit-autofill {
   --table-rows-hover: #d2d1d6;
   --lighterDarkBg: #e4e4e4;
   --iconDark: #525156;
-  --greyText: #b2b2b4;
-  --greyTextDarker: #848385;
+  --greyText: #676767;
+  --greyTextDarker: #575757;
   --disabledButton: #aaaaaa;
   --disabledInput: #aaaaaa;
   --selectImagePreview: #9e9e9e;

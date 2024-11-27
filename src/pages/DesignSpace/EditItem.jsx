@@ -18,6 +18,8 @@ import { getAllISOCodes, getAllInfoByISO } from "iso-country-currency";
 import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
 import { textFieldStyles, textFieldInputProps, priceTextFieldStyles } from "./AddItem";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import LoadingPage from "../../components/LoadingPage";
+import { isCollaboratorDesign, isOwnerEditorDesign } from "./Design";
 
 const getPHCurrency = () => {
   let currency = {
@@ -31,8 +33,16 @@ const getPHCurrency = () => {
 };
 
 const EditItem = () => {
-  const { user, designs, userDesigns, items, userItems, designVersions, userDesignVersions } =
-    useSharedProps();
+  const {
+    user,
+    userDoc,
+    designs,
+    userDesigns,
+    items,
+    userItems,
+    designVersions,
+    userDesignVersions,
+  } = useSharedProps();
   const { designId, budgetId, itemId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -127,8 +137,19 @@ const EditItem = () => {
 
       if (!fetchedDesign) {
         console.error("Design not found for design version:", fetchedDesignVersion.id);
+      } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
+        // Check if user has access
+        const hasAccess = isOwnerEditorDesign(fetchedDesign, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No edit access to design. Can't edit item");
+          setLoading(false);
+          showToast("error", "You don't have access to edit this item");
+          navigate(`/budget/${designId}`);
+          return;
+        }
+
+        setDesign(fetchedDesign || {});
       }
-      setDesign(fetchedDesign || {});
     } catch (error) {
       console.error("Error in initialization:", error);
     } finally {
@@ -356,6 +377,10 @@ const EditItem = () => {
       setIsSaveBtnDisabled(false);
     }
   };
+
+  if (Object.keys(item).length === 0 || Object.keys(design).length === 0 || loading) {
+    return <LoadingPage message="Fetching item details." />;
+  }
 
   return (
     <>

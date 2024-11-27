@@ -24,6 +24,7 @@ const ShareMenu = ({
   isFromMenu = true,
   isHomepage = false,
   isDrawer = false,
+  isThumbnail = false,
 }) => {
   // Copy Link Action
   const handleCopyLink = async () => {
@@ -39,7 +40,11 @@ const ShareMenu = ({
   };
 
   return (
-    <div className={`${isHomepage ? "shareMenuHome" : ""} ${isDrawer ? "drawer" : ""}`}>
+    <div
+      className={`${isHomepage ? "shareMenuHome" : ""} ${isDrawer ? "drawer" : ""} ${
+        isThumbnail ? "fromThumbnail" : ""
+      }`}
+    >
       <CustomMenuItem
         onClick={onBackToMenu}
         sx={{ borderBottom: "1px solid var(--inputBg)", fontWeight: "bold" }}

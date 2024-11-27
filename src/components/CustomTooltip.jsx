@@ -43,7 +43,7 @@ const CustomTooltip = styled(
   },
 }));
 
-export const DescriptionTooltip = ({ description = "" }) => {
+export const DescriptionTooltip = ({ description = "", minWidth = "320px" }) => {
   return (
     <Box
       sx={{
@@ -53,7 +53,7 @@ export const DescriptionTooltip = ({ description = "" }) => {
         p: "5px",
         textAlign: "justify",
         padding: "5px 10px",
-        minWidth: "calc(320px - 40px)",
+        minWidth: `calc(${minWidth} - 40px)`,
       }}
     >
       <Box>

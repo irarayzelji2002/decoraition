@@ -375,7 +375,7 @@ export default function SeeAllProjects() {
             {/* Previous Page Button */}
             <IconButton onClick={handlePreviousPage} disabled={page === 1} sx={iconButtonStyles}>
               <ArrowBackIosRoundedIcon
-                sx={{ color: page === 1 ? "var(--inputBg)" : "var(--color-white)" }}
+                sx={{ color: page === 1 ? "var(--disabledButton)" : "var(--color-white)" }}
               />
             </IconButton>
 
@@ -388,7 +388,7 @@ export default function SeeAllProjects() {
                   sx={{
                     ...gradientButtonStyles,
                     aspectRatio: "1/1",
-                    color: "var(--color-white)",
+                    color: page === index + 1 ? "var(--always-white)" : "var(--color-white)",
                     background:
                       page === index + 1
                         ? "var(--gradientButton) !important"
@@ -415,7 +415,7 @@ export default function SeeAllProjects() {
               sx={iconButtonStyles}
             >
               <ArrowForwardIosRoundedIcon
-                sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+                sx={{ color: page === totalPages ? "var(--disabledButton)" : "var(--color-white)" }}
               />
             </IconButton>
           </div>

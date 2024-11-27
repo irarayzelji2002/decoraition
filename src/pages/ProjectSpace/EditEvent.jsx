@@ -99,6 +99,13 @@ function EditEvent() {
       // navigate("/timeline/" + projectId);
       // return;
     }
+
+    if (!isManagerContentManagerContributor) {
+      console.log("You are a manager content manager contributor");
+    } else {
+      showToast("error", "You don't have access to this portion of the project.");
+      navigate("/timeline/" + projectId);
+    }
   }, [project, userDoc, navigate, projectId]);
 
   const initialFormData = {

@@ -133,20 +133,41 @@ function Project() {
 
   // Get project
   useEffect(() => {
-    if (projectId && userProjects.length > 0) {
+    if (projectId && (userProjects.length > 0 || projects.length > 0)) {
       const fetchedProject =
         userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
 
       if (!fetchedProject) {
         console.error("Project not found.");
         setLoadingProject(false);
-      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
-        setProject(fetchedProject);
-        console.log("current project:", fetchedProject);
+      } else {
+        // Check if user has access
+        const hasAccess = isCollaboratorProject(fetchedProject, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to project.");
+          setLoadingProject(false);
+          showToast("error", "You don't have access to this project");
+          navigate("/");
+          return;
+        }
+
+        if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+          setProject(fetchedProject);
+          console.log("current project:", fetchedProject);
+        }
       }
     }
     setLoadingProject(false);
-  }, [projectId, projects, userProjects]);
+  }, [projectId, projects, userProjects, isCollaborator]);
+
+  // Timeout for loading project
+  useEffect(() => {
+    const loadingTimeout = setTimeout(() => {
+      setLoadingProject(false);
+    }, 10000); // 10 seconds timeout
+
+    return () => clearTimeout(loadingTimeout);
+  }, []);
 
   // Load design data
   useEffect(() => {
@@ -446,15 +467,15 @@ function Project() {
   };
 
   if (loadingProject || !project) {
-    return <LoadingPage message="Loading project details." />;
+    return <LoadingPage message="Loading project details1." />;
   }
 
   if (!project.designs) {
-    return <LoadingPage message="Loading project details." />;
+    return <LoadingPage message="Loading project details2." />;
   }
 
   if (loadingDesigns) {
-    return <LoadingPage message="Loading project designs." />;
+    return <LoadingPage message="Loading project designs3." />;
   }
 
   const openImportModal = () => {

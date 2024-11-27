@@ -29,6 +29,7 @@ import {
   AnyoneWithLinkIcon,
 } from "./svg/DesignAccessIcons";
 import LoadingPage from "../../components/LoadingPage";
+import { isCollaboratorDesign } from "./Design";
 
 export const theme = createTheme({
   components: {
@@ -83,7 +84,7 @@ const DesignSettings = () => {
   const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
 
   useEffect(() => {
-    if (designId && userDesigns.length > 0) {
+    if (designId && (userDesigns.length > 0 || designs.length > 0)) {
       const fetchedDesign =
         userDesigns.find((design) => design.id === designId) ||
         designs.find((design) => design.id === designId);
@@ -91,6 +92,16 @@ const DesignSettings = () => {
       if (!fetchedDesign) {
         console.error("Design not found.");
       } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
+        // Check if user has access
+        const hasAccess = isCollaboratorDesign(fetchedDesign, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to design.");
+          setLoading(false);
+          showToast("error", "You don't have access to this design");
+          navigate("/");
+          return;
+        }
+
         setDesign(fetchedDesign);
         setDesignName(fetchedDesign?.designName ?? "Untitled Design");
         setGeneralAccessSetting(fetchedDesign?.designSettings?.generalAccessSetting ?? 0);

@@ -45,6 +45,9 @@ import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
 import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
 import { selectStyles, selectStylesDisabled } from "../pages/DesignSpace/DesignSettings";
 import { DeleteIconGradient } from "./svg/DefaultMenuIcons";
+import { HelpOutline } from "@mui/icons-material";
+import { TooltipWithClickAwayMenuItem } from "./TooltipWithClickAway";
+import { DescriptionTooltip } from "./CustomTooltip";
 
 const ManageAcessModal = ({
   isOpen,
@@ -76,17 +79,31 @@ const ManageAcessModal = ({
   const [isSaveBtnDisabled, setIsSaveBtnDisabled] = useState(false);
   const contentRef = useRef(null);
   const [isWrapped, setIsWrapped] = useState(false);
-  const containerRef = useRef(null);
+  const [showLabelTooltip, setShowLabelTooltip] = useState(false);
+  const [labelTooltipClickLocked, setLabelTooltipClickLocked] = useState(false);
+  const [currentHoveredRole, setCurrentHoveredRole] = useState(null); // {role: number, userId: string} or null
 
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
-        const { inlineSize } = entry.borderBoxSize[0];
-        setIsWrapped(inlineSize < 634); // Adjust width as needed
+        const width = entry.contentRect.width;
+        console.log("Current width:", width);
+        setIsWrapped(width < 634);
       }
     });
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
+
+    const currentContainer = contentRef.current;
+    if (currentContainer) {
+      observer.observe(currentContainer);
+      // Initial check
+      setIsWrapped(currentContainer.offsetWidth < 634);
+    }
+
+    return () => {
+      if (currentContainer) {
+        observer.disconnect();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -359,6 +376,11 @@ const ManageAcessModal = ({
 
   const checkOverflow = () => {
     if (contentRef.current) {
+      const width = contentRef.current.offsetWidth;
+      console.log("Window resize - width:", width);
+      const isNewWrapped = width < 634;
+      setIsWrapped(isNewWrapped);
+
       const { scrollWidth, clientWidth } = contentRef.current;
       const currentWidth = window.innerWidth;
 
@@ -370,16 +392,14 @@ const ManageAcessModal = ({
       // );
       // console.log(`isOverflowing: ${isOverflowing}; hideLabels: ${hideLabels}`);
 
-      if (scrollWidth > clientWidth) {
+      if (isNewWrapped) {
         if (!isOverflowing) {
           setIsOverflowing(true);
           setHideLabels(true);
         }
-      } else if (scrollWidth === clientWidth) {
+      } else if (!isNewWrapped) {
         setIsOverflowing(false);
-        if (scrollWidth + labelWidth > currentWidth) {
-          setHideLabels(false);
-        }
+        setHideLabels(false);
       } else {
         if (isOverflowing) {
           setIsOverflowing(false);
@@ -387,7 +407,7 @@ const ManageAcessModal = ({
         }
       }
 
-      if (hideLabels && scrollWidth + labelWidth <= currentWidth) {
+      if (hideLabels && !isNewWrapped) {
         setHideLabels(false);
       }
 
@@ -415,7 +435,7 @@ const ManageAcessModal = ({
   }, [emailsWithRole]);
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles} ref={containerRef}>
+    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
       <DialogTitle sx={dialogTitleStyles}>
         <Typography
           variant="body1"
@@ -581,6 +601,17 @@ const ManageAcessModal = ({
                           sx={{ color: "var(--color-white) !important" }}
                         />
                       )}
+                      renderValue={(selected) => {
+                        const selectedRole = roles.find((role) => role.value === selected);
+                        return (
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <div style={{ marginRight: "10px", display: "flex" }}>
+                              {selectedRole?.icon}
+                            </div>
+                            {!isWrapped && <div>{selectedRole?.label}</div>}
+                          </div>
+                        );
+                      }}
                     >
                       {roles.map((roleOption) => (
                         <MenuItem
@@ -593,7 +624,43 @@ const ManageAcessModal = ({
                             <div style={{ marginRight: "10px", display: "flex" }}>
                               {roleOption.icon}
                             </div>
-                            <div>{roleOption.label}</div>
+                            {!isWrapped ? (
+                              <div>{roleOption.label}</div>
+                            ) : (
+                              <TooltipWithClickAwayMenuItem
+                                open={
+                                  showLabelTooltip &&
+                                  currentHoveredRole?.role === roleOption.value &&
+                                  currentHoveredRole?.userId === user.userId
+                                }
+                                setOpen={(value) => {
+                                  setShowLabelTooltip(value);
+                                  if (!value) setCurrentHoveredRole(null);
+                                }}
+                                tooltipClickLocked={labelTooltipClickLocked}
+                                setTooltipClickLocked={setLabelTooltipClickLocked}
+                                title={
+                                  <DescriptionTooltip
+                                    description={roleOption.label}
+                                    minWidth={isDesign ? "100px" : "150px"}
+                                  />
+                                }
+                                className="helpTooltip inMenuItem"
+                                onMouseEnter={() => {
+                                  setCurrentHoveredRole({
+                                    role: roleOption.value,
+                                    userId: user.userId,
+                                  });
+                                }}
+                                onMouseLeave={() => {
+                                  if (!labelTooltipClickLocked) setCurrentHoveredRole(null);
+                                }}
+                              >
+                                <HelpOutline
+                                  sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }}
+                                />
+                              </TooltipWithClickAwayMenuItem>
+                            )}
                           </div>
                         </MenuItem>
                       ))}
@@ -609,8 +676,6 @@ const ManageAcessModal = ({
           >
             General Access
           </Typography>
-          {isWrapped && <div>{`isWrapped: ${isWrapped}`}</div>}
-
           <div className="drawerUserLong">
             <Avatar
               sx={{
@@ -714,7 +779,7 @@ const ManageAcessModal = ({
                     onChange={(e) => setGeneralAccessRole(parseInt(e.target.value, 10))}
                     sx={{
                       ...selectStyles,
-                      marginLeft: "-2px",
+                      marginLeft: isWrapped ? "0px" : "-2px",
                       width: isWrapped ? "100%" : isDesign ? "200px" : "230px",
                       maxWidth: isWrapped ? "100%" : "unset",
                       marginTop: isWrapped ? "-1px" : "0px",
@@ -724,6 +789,9 @@ const ManageAcessModal = ({
                         borderBottomLeftRadius: isWrapped ? "10px" : "0px",
                         borderBottomRightRadius: isWrapped ? "10px" : "10px",
                         border: "2px solid var(--borderInput)",
+                        borderTop: isWrapped
+                          ? "2px solid transparent"
+                          : "2px solid var(--borderInput)",
                       },
                     }}
                     MenuProps={{

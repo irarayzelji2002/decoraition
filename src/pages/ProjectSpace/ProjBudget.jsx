@@ -428,37 +428,37 @@ function ProjBudget() {
           })()}
         </span>
 
-        {isManagerContentManagerContributor &
+        {isManagerContentManagerContributor &&
           (changeMode === "Managing Content" ||
             changeMode === "Managing" ||
             changeMode === "Contributing") && (
-          <div style={{ display: "flex", gap: "5px" }}>
-            {projectBudget.budget?.amount > 0 ? (
-              <>
-                <IconButton onClick={() => toggleBudgetModal(true, true)} sx={iconButtonStyles}>
-                  <EditIconSmallGradient />
-                </IconButton>
-
-                {isManagerContentManager &
-                  (changeMode === "Managing Content" || changeMode === "Managing") && (
-                  <IconButton
-                    onClick={() => {
-                      setIsRemoveBudgetModalOpen(true);
-                      setMenuOpen(false);
-                    }}
-                    sx={iconButtonStyles}
-                  >
-                    <DeleteIconGradient />
+            <div style={{ display: "flex", gap: "5px" }}>
+              {projectBudget.budget?.amount > 0 ? (
+                <>
+                  <IconButton onClick={() => toggleBudgetModal(true, true)} sx={iconButtonStyles}>
+                    <EditIconSmallGradient />
                   </IconButton>
-                )}
-              </>
-            ) : (
-              <IconButton onClick={() => toggleBudgetModal(true, false)} sx={iconButtonStyles}>
-                <AddIconGradient />
-              </IconButton>
-            )}
-          </div>
-        )}
+
+                  {isManagerContentManager &&
+                    (changeMode === "Managing Content" || changeMode === "Managing") && (
+                      <IconButton
+                        onClick={() => {
+                          setIsRemoveBudgetModalOpen(true);
+                          setMenuOpen(false);
+                        }}
+                        sx={iconButtonStyles}
+                      >
+                        <DeleteIconGradient />
+                      </IconButton>
+                    )}
+                </>
+              ) : (
+                <IconButton onClick={() => toggleBudgetModal(true, false)} sx={iconButtonStyles}>
+                  <AddIconGradient />
+                </IconButton>
+              )}
+            </div>
+          )}
 
         <div style={{ marginBottom: "10%" }}>
           {loading ? (

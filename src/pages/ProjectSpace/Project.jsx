@@ -626,7 +626,7 @@ function Project() {
                     <div className="layout">
                       {displayedDesigns.map((design) => (
                         <div key={design.id} className="layoutBox">
-                          {isManagerContentManager &
+                          {isManagerContentManager &&
                           (changeMode === "Managing Content" || changeMode === "Managing") ? (
                             <DesignIcon
                               id={design.id}
@@ -745,58 +745,58 @@ function Project() {
       />
 
       {/* Action Buttons */}
-      {(isManager || isManagerContentManager || isManagerContentManagerContributor) &
+      {(isManager || isManagerContentManager || isManagerContentManagerContributor) &&
         (changeMode === "Managing Content" ||
           changeMode === "Managing" ||
           changeMode === "Contributing") && (
-        <div className="circle-button-container">
-          {menuOpen && (
-            <div className="small-buttons">
-              <div
-                className="small-button-container"
-                onClick={openImportModal}
-                style={{
-                  opacity: isDesignButtonDisabled ? "0.5" : "1",
-                  cursor: isDesignButtonDisabled ? "default" : "pointer",
-                }}
-              >
-                <span className="small-button-text">Import a Design</span>
-                <div className="small-circle-button">
-                  <AddDesign />
-                </div>
-              </div>
-              <div className="small-button-container">
-                <span className="small-button-text">Create a Design</span>
-                <Box
-                  onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
-                  sx={{
-                    ...circleButtonStyles,
+          <div className="circle-button-container">
+            {menuOpen && (
+              <div className="small-buttons">
+                <div
+                  className="small-button-container"
+                  onClick={openImportModal}
+                  style={{
                     opacity: isDesignButtonDisabled ? "0.5" : "1",
                     cursor: isDesignButtonDisabled ? "default" : "pointer",
-                    "&:hover": {
-                      backgroundImage: isDesignButtonDisabled
-                        ? "var(--gradientCircle)"
-                        : "var(--gradientCircleHover)",
-                    },
-                    "& svg": {
-                      marginRight: "-2px",
-                    },
-                    "@media (max-width: 768px)": {
-                      width: "50px",
-                      height: "50px",
-                    },
                   }}
                 >
-                  <AddProject />
-                </Box>
+                  <span className="small-button-text">Import a Design</span>
+                  <div className="small-circle-button">
+                    <AddDesign />
+                  </div>
+                </div>
+                <div className="small-button-container">
+                  <span className="small-button-text">Create a Design</span>
+                  <Box
+                    onClick={() => !isDesignButtonDisabled && handleCreateDesign()}
+                    sx={{
+                      ...circleButtonStyles,
+                      opacity: isDesignButtonDisabled ? "0.5" : "1",
+                      cursor: isDesignButtonDisabled ? "default" : "pointer",
+                      "&:hover": {
+                        backgroundImage: isDesignButtonDisabled
+                          ? "var(--gradientCircle)"
+                          : "var(--gradientCircleHover)",
+                      },
+                      "& svg": {
+                        marginRight: "-2px",
+                      },
+                      "@media (max-width: 768px)": {
+                        width: "50px",
+                        height: "50px",
+                      },
+                    }}
+                  >
+                    <AddProject />
+                  </Box>
+                </div>
               </div>
+            )}
+            <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
+              {menuOpen ? <AddIcon /> : <AddIcon />}
             </div>
-          )}
-          <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
-            {menuOpen ? <AddIcon /> : <AddIcon />}
           </div>
-        </div>
-      )}
+        )}
 
       {modalOpen && <Modal onClose={closeModal} />}
       <ConfirmRemoveDesign

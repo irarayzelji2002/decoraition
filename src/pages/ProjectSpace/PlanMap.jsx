@@ -282,13 +282,13 @@ function PlanMap() {
                         deletePin={() => deletePin(design.id)} // Pass design.id to deletePin
                         editPin={() => navigateToEditPin(design.id)} // Pass design.id to editPin
                         manager={
-                          isManagerContentManager &
+                          isManagerContentManager &&
                           (changeMode === "Managing Content" || changeMode === "Managing")
                         }
                         contributor={
                           (isManager ||
                             isManagerContentManager ||
-                            isManagerContentManagerContributor) &
+                            isManagerContentManagerContributor) &&
                           (changeMode === "Managing Content" || changeMode === "Managing")
                         }
                       />
@@ -309,60 +309,60 @@ function PlanMap() {
         </div>
 
         {/* Floating Action Button */}
-        {(isManager || isManagerContentManager || isManagerContentManagerContributor) &
+        {(isManager || isManagerContentManager || isManagerContentManagerContributor) &&
           (changeMode === "Managing Content" ||
             changeMode === "Managing" ||
             changeMode === "Contributing") && (
-          <div className="circle-button-container">
-            {menuOpen && (
-              <div className="small-buttons" style={{ cursor: "pointer" }}>
-                {isManagerContentManagerContributor &
-                  (changeMode === "Managing Content" ||
-                    changeMode === "Managing" ||
-                    changeMode === "Contributing") && (
-                  <>
-                    <div className="small-button-container" onClick={handleStyleRefModalOpen}>
-                      <span className="small-button-text">Change plan</span>
-                      <div className="small-circle-button">
-                        <ChangePlan />
-                      </div>
-                    </div>{" "}
-                    <div
-                      className="small-button-container"
-                      onClick={planImage ? navigateToPinLayout : handleNoPlanImage}
-                    >
-                      <span className="small-button-text">Change pins order</span>
-                      <div className="small-circle-button">
-                        <ChangeOrder />
-                      </div>
-                    </div>
-                    <div
-                      className="small-button-container"
-                      onClick={planImage ? navigateToAdjustPin : handleNoPlanImage}
-                    >
-                      <span className="small-button-text">Adjust Pins</span>
-                      <div className="small-circle-button">
-                        <AdjustPin />
-                      </div>
-                    </div>
-                    <div
-                      className="small-button-container"
-                      onClick={planImage ? navigateToAddPin : handleNoPlanImage}
-                    >
-                      <span className="small-button-text">Add a Pin</span>
-                      <div className="small-circle-button">
-                        <AddPin />
-                      </div>
-                    </div>
-                  </>
-                )}
+            <div className="circle-button-container">
+              {menuOpen && (
+                <div className="small-buttons" style={{ cursor: "pointer" }}>
+                  {isManagerContentManagerContributor &&
+                    (changeMode === "Managing Content" ||
+                      changeMode === "Managing" ||
+                      changeMode === "Contributing") && (
+                      <>
+                        <div className="small-button-container" onClick={handleStyleRefModalOpen}>
+                          <span className="small-button-text">Change plan</span>
+                          <div className="small-circle-button">
+                            <ChangePlan />
+                          </div>
+                        </div>{" "}
+                        <div
+                          className="small-button-container"
+                          onClick={planImage ? navigateToPinLayout : handleNoPlanImage}
+                        >
+                          <span className="small-button-text">Change pins order</span>
+                          <div className="small-circle-button">
+                            <ChangeOrder />
+                          </div>
+                        </div>
+                        <div
+                          className="small-button-container"
+                          onClick={planImage ? navigateToAdjustPin : handleNoPlanImage}
+                        >
+                          <span className="small-button-text">Adjust Pins</span>
+                          <div className="small-circle-button">
+                            <AdjustPin />
+                          </div>
+                        </div>
+                        <div
+                          className="small-button-container"
+                          onClick={planImage ? navigateToAddPin : handleNoPlanImage}
+                        >
+                          <span className="small-button-text">Add a Pin</span>
+                          <div className="small-circle-button">
+                            <AddPin />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                </div>
+              )}
+              <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
+                {menuOpen ? <AddIcon /> : <AddIcon />}
               </div>
-            )}
-            <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
-              {menuOpen ? <AddIcon /> : <AddIcon />}
             </div>
-          </div>
-        )}
+          )}
       </ProjectSpace>
 
       {/* Change Plan Modal */}

@@ -599,7 +599,7 @@ export const removeDesignFromProject = async (projectId, designId, user, userDoc
   }
 };
 
-export const fetchProjectBudget = async (projectId, setProjectBudget) => {
+export const fetchProjectBudget = async (projectId) => {
   try {
     const token = await auth.currentUser.getIdToken();
     const response = await axios.get(`/api/project/${projectId}/budget`, {
@@ -609,13 +609,16 @@ export const fetchProjectBudget = async (projectId, setProjectBudget) => {
     });
 
     if (response.status === 200) {
-      setProjectBudget(response.data);
+      console.log("Project budget fetched successfully:", response.data); // Debug log
+      return response.data;
     } else {
       showToast("error", "Failed to fetch project budget.");
+      return null;
     }
   } catch (error) {
     console.error("Error fetching project budget:", error);
     showToast("error", "Failed to fetch project budget");
+    return null;
   }
 };
 

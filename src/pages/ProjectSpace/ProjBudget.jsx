@@ -92,7 +92,7 @@ function ProjBudget() {
   const [formattedTotalCost, setFormattedTotalCost] = useState("0.00");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const [projectBudget, setProjectBudget] = useState(0);
+  const [projectBudget, setProjectBudget] = useState({});
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isRemoveBudgetModalOpen, setIsRemoveBudgetModalOpen] = useState(false);
   const [budgetCurrency, setBudgetCurrency] = useState(getPHCurrency());
@@ -347,7 +347,9 @@ function ProjBudget() {
   useEffect(() => {
     const fetchProjectBudgetData = async () => {
       try {
-        await fetchProjectBudget(projectId, setProjectBudget);
+        const budget = await fetchProjectBudget(projectId);
+        setProjectBudget(budget);
+        console.log("Project budget:", budget);
       } catch (error) {
         console.error("Error fetching project budget:", error);
       }
@@ -378,18 +380,19 @@ function ProjBudget() {
           }}
         >
           {(() => {
-            if (formattedTotalCost === "0.00" && projectBudget.amount === 0) {
+            if (formattedTotalCost === "0.00" && projectBudget.budget?.amount === 0) {
               return <>No cost and added budget</>;
             } else if (formattedTotalCost === "0.00") {
               return (
                 <>
                   No cost, Budget:{" "}
                   <strong>
-                    {projectBudget.currency?.currencyCode} {formatNumber(projectBudget.amount)}
+                    {projectBudget.budget?.currency?.currencyCode}{" "}
+                    {formatNumber(projectBudget.budget?.amount)}
                   </strong>
                 </>
               );
-            } else if (projectBudget.amount === 0) {
+            } else if (projectBudget.budget?.amount === 0) {
               return (
                 <>
                   Total Cost: <strong>{formattedTotalCost}</strong>, No added budget
@@ -400,7 +403,8 @@ function ProjBudget() {
                 <>
                   Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
                   <strong>
-                    {projectBudget.currency?.currencyCode} {formatNumber(projectBudget.amount)}
+                    {projectBudget.budget?.currency?.currencyCode}{" "}
+                    {formatNumber(projectBudget.budget?.amount)}
                   </strong>
                 </>
               );

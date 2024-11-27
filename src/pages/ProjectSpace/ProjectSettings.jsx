@@ -265,9 +265,9 @@ const ProjectSettings = () => {
   const handleSaveProjectSettings = async () => {
     try {
       const updatedProjectSettings = {
-        generalAccessSettingProject: generalAccessSettingProject,
-        generalAccessRoleProject: generalAccessRoleProject,
-        allowDownloadProject: allowDownloadProject,
+        generalAccessSetting: generalAccessSettingProject,
+        generalAccessRole: generalAccessRoleProject,
+        allowDownload: allowDownloadProject,
         inactivityEnabled: inactivityEnabled,
         inactivityDays: inactivityDays,
         deletionDays: deletionDays,
@@ -276,23 +276,23 @@ const ProjectSettings = () => {
       console.log("updatedProjectSettings", updatedProjectSettings);
 
       const updatedTimelineSettings = {
-        generalAccessSettingTimeline: generalAccessSettingTimeline,
-        generalAccessRoleTimeline: generalAccessRoleTimeline,
-        allowDownloadTimeline: allowDownloadTimeline,
+        generalAccessSetting: generalAccessSettingTimeline,
+        generalAccessRole: generalAccessRoleTimeline,
+        allowDownload: allowDownloadTimeline,
       };
       console.log("updatedTimelineSettings", updatedTimelineSettings);
 
       const updatedPlanMapSettings = {
-        generalAccessSettingPlanMap: generalAccessSettingPlanMap,
-        generalAccessRolePlanMap: generalAccessRolePlanMap,
-        allowDownloadPlanMap: allowDownloadPlanMap,
+        generalAccessSetting: generalAccessSettingPlanMap,
+        generalAccessRole: generalAccessRolePlanMap,
+        allowDownload: allowDownloadPlanMap,
       };
       console.log("updatedPlanMapSettings", updatedPlanMapSettings);
 
       const updatedBudgetSettings = {
-        generalAccessSettingBudget: generalAccessSettingBudget,
-        generalAccessRoleBudget: generalAccessRoleBudget,
-        allowDownloadBudget: allowDownloadBudget,
+        generalAccessSetting: generalAccessSettingBudget,
+        generalAccessRole: generalAccessRoleBudget,
+        allowDownload: allowDownloadBudget,
       };
       console.log("updatedBudgetSettings", updatedBudgetSettings);
 
@@ -314,6 +314,17 @@ const ProjectSettings = () => {
           },
         }
       );
+      console.log("proj settings - passed data", {
+        projectSettings: updatedProjectSettings,
+        timelineId: timeline.id,
+        timelineSettings: updatedTimelineSettings,
+        planMapId: planMap.id,
+        planMapSettings: updatedPlanMapSettings,
+        projectBudgetId: projectBudget.id,
+        budgetSettings: updatedBudgetSettings,
+        userId: userDoc.id,
+      });
+      console.log("proj settings - response.data", response.data);
 
       if (response.status === 200) {
         showToast("success", "Project settings updated successfully");
@@ -672,7 +683,7 @@ const GeneralAccessSelect = ({
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { inlineSize } = entry.borderBoxSize[0];
-        setIsWrapped(inlineSize < 585); // Adjust width as needed
+        setIsWrapped(inlineSize < 634); // Adjust width as needed
       }
     });
     if (containerRef.current) observer.observe(containerRef.current);
@@ -712,10 +723,21 @@ const GeneralAccessSelect = ({
           flexGrow: 1,
           minWidth: isWrapped ? "100%" : "200px",
           "& .MuiOutlinedInput-notchedOutline": {
-            borderTopLeftRadius: isWrapped ? "10px" : "10px",
-            borderTopRightRadius: isWrapped ? "10px" : "0px",
-            borderBottomLeftRadius: isWrapped ? "0px" : "10px",
-            borderBottomRightRadius: isWrapped ? "0px" : "0px",
+            borderTopLeftRadius: "10px",
+            borderTopRightRadius:
+              generalAccessSetting === 0
+                ? "10px"
+                : generalAccessSetting === 1 && isWrapped
+                ? "10px"
+                : "0px",
+            borderBottomLeftRadius:
+              generalAccessSetting === 0
+                ? "10px"
+                : generalAccessSetting === 1 && isWrapped
+                ? "0px"
+                : "10px",
+            borderBottomRightRadius:
+              generalAccessSetting === 0 ? "10px" : generalAccessSetting === 1 && "0px",
             border: "2px solid var(--borderInput)",
           },
         }}
@@ -733,7 +755,7 @@ const GeneralAccessSelect = ({
           <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
         )}
       >
-        <MenuItem value={0} sx={menuItemStyles}>
+        <MenuItem value={0} sx={{ ...menuItemStyles, minHeight: "fit-content" }}>
           <Typography variant="body1" sx={{ fontWeight: "bold", display: "block" }}>
             Restricted&nbsp;
           </Typography>
@@ -741,7 +763,7 @@ const GeneralAccessSelect = ({
             Only collaborators have access
           </Typography>
         </MenuItem>
-        <MenuItem value={1} sx={menuItemStyles}>
+        <MenuItem value={1} sx={{ ...menuItemStyles, minHeight: "fit-content" }}>
           <Typography variant="body1" sx={{ fontWeight: "bold", display: "block" }}>
             Anyone with link&nbsp;
           </Typography>
@@ -750,48 +772,53 @@ const GeneralAccessSelect = ({
           </Typography>
         </MenuItem>
       </Select>
-
-      <Select
-        value={generalAccessRole}
-        onChange={(e) => setGeneralAccessRole(parseInt(e.target.value, 10))}
-        disabled={disabled}
-        sx={{
-          ...(disabled ? selectStylesDisabled : selectStyles),
-          minHeight: isWrapped ? "auto" : "68px",
-          marginLeft: isWrapped ? "0px" : "-2px",
-          marginTop: isWrapped ? "-1px" : "0px",
-          width: isWrapped ? "100%" : "185px",
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderTopLeftRadius: isWrapped ? "0px" : "0px",
-            borderTopRightRadius: isWrapped ? "0px" : "10px",
-            borderBottomLeftRadius: isWrapped ? "10px" : "0px",
-            borderBottomRightRadius: isWrapped ? "10px" : "10px",
-            border: "2px solid var(--borderInput)",
-          },
-        }}
-        MenuProps={{
-          PaperProps: {
-            sx: {
-              borderRadius: "10px",
-              "& .MuiMenu-list": {
-                padding: 0,
+      {generalAccessSetting === 1 && (
+        <Select
+          value={generalAccessRole}
+          onChange={(e) => setGeneralAccessRole(parseInt(e.target.value, 10))}
+          disabled={disabled}
+          sx={{
+            ...(disabled ? selectStylesDisabled : selectStyles),
+            minHeight: isWrapped ? "auto" : "68px",
+            marginLeft: isWrapped ? "0px" : "-2px",
+            marginTop: isWrapped ? "-1px" : "0px",
+            width: isWrapped ? "100%" : "230px",
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderTopLeftRadius: isWrapped ? "0px" : "0px",
+              borderTopRightRadius: isWrapped ? "0px" : "10px",
+              borderBottomLeftRadius: isWrapped ? "10px" : "0px",
+              borderBottomRightRadius: isWrapped ? "10px" : "10px",
+              border: "2px solid var(--borderInput)",
+            },
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                borderRadius: "10px",
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
               },
             },
-          },
-        }}
-        IconComponent={(props) => (
-          <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
-        )}
-      >
-        {generalAccessRoles.map((roleOption) => (
-          <MenuItem key={roleOption.value} value={roleOption.value} sx={menuItemStyles}>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ marginRight: "10px" }}>{roleOption.icon}</div>
-              {roleOption.label}
-            </div>
-          </MenuItem>
-        ))}
-      </Select>
+          }}
+          IconComponent={(props) => (
+            <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+          )}
+        >
+          {generalAccessRoles.map((roleOption) => (
+            <MenuItem
+              key={roleOption.value}
+              value={roleOption.value}
+              sx={{ ...menuItemStyles, minHeight: "fit-content" }}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <div style={{ marginRight: "10px" }}>{roleOption.icon}</div>
+                {roleOption.label}
+              </div>
+            </MenuItem>
+          ))}
+        </Select>
+      )}
     </div>
   );
 };
@@ -853,7 +880,11 @@ const InactivitySetting = ({ label, value, onChange, options, disabled }) => (
       disabled={disabled}
     >
       {options.map((option) => (
-        <MenuItem key={option.value} value={option.value} sx={menuItemStyles}>
+        <MenuItem
+          key={option.value}
+          value={option.value}
+          sx={{ ...menuItemStyles, minHeight: "fit-content" }}
+        >
           {option.label}
         </MenuItem>
       ))}

@@ -603,6 +603,13 @@ exports.updateProjectSettings = async (req, res) => {
       data: projectBudgetDoc.data(),
       type: "projectBudget",
     });
+    console.log("updateProjectSettings - previousStates - ", previousStates);
+    console.log("updateProjectSettings - data - ", {
+      projectSettings,
+      timelineSettings,
+      planMapSettings,
+      budgetSettings,
+    });
 
     // Perform updates
     await Promise.all([
@@ -623,10 +630,17 @@ exports.updateProjectSettings = async (req, res) => {
         modifiedAt: new Date(),
       }),
     ]);
+    console.log("updateProjectSettings - updated");
 
     res.status(200).json({
       message: "Project settings updated successfully",
-      projectSettings,
+      data: {
+        projectSettings,
+        timelineSettings,
+        planMapSettings,
+        budgetSettings,
+        modifiedAt: new Date(),
+      },
     });
   } catch (error) {
     console.error("Error updating project settings:", error);

@@ -75,8 +75,23 @@ const ManageAcessModal = ({
   const [prevWidth, setPrevWidth] = useState(window.innerWidth);
   const [isSaveBtnDisabled, setIsSaveBtnDisabled] = useState(false);
   const contentRef = useRef(null);
+  const [isWrapped, setIsWrapped] = useState(false);
+  const containerRef = useRef(null);
 
-  // For testing
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { inlineSize } = entry.borderBoxSize[0];
+        setIsWrapped(inlineSize < 634); // Adjust width as needed
+      }
+    });
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    console.log("is wrapped", isWrapped);
+  }, [isWrapped]);
 
   // Close/Cancel button function
   const handleClose = () => {
@@ -400,7 +415,7 @@ const ManageAcessModal = ({
   }, [emailsWithRole]);
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
+    <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles} ref={containerRef}>
       <DialogTitle sx={dialogTitleStyles}>
         <Typography
           variant="body1"
@@ -433,6 +448,7 @@ const ManageAcessModal = ({
           width: "auto",
           padding: "0px",
           marginTop: 0,
+          minWidth: "50vw",
           "& .MuiDialog-paper": {
             width: "100%",
           },
@@ -593,6 +609,7 @@ const ManageAcessModal = ({
           >
             General Access
           </Typography>
+          {isWrapped && <div>{`isWrapped: ${isWrapped}`}</div>}
 
           <div className="drawerUserLong">
             <Avatar
@@ -607,7 +624,7 @@ const ManageAcessModal = ({
               {generalAccessSetting === 0 ? <RestrictedIcon /> : <AnyoneWithLinkIcon />}
             </Avatar>
             {isViewCollab ? (
-              <div>
+              <div style={{ flexGrow: "1", width: "100%" }}>
                 <Typography variant="body1" style={{ fontWeight: "bold" }}>
                   {generalAccessSetting === 0 ? "Restricted" : "Anyone with link"}
                 </Typography>
@@ -620,7 +637,7 @@ const ManageAcessModal = ({
                 </Typography>
               </div>
             ) : (
-              <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", flexGrow: "1", width: "100%", flexWrap: "wrap" }}>
                 <Select
                   className="drawerUserDetails"
                   value={generalAccessSetting}
@@ -628,15 +645,24 @@ const ManageAcessModal = ({
                   sx={{
                     ...selectStyles,
                     flexGrow: 1,
+                    minWidth: isWrapped ? "100%" : "300px",
                     "& .MuiOutlinedInput-notchedOutline": {
-                      borderTopRightRadius: "0px",
-                      borderBottomRightRadius: "0px",
                       borderTopLeftRadius: "10px",
-                      borderBottomLeftRadius: "10px",
+                      borderTopRightRadius:
+                        generalAccessSetting === 0
+                          ? "10px"
+                          : generalAccessSetting === 1 && isWrapped
+                          ? "10px"
+                          : "0px",
+                      borderBottomLeftRadius:
+                        generalAccessSetting === 0
+                          ? "10px"
+                          : generalAccessSetting === 1 && isWrapped
+                          ? "0px"
+                          : "10px",
+                      borderBottomRightRadius:
+                        generalAccessSetting === 0 ? "10px" : generalAccessSetting === 1 && "0px",
                       border: "2px solid var(--borderInput)",
-                    },
-                    "@media (max-width: 768px)": {
-                      maxWidth: "200px",
                     },
                   }}
                   MenuProps={{
@@ -682,46 +708,52 @@ const ManageAcessModal = ({
                     <Typography variant="caption">Anyone on the Internet can access</Typography>
                   </MenuItem>
                 </Select>
-                <Select
-                  value={generalAccessRole}
-                  onChange={(e) => setGeneralAccessRole(parseInt(e.target.value, 10))}
-                  sx={{
-                    ...selectStyles,
-                    marginLeft: "-2px",
-                    width: hideLabels ? "90px" : isDesign ? "188px" : "200px",
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderTopRightRadius: "10px",
-                      borderBottomRightRadius: "10px",
-                      borderTopLeftRadius: "0px",
-                      borderBottomLeftRadius: "0px",
-                      border: "2px solid var(--borderInput)",
-                    },
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        borderRadius: "10px",
-                        "& .MuiMenu-list": {
-                          padding: 0,
+                {generalAccessSetting === 1 && (
+                  <Select
+                    value={generalAccessRole}
+                    onChange={(e) => setGeneralAccessRole(parseInt(e.target.value, 10))}
+                    sx={{
+                      ...selectStyles,
+                      marginLeft: "-2px",
+                      width: isWrapped ? "100%" : isDesign ? "200px" : "230px",
+                      maxWidth: isWrapped ? "100%" : "unset",
+                      marginTop: isWrapped ? "-1px" : "0px",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderTopLeftRadius: isWrapped ? "0px" : "0px",
+                        borderTopRightRadius: isWrapped ? "0px" : "10px",
+                        borderBottomLeftRadius: isWrapped ? "10px" : "0px",
+                        borderBottomRightRadius: isWrapped ? "10px" : "10px",
+                        border: "2px solid var(--borderInput)",
+                      },
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          borderRadius: "10px",
+                          "& .MuiMenu-list": {
+                            padding: 0,
+                          },
                         },
                       },
-                    },
-                  }}
-                  IconComponent={(props) => (
-                    <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
-                  )}
-                >
-                  {generalAccessRoles.map((roleOption) => (
-                    <MenuItem key={roleOption.value} value={roleOption.value} sx={menuItemStyles}>
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <div style={{ marginRight: "10px", display: "flex" }}>
-                          {roleOption.icon}
+                    }}
+                    IconComponent={(props) => (
+                      <KeyboardArrowDownRoundedIcon
+                        sx={{ color: "var(--color-white) !important" }}
+                      />
+                    )}
+                  >
+                    {generalAccessRoles.map((roleOption) => (
+                      <MenuItem key={roleOption.value} value={roleOption.value} sx={menuItemStyles}>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ marginRight: "10px", display: "flex" }}>
+                            {roleOption.icon}
+                          </div>
+                          <div>{roleOption.label}</div>
                         </div>
-                        <div>{roleOption.label}</div>
-                      </div>
-                    </MenuItem>
-                  ))}
-                </Select>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
               </div>
             )}
           </div>

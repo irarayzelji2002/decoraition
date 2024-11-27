@@ -49,6 +49,15 @@ export function useAuthProvider() {
 
   useEffect(() => {
     console.log("Setting up auth state listener");
+    // Check for existing auth state in local storage
+    const existingAuthState = localStorage.getItem("authState");
+    if (existingAuthState) {
+      const { user, userDoc } = JSON.parse(existingAuthState);
+      setUser(user);
+      setUserDoc(userDoc);
+    }
+
+    // Set up the auth state listener
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed. User:", user);
 
@@ -94,14 +103,6 @@ export function useAuthProvider() {
         setUserDocFetched(true);
       }
     });
-
-    // Check for existing auth state on load
-    const existingAuthState = localStorage.getItem("authState");
-    if (existingAuthState) {
-      const { user, userDoc } = JSON.parse(existingAuthState);
-      setUser(user);
-      setUserDoc(userDoc);
-    }
 
     return () => unsubscribe();
   }, []);

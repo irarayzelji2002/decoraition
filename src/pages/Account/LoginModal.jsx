@@ -170,6 +170,7 @@ export default function LoginModal() {
         connectedAccount = 1;
       }
 
+      await setPersistenceBasedOnRemember(true);
       const result = await signInWithPopup(auth, acctProvider);
       const user = result.user;
 

@@ -289,7 +289,9 @@ function PlanMap() {
                           (isManager ||
                             isManagerContentManager ||
                             isManagerContentManagerContributor) &&
-                          (changeMode === "Managing Content" || changeMode === "Managing")
+                          (changeMode === "Managing Content" ||
+                            changeMode === "Managing" ||
+                            changeMode === "Contributing")
                         }
                       />
                     </>

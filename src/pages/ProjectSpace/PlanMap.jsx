@@ -281,9 +281,15 @@ function PlanMap() {
                         designId={design.designId}
                         deletePin={() => deletePin(design.id)} // Pass design.id to deletePin
                         editPin={() => navigateToEditPin(design.id)} // Pass design.id to editPin
-                        manager={isManagerContentManager}
+                        manager={
+                          isManagerContentManager &
+                          (changeMode === "Managing Content" || changeMode === "Managing")
+                        }
                         contributor={
-                          isManager || isManagerContentManager || isManagerContentManagerContributor
+                          (isManager ||
+                            isManagerContentManager ||
+                            isManagerContentManagerContributor) &
+                          (changeMode === "Managing Content" || changeMode === "Managing")
                         }
                       />
                     </>
@@ -303,11 +309,17 @@ function PlanMap() {
         </div>
 
         {/* Floating Action Button */}
-        {(isManager || isManagerContentManager || isManagerContentManagerContributor) && (
+        {(isManager || isManagerContentManager || isManagerContentManagerContributor) &
+          (changeMode === "Managing Content" ||
+            changeMode === "Managing" ||
+            changeMode === "Contributing") && (
           <div className="circle-button-container">
             {menuOpen && (
               <div className="small-buttons" style={{ cursor: "pointer" }}>
-                {isManagerContentManagerContributor && (
+                {isManagerContentManagerContributor &
+                  (changeMode === "Managing Content" ||
+                    changeMode === "Managing" ||
+                    changeMode === "Contributing") && (
                   <>
                     <div className="small-button-container" onClick={handleStyleRefModalOpen}>
                       <span className="small-button-text">Change plan</span>

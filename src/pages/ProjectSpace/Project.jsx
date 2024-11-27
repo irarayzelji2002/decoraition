@@ -69,6 +69,7 @@ import {
   dialogTitleStyles,
 } from "../../components/RenameModal";
 import Error from "../../components/Error";
+import { toast } from "react-toastify";
 
 function Project() {
   const { projectId } = useParams();
@@ -96,7 +97,6 @@ function Project() {
 
   const [project, setProject] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [origFilteredDesigns, setOrigFilteredDesigns] = useState([]);
   const [filteredDesigns, setFilteredDesigns] = useState([]);
   const [filteredDesignsForTable, setFilteredDesignsForTable] = useState([]);
   const [displayedDesigns, setDisplayedDesigns] = useState([]);
@@ -109,9 +109,6 @@ function Project() {
 
   const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
   const [isRemoveDesignBtnDisabled, setIsRemoveDesignBtnDisabled] = useState(false);
-  const [numToShowMoreDesign, setNumToShowMoreDesign] = useState(0);
-  const [thresholdDesign, setThresholdDesign] = useState(6);
-
   const [isVertical, setIsVertical] = useState(false);
   const [loadingProject, setLoadingProject] = useState(true);
   const [loadingDesigns, setLoadingDesigns] = useState(true);
@@ -629,9 +626,8 @@ function Project() {
                     <div className="layout">
                       {displayedDesigns.map((design) => (
                         <div key={design.id} className="layoutBox">
-                          {isManagerContentManager ? (
-                            // &&
-                            // ["Contributor", "Content Manager", "Manager"].includes(changeMode)
+                          {isManagerContentManager &
+                          (changeMode === "Managing Content" || changeMode === "Managing") ? (
                             <DesignIcon
                               id={design.id}
                               name={design.designName}
@@ -749,11 +745,10 @@ function Project() {
       />
 
       {/* Action Buttons */}
-      {(isManager || isManagerContentManager || isManagerContentManagerContributor) && (
-        // &&
-        //   (changeMode === "Contributor" ||
-        //     changeMode === "Content Manager" ||
-        //     changeMode === "Manager") &&
+      {(isManager || isManagerContentManager || isManagerContentManagerContributor) &
+        (changeMode === "Managing Content" ||
+          changeMode === "Managing" ||
+          changeMode === "Contributing") && (
         <div className="circle-button-container">
           {menuOpen && (
             <div className="small-buttons">

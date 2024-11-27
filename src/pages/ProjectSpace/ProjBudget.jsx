@@ -428,7 +428,10 @@ function ProjBudget() {
           })()}
         </span>
 
-        {isManagerContentManagerContributor && (
+        {isManagerContentManagerContributor &
+          (changeMode === "Managing Content" ||
+            changeMode === "Managing" ||
+            changeMode === "Contributing") && (
           <div style={{ display: "flex", gap: "5px" }}>
             {projectBudget.budget?.amount > 0 ? (
               <>
@@ -436,7 +439,8 @@ function ProjBudget() {
                   <EditIconSmallGradient />
                 </IconButton>
 
-                {isManagerContentManager && (
+                {isManagerContentManager &
+                  (changeMode === "Managing Content" || changeMode === "Managing") && (
                   <IconButton
                     onClick={() => {
                       setIsRemoveBudgetModalOpen(true);

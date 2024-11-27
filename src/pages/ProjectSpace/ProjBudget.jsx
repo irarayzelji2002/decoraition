@@ -104,6 +104,7 @@ function ProjBudget() {
   const [error, setError] = useState("");
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [currencyDetails, setCurrencyDetails] = useState([]);
+  const [totalCosts, setTotalCosts] = useState({});
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -360,6 +361,21 @@ function ProjBudget() {
     }
   }, [projectId]);
 
+  useEffect(() => {
+    const costs = {};
+    let totalCostSum = 0;
+    designs.forEach((design) => {
+      const totalCost = designBudgetItems[design.id]?.reduce(
+        (sum, item) => sum + parseFloat(item.cost.amount || 0) * (item.quantity || 1),
+        0
+      );
+      costs[design.id] = totalCost?.toFixed(2) || "0.00";
+      totalCostSum += totalCost || 0;
+    });
+    setTotalCosts(costs);
+    setFormattedTotalCost(totalCostSum.toFixed(2));
+  }, [designs, designBudgetItems]);
+
   return (
     <ProjectSpace
       project={project}
@@ -385,7 +401,7 @@ function ProjBudget() {
             } else if (formattedTotalCost === "0.00") {
               return (
                 <>
-                  No cost, Budget:{" "}
+                  Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
                   <strong>
                     {projectBudget.budget?.currency?.currencyCode}{" "}
                     {formatNumber(projectBudget.budget?.amount)}
@@ -452,7 +468,7 @@ function ProjBudget() {
                       <span className="SubtitleBudget" style={{ fontSize: "30px" }}>
                         {design.designName}
                       </span>
-                      <span className="SubtitlePrice">Total Cost: Php {totalCost?.toFixed(2)}</span>
+                      <span className="SubtitlePrice">Total Cost: Php {totalCosts[design.id]}</span>
                     </div>
 
                     <div className="image-frame-project">

@@ -255,6 +255,10 @@ select:-webkit-autofill {
   margin-left: 0px !important;
 }
 
+.helpTooltip.inBudget {
+  margin-left: 0px !important;
+}
+
 .user-details .notifTitle {
   font-size: 0.8rem;
   font-weight: bold;
@@ -273,6 +277,10 @@ select:-webkit-autofill {
   font-size: 0.8rem;
   font-weight: 300;
   color: var(--greyText);
+}
+
+.MuiDialogTitle-root .MuiTypography-root {
+  text-align: left !important;
 }
 
 @media (max-width: 480px) {

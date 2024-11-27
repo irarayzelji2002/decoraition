@@ -611,7 +611,7 @@ function Budget() {
                   <AddIconGradient />
                 </IconButton>
               )}
-              <h6>
+              <div style={{ display: "flex", alignItems: "center" }}>
                 <TooltipWithClickAway
                   open={showGuide}
                   setOpen={setShowGuide}
@@ -620,13 +620,13 @@ function Budget() {
                   title={
                     <DescriptionTooltip description="This page is where you can add a budget for your design. It is optional to use this feature." />
                   }
-                  className="helpTooltip inPromptBar"
+                  className="helpTooltip inBudget"
                 >
                   <div style={{ display: "flex" }}>
                     <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
                   </div>
                 </TooltipWithClickAway>
-              </h6>
+              </div>
             </div>
           )}
         </div>

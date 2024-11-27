@@ -126,6 +126,35 @@ exports.changeNotifStatus = async (req, res) => {
   }
 };
 
+exports.markAllAsRead = async (req, res) => {
+  const updatedDocuments = [];
+  let newStatus = true;
+  try {
+    const { userId } = req.body;
+    // get all user's notifications
+    const notifsSnapshot = await db.collection("notifications").where("userId", "==", userId).get();
+    // update all notifications to isReadInApp to true
+
+    res.json({
+      success: true,
+      message: "All notifications marked as read",
+      isReadInApp: newStatus,
+    });
+  } catch (error) {
+    console.error("Error changing comment status:", error);
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+    res.status(500).json({ error: "Failed to mark all notifications as read" });
+  }
+};
+
 exports.deleteNotif = async (req, res) => {
   const updatedDocuments = [];
   try {

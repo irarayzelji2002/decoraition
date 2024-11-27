@@ -101,7 +101,7 @@ function Notif({ notif }) {
     }
   };
 
-  const handleDeleteNotif = async (user, userDoc) => {
+  const handleDeleteNotif = async () => {
     // Call deleteNotif
     const result = await deleteNotif(notif.id, user, userDoc);
     if (!result.success) {

@@ -267,6 +267,11 @@ router.delete("/timeline/event/:taskId", authenticateUser, timelineController.de
 
 // Notification routes
 router.put(
+  "/notification/mark-all-as-read",
+  authenticateUser,
+  notificationController.markAllAsRead
+);
+router.put(
   "/notification/:notifId/change-notif-status",
   authenticateUser,
   notificationController.changeNotifStatus

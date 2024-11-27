@@ -299,48 +299,56 @@ function PlanMap() {
         </div>
 
         {/* Floating Action Button */}
-        <div className="circle-button-container">
-          {menuOpen && (
-            <div className="small-buttons" style={{ cursor: "pointer" }}>
-              <div className="small-button-container" onClick={handleStyleRefModalOpen}>
-                <span className="small-button-text">Change plan</span>
-                <div className="small-circle-button">
-                  <ChangePlan />
+        {isManager ||
+          isManagerContentManager ||
+          (isManagerContentManagerContributor && (
+            <div className="circle-button-container">
+              {menuOpen && (
+                <div className="small-buttons" style={{ cursor: "pointer" }}>
+                  {isManagerContentManagerContributor && (
+                    <>
+                      <div className="small-button-container" onClick={handleStyleRefModalOpen}>
+                        <span className="small-button-text">Change plan</span>
+                        <div className="small-circle-button">
+                          <ChangePlan />
+                        </div>
+                      </div>{" "}
+                      <div
+                        className="small-button-container"
+                        onClick={planImage ? navigateToPinLayout : handleNoPlanImage}
+                      >
+                        <span className="small-button-text">Change pins order</span>
+                        <div className="small-circle-button">
+                          <ChangeOrder />
+                        </div>
+                      </div>
+                      <div
+                        className="small-button-container"
+                        onClick={planImage ? navigateToAdjustPin : handleNoPlanImage}
+                      >
+                        <span className="small-button-text">Adjust Pins</span>
+                        <div className="small-circle-button">
+                          <AdjustPin />
+                        </div>
+                      </div>
+                      <div
+                        className="small-button-container"
+                        onClick={planImage ? navigateToAddPin : handleNoPlanImage}
+                      >
+                        <span className="small-button-text">Add a Pin</span>
+                        <div className="small-circle-button">
+                          <AddPin />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
-              <div
-                className="small-button-container"
-                onClick={planImage ? navigateToPinLayout : handleNoPlanImage}
-              >
-                <span className="small-button-text">Change pins order</span>
-                <div className="small-circle-button">
-                  <ChangeOrder />
-                </div>
-              </div>
-              <div
-                className="small-button-container"
-                onClick={planImage ? navigateToAdjustPin : handleNoPlanImage}
-              >
-                <span className="small-button-text">Adjust Pins</span>
-                <div className="small-circle-button">
-                  <AdjustPin />
-                </div>
-              </div>
-              <div
-                className="small-button-container"
-                onClick={planImage ? navigateToAddPin : handleNoPlanImage}
-              >
-                <span className="small-button-text">Add a Pin</span>
-                <div className="small-circle-button">
-                  <AddPin />
-                </div>
+              )}
+              <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
+                {menuOpen ? <AddIcon /> : <AddIcon />}
               </div>
             </div>
-          )}
-          <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
-            {menuOpen ? <AddIcon /> : <AddIcon />}
-          </div>
-        </div>
+          ))}
       </ProjectSpace>
 
       {/* Change Plan Modal */}

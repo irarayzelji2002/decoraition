@@ -18,6 +18,8 @@ import CurrencySelect from "../../components/CurrencySelect";
 import { getAllISOCodes, getAllInfoByISO } from "iso-country-currency";
 import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { isOwnerEditorDesign } from "./Design";
+import LoadingPage from "../../components/LoadingPage";
 
 const AddItem = () => {
   const { designId, budgetId } = useParams();
@@ -26,7 +28,8 @@ const AddItem = () => {
   const navigateTo = location.state?.navigateFrom || (designId ? `/budget/${designId}` : "/");
   const navigateFrom = location.pathname;
 
-  const { user, designs, userDesigns, designVersions, userDesignVersions } = useSharedProps();
+  const { user, userDoc, designs, userDesigns, designVersions, userDesignVersions } =
+    useSharedProps();
   const [design, setDesign] = useState({});
   const [designVersion, setDesignVersion] = useState({});
 
@@ -105,7 +108,22 @@ const AddItem = () => {
       const fetchedDesign =
         userDesigns.find((design) => design?.history?.includes(fetchedDesignVersion.id)) ||
         designs.find((design) => design?.history?.includes(fetchedDesignVersion.id));
-      setDesign(fetchedDesign);
+
+      if (!fetchedDesign) {
+        console.error("Design not found for design version:", fetchedDesignVersion.id);
+      } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
+        // Check if user has access
+        const hasAccess = isOwnerEditorDesign(fetchedDesign, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No edit access to design. Can't edit item");
+          setLoading(false);
+          showToast("error", "You don't have access to add an item");
+          navigate(`/budget/${designId}`);
+          return;
+        }
+
+        setDesign(fetchedDesign || {});
+      }
     } catch (error) {
       console.error("Error in initialization:", error);
     } finally {
@@ -312,6 +330,10 @@ const AddItem = () => {
       setIsDesignButtonDisabled(false);
     }
   };
+
+  if (Object.keys(design).length === 0 || loading) {
+    return <LoadingPage message="Checking access." />;
+  }
 
   return (
     <div style={{ overflow: "hidden" }}>

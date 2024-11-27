@@ -559,6 +559,7 @@ function HomepageOptions({
               isViewCollab={isViewCollab}
               isHomepage={true}
               isDrawer={isDrawer}
+              isThumbnail={!isTable && !isDrawer}
             />
           ) : (
             <div

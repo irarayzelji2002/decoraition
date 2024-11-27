@@ -41,23 +41,24 @@ export const stringAvatarColor = (passedname) => {
   let initials = "";
   let bgColor = "#ff6262";
 
-  const appPalette = [
-    "var(--color-yellow)",
-    "var(--color-orange)",
-    "var(--color-rose)",
-    "var(--color-magenta)",
-  ];
-  const getRandomColor = () => appPalette[Math.floor(Math.random() * appPalette.length)];
-  const color = getRandomColor();
-
   if (
-    passedname === undefined ||
+    !passedname ||
     passedname === "undefined" ||
     passedname === "Deleted User" ||
     passedname === ""
   ) {
-    name = "";
-    bgColor = `${color}`;
+    // Use a deterministic way to select color based on some unique identifier
+    const appPalette = [
+      "var(--color-yellow)",
+      "var(--color-orange)",
+      "var(--color-rose)",
+      "var(--color-magenta)",
+    ];
+    const index = Math.abs(passedname?.length || 0) % appPalette.length;
+    return {
+      backgroundColor: `${appPalette[index]} !important`,
+      color: "var(--always-white) !important",
+    };
   } else {
     name = passedname;
     bgColor = stringToColor(name);

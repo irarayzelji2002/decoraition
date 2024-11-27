@@ -21,7 +21,7 @@ import Avatar from "@mui/material/Avatar";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 
 const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
-  const { userDoc } = useSharedProps();
+  const { userDoc, userNotifications } = useSharedProps();
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
@@ -29,6 +29,7 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
 
   useEffect(() => {
     if (location.pathname.startsWith("/homepage")) {
@@ -41,6 +42,12 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
       setSearchPlaceholder("Search...");
     }
   }, []);
+
+  useEffect(() => {
+    // Calculate unread notifications count
+    const unreadCount = userNotifications.filter((notif) => !notif.isReadInApp).length;
+    setNotifCount(unreadCount);
+  }, [userNotifications]);
 
   const handleSearch = (event) => {
     onSearchChange(event.target.value); // Pass the search value to the parent
@@ -142,11 +149,11 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
                 sx={{
                   cursor: "pointer",
                   "& .MuiBadge-badge": {
-                    backgroundColor: "var(--color-secondary)", // Optional: to set the badge color
-                    color: "white", // Optional: to set the text color inside the badge
+                    backgroundColor: "var(--color-secondary)",
+                    color: "white",
                   },
                 }}
-                badgeContent={2}
+                badgeContent={notifCount > 99 ? "99+" : notifCount}
               >
                 <NotificationsIcon sx={{ color: "var(--color-white)" }} />
               </Badge>

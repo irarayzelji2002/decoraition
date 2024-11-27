@@ -131,9 +131,17 @@ exports.markAllAsRead = async (req, res) => {
   let newStatus = true;
   try {
     const { userId } = req.body;
-    // get all user's notifications
-    const notifsSnapshot = await db.collection("notifications").where("userId", "==", userId).get();
-    // update all notifications to isReadInApp to true
+
+    const notificationsRef = db.collection("notifications");
+    const unreadNotifs = await notificationsRef
+      .where("userId", "==", userId)
+      .where("isReadInApp", "==", false)
+      .get();
+    const batch = db.batch();
+    unreadNotifs.docs.forEach((doc) => {
+      batch.update(doc.ref, { isReadInApp: true });
+    });
+    await batch.commit();
 
     res.json({
       success: true,
@@ -171,7 +179,7 @@ exports.deleteNotif = async (req, res) => {
       id: notifRef.id,
     });
     await db.collection("notifications").doc(notifId).delete();
-    return { success: true, message: "Notification deleted successfully" };
+    res.status(200).json({ success: true, message: "Notification deleted successfully" });
   } catch (error) {
     console.error("Error changing comment status:", error);
     // Rollback updates

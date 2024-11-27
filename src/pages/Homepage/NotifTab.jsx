@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Drawer, Button, Typography, IconButton, Tabs, Tab } from "@mui/material";
+import { Drawer, Button, Typography, IconButton, Box, CircularProgress } from "@mui/material";
 import FormatBoldIcon from "@mui/icons-material/FormatBold";
 import FormatItalicIcon from "@mui/icons-material/FormatItalic";
 import FormatUnderlinedIcon from "@mui/icons-material/FormatUnderlined";
@@ -15,26 +15,106 @@ import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { iconButtonStyles } from "./DrawerComponent";
 import { showToast } from "../../functions/utils";
 import { selectStyles } from "../DesignSpace/DesignSettings";
+import Loading from "../../components/Loading";
 
 const NotifTab = ({ isNotifOpen, onClose }) => {
   // State to handle dark mode
   const { user, userDoc, users, notifications, userNotifications, isDarkMode } = useSharedProps();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(0);
   const [filters, setFilters] = useState(() => ["all"]); // all selected
   // Available filters: all, mention, comment, reply, project-update, design-update
   const [loading, setLoading] = useState(true);
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
+  const [displayLimit, setDisplayLimit] = useState(10);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const notifContainerRef = useRef(null);
+
+  // Get notifications
+  useEffect(() => {
+    const loadNotifications = async () => {
+      const allDataLoaded = userNotifications.every(
+        (notif) => notif.type && notif.title && notif.content && notif.createdAt
+      );
+      setLoading(!allDataLoaded);
+    };
+    if (userNotifications?.length) {
+      loadNotifications();
+    }
+  }, [userNotifications]);
+
+  // FIletr states
+  const handleFilter = (event, newFilters) => {
+    setFilters(newFilters);
   };
 
   useEffect(() => {
-    // if all Notifs are loaded in <Notif />, set loading to false
-    setLoading(false);
-  }, [userNotifications]);
+    console.log("notif - filters changed", filters);
+  }, [filters]);
 
-  const handleFilter = (event, newFilters) => {
-    setFilters(newFilters);
+  // Scroll event listener
+  useEffect(() => {
+    const container = notifContainerRef.current;
+    const handleScroll = () => {
+      if (container) {
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        // Check if user has scrolled to bottom and there are more notifications to load
+        if (
+          scrollHeight - scrollTop - clientHeight < 50 &&
+          !isLoadingMore &&
+          userNotifications.length > displayLimit
+        ) {
+          setIsLoadingMore(true);
+          // Simulate loading delay (remove this in production)
+          setTimeout(() => {
+            setDisplayLimit((prev) => prev + 10);
+            setIsLoadingMore(false);
+          }, 500);
+        }
+      }
+    };
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [displayLimit, isLoadingMore, userNotifications.length]);
+
+  const getFilteredNotifications = () => {
+    // First, sort notifications by read status and date
+    const sortedNotifications = [...userNotifications].sort((a, b) => {
+      // Sort by read status first (unread first)
+      if (a.isReadInApp !== b.isReadInApp) {
+        return a.isReadInApp ? 1 : -1;
+      }
+      // Then sort by date (latest first)
+      return b.createdAt?.toDate() - a.createdAt?.toDate();
+    });
+
+    // Apply filters
+    const filteredNotifs = filters.includes("all")
+      ? sortedNotifications
+      : sortedNotifications.filter((notif) =>
+          filters.some((filter) => {
+            switch (filter) {
+              case "mention":
+                return notif.type === "mention";
+              case "comment":
+                return notif.type === "comment";
+              case "reply":
+                return notif.type === "reply";
+              case "design-update":
+                return notif.type === "design-update";
+              case "project-update":
+                return notif.type === "project-update";
+              default:
+                return false;
+            }
+          })
+        );
+
+    // Return only the number of notifications up to the display limit
+    return filteredNotifs.slice(0, displayLimit);
   };
 
   const handleMarkAllAsRead = async () => {
@@ -157,33 +237,74 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
           sx={filterButtonGroupStyles}
         >
           <ToggleButton sx={filterButtonStyles} value="all" aria-label="all">
-            All
+            <Typography>All</Typography>
           </ToggleButton>
           <ToggleButton sx={filterButtonStyles} value="mention" aria-label="mention">
-            Mentions
+            <Typography>Mentions</Typography>
           </ToggleButton>
           <ToggleButton sx={filterButtonStyles} value="comment" aria-label="comment">
-            Comments
+            <Typography>Comments</Typography>
           </ToggleButton>
           <ToggleButton sx={filterButtonStyles} value="reply" aria-label="reply">
-            Replies
+            <Typography> Replies</Typography>{" "}
           </ToggleButton>
           <ToggleButton sx={filterButtonStyles} value="design-update" aria-label="design-update">
-            Designs
+            <Typography> Designs</Typography>{" "}
           </ToggleButton>
-          <ToggleButton sx={filterButtonStyles} value="project-update" aria-label="project-update">
-            Projects
+          <ToggleButton
+            sx={filterButtonStyles}
+            value="pro<Typography>ject-update"
+            aria-label="project-update"
+          >
+            <Typography>Projects</Typography>
           </ToggleButton>
         </ToggleButtonGroup>
         {/* Filtered Notifications */}
         {/* help me add logic to filter notifications based on type here */}
-        <div>
-          {userNotifications
-            // .filter((notif) => notif.isReadInApp === false)
-            .map((notif) => {
-              return <Notif notif={notif} setLoading={setLoading} />;
-            })}
-        </div>
+        <Box
+          ref={notifContainerRef}
+          sx={{
+            height: "calc(100vh - 200px)",
+            overflowY: "auto",
+          }}
+        >
+          {/* Init loading indicator */}
+          {loading && <Loading />}
+          {/* Notifications List */}
+          {!loading &&
+            getFilteredNotifications().map((notif) => <Notif key={notif.id} notif={notif} />)}
+          {/* Loading indicator for more*/}
+          {isLoadingMore && userNotifications.length > displayLimit && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "20px 20px 10px 20px",
+              }}
+            >
+              <svg width={0} height={0}>
+                <defs>
+                  <linearGradient id="gradientFont" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: "#ea1179", stopOpacity: 1 }} />
+                    <stop offset="40%" style={{ stopColor: "#f36b24", stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: "#faa652", stopOpacity: 1 }} />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <CircularProgress
+                variant="indeterminate"
+                thickness={6}
+                size={20}
+                sx={{
+                  "& .MuiCircularProgress-circle": {
+                    stroke: "url(#gradientFont)",
+                    strokeLinecap: "round",
+                  },
+                }}
+              />
+            </Box>
+          )}
+        </Box>
       </div>
     </Drawer>
   );
@@ -192,27 +313,75 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
 export default NotifTab;
 
 export const filterButtonGroupStyles = {
-  // help me add styles
   flexWrap: "wrap",
   justifyContent: "start",
   display: "flex",
-  gap: "20px !important",
-  margin: "10px 10px 15px 10px",
+  gap: "10px !important",
+  padding: "10px",
+  margin: "8px 0px",
+  "& .MuiToggleButtonGroup-grouped": {
+    margin: 0,
+    border: "2px solid var(--borderInput)",
+    "&:not(:first-of-type)": {
+      borderLeft: "2px solid var(--borderInput)",
+      marginLeft: 0,
+    },
+    "&:first-of-type": {
+      borderTopLeftRadius: "10px !important",
+      borderBottomLeftRadius: "10px !important",
+    },
+    "&:last-of-type": {
+      borderTopRightRadius: "10px !important",
+      borderBottomRightRadius: "10px !important",
+    },
+  },
 };
 
 export const filterButtonStyles = {
-  // help me add styles, this is similar to the appearance of selectStyles/textFieldStyles
   color: "var(--color-white)",
   backgroundColor: "transparent",
-  border: "2px solid var(--borderInput)",
   borderRadius: "10px !important",
   textTransform: "none",
+  padding: "10px 16px",
+  minWidth: "fit-content",
   "&:hover": {
-    borderColor: "var(--iconBgHover)",
+    borderColor: "var(--borderInputBrighter)",
+    backgroundColor: "var(--iconBg)",
+  },
+  "& .MuiTypography-root": {
+    lineHeight: "1.2 !important",
+    fontSize: "0.875rem",
+  },
+  "&.MuiTouchRipple-root": {
+    borderRadius: "8px !important",
   },
   "&.Mui-selected": {
-    backgroundColor: "var(--iconBg)",
-    color: "var(--gradientButton)", // not working linear-gradient
-    border: "2px solid var(--gradientButton)", // not working linear-gradient
+    position: "relative",
+    background: "transparent",
+    border: "2px solid transparent !important",
+    backgroundImage: "var(--gradientButton)",
+    backgroundOrigin: "border-box",
+    boxShadow: "2px 1000px 1px var(--bgMain) inset",
+    "&::before": {
+      // Add gradient border using pseudo-element
+      content: '""',
+      position: "absolute",
+      top: -2,
+      left: -2,
+      right: -2,
+      bottom: -2,
+      borderRadius: "10px",
+      background: "var(--gradientButton)",
+      zIndex: -1,
+    },
+    "& .MuiTypography-root": {
+      background: "var(--gradientFont)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      fontWeight: "bold",
+    },
+    "&:hover": {
+      boxShadow: "2px 1000px 1px var(--iconBg) inset",
+    },
   },
 };

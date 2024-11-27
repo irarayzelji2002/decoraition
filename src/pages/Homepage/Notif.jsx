@@ -40,7 +40,7 @@ function Notif({ notif }) {
     setIsReadInApp(notif.isReadInApp);
     setSenderUsername(senderUsername);
     setSenderProfilePic(senderProfilePic);
-    // calculate time difference from now with notif.createdAt use formatDateDetail then setTimeDiff
+    setTimeDiff(formatDateDetail(notif.createdAt) || "");
   }, [notif, users]);
 
   const toggleOptions = () => {
@@ -63,12 +63,13 @@ function Notif({ notif }) {
   const handleChangeNotifReadStatus = async () => {
     // Call changeNotifReadStatus
     const result = await changeNotifReadStatus(notif.id, isReadInApp, user, userDoc);
+    console.log("notif - change notif status", result);
     if (!result.success) {
       showToast("error", result.message);
       return;
     }
     showToast("success", result.message);
-    toggleOptions();
+    if (isReadInApp) toggleOptions();
   };
 
   const changeNotifReadStatus = async (notifId, isReadInApp, user, userDoc) => {
@@ -104,6 +105,7 @@ function Notif({ notif }) {
   const handleDeleteNotif = async () => {
     // Call deleteNotif
     const result = await deleteNotif(notif.id, user, userDoc);
+    console.log("notif - delete notif result", result);
     if (!result.success) {
       showToast("error", result.message);
       return;
@@ -136,9 +138,12 @@ function Notif({ notif }) {
 
   return (
     <div>
-      <div className={`notif-box ${!isReadInApp && "unread"}`}>
+      <div
+        className={`notif-box ${!isReadInApp && "unread"}`}
+        onClick={() => (!isReadInApp ? handleChangeNotifReadStatus() : {})}
+      >
         <div className="hoverOverlay"></div>
-        <FaCircle className="unreadCircle" />
+        {!isReadInApp && <FaCircle className="unreadCircle" />}
         <div className="profile-section">
           <div className="profile-info">
             <Box
@@ -203,7 +208,7 @@ function Notif({ notif }) {
                 sx={{
                   ...iconButtonStyles,
                   padding: "8px",
-                  marginRight: "-50px",
+                  margin: "0px !important",
                   width: "38px",
                 }}
                 onClick={(e) => {
@@ -221,7 +226,7 @@ function Notif({ notif }) {
                   e.stopPropagation();
                   toggleOptions();
                 }}
-                sx={iconButtonStyles}
+                sx={{ ...iconButtonStyles, margin: "0px !important" }}
               >
                 <MoreHorizIcon />
               </IconButton>

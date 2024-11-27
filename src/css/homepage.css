@@ -376,8 +376,8 @@ tr:hover td {
 }
 .dropdown-menu.notif-menu {
   padding: 0;
-  margin-top: 10px !important;
-  right: -12px !important;
+  margin-top: 25px !important;
+  right: -10px !important;
   background-color: var(--iconBg);
   min-width: 214px;
 }
@@ -500,10 +500,11 @@ tr:hover td {
 }
 
 .notif-box {
-  padding: 16px 25px;
+  padding: 16px 5px 16px 25px;
   position: relative;
   display: flex;
-  justify-content: space-around;
+  position: relative;
+  width: auto;
   gap: 10px;
   cursor: pointer;
 }
@@ -535,7 +536,7 @@ tr:hover td {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--nav-card-modal);
+  background-color: transparent;
   opacity: 1;
   transition: opacity 0.3s;
 }
@@ -545,6 +546,11 @@ tr:hover td {
   opacity: 0.05;
 }
 
+.notif-box:hover .hoverOverlay {
+  background-color: var(--nav-card-modal);
+  opacity: 0.2;
+}
+
 .notif-box.unread:hover .hoverOverlay {
   background-image: var(--gradientButton);
   opacity: 0.2;
@@ -552,7 +558,31 @@ tr:hover td {
 
 .notif-box .profile-section {
   margin-bottom: 0;
-  flex-grow: 1;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.notif-box .profile-info {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+.notif-box .user-details {
+  flex: 1;
+  min-width: 0;
+  margin-right: 10px;
+}
+
+.notif-box .profile-status {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 38px;
+  height: 100%;
+  justify-content: center;
 }
 
 .faq-box {

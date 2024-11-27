@@ -18,6 +18,14 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { fetchTaskDetails } from "./backend/ProjectDetails";
 import EditPen from "../DesignSpace/svg/EditPen.jsx";
 import Trash from "../DesignSpace/svg/Trash.jsx";
+import deepEqual from "deep-equal";
+import { showToast } from "../../functions/utils";
+import {
+  isManagerProject,
+  isManagerContentManagerProject,
+  isManagerContentManagerContributorProject,
+  isCollaboratorProject,
+} from "./Project";
 
 function EditEvent() {
   const { projectId } = useParams();
@@ -25,7 +33,6 @@ function EditEvent() {
   const navigate = useNavigate();
   const navigateTo = location.state?.navigateFrom || "/";
   const navigateFrom = location.pathname;
-  const user = useSharedProps();
   const queryParams = new URLSearchParams(location.search);
   const selectedDate = queryParams.get("date");
   const taskDetails = queryParams.get("task")
@@ -37,6 +44,69 @@ function EditEvent() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(false);
+  const { userDoc, projects, userProjects } = useSharedProps();
+  const [loadingProject, setLoadingProject] = useState(true);
+  const [project, setProject] = useState({});
+  const [isManager, setIsManager] = useState(false);
+  const [isManagerContentManager, setIsManagerContentManager] = useState(false);
+  const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
+    useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
+
+  // Get project
+  useEffect(() => {
+    if (projectId && userProjects.length > 0) {
+      const fetchedProject =
+        userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
+
+      if (!fetchedProject) {
+        console.error("Project not found.");
+        setLoadingProject(false);
+      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+        setProject(fetchedProject);
+        console.log("current project:", fetchedProject);
+      }
+    }
+    setLoadingProject(false);
+  }, [projectId, projects, userProjects]);
+
+  // Initialize access rights
+  useEffect(() => {
+    if (!project?.projectSettings || !userDoc?.id) return;
+    // Check if user has any access
+    const hasAccess = isCollaboratorProject(project, userDoc.id);
+    if (!hasAccess) {
+      showToast("error", "You don't have access to this portion of the project.");
+      navigate("/timeline/" + projectId);
+      return;
+    }
+    // If they have access, proceed with setting roles
+    setIsManager(isManagerProject(project, userDoc.id));
+    setIsManagerContentManager(isManagerContentManagerProject(project, userDoc.id));
+    setIsManagerContentManagerContributor(
+      isManagerContentManagerContributorProject(project, userDoc.id)
+    );
+    setIsCollaborator(isCollaboratorProject(project, userDoc.id));
+
+    // Check if none of the manager roles are true
+    if (
+      isManagerProject(project, userDoc.id) ||
+      isManagerContentManagerProject(project, userDoc.id) ||
+      isManagerContentManagerContributorProject(project, userDoc.id)
+    ) {
+    } else {
+      showToast("error", "You don't have access to this portion of the project.");
+      navigate("/timeline/" + projectId);
+      return;
+    }
+
+    if (!isManagerContentManagerContributor) {
+      console.log("You are a manager content manager contributor");
+    } else {
+      showToast("error", "You don't have access to this portion of the project.");
+      navigate("/timeline/" + projectId);
+    }
+  }, [project, userDoc, navigate, projectId]);
 
   const initialFormData = {
     taskName: "",

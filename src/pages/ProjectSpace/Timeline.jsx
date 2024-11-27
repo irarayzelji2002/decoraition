@@ -323,13 +323,16 @@ function Timeline() {
                   }
                 />
               </div>
-              {isManagerContentManagerContributor && (
-                <div className="add-event-button">
-                  <button className="design-button" onClick={handleAddEventClick}>
-                    Add Event for {formatDate(date)}
-                  </button>
-                </div>
-              )}
+              {isManagerContentManagerContributor &&
+                (changeMode === "Managing Content" ||
+                  changeMode === "Managing" ||
+                  changeMode === "Contributing") && (
+                  <div className="add-event-button">
+                    <button className="design-button" onClick={handleAddEventClick}>
+                      Add Event for {formatDate(date)}
+                    </button>
+                  </div>
+                )}
 
               <div className="tasks-list">
                 <h2 style={{ color: "var(--color-white)" }}>All Tasks</h2>
@@ -349,16 +352,20 @@ function Timeline() {
                         </p>
                       </div>
                       <div className="task-actions">
-                        {isManagerContentManagerContributor && (
-                          <div onClick={() => handleEditClick(task.id)}>
-                            <EditPen />
-                          </div>
-                        )}
-                        {isManagerContentManager && (
-                          <div onClick={() => openDeleteModal(task.id)}>
-                            <Trash />
-                          </div>
-                        )}
+                        {isManagerContentManagerContributor &&
+                          (changeMode === "Managing Content" ||
+                            changeMode === "Managing" ||
+                            changeMode === "Contributing") && (
+                            <div onClick={() => handleEditClick(task.id)}>
+                              <EditPen />
+                            </div>
+                          )}
+                        {isManagerContentManager &&
+                          (changeMode === "Managing Content" || changeMode === "Managing") && (
+                            <div onClick={() => openDeleteModal(task.id)}>
+                              <Trash />
+                            </div>
+                          )}
                       </div>
                     </div>
                   ))
@@ -403,16 +410,20 @@ function Timeline() {
                     </p>
                   </div>
                   <div className="task-actions">
-                    {isManagerContentManagerContributor && (
-                      <div onClick={() => handleEditClick(task.id)}>
-                        <EditPen />
-                      </div>
-                    )}
-                    {isManagerContentManager && (
-                      <div onClick={() => openDeleteModal(task.id)}>
-                        <Trash />
-                      </div>
-                    )}
+                    {isManagerContentManagerContributor &&
+                      (changeMode === "Managing Content" ||
+                        changeMode === "Managing" ||
+                        changeMode === "Contributing") && (
+                        <div onClick={() => handleEditClick(task.id)}>
+                          <EditPen />
+                        </div>
+                      )}
+                    {isManagerContentManager &&
+                      (changeMode === "Managing Content" || changeMode === "Managing") && (
+                        <div onClick={() => openDeleteModal(task.id)}>
+                          <Trash />
+                        </div>
+                      )}
                   </div>
                 </div>
               ))
@@ -448,16 +459,20 @@ function Timeline() {
               </div>
 
               <div className="task-actions">
-                {isManagerContentManagerContributor && (
-                  <div onClick={() => handleEditClick(tasks[currentTaskIndex].id)}>
-                    <EditPen />
-                  </div>
-                )}
-                {isManagerContentManager && (
-                  <div onClick={() => openDeleteModal(tasks[currentTaskIndex].id)}>
-                    <Trash />
-                  </div>
-                )}
+                {isManagerContentManagerContributor &&
+                  (changeMode === "Managing Content" ||
+                    changeMode === "Managing" ||
+                    changeMode === "Contributing") && (
+                    <div onClick={() => handleEditClick(tasks[currentTaskIndex].id)}>
+                      <EditPen />
+                    </div>
+                  )}
+                {isManagerContentManager &&
+                  (changeMode === "Managing Content" || changeMode === "Managing") && (
+                    <div onClick={() => openDeleteModal(tasks[currentTaskIndex].id)}>
+                      <Trash />
+                    </div>
+                  )}
               </div>
             </div>{" "}
             <div style={{ padding: "1rem", paddingTop: "0px" }}>

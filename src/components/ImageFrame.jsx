@@ -81,13 +81,6 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
 
   return (
     <>
-      <Button onClick={togglePinsVisibility}>
-        {showPins ? (
-          <VisibilityOffIcon sx={{ color: "var(--color-white)" }} />
-        ) : (
-          <VisibilityIcon sx={{ color: "var(--color-white)" }} />
-        )}
-      </Button>
       <div className="image-frame-other" ref={frameRef} style={{ position: "relative" }}>
         {/* <div className="zoom-controls">
           <button onClick={handleZoomIn}>+</button>
@@ -125,6 +118,14 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
             );
           })}
       </div>
+      <Button onClick={togglePinsVisibility}>
+        {showPins ? (
+          <VisibilityOffIcon sx={{ color: "var(--color-white)" }} />
+        ) : (
+          <VisibilityIcon sx={{ color: "var(--color-white)" }} />
+        )}
+      </Button>
+      <h6>Pin Visibility</h6>
     </>
   );
 };

@@ -274,7 +274,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
             style={{
               fontWeight: "bold",
               fontSize: "1.1rem",
-              maxWidth: "250px",
+              maxWidth: "220px",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",

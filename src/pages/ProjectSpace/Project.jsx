@@ -644,13 +644,14 @@ function Project() {
                         setOptionsState={setOptionsState}
                         isProjectSpace={true}
                         openConfirmRemove={openConfirmRemoveModal}
+                        isManagerContentManager={isManagerContentManager}
                       />
                     </div>
                   ) : (
                     <div className="layout">
                       {displayedDesigns.map((design) => (
                         <div key={design.id} className="layoutBox">
-                          {isManagerContentManager ? (
+                          {isCollaborator && (
                             // &&
                             // ["Contributor", "Content Manager", "Manager"].includes(changeMode)
                             <DesignIcon
@@ -658,7 +659,11 @@ function Project() {
                               name={design.designName}
                               designId={design.id}
                               design={design}
-                              onDelete={() => handleDeleteDesign(user, design.id, navigate)}
+                              onDelete={() =>
+                                isManagerContentManager
+                                  ? handleDeleteDesign(user, design.id, navigate)
+                                  : {}
+                              }
                               onOpen={() =>
                                 navigate(`/design/${design.id}`, {
                                   state: { designId: design.id },
@@ -671,24 +676,7 @@ function Project() {
                               setOptionsState={setOptionsState}
                               isProjectSpace={true}
                               openConfirmRemove={openConfirmRemoveModal}
-                            />
-                          ) : (
-                            <DesignIcon
-                              id={design.id}
-                              name={design.designName}
-                              designId={design.id}
-                              design={design}
-                              onDelete={() => handleDeleteDesign(user, design.id, navigate)}
-                              onOpen={() =>
-                                navigate(`/design/${design.id}`, {
-                                  state: { designId: design.id },
-                                })
-                              }
-                              owner={design.owner}
-                              createdAt={formatDateLong(design.createdAt)}
-                              modifiedAt={formatDateLong(design.modifiedAt)}
-                              optionsState={optionsState}
-                              setOptionsState={setOptionsState}
+                              isManagerContentManager={isManagerContentManager}
                             />
                           )}
                         </div>
@@ -718,7 +706,7 @@ function Project() {
           {/* Previous Page Button */}
           <IconButton onClick={handlePreviousPage} disabled={page === 1} sx={iconButtonStyles}>
             <ArrowBackIosRounded
-              sx={{ color: page === 1 ? "var(--inputBg)" : "var(--color-white)" }}
+              sx={{ color: page === 1 ? "var(--disabledButton)" : "var(--color-white)" }}
             />
           </IconButton>
 
@@ -731,7 +719,7 @@ function Project() {
                 sx={{
                   ...gradientButtonStyles,
                   aspectRatio: "1/1",
-                  color: "var(--color-white)",
+                  color: page === index + 1 ? "var(--always-white)" : "var(--color-white)",
                   background:
                     page === index + 1
                       ? "var(--gradientButton) !important"
@@ -754,7 +742,7 @@ function Project() {
           {/* Next Page Button */}
           <IconButton onClick={handleNextPage} disabled={page === totalPages} sx={iconButtonStyles}>
             <ArrowForwardIosRounded
-              sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+              sx={{ color: page === totalPages ? "var(--disabledButton)" : "var(--color-white)" }}
             />
           </IconButton>
         </div>

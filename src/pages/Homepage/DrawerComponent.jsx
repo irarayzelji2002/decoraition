@@ -507,7 +507,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           ))
         ) : (
           <ListItemButton>
-            <ListItemText primary="No recent designs" />
+            <ListItemText primary="No recent projects" />
           </ListItemButton>
         )}
 

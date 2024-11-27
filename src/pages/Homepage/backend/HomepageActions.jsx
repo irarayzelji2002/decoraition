@@ -343,7 +343,7 @@ export const formatDateAgo = (date) => {
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
     const remainingMinutes = diffInMinutes % 60;
-    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} and ${remainingMinutes} ${
+    return `${diffInHours} ${diffInHours === 1 ? "hr" : "hrs"} and ${remainingMinutes} ${
       remainingMinutes === 1 ? "min" : "mins"
     } ago`;
   }

@@ -1,4 +1,5 @@
-const { db, auth, admin } = require("../firebase"); // Add admin import
+const { db, auth, admin } = require("../firebase");
+const { createNotification } = require("./notificationController");
 
 // Create Timeline
 exports.createTimeline = async (req, res) => {
@@ -90,6 +91,39 @@ exports.createEvent = async (req, res) => {
     await eventRef.set(eventData);
 
     console.log(`Event added to database with ID: ${eventRef.id}`);
+
+    // // Schedule notifications for reminders
+    // if (reminders && reminders.length > 0) {
+    //   const eventDoc = await eventRef.get();
+    //   const event = eventDoc.data();
+    //   // Get project users to notify
+    //   const projectDoc = await db.collection("projects").doc(event.projectId).get();
+    //   const project = projectDoc.data();
+    //   const usersToNotify = [
+    //     ...project.managers,
+    //     ...project.contentManagers,
+    //     ...project.contributors,
+    //   ];
+
+    //   // Create notification entries for each reminder
+    //   for (const reminder of reminders) {
+    //     const reminderDate = new Date(startDate);
+    //     reminderDate.setMinutes(reminderDate.getMinutes() - reminder);
+    //     for (const userId of usersToNotify) {
+    //       try {
+    //         await createNotification(
+    //           userId,
+    //           "event-reminder",
+    //           "Event Reminder",
+    //           `Reminder: "${eventName}" starts in ${reminder} minutes`,
+    //           ""
+    //         );
+    //       } catch (notifError) {
+    //         console.error("Error scheduling reminder notification:", notifError);
+    //       }
+    //     }
+    //   }
+    // }
 
     res.status(201).json({ id: eventRef.id, ...eventData });
   } catch (error) {

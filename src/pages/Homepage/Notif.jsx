@@ -182,7 +182,7 @@ function Notif({ notif }) {
               <span className="notifContent">
                 {senderUsername ? (
                   <>
-                    <strong>{senderUsername}</strong>
+                    <strong>{`From ${senderUsername}: `}</strong>
                     <span>{content}</span>
                   </>
                 ) : (

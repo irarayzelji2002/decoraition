@@ -1,6 +1,7 @@
 const { db, auth, clientAuth, clientDb, storage } = require("../firebase");
 const { ref, uploadBytes, getDownloadURL, deleteObject } = require("firebase/storage");
 const { doc, getDoc, arrayUnion } = require("firebase/firestore");
+const { createNotification } = require("./notificationController");
 const { Resend } = require("resend");
 const axios = require("axios");
 const resend = new Resend(process.env.REACT_APP_RESEND_API_KEY);
@@ -240,6 +241,34 @@ exports.updateDesignName = async (req, res) => {
 
     // Perform update
     await designRef.update({ designName: name, modifiedAt: new Date() });
+
+    // Notification
+    try {
+      const design = designDoc.data();
+      const usersToNotify = [
+        design.owner,
+        ...design.editors,
+        ...design.commenters,
+        ...design.viewers,
+      ].filter((userId) => userId !== req.body.userId);
+
+      for (const userId of usersToNotify) {
+        try {
+          await createNotification(
+            userId,
+            "design-update",
+            "Design Renamed",
+            `The design "${previousName}" has been renamed to "${name}"`,
+            req.body.userId // notifBy
+          );
+        } catch (notifError) {
+          console.error("Error sending notification:", notifError);
+        }
+      }
+    } catch (notifError) {
+      console.log("Notification error (non-critical):", notifError.message);
+    }
+
     res.status(200).json({
       success: true,
       message: "Design name updated successfully",
@@ -867,6 +896,31 @@ exports.shareDesign = async (req, res) => {
       );
     }
 
+    // Send notifications to all newly added users
+    try {
+      if (notifyPeople) {
+        for (const [roleField, userIds] of Object.entries(usersToAdd)) {
+          for (const userId of userIds) {
+            try {
+              await createNotification(
+                userId,
+                "design-update",
+                "New Design Shared",
+                `You have been given ${getRoleNameDesign(role)} access to the design "${
+                  designData.designName
+                }"`,
+                req.body.userId //notifBy
+              );
+            } catch (notifError) {
+              console.error("Error sending notification to user:", userId, notifError);
+            }
+          }
+        }
+      }
+    } catch (notifError) {
+      console.error("Notification error (non-critical):", notifError);
+    }
+
     res.status(200).json({
       success: true,
       message: "Design shared successfully",
@@ -1067,6 +1121,48 @@ exports.changeAccessDesign = async (req, res) => {
     });
     await designRef.update(updateObject);
     console.log("changeAccessDesign - updatedDocuments - ", updatedDocuments);
+
+    // Send notifications
+    try {
+      // 1. Send notifications to users whose roles were changed (in emailsWithRole)
+      const changedRoleUsers = emailsWithRole.filter(
+        (initUser) => !emailsWithRole.some((user) => user.role === initUser.role)
+      );
+      for (const user of changedRoleUsers) {
+        try {
+          await createNotification(
+            user.userId,
+            "design-update",
+            "Design Role Updated",
+            `Your role in the design "${designData.designName}" has been changed to ${user.roleLabel}`,
+            req.body.userId
+          );
+        } catch (notifError) {
+          console.error("Error sending role change notification:", notifError);
+        }
+      }
+
+      // 2. Send notifications to users who had their access removed
+      // (in initEmailsWithRole but not in emailsWithRole)
+      const removedUsers = initEmailsWithRole.filter(
+        (initUser) => !emailsWithRole.some((user) => user.userId === initUser.userId)
+      );
+      for (const removedUser of removedUsers) {
+        try {
+          await createNotification(
+            removedUser.userId,
+            "design-update",
+            "Design Access Removed",
+            `Your access to the design "${designData.designName}" has been removed`,
+            req.body.userId
+          );
+        } catch (notifError) {
+          console.error("Error sending access removal notification:", notifError);
+        }
+      }
+    } catch (notifError) {
+      console.error("Notification error (non-critical):", notifError);
+    }
 
     res.status(200).json({
       success: true,

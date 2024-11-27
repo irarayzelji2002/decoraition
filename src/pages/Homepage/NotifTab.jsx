@@ -101,8 +101,6 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
                 return notif.type === "mention";
               case "comment":
                 return notif.type === "comment";
-              case "reply":
-                return notif.type === "reply";
               case "design-update":
                 return notif.type === "design-update";
               case "project-update":
@@ -244,9 +242,6 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
           </ToggleButton>
           <ToggleButton sx={filterButtonStyles} value="comment" aria-label="comment">
             <Typography>Comments</Typography>
-          </ToggleButton>
-          <ToggleButton sx={filterButtonStyles} value="reply" aria-label="reply">
-            <Typography> Replies</Typography>{" "}
           </ToggleButton>
           <ToggleButton sx={filterButtonStyles} value="design-update" aria-label="design-update">
             <Typography> Designs</Typography>{" "}

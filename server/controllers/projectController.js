@@ -1,6 +1,7 @@
 const { db, auth, clientAuth, clientDb } = require("../firebase");
 const { ref, uploadBytes, getDownloadURL, deleteObject } = require("firebase/storage");
 const { doc, getDoc, arrayUnion } = require("firebase/firestore");
+const { createNotification } = require("./notificationController");
 const { Resend } = require("resend");
 const axios = require("axios");
 const resend = new Resend(process.env.REACT_APP_RESEND_API_KEY);
@@ -521,6 +522,34 @@ exports.updateProjectName = async (req, res) => {
 
     // Perform update
     await projectRef.update({ projectName: name, modifiedAt: new Date() });
+
+    // Notification
+    try {
+      const project = projectDoc.data();
+      const usersToNotify = [
+        ...project.managers,
+        ...project.contentManagers,
+        ...project.contributors,
+        ...project.viewers,
+      ].filter((userId) => userId !== req.body.userId);
+
+      for (const userId of usersToNotify) {
+        try {
+          await createNotification(
+            userId,
+            "project-update",
+            "Project Renamed",
+            `The project "${previousName}" has been renamed to "${name}"`,
+            req.body.userId // notifBy
+          );
+        } catch (notifError) {
+          console.error("Error sending notification:", notifError);
+        }
+      }
+    } catch (notifError) {
+      console.log("Notification error (non-critical):", notifError.message);
+    }
+
     res.status(200).json({
       success: true,
       message: "Project name updated successfully",
@@ -838,6 +867,32 @@ exports.shareProject = async (req, res) => {
       );
     }
 
+    // Notification
+    // Send notifications to all newly added users
+    try {
+      if (notifyPeople) {
+        for (const [roleField, userIds] of Object.entries(usersToAdd)) {
+          for (const userId of userIds) {
+            try {
+              await createNotification(
+                userId,
+                "project-update",
+                "New Project Shared",
+                `You have been given ${getRoleNameProject(role)} access to the project "${
+                  projectData.projectName
+                }"`,
+                req.body.userId //notifBy
+              );
+            } catch (notifError) {
+              console.error("Error sending notification to user:", userId, notifError);
+            }
+          }
+        }
+      }
+    } catch (notifError) {
+      console.error("Notification error (non-critical):", notifError);
+    }
+
     res.status(200).json({
       success: true,
       message: "Project shared successfully",
@@ -1048,6 +1103,48 @@ exports.changeAccessProject = async (req, res) => {
     });
     await projectRef.update(updateObject);
     console.log("changeAccessProject - updatedDocuments - ", updatedDocuments);
+
+    // Send notifications
+    try {
+      // 1. Send notifications to users whose roles were changed (in emailsWithRole)
+      const changedRoleUsers = emailsWithRole.filter(
+        (initUser) => !emailsWithRole.some((user) => user.role === initUser.role)
+      );
+      for (const user of changedRoleUsers) {
+        try {
+          await createNotification(
+            user.userId,
+            "project-update",
+            "Project Role Updated",
+            `Your role in the project "${projectData.projectName}" has been changed to ${user.roleLabel}`,
+            req.body.userId
+          );
+        } catch (notifError) {
+          console.error("Error sending role change notification:", notifError);
+        }
+      }
+
+      // 2. Send notifications to users who had their access removed
+      // (in initEmailsWithRole but not in emailsWithRole)
+      const removedUsers = initEmailsWithRole.filter(
+        (initUser) => !emailsWithRole.some((user) => user.userId === initUser.userId)
+      );
+      for (const removedUser of removedUsers) {
+        try {
+          await createNotification(
+            removedUser.userId,
+            "project-update",
+            "Project Access Removed",
+            `Your access to the project "${projectData.projectName}" has been removed`,
+            req.body.userId
+          );
+        } catch (notifError) {
+          console.error("Error sending access removal notification:", notifError);
+        }
+      }
+    } catch (notifError) {
+      console.error("Notification error (non-critical):", notifError);
+    }
 
     res.status(200).json({
       success: true,

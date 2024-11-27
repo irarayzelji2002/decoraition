@@ -543,7 +543,7 @@ tr:hover td {
 
 .notif-box.unread .hoverOverlay {
   background-image: var(--gradientButton);
-  opacity: 0.05;
+  opacity: 0.1;
 }
 
 .notif-box:hover .hoverOverlay {

@@ -246,11 +246,7 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
           <ToggleButton sx={filterButtonStyles} value="design-update" aria-label="design-update">
             <Typography> Designs</Typography>{" "}
           </ToggleButton>
-          <ToggleButton
-            sx={filterButtonStyles}
-            value="pro<Typography>ject-update"
-            aria-label="project-update"
-          >
+          <ToggleButton sx={filterButtonStyles} value="project-update" aria-label="project-update">
             <Typography>Projects</Typography>
           </ToggleButton>
         </ToggleButtonGroup>

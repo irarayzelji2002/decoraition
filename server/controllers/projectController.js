@@ -525,6 +525,7 @@ exports.updateProjectName = async (req, res) => {
 
     // Notification
     try {
+      // Get user settings for all users who need to be notified
       const project = projectDoc.data();
       const usersToNotify = [
         ...project.managers,
@@ -532,19 +533,25 @@ exports.updateProjectName = async (req, res) => {
         ...project.contributors,
         ...project.viewers,
       ].filter((userId) => userId !== req.body.userId);
-
-      for (const userId of usersToNotify) {
-        try {
-          await createNotification(
-            userId,
-            "project-update",
-            "Project Renamed",
-            `The project "${previousName}" has been renamed to "${name}"`,
-            req.body.userId // notifBy
-          );
-        } catch (notifError) {
-          console.error("Error sending notification:", notifError);
-        }
+      const userSettingsPromises = usersToNotify.map((userId) =>
+        db.collection("users").doc(userId).get()
+      );
+      const userDocs = await Promise.all(userSettingsPromises);
+      for (const userDoc of userDocs) {
+        if (!userDoc.exists) continue;
+        const userId = userDoc.id;
+        const settings = userDoc.data().notifSettings;
+        // Skip if it's the current user or if notifications are disabled
+        if (userId === req.body.userId || !settings?.allowNotif || !settings?.renamedDesign)
+          continue;
+        // Send notification
+        await createNotification(
+          userId,
+          "project-update",
+          "Project Renamed",
+          `The project "${previousName}" has been renamed to "${name}"`,
+          req.body.userId
+        );
       }
     } catch (notifError) {
       console.log("Notification error (non-critical):", notifError.message);
@@ -1106,41 +1113,65 @@ exports.changeAccessProject = async (req, res) => {
 
     // Send notifications
     try {
-      // 1. Send notifications to users whose roles were changed (in emailsWithRole)
-      const changedRoleUsers = emailsWithRole.filter(
-        (initUser) => !emailsWithRole.some((user) => user.role === initUser.role)
+      // 1. Get user settings for all users who need to be notified
+      const userSettingsPromises = emailsWithRole.map((user) =>
+        db.collection("users").doc(user.userId).get()
       );
-      for (const user of changedRoleUsers) {
-        try {
-          await createNotification(
-            user.userId,
-            "project-update",
-            "Project Role Updated",
-            `Your role in the project "${projectData.projectName}" has been changed to ${user.roleLabel}`,
-            req.body.userId
-          );
-        } catch (notifError) {
-          console.error("Error sending role change notification:", notifError);
-        }
-      }
+      const userDocs = await Promise.all(userSettingsPromises);
+      const userSettings = userDocs.reduce((acc, doc) => {
+        if (doc.exists) acc[doc.id] = doc.data().notifSettings;
+        return acc;
+      }, {});
 
-      // 2. Send notifications to users who had their access removed
-      // (in initEmailsWithRole but not in emailsWithRole)
+      // 2. Find users whose roles actually changed
+      const usersWithChangedRoles = emailsWithRole.filter((user) => {
+        const initUser = initEmailsWithRole.find((init) => init.userId === user.userId);
+        return !initUser || initUser.role !== user.role;
+      });
+
+      // 3. Find users who had their access removed
       const removedUsers = initEmailsWithRole.filter(
         (initUser) => !emailsWithRole.some((user) => user.userId === initUser.userId)
       );
-      for (const removedUser of removedUsers) {
-        try {
-          await createNotification(
-            removedUser.userId,
-            "project-update",
-            "Project Access Removed",
-            `Your access to the project "${projectData.projectName}" has been removed`,
-            req.body.userId
-          );
-        } catch (notifError) {
-          console.error("Error sending access removal notification:", notifError);
+
+      // 4. Send notifications to users with changed roles
+      for (const user of usersWithChangedRoles) {
+        // Skip if it's the current user or if notifications are disabled
+        if (
+          user.userId === req.body.userId ||
+          !userSettings[user.userId]?.allowNotif ||
+          !userSettings[user.userId]?.changeRoleInProject
+        ) {
+          continue;
         }
+
+        await createNotification(
+          user.userId,
+          "project-update",
+          "Project Role Updated",
+          `Your role in the project "${projectData.projectName}" has been changed to ${user.roleLabel}`,
+          req.body.userId
+        );
+      }
+
+      // 5. Send notifications to users who had access removed
+      for (const user of removedUsers) {
+        // Skip if it's the current user or if notifications are disabled
+        if (
+          user.userId === req.body.userId ||
+          !userSettings[user.userId]?.allowNotif ||
+          !userSettings[user.userId]?.changeRoleInProject
+        ) {
+          continue;
+        }
+
+        await createNotification(
+          user.userId,
+          "project-update",
+          "Project Access Removed",
+          `Your access to the project "${projectData.projectName}" has been removed`,
+          req.body.userId
+        );
       }
     } catch (notifError) {
       console.error("Notification error (non-critical):", notifError);

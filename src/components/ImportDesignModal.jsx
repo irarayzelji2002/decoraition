@@ -45,7 +45,8 @@ import { DescriptionTooltip } from "./CustomTooltip";
 import TooltipWithClickAway from "./TooltipWithClickAway";
 
 const ImportDesignModal = ({ open, onClose, project }) => {
-  const { user, userDoc, users, userDesigns, userDesignVersions } = useSharedProps();
+  const { user, userDoc, users, designs, userDesigns, designVersions, userDesignVersions } =
+    useSharedProps();
   const [inputValue, setInputValue] = useState("");
   const [originalDesignOptions, setOriginalDesignOptions] = useState([]);
   const [designOptions, setDesignOptions] = useState([]);
@@ -305,7 +306,9 @@ const ImportDesignModal = ({ open, onClose, project }) => {
                   >
                     <DesignInfoTooltip
                       design={design}
+                      designs={designs}
                       userDesigns={userDesigns}
+                      designVersions={designVersions}
                       userDesignVersions={userDesignVersions}
                       users={users}
                     />
@@ -340,8 +343,10 @@ const ImportDesignModal = ({ open, onClose, project }) => {
                   </Typography>
                   <DesignInfoBox
                     design={selectedDesign}
+                    designs={designs}
                     userDesigns={userDesigns}
                     userDesignVersions={userDesignVersions}
+                    designVersions={designVersions}
                     users={users}
                   />
                 </div>
@@ -403,7 +408,14 @@ const formControlStyles = {
   },
 };
 
-export const DesignInfoTooltip = ({ design, userDesigns, userDesignVersions, users }) => (
+export const DesignInfoTooltip = ({
+  design,
+  designs,
+  userDesigns,
+  designVersions,
+  userDesignVersions,
+  users,
+}) => (
   <Box
     sx={{
       display: "flex",
@@ -416,8 +428,14 @@ export const DesignInfoTooltip = ({ design, userDesigns, userDesignVersions, use
       <div className="select-image-preview" style={{ margin: "0" }}>
         <img
           src={
-            getDesignImage(design.id, userDesigns, userDesignVersions, 0) ||
-            "/img/transparent-image.png"
+            getDesignImage(
+              design.id,
+              designs,
+              userDesigns,
+              designVersions,
+              userDesignVersions,
+              0
+            ) || "/img/transparent-image.png"
           }
           alt=""
         />
@@ -471,7 +489,9 @@ export const DesignInfoTooltip = ({ design, userDesigns, userDesignVersions, use
 
 export const DesignInfoBox = ({
   design,
+  designs,
   userDesigns,
+  designVersions,
   userDesignVersions,
   users,
   className = "",
@@ -489,8 +509,14 @@ export const DesignInfoBox = ({
       <div className="select-image-preview" style={{ margin: "0", width: "63px", height: "63px" }}>
         <img
           src={
-            getDesignImage(design.id, userDesigns, userDesignVersions, 0) ||
-            "/img/transparent-image.png"
+            getDesignImage(
+              design.id,
+              designs,
+              userDesigns,
+              designVersions,
+              userDesignVersions,
+              0
+            ) || "/img/transparent-image.png"
           }
           alt=""
         />

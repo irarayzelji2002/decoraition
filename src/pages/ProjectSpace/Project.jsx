@@ -130,20 +130,41 @@ function Project() {
 
   // Get project
   useEffect(() => {
-    if (projectId && userProjects.length > 0) {
+    if (projectId && (userProjects.length > 0 || projects.length > 0)) {
       const fetchedProject =
         userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
 
       if (!fetchedProject) {
         console.error("Project not found.");
         setLoadingProject(false);
-      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
-        setProject(fetchedProject);
-        console.log("current project:", fetchedProject);
+      } else {
+        // Check if user has access
+        const hasAccess = isCollaboratorProject(fetchedProject, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to project.");
+          setLoadingProject(false);
+          showToast("error", "You don't have access to this project");
+          navigate("/");
+          return;
+        }
+
+        if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+          setProject(fetchedProject);
+          console.log("current project:", fetchedProject);
+        }
       }
     }
     setLoadingProject(false);
-  }, [projectId, projects, userProjects]);
+  }, [projectId, projects, userProjects, isCollaborator]);
+
+  // Timeout for loading project
+  useEffect(() => {
+    const loadingTimeout = setTimeout(() => {
+      setLoadingProject(false);
+    }, 10000); // 10 seconds timeout
+
+    return () => clearTimeout(loadingTimeout);
+  }, []);
 
   // Load design data
   useEffect(() => {
@@ -443,15 +464,15 @@ function Project() {
   };
 
   if (loadingProject || !project) {
-    return <LoadingPage message="Loading project details." />;
+    return <LoadingPage message="Loading project details1." />;
   }
 
   if (!project.designs) {
-    return <LoadingPage message="Loading project details." />;
+    return <LoadingPage message="Loading project details2." />;
   }
 
   if (loadingDesigns) {
-    return <LoadingPage message="Loading project designs." />;
+    return <LoadingPage message="Loading project designs3." />;
   }
 
   const openImportModal = () => {
@@ -620,6 +641,7 @@ function Project() {
                         setOptionsState={setOptionsState}
                         isProjectSpace={true}
                         openConfirmRemove={openConfirmRemoveModal}
+                        isManagerContentManager={isManagerContentManager}
                       />
                     </div>
                   ) : (
@@ -633,7 +655,11 @@ function Project() {
                               name={design.designName}
                               designId={design.id}
                               design={design}
-                              onDelete={() => handleDeleteDesign(user, design.id, navigate)}
+                              onDelete={() =>
+                                isManagerContentManager
+                                  ? handleDeleteDesign(user, design.id, navigate)
+                                  : {}
+                              }
                               onOpen={() =>
                                 navigate(`/design/${design.id}`, {
                                   state: { designId: design.id },
@@ -646,24 +672,7 @@ function Project() {
                               setOptionsState={setOptionsState}
                               isProjectSpace={true}
                               openConfirmRemove={openConfirmRemoveModal}
-                            />
-                          ) : (
-                            <DesignIcon
-                              id={design.id}
-                              name={design.designName}
-                              designId={design.id}
-                              design={design}
-                              onDelete={() => handleDeleteDesign(user, design.id, navigate)}
-                              onOpen={() =>
-                                navigate(`/design/${design.id}`, {
-                                  state: { designId: design.id },
-                                })
-                              }
-                              owner={design.owner}
-                              createdAt={formatDateLong(design.createdAt)}
-                              modifiedAt={formatDateLong(design.modifiedAt)}
-                              optionsState={optionsState}
-                              setOptionsState={setOptionsState}
+                              isManagerContentManager={isManagerContentManager}
                             />
                           )}
                         </div>
@@ -693,7 +702,7 @@ function Project() {
           {/* Previous Page Button */}
           <IconButton onClick={handlePreviousPage} disabled={page === 1} sx={iconButtonStyles}>
             <ArrowBackIosRounded
-              sx={{ color: page === 1 ? "var(--inputBg)" : "var(--color-white)" }}
+              sx={{ color: page === 1 ? "var(--disabledButton)" : "var(--color-white)" }}
             />
           </IconButton>
 
@@ -706,7 +715,7 @@ function Project() {
                 sx={{
                   ...gradientButtonStyles,
                   aspectRatio: "1/1",
-                  color: "var(--color-white)",
+                  color: page === index + 1 ? "var(--always-white)" : "var(--color-white)",
                   background:
                     page === index + 1
                       ? "var(--gradientButton) !important"
@@ -729,7 +738,7 @@ function Project() {
           {/* Next Page Button */}
           <IconButton onClick={handleNextPage} disabled={page === totalPages} sx={iconButtonStyles}>
             <ArrowForwardIosRounded
-              sx={{ color: page === totalPages ? "var(--inputBg)" : "var(--color-white)" }}
+              sx={{ color: page === totalPages ? "var(--disabledButton)" : "var(--color-white)" }}
             />
           </IconButton>
         </div>

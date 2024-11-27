@@ -420,6 +420,12 @@ tr:hover td {
   right: -20px !important;
 }
 
+.shareMenuHome.fromThumbnail {
+  top: 32px !important;
+  right: -7px !important;
+  margin-top: 10px;
+}
+
 .dateModified {
   font-size: var(--font-size-tiny);
   color: var(--color-white);

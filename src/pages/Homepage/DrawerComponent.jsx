@@ -223,11 +223,12 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
 
       <div className="drawerUser">
         <IconButton
-          onClick={() =>
+          onClick={() => {
+            onClose();
             navigate("/settings", {
               state: { navigateFrom: navigateFrom },
-            })
-          }
+            });
+          }}
           sx={{ p: 0 }}
         >
           <Box
@@ -298,20 +299,38 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
         </div>
       </div>
       <List>
-        <ListItemButton onClick={() => navigate("/homepage")} sx={listItemStyles}>
+        <ListItemButton
+          onClick={() => {
+            onClose();
+            navigate("/homepage");
+          }}
+          sx={listItemStyles}
+        >
           <ListItemIcon sx={listItemIconStyles}>
             <Home />
           </ListItemIcon>
           <ListItemText primary="Home" />
         </ListItemButton>
 
-        <ListItemButton onClick={() => navigate("/seeAllDesigns")} sx={listItemStyles}>
+        <ListItemButton
+          onClick={() => {
+            onClose();
+            navigate("/seeAllDesigns");
+          }}
+          sx={listItemStyles}
+        >
           <ListItemIcon sx={listItemIconStyles}>
             <DesignIcn />
           </ListItemIcon>
           <ListItemText primary="Designs" />
         </ListItemButton>
-        <ListItemButton onClick={() => navigate("/seeAllProjects")} sx={listItemStyles}>
+        <ListItemButton
+          onClick={() => {
+            onClose();
+            navigate("/seeAllProjects");
+          }}
+          sx={listItemStyles}
+        >
           <ListItemIcon sx={listItemIconStyles}>
             <ProjectIcn />
           </ListItemIcon>
@@ -344,6 +363,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
                 ) {
                   return; // Don't navigate if clicked within options
                 }
+                onClose();
                 navigate(`/design/${design.id}`, {
                   state: { designId: design.id },
                 });
@@ -385,11 +405,12 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
                     isTable={true}
                     isDrawer={true}
                     id={design.id}
-                    onOpen={() =>
+                    onOpen={() => {
+                      onClose();
                       navigate(`/design/${design.id}`, {
                         state: { designId: design.id },
-                      })
-                    }
+                      });
+                    }}
                     optionsState={optionsState}
                     setOptionsState={setOptionsState}
                     object={design}
@@ -422,11 +443,20 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           userProjectsLatest.slice(0, 3).map((project, index) => (
             <ListItemButton
               key={project.id}
-              onClick={() =>
+              onClick={(e) => {
+                if (
+                  e.target.closest(".options-table") ||
+                  e.target.closest("[data-options]") ||
+                  e.target.closest(".dropdown-item") ||
+                  e.target.closest(".MuiMenu-paper")
+                ) {
+                  return; // Don't navigate if clicked within options
+                }
+                onClose();
                 navigate(`/project/${project.id}`, {
                   state: { projectId: project.id },
-                })
-              }
+                });
+              }}
               sx={listItemStyles}
             >
               <div style={{ display: "flex", flexGrow: "1", alignItems: "center" }}>
@@ -461,11 +491,12 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
                     isTable={true}
                     isDrawer={true}
                     id={project.id}
-                    onOpen={() =>
+                    onOpen={() => {
+                      onClose();
                       navigate(`/project/${project.id}`, {
                         state: { projectId: project.id },
-                      })
-                    }
+                      });
+                    }}
                     optionsState={optionsState}
                     setOptionsState={setOptionsState}
                     object={project}
@@ -476,7 +507,7 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           ))
         ) : (
           <ListItemButton>
-            <ListItemText primary="No recent designs" />
+            <ListItemText primary="No recent projects" />
           </ListItemButton>
         )}
 
@@ -485,11 +516,12 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
         {/* Settings Menu Item */}
         {/* path to change? */}
         <ListItemButton
-          onClick={() =>
+          onClick={() => {
+            onClose();
             navigate("/faq", {
               state: { navigateFrom: navigateFrom },
-            })
-          }
+            });
+          }}
           sx={listItemStyles}
         >
           <ListItemIcon sx={listItemIconStyles}>
@@ -498,11 +530,12 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           <ListItemText primary="FAQ" />
         </ListItemButton>
         <ListItemButton
-          onClick={() =>
+          onClick={() => {
+            onClose();
             navigate("/settings", {
               state: { navigateFrom: navigateFrom },
-            })
-          }
+            });
+          }}
           sx={listItemStyles}
         >
           <ListItemIcon sx={listItemIconStyles}>
@@ -510,7 +543,13 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
           </ListItemIcon>
           <ListItemText primary="Settings" />
         </ListItemButton>
-        <ListItemButton onClick={() => handleLogout(navigate)} sx={listItemStyles}>
+        <ListItemButton
+          onClick={() => {
+            onClose();
+            handleLogout(navigate);
+          }}
+          sx={listItemStyles}
+        >
           <ListItemIcon sx={listItemIconStyles}>
             <LogoutIcn />
           </ListItemIcon>

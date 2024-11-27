@@ -33,6 +33,7 @@ import { set } from "lodash";
 import { switchStyles } from "../DesignSpace/DesignSettings";
 import LoadingPage from "../../components/LoadingPage";
 import { selectStyles, selectStylesDisabled, menuItemStyles } from "../DesignSpace/DesignSettings";
+import { isCollaboratorProject } from "./Project";
 
 export const theme = createTheme({
   components: {
@@ -117,7 +118,7 @@ const ProjectSettings = () => {
 
   // Effect to set the project once userProjects are loaded
   useEffect(() => {
-    if (projectId && userProjects.length > 0) {
+    if (projectId && (userProjects.length > 0 || projects.length > 0)) {
       const fetchedProject =
         userProjects.find((project) => project.id === projectId) ||
         projects.find((project) => project.id === projectId);
@@ -125,6 +126,16 @@ const ProjectSettings = () => {
       if (!fetchedProject) {
         console.error("Project not found.");
       } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+        // Check if user has access
+        const hasAccess = isCollaboratorProject(fetchedProject, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to project.");
+          setLoading(false);
+          showToast("error", "You don't have access to this project");
+          navigate("/");
+          return;
+        }
+
         setProject(fetchedProject);
         setProjectName(fetchedProject?.projectName ?? "Untitled Project");
         setGeneralAccessSettingProject(fetchedProject?.projectSettings?.generalAccessSetting ?? 0);
@@ -138,6 +149,7 @@ const ProjectSettings = () => {
           `fetchedProject.projectSettings (${projectId})`,
           fetchedProject?.projectSettings
         );
+        setLoading(false);
       }
     }
   }, [projectId, projects, userProjects]);

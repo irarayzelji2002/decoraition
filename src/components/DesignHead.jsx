@@ -510,6 +510,43 @@ function DesignHead({
     });
   };
 
+  // Notification highlight
+  useEffect(() => {
+    const handleNotificationActions = async () => {
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      if (pendingActions) {
+        const { actions, references, timestamp, completed } = JSON.parse(pendingActions);
+
+        for (const [index, action] of actions.entries()) {
+          const previousActionsCompleted =
+            completed.filter((c) => c.index < index).length === index;
+
+          if (action === "Highlight design name" && previousActionsCompleted) {
+            highlightName(true); //isDesign
+
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+          }
+
+          if (action === "Open view collaborators modal" && previousActionsCompleted) {
+            setIsViewCollabModalOpen(true);
+
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+          }
+        }
+      }
+    };
+
+    handleNotificationActions();
+  }, []);
+
   return (
     <div className={`designHead stickyMenu`}>
       <DrawerComponent isDrawerOpen={isDrawerOpen} onClose={() => setDrawerOpen(false)} />
@@ -872,3 +909,14 @@ function DesignHead({
 }
 
 export default DesignHead;
+
+export const highlightName = (isDesign) => {
+  const nameElement = document.querySelector(isDesign ? ".design-name" : ".project-name");
+  if (nameElement) {
+    nameElement.scrollIntoView({ behavior: "smooth" });
+    nameElement.classList.add("highlight-animation");
+    setTimeout(() => {
+      nameElement.classList.remove("highlight-animation");
+    }, 3000);
+  }
+};

@@ -705,6 +705,48 @@ const CommentContainer = ({
     showToast("success", result.message);
   };
 
+  // Notification highlight
+  // To FIX: need to expand all parent above the comment
+  const highlightComment = (commentId) => {
+    const commentElement = document.getElementById(`comment"-${commentId}`);
+    if (commentElement) {
+      commentElement.scrollIntoView({ behavior: "smooth" });
+      commentElement.classList.add("highlight-animation");
+      setTimeout(() => {
+        commentElement.classList.remove("highlight-animation");
+      }, 3000);
+    }
+  };
+
+  useEffect(() => {
+    const handleNotificationActions = async () => {
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      if (pendingActions) {
+        const { actions, references, timestamp, completed } = JSON.parse(pendingActions);
+
+        for (const [index, action] of actions.entries()) {
+          const previousActionsCompleted =
+            completed.filter((c) => c.index < index).length === index;
+
+          if (action === "Highlight comment" && previousActionsCompleted) {
+            const commentId = references?.replyId || references?.commentId;
+            if (commentId) {
+              highlightComment(commentId);
+            }
+
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+          }
+        }
+      }
+    };
+
+    handleNotificationActions();
+  }, []);
+
   return (
     <>
       <div

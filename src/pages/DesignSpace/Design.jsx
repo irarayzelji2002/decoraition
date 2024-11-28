@@ -554,6 +554,34 @@ function Design() {
     document.body.removeChild(link);
   };
 
+  // Notifcation highlight
+  useEffect(() => {
+    const handleNotificationActions = async () => {
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      if (pendingActions) {
+        const { actions, references, timestamp, completed } = JSON.parse(pendingActions);
+
+        for (const [index, action] of actions.entries()) {
+          // Only proceed if all previous actions are completed
+          const previousActionsCompleted =
+            completed.filter((c) => c.index < index).length === index;
+
+          if (action === "Show comment tab" && previousActionsCompleted) {
+            setShowComments(true);
+            // Mark action as completed
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+          }
+        }
+      }
+    };
+
+    handleNotificationActions();
+  }, []);
+
   if (loading) {
     return <LoadingPage message="Please wait, we're loading your design." />;
   }

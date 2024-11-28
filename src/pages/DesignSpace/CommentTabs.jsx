@@ -434,85 +434,38 @@ function CommentTabs({
     userOwnedReplies,
   ]);
 
+  // Notification highlight
   useEffect(() => {
-    const pendingActions = localStorage.getItem("pendingNotificationActions");
-    if (pendingActions) {
-      const { actions, references } = JSON.parse(pendingActions);
+    const handleNotificationActions = async () => {
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      if (pendingActions) {
+        const { actions, references, timestamp, completed, type, title } =
+          JSON.parse(pendingActions);
 
-      // Handle different actions
-      actions.forEach((action, index) => {
-        switch (action) {
-          case "Show comment tab": // this needs to be in Design.jsx/DesignHead.jsx
-            setShowComments(true);
-            setCommentForTab(true); // false if mentions-related notif, true if comment/reply-related notif
-            setCommentTypeTab(true); // false if resolved, true if open
-            break;
-          case "Highlight comment": // needs to be in CommentTab.jsx/CommentContainer.jsx
-            let commentId;
-            if (references?.commentId && references?.replyId) {
-              commentId = references.replyId;
-            } else if (references?.commentId) {
-              commentId = references.commentId;
-            }
-            highlightComment(commentId);
-            break;
-          case "Highlight design name": // needs to be in DesignHead.jsx
-            highlightName(true);
-            break;
-          case "Highlight project name": // needs to be in ProjectHead.jsx
-            highlightName(false);
-            break;
+        for (const [index, action] of actions.entries()) {
+          const previousActionsCompleted =
+            completed.filter((c) => c.index < index).length === index;
 
-          case "Open view collaborators modal": // needs to be in DesignHead.jsx or ProjectHead.jsx depending if references?.designId or ?.projectId
-            //setIsViewCollabModalOpen(true);
-            break;
-          case "Highlight user id": // needs to be in ManageAccessModal.jsx where it is view colaborators modal
-            const userId = references?.userId;
-            highlightUserInModal(userId);
-            break;
-          default:
-            break;
+          if (action === "Set comment type and for" && previousActionsCompleted) {
+            // false if mentions-related notif, true if comment/reply-related notif
+            const commentForTab = type === "mention" ? false : true;
+            // false if resolved, true if open
+            const commentTypeTab = title?.toLowercase().includes("resolved") ? false : true;
+            setCommentForTab(commentForTab);
+            setCommentTypeTab(commentTypeTab);
+
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+          }
         }
-      });
+      }
+    };
 
-      // Clear pending actions
-      localStorage.removeItem("pendingNotificationActions");
-    }
+    handleNotificationActions();
   }, []);
-
-  // Helper functions for highlighting
-  const highlightComment = (commentId) => {
-    const commentElement = document.getElementById(`comment"-${commentId}`);
-    if (commentElement) {
-      commentElement.scrollIntoView({ behavior: "smooth" });
-      commentElement.classList.add("highlight-animation");
-      setTimeout(() => {
-        commentElement.classList.remove("highlight-animation");
-      }, 3000);
-    }
-  };
-
-  const highlightName = (isDesign) => {
-    const nameElement = document.querySelector(isDesign ? ".design-name" : ".project-name");
-    if (nameElement) {
-      nameElement.scrollIntoView({ behavior: "smooth" });
-      nameElement.classList.add("highlight-animation");
-      setTimeout(() => {
-        nameElement.classList.remove("highlight-animation");
-      }, 3000);
-    }
-  };
-
-  const highlightUserInModal = (userId) => {
-    const userElement = document.getElementById(`drawerUser"-${userId}`);
-    if (userElement) {
-      userElement.scrollIntoView({ behavior: "smooth" });
-      userElement.classList.add("highlight-animation");
-      setTimeout(() => {
-        userElement.classList.remove("highlight-animation");
-      }, 3000);
-    }
-  };
 
   return (
     <div className="comment-section" ref={commentSectionRef}>

@@ -434,6 +434,52 @@ const ManageAcessModal = ({
     console.log("manage access - emailsWithRole:", emailsWithRole);
   }, [emailsWithRole]);
 
+  // Notification highlight
+  const highlightUserInModal = (userId) => {
+    const userElement = document.getElementById(`drawerUser"-${userId}`);
+    if (userElement) {
+      userElement.scrollIntoView({ behavior: "smooth" });
+      userElement.classList.add("highlight-animation");
+      setTimeout(() => {
+        userElement.classList.remove("highlight-animation");
+      }, 3000);
+    }
+  };
+
+  useEffect(() => {
+    const handleNotificationActions = async () => {
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      if (pendingActions) {
+        const { actions, references, timestamp, completed } = JSON.parse(pendingActions);
+
+        for (const [index, action] of actions.entries()) {
+          const previousActionsCompleted =
+            completed.filter((c) => c.index < index).length === index;
+
+          if (action === "Highlight user id" && previousActionsCompleted) {
+            const userId = references?.userId;
+            if (userId) {
+              highlightUserInModal(userId);
+            }
+
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+
+            // If this is the last action, clean up
+            if (index === actions.length - 1) {
+              localStorage.removeItem("pendingNotificationActions");
+            }
+          }
+        }
+      }
+    };
+
+    handleNotificationActions();
+  }, []);
+
   return (
     <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
       <DialogTitle sx={dialogTitleStyles}>

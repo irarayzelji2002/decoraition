@@ -34,6 +34,7 @@ import { handleNameChange } from "./backend/ProjectDetails";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 import deepEqual from "deep-equal";
 import _ from "lodash";
+import { highlightName } from "../../components/DesignHead.jsx";
 
 function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
   const { user, userDoc, handleLogout } = useSharedProps();
@@ -402,6 +403,46 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
       state: { navigateFrom: navigateFrom },
     });
   };
+
+  // Notification highlight
+  useEffect(() => {
+    const handleNotificationActions = async () => {
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      if (pendingActions) {
+        const { actions, references, timestamp, completed } = JSON.parse(pendingActions);
+
+        for (const [index, action] of actions.entries()) {
+          const previousActionsCompleted =
+            completed.filter((c) => c.index < index).length === index;
+
+          if (
+            (action === "Highlight design name" || action === "Highlight project name") &&
+            previousActionsCompleted
+          ) {
+            highlightName(false);
+
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+          }
+
+          if (action === "Open view collaborators modal" && previousActionsCompleted) {
+            setIsViewCollabModalOpen(true);
+
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+          }
+        }
+      }
+    };
+
+    handleNotificationActions();
+  }, []);
 
   return (
     <div className={`designHead stickyMenu ${menuOpen ? "darkened" : ""}`}>

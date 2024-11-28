@@ -549,7 +549,7 @@ function HomepageOptions({
         )}
         {optionsState.showOptions &&
           optionsState.selectedId === id &&
-          (isShareMenuOpen && isDesign ? (
+          (isShareMenuOpen ? (
             <ShareMenu
               onClose={() => setIsShareMenuOpen(false)}
               onBackToMenu={() => setIsShareMenuOpen(false)}
@@ -575,14 +575,12 @@ function HomepageOptions({
                 <OpenInNewIcon style={{ fontSize: 20 }} className="icon" />
                 Open
               </div>
-              {isDesign && (
-                <div className="dropdown-item" onClick={() => setIsShareMenuOpen(true)}>
-                  <div className="icon">
-                    <ShareIcon style={{ fontSize: 20 }} />
-                  </div>
-                  Share
+              <div className="dropdown-item" onClick={() => setIsShareMenuOpen(true)}>
+                <div className="icon">
+                  <ShareIcon style={{ fontSize: 20 }} />
                 </div>
-              )}
+                Share
+              </div>
               <div className="dropdown-item" onClick={handleCopyLink}>
                 <div className="icon">
                   <CopyLinkIcon style={{ fontSize: 20 }} className="icon" />

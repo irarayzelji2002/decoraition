@@ -599,7 +599,7 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
           transformOrigin={{ horizontal: "right", vertical: "top" }}
           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
-          {isShareMenuOpen && false ? (
+          {isShareMenuOpen ? (
             <ShareMenu
               onClose={handleClose}
               onBackToMenu={handleBackToMenu}

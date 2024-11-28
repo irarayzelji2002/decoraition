@@ -1424,8 +1424,6 @@ s .dialog .MuiDialog-paper {
     padding: 20px;
     padding-right: 40px;
     padding-top: 0px;
-    user-select: none;
-    -webkit-user-select: none;
     position: relative;
     transition: height 0.1s ease;
   }

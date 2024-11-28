@@ -614,7 +614,7 @@ function DesignHead({
     };
 
     handleNotificationActions();
-  }, [design, notificationUpdate]);
+  }, [design, notificationUpdate, setDrawerOpen, setIsNotifOpen]);
 
   return (
     <div className={`designHead stickyMenu`}>

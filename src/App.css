@@ -251,10 +251,8 @@ select:-webkit-autofill {
   margin-top: -5px !important;
 }
 
-.helpTooltip.inMeuItem {
-  margin-left: 0px !important;
-}
-
+.helpTooltip.inMeuItem,
+.helpTooltip.showGuide,
 .helpTooltip.inBudget {
   margin-left: 0px !important;
 }

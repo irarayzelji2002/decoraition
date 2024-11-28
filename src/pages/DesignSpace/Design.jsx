@@ -158,7 +158,6 @@ function Design() {
 
   useEffect(() => {
     if (isOwner || isOwnerEditor) {
-      // Check for pending notification actions before setting defaults
       const pendingActions = localStorage.getItem("pendingNotificationActions");
       const parsedActions = pendingActions ? JSON.parse(pendingActions) : null;
       if (
@@ -166,11 +165,11 @@ function Design() {
         parsedActions?.type === "reply" ||
         parsedActions?.type === "mention"
       ) {
-        setShowPromptBar(false); // show notif default
+        setShowPromptBar(false);
         setShowComments(true);
       } else {
-        setShowPromptBar(true); // default
-        setShowComments(false);
+        setShowPromptBar(true);
+        setShowComments(true);
       }
     } else if (isOwnerEditorCommenter || isCollaborator) {
       setShowPromptBar(false);
@@ -190,8 +189,19 @@ function Design() {
   useEffect(() => {
     console.log(`commentCont - changeMode: ${changeMode}`);
     if (changeMode === "Editing") {
-      setShowPromptBar(true);
-      setShowComments(false); // initially hide comments
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      const parsedActions = pendingActions ? JSON.parse(pendingActions) : null;
+      if (
+        parsedActions?.type === "comment" ||
+        parsedActions?.type === "reply" ||
+        parsedActions?.type === "mention"
+      ) {
+        setShowPromptBar(false);
+        setShowComments(true);
+      } else {
+        setShowPromptBar(true);
+        setShowComments(true); // initially hide comments
+      }
     } else if (changeMode === "Commenting" || changeMode === "Viewing") {
       setShowPromptBar(false);
       setShowComments(true); // initially show comments
@@ -227,16 +237,25 @@ function Design() {
     }
   };
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileLayout(window.innerWidth <= 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+  const handleResize = useCallback(() => {
+    setIsMobileLayout(window.innerWidth <= 768);
+    if (window.innerWidth <= 768) {
+      // Preserve comment visibility on mobile
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      if (pendingActions) {
+        const { type } = JSON.parse(pendingActions);
+        if (type === "comment" || type === "reply" || type === "mention") {
+          setShowComments(true);
+          setShowPromptBar(false);
+        }
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
 
   useEffect(() => {
     if (designId && (userDesigns.length > 0 || designs.length > 0)) {
@@ -574,13 +593,9 @@ function Design() {
       if (!design) return;
 
       const pendingActions = localStorage.getItem("pendingNotificationActions");
-      console.log("notif (design) - pendingActions from localStorage:", pendingActions);
-
       if (pendingActions) {
         try {
           const parsedActions = JSON.parse(pendingActions);
-          console.log("notif (design) - parsed pendingActions:", parsedActions);
-
           const { actions, references, timestamp, completed, type } = parsedActions;
 
           const uniqueCompleted = completed.reduce((acc, current) => {
@@ -589,31 +604,33 @@ function Design() {
             return acc;
           }, []);
 
-          for (const [index, action] of actions.entries()) {
-            console.log("notif (design) - Processing action:", action, "at index:", index);
+          // Force show comments if it's a comment-related notification
+          if (type === "comment" || type === "reply" || type === "mention") {
+            setShowPromptBar(false);
+            setShowComments(true);
+          }
 
+          for (const [index, action] of actions.entries()) {
             const isAlreadyCompleted = uniqueCompleted.some((c) => c.index === index);
-            if (isAlreadyCompleted) {
-              console.log(`notif (design) - Action at index ${index} already completed`);
-              continue;
-            }
+            if (isAlreadyCompleted) continue;
 
             const previousActionsCompleted =
               uniqueCompleted.filter((c) => c.index < index).length === index;
-            console.log("notif (design) - previousActionsCompleted:", previousActionsCompleted);
 
             if (action === "Show comment tab" && previousActionsCompleted) {
               setShowComments(true);
+              setShowPromptBar(false); // Also hide prompt bar
               uniqueCompleted.push({ action, index, timestamp });
               localStorage.setItem(
                 "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted, type })
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                })
               );
-            }
-
-            if (index === actions.length - 1 && uniqueCompleted.length === actions.length) {
-              console.log("notif (design) - Removing pendingNotificationActions from localStorage");
-              localStorage.removeItem("pendingNotificationActions");
             }
           }
         } catch (error) {
@@ -624,6 +641,14 @@ function Design() {
 
     handleNotificationActions();
   }, [design, notificationUpdate]);
+
+  // Cleanup effect
+  useEffect(() => {
+    let isActive = true;
+    return () => {
+      isActive = false;
+    };
+  }, [showComments, showPromptBar]);
 
   if (loading) {
     return <LoadingPage message="Please wait, we're loading your design." />;

@@ -1227,8 +1227,8 @@ function SelectMaskCanvas({
             >
               Generate Mask
             </Button>
-            <h6>
-              Show me a guide
+            <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
+              <h6>Show me a guide</h6>
               <TooltipWithClickAway
                 open={showGuide}
                 setOpen={setShowGuide}
@@ -1240,13 +1240,13 @@ function SelectMaskCanvas({
                     description="Quick masking guide"
                   />
                 }
-                className="helpTooltip inPromptBar"
+                className="helpTooltip showGuide"
               >
                 <div style={{ display: "flex" }}>
                   <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
                 </div>
               </TooltipWithClickAway>
-            </h6>
+            </div>
 
             <div className="showPreviewButton">
               {/* <ToggleButton

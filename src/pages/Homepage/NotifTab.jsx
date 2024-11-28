@@ -57,7 +57,7 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
         const { scrollTop, scrollHeight, clientHeight } = container;
         // Check if user has scrolled to bottom and there are more notifications to load
         if (
-          scrollHeight - scrollTop - clientHeight < 50 &&
+          scrollHeight - scrollTop - clientHeight < 100 &&
           !isLoadingMore &&
           userNotifications.length > displayLimit
         ) {
@@ -111,6 +111,7 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
           })
         );
 
+    console.log("notif - filteredNotifs", filteredNotifs);
     // Return only the number of notifications up to the display limit
     return filteredNotifs.slice(0, displayLimit);
   };

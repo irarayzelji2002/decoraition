@@ -434,6 +434,39 @@ function CommentTabs({
     userOwnedReplies,
   ]);
 
+  // Notification highlight
+  useEffect(() => {
+    const handleNotificationActions = async () => {
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      if (pendingActions) {
+        const { actions, references, timestamp, completed, type, title } =
+          JSON.parse(pendingActions);
+
+        for (const [index, action] of actions.entries()) {
+          const previousActionsCompleted =
+            completed.filter((c) => c.index < index).length === index;
+
+          if (action === "Set comment type and for" && previousActionsCompleted) {
+            // false if mentions-related notif, true if comment/reply-related notif
+            const commentForTab = type === "mention" ? false : true;
+            // false if resolved, true if open
+            const commentTypeTab = title?.toLowercase().includes("resolved") ? false : true;
+            setCommentForTab(commentForTab);
+            setCommentTypeTab(commentTypeTab);
+
+            completed.push({ action, index, timestamp });
+            localStorage.setItem(
+              "pendingNotificationActions",
+              JSON.stringify({ actions, references, timestamp, completed })
+            );
+          }
+        }
+      }
+    };
+
+    handleNotificationActions();
+  }, []);
+
   return (
     <div className="comment-section" ref={commentSectionRef}>
       <div className={window.innerWidth > 768 ? "resizeHandle left" : ""} ref={resizeHandleRef}>

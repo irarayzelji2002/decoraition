@@ -92,7 +92,15 @@ exports.addComment = async (req, res) => {
 
     // Notification
     try {
-      await notifController.sendCommentNotifications(designDoc, userId, "comment", mentions);
+      await notifController.sendCommentNotifications(
+        designId,
+        designDoc,
+        userId,
+        mentions,
+        false, // isReply
+        commentRef.id,
+        null // replyId
+      );
     } catch (notifError) {
       console.log("Notification error (non-critical):", notifError.message);
     }
@@ -247,7 +255,10 @@ exports.changeCommentStatus = async (req, res) => {
             `A comment on your design "${designDoc.data().designName}" was ${
               status ? "resolved" : "reopened"
             }`,
-            userId // notifBy
+            req.body.userId, // notifBy
+            `/design/${designId}`,
+            ["Show comment tab", "Set comment type and for", "Highlight comment"],
+            { commentId }
           );
         } else if (
           isCollaborator &&
@@ -262,7 +273,10 @@ exports.changeCommentStatus = async (req, res) => {
             `A comment on design "${designDoc.data().designName}" was ${
               status ? "resolved" : "reopened"
             }`,
-            userId // notifBy
+            req.body.userId, // notifBy
+            `/design/${designId}`,
+            ["Show comment tab", "Set comment type and for", "Highlight comment"],
+            { commentId }
           );
         }
       }
@@ -445,7 +459,15 @@ exports.addReply = async (req, res) => {
     await commentRef.update({ replies: updatedReplies });
 
     // Send notifications
-    await notifController.sendCommentNotifications(designDoc, userId, "reply", mentions);
+    await notifController.sendCommentNotifications(
+      designId,
+      designDoc,
+      userId,
+      mentions,
+      true, // isReply
+      commentId,
+      replyId
+    );
 
     res.status(200).json({
       success: true,

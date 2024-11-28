@@ -283,6 +283,34 @@ select:-webkit-autofill {
   text-align: left !important;
 }
 
+.highlight-animation {
+  animation: highlight-notif 2s ease-in-out infinite;
+}
+
+@keyframes highlight-notif {
+  0% {
+    background-color: transparent;
+  }
+  40% {
+    background-color: rgba(248, 154, 71, 0.5);
+  }
+  45% {
+    background-color: rgba(241, 95, 62, 0.5);
+  }
+  50% {
+    background-color: rgba(241, 95, 62, 0.5);
+  }
+  55% {
+    background-color: rgba(241, 95, 62, 0.5);
+  }
+  60% {
+    background-color: rgba(248, 154, 71, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
 @media (max-width: 480px) {
   .shorten-text {
     width: 45px;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Avatar, Box, IconButton, ListItemIcon, ListItemText } from "@mui/material";
 import {
@@ -15,6 +16,7 @@ import { CustomMenuItem } from "../DesignSpace/CommentContainer.jsx";
 import { formatDateDetail } from "./backend/HomepageActions.jsx";
 
 function Notif({ notif }) {
+  const navigate = useNavigate();
   const { user, users, userDoc } = useSharedProps();
 
   // Notification data
@@ -59,6 +61,27 @@ function Notif({ notif }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleNotificationClick = async (notification) => {
+    // Mark as read
+    if (!isReadInApp) await handleChangeNotifReadStatus();
+    // Navigate to the specified path
+    navigate(notification.navigateTo);
+    // Store actions and references in localStorage to be picked up by the destination page
+    localStorage.setItem(
+      "pendingNotificationActions",
+      JSON.stringify({
+        actions: notification.actions,
+        references: notification.references,
+        timestamp: Date.now(),
+        completed: [],
+        type: notification.type,
+        title: notification.title,
+        content: notification.content,
+        isReadInApp: notification.isReadInApp,
+      })
+    );
+  };
 
   const handleChangeNotifReadStatus = async () => {
     // Call changeNotifReadStatus
@@ -140,7 +163,7 @@ function Notif({ notif }) {
     <div>
       <div
         className={`notif-box ${!isReadInApp && "unread"}`}
-        onClick={() => (!isReadInApp ? handleChangeNotifReadStatus() : {})}
+        onClick={() => handleNotificationClick(notif)}
       >
         <div className="hoverOverlay"></div>
         {!isReadInApp && <FaCircle className="unreadCircle" />}

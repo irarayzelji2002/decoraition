@@ -100,6 +100,12 @@
   white-space: nowrap !important;
 }
 
+.headTitleInput.design-name {
+  padding: 10px !important;
+  margin-left: -10px !important;
+  border-radius: 10px !important;
+}
+
 .promptBar {
   min-height: calc(100vh - 214px);
   width: 500px;

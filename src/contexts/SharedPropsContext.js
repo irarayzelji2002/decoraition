@@ -41,6 +41,7 @@ const initialState = {
   userTimelines: [],
   userEvents: [],
   isDarkMode: true,
+  notificationUpdate: 0,
 };
 
 export function SharedPropsProvider({ children }) {
@@ -80,6 +81,11 @@ export function SharedPropsProvider({ children }) {
   const setUserTimelines = (userTimelines) => setState((prev) => ({ ...prev, userTimelines }));
   const setUserEvents = (userEvents) => setState((prev) => ({ ...prev, userEvents }));
   const setIsDarkMode = (isDarkMode) => setState((prev) => ({ ...prev, isDarkMode }));
+  const setNotificationUpdate = (value) =>
+    setState((prev) => ({
+      ...prev,
+      notificationUpdate: typeof value === "function" ? value(prev.notificationUpdate) : value,
+    }));
 
   useEffect(() => {
     const auth = getAuth();
@@ -221,6 +227,7 @@ export function SharedPropsProvider({ children }) {
     setUserTimelines,
     setUserEvents,
     setIsDarkMode,
+    setNotificationUpdate,
   };
 
   // useEffect for debugging (!!! Remove before production !!!)

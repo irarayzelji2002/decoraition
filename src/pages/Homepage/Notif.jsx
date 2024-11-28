@@ -17,7 +17,7 @@ import { formatDateDetail } from "./backend/HomepageActions.jsx";
 
 function Notif({ notif }) {
   const navigate = useNavigate();
-  const { user, users, userDoc } = useSharedProps();
+  const { user, users, userDoc, notificationUpdate, setNotificationUpdate } = useSharedProps();
 
   // Notification data
   const [type, setType] = useState("");
@@ -65,22 +65,42 @@ function Notif({ notif }) {
   const handleNotificationClick = async (notification) => {
     // Mark as read
     if (!isReadInApp) await handleChangeNotifReadStatus();
-    // Navigate to the specified path
-    navigate(notification.navigateTo);
-    // Store actions and references in localStorage to be picked up by the destination page
-    localStorage.setItem(
-      "pendingNotificationActions",
-      JSON.stringify({
-        actions: notification.actions,
-        references: notification.references,
-        timestamp: Date.now(),
-        completed: [],
-        type: notification.type,
-        title: notification.title,
-        content: notification.content,
-        isReadInApp: notification.isReadInApp,
-      })
-    );
+
+    const currentPath = window.location.pathname;
+    const targetPath = notification.navigateTo;
+
+    if (currentPath === targetPath) {
+      // Store actions without navigating
+      localStorage.setItem(
+        "pendingNotificationActions",
+        JSON.stringify({
+          actions: notification.actions,
+          references: notification.references,
+          type: notification.type,
+          completed: [],
+          timestamp: Date.now(),
+        })
+      );
+      // Trigger re-render by updating state instead of reloading
+      setNotificationUpdate((prev) => prev + 1);
+    } else {
+      // Navigate to the specified path
+      navigate(notification.navigateTo);
+      // Store actions and references in localStorage
+      localStorage.setItem(
+        "pendingNotificationActions",
+        JSON.stringify({
+          actions: notification.actions,
+          references: notification.references,
+          timestamp: Date.now(),
+          completed: [],
+          type: notification.type,
+          title: notification.title,
+          content: notification.content,
+          isReadInApp: notification.isReadInApp,
+        })
+      );
+    }
   };
 
   const handleChangeNotifReadStatus = async () => {

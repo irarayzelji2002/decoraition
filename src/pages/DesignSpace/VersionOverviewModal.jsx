@@ -246,7 +246,7 @@ function VersionOverviewModal({
                   marginBottom: "10px",
                 }}
               >
-                {selectedDesignVersionDetails.imagesLink.map((img, index) => {
+                {selectedDesignVersionDetails?.imagesLink.map((img, index) => {
                   return (
                     <div style={{ border: index !== viewingImage && "1px solid transparent" }}>
                       <div
@@ -265,7 +265,7 @@ function VersionOverviewModal({
                 <div className="historyImageFrame" key={viewingImage}>
                   <img
                     src={
-                      selectedDesignVersionDetails.imagesLink[viewingImage] ||
+                      selectedDesignVersionDetails?.imagesLink[viewingImage] ||
                       "/img/transparent-image.png"
                     }
                     alt=""
@@ -327,7 +327,7 @@ function VersionOverviewModal({
                 <div className="budgetSpaceImg version pic">
                   <div>
                     <div className="versionImagesPreviewOptionsCont">
-                      {selectedDesignVersionDetails.imagesLink.map((img, index) => {
+                      {selectedDesignVersionDetails?.imagesLink.map((img, index) => {
                         return (
                           <div
                             style={{ border: index !== viewingImage && "1px solid transparent" }}
@@ -353,7 +353,7 @@ function VersionOverviewModal({
                       </div>
                       <img
                         src={
-                          selectedDesignVersionDetails.imagesLink[viewingImage] ||
+                          selectedDesignVersionDetails?.imagesLink[viewingImage] ||
                           "/img/transparent-image.png"
                         }
                         alt=""

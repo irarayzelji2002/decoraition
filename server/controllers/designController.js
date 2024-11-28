@@ -409,6 +409,7 @@ exports.restoreDesignVersion = async (req, res) => {
   try {
     const { designId, versionId } = req.params;
     const { userId } = req.body;
+    console.log("restoreDesignVersion - ", { designId, versionId, userId });
 
     // Get the design document & version to restore
     const designDoc = await db.collection("designs").doc(designId).get();
@@ -455,23 +456,38 @@ exports.restoreDesignVersion = async (req, res) => {
     });
 
     // Create new budget for restored version
-    const originalBudget = await db.collection("budgets").doc(versionDoc.data().budgetId).get();
+    let newBudgetData;
+    const versionData = versionDoc.data();
 
-    const newBudgetData = originalBudget.exists
-      ? {
+    // Check if version has a valid budgetId
+    if (versionData?.budgetId) {
+      console.log("restoreDesignVersion - getting orig budget with ID:", versionData.budgetId);
+      const originalBudget = await db.collection("budgets").doc(versionData.budgetId).get();
+
+      if (originalBudget.exists) {
+        newBudgetData = {
           designVersionId: newVersionRef.id,
           budget: originalBudget.data().budget,
           items: originalBudget.data().items,
           createdAt: new Date(),
           modifiedAt: new Date(),
-        }
-      : {
-          designVersionId: newVersionRef.id,
-          budget: { amount: 0, currency: getPHCurrency() },
-          items: [],
-          createdAt: new Date(),
-          modifiedAt: new Date(),
         };
+      }
+    }
+
+    // If no valid budget found, create default budget
+    if (!newBudgetData) {
+      console.log("restoreDesignVersion - creating default budget");
+      newBudgetData = {
+        designVersionId: newVersionRef.id,
+        budget: { amount: 0, currency: getPHCurrency() },
+        items: [],
+        createdAt: new Date(),
+        modifiedAt: new Date(),
+      };
+    }
+
+    console.log("restoreDesignVersion - creating new budget with data:", newBudgetData);
     const newBudgetRef = await db.collection("budgets").add(newBudgetData);
     createdDocuments.push({ collection: "budgets", id: newBudgetRef.id });
 

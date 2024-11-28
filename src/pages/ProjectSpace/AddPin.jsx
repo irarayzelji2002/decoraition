@@ -88,14 +88,14 @@ function AddPin({ EditMode }) {
 
     // Check if none of the manager roles are true
     if (
-      isManagerProject(project, userDoc.id) &&
-      isManagerContentManagerProject(project, userDoc.id) &&
+      isManagerProject(project, userDoc.id) ||
+      isManagerContentManagerProject(project, userDoc.id) ||
       isManagerContentManagerContributorProject(project, userDoc.id)
     ) {
     } else {
-      // showToast("error", "You don't have access to this portion of the project.");
-      // navigate("/planMap/" + projectId);
-      // return;
+      showToast("error", "You don't have access to this portion of the project.");
+      navigate("/planMap/" + projectId);
+      return;
     }
   }, [project, userDoc, navigate, projectId]);
 

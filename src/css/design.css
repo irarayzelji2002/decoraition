@@ -1440,7 +1440,7 @@ s .dialog .MuiDialog-paper {
     padding-bottom: 20px;
   }
   .comment-section .transitionMinHeight {
-    padding-top: 10px;
+    padding-top: 100px;
     padding-bottom: 20px;
   }
   .promptBarIconButton,
@@ -1449,7 +1449,7 @@ s .dialog .MuiDialog-paper {
   }
   .commentSectionIconButtonInside {
     display: block !important;
-    margin-top: 31px !important;
+    margin-top: 100px !important;
     height: 40px;
     width: 40px;
   }
@@ -2257,7 +2257,7 @@ s .dialog .MuiDialog-paper {
   position: absolute;
   transform: translate(-50%, -100%);
   cursor: pointer;
-  z-index: 10;
+  /* z-index: 10; */
 }
 
 /* Loading/Progress */
@@ -2297,4 +2297,13 @@ s .dialog .MuiDialog-paper {
   margin-top: 3px;
   height: 50px;
   max-width: 90%;
+}
+
+@media (max-width: 768px) {
+}
+
+@media (max-height: 600px) {
+  .small-buttons {
+    flex-direction: row;
+  }
 }

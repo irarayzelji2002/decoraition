@@ -232,9 +232,6 @@ function PlanMap() {
     if (initPlanImage) {
       handlePlanImageUpload(initPlanImage, projectId, setPlanImage).then(() => {
         showToast("success", "Plan map uploaded successfully");
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500); // Adjust the timeout as needed
       });
       setInitPlanImage(null);
     }
@@ -341,34 +338,41 @@ function PlanMap() {
                           <div className="small-circle-button">
                             <ChangePlan />
                           </div>
-                        </div>{" "}
-                        <div
-                          className="small-button-container"
-                          onClick={planImage ? navigateToPinLayout : handleNoPlanImage}
-                        >
-                          <span className="small-button-text">Change pins order</span>
-                          <div className="small-circle-button">
-                            <ChangeOrder />
-                          </div>
                         </div>
-                        <div
-                          className="small-button-container"
-                          onClick={planImage ? navigateToAdjustPin : handleNoPlanImage}
-                        >
-                          <span className="small-button-text">Adjust Pins</span>
-                          <div className="small-circle-button">
-                            <AdjustPin />
+                        {planImage && pins.length > 0 && (
+                          <div
+                            className="small-button-container"
+                            onClick={planImage ? navigateToPinLayout : handleNoPlanImage}
+                          >
+                            <span className="small-button-text">Change pins order</span>
+                            <div className="small-circle-button">
+                              <ChangeOrder />
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          className="small-button-container"
-                          onClick={planImage ? navigateToAddPin : handleNoPlanImage}
-                        >
-                          <span className="small-button-text">Add a Pin</span>
-                          <div className="small-circle-button">
-                            <AddPin />
+                        )}
+
+                        {planImage && pins.length > 0 && (
+                          <div
+                            className="small-button-container"
+                            onClick={planImage ? navigateToAdjustPin : handleNoPlanImage}
+                          >
+                            <span className="small-button-text">Adjust Pins</span>
+                            <div className="small-circle-button">
+                              <AdjustPin />
+                            </div>
                           </div>
-                        </div>
+                        )}
+                        {planImage && (
+                          <div
+                            className="small-button-container"
+                            onClick={planImage ? navigateToAddPin : handleNoPlanImage}
+                          >
+                            <span className="small-button-text">Add a Pin</span>
+                            <div className="small-circle-button">
+                              <AddPin />
+                            </div>
+                          </div>
+                        )}
                       </>
                     )}
                 </div>

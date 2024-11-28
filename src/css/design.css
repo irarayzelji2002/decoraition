@@ -1419,9 +1419,9 @@ s .dialog .MuiDialog-paper {
     padding: 20px;
     padding-right: 40px;
     padding-top: 0px;
-    touch-action: none;
+    /* touch-action: none;
     user-select: none;
-    -webkit-user-select: none;
+    -webkit-user-select: none; */
     position: relative;
     transition: height 0.1s ease;
   }

@@ -1421,7 +1421,7 @@ const BouncyText = ({ text }) => {
             background: "inherit",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            animation: `bounce 1.5s ease-in-out ${index * 0.1}s infinite`,
+            animation: `bounce 1.5s ease-in-out ${index * 0.1}s c`,
           }}
           className="bouncyText"
         >

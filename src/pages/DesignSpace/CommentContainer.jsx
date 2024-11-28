@@ -712,6 +712,7 @@ const CommentContainer = ({
           ${activeComment === commentId ? "active" : ""}
           ${isReply ? "reply" : ""}
           ${isReplyToReply ? "reply-to-reply" : ""}`}
+        id={`comment-${commentId}`}
         onClick={() => setActiveComment(commentId)}
       >
         <div className="profile-section">

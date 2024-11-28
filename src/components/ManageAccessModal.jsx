@@ -493,7 +493,7 @@ const ManageAcessModal = ({
                 : currentUser?.role === 3 && managerCount <= 1; // Disable for last project manager
 
               return (
-                <div className="drawerUser" key={user.userId}>
+                <div className="drawerUser" key={user.userId} id={`drawerUser-${user.userId}`}>
                   <div style={{ marginRight: "6px", marginTop: "auto", marginBottom: "auto" }}>
                     <Box
                       sx={{

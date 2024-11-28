@@ -550,7 +550,10 @@ exports.updateProjectName = async (req, res) => {
           "project-update",
           "Project Renamed",
           `The project "${previousName}" has been renamed to "${name}"`,
-          req.body.userId
+          req.body.userId,
+          `/project/${projectId}`,
+          ["Highlight project name"],
+          { projectId }
         );
       }
     } catch (notifError) {
@@ -888,7 +891,10 @@ exports.shareProject = async (req, res) => {
                 `You have been given ${getRoleNameProject(role)} access to the project "${
                   projectData.projectName
                 }"`,
-                req.body.userId //notifBy
+                req.body.userId, //notifBy
+                `/project/${projectId}`,
+                ["Open view collaborators modal", "Highlight user id"],
+                { projectId, userId }
               );
             } catch (notifError) {
               console.error("Error sending notification to user:", userId, notifError);
@@ -1150,7 +1156,10 @@ exports.changeAccessProject = async (req, res) => {
           "project-update",
           "Project Role Updated",
           `Your role in the project "${projectData.projectName}" has been changed to ${user.roleLabel}`,
-          req.body.userId
+          req.body.userId,
+          `/project/${projectId}`,
+          ["Open view collaborators modal", "Highlight user id"],
+          { projectId, userId: user.userId }
         );
       }
 
@@ -1170,7 +1179,10 @@ exports.changeAccessProject = async (req, res) => {
           "project-update",
           "Project Access Removed",
           `Your access to the project "${projectData.projectName}" has been removed`,
-          req.body.userId
+          req.body.userId,
+          `/project/${projectId}`,
+          [],
+          { projectId }
         );
       }
     } catch (notifError) {

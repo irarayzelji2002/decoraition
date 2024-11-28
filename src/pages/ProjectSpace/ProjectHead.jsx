@@ -477,7 +477,11 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
               )}
             </>
           ) : (
-            <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
+            <span
+              onClick={handleInputClick}
+              className="headTitleInput project-name"
+              style={{ height: "20px" }}
+            >
               {project?.projectName || "Untitled Project"}
             </span>
           )}

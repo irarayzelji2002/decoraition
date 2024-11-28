@@ -269,7 +269,10 @@ exports.updateDesignName = async (req, res) => {
           "design-update",
           "Design Renamed",
           `The design "${previousName}" has been renamed to "${name}"`,
-          req.body.userId
+          req.body.userId,
+          `/design/${designId}`,
+          ["Highlight design name"],
+          { designId }
         );
       }
     } catch (notifError) {
@@ -916,7 +919,10 @@ exports.shareDesign = async (req, res) => {
                 `You have been given ${getRoleNameDesign(role)} access to the design "${
                   designData.designName
                 }"`,
-                req.body.userId //notifBy
+                req.body.userId, //notifBy
+                `/design/${designId}`,
+                ["Open view collaborators modal", "Highlight user id"],
+                { designId, userId }
               );
             } catch (notifError) {
               console.error("Error sending notification to user:", userId, notifError);
@@ -1168,7 +1174,10 @@ exports.changeAccessDesign = async (req, res) => {
           "design-update",
           "Design Role Updated",
           `Your role in the design "${designData.designName}" has been changed to ${user.roleLabel}`,
-          req.body.userId
+          req.body.userId,
+          `/design/${designId}`,
+          ["Open view collaborators modal", "Highlight user id"],
+          { designId, userId: user.userId }
         );
       }
 
@@ -1188,7 +1197,10 @@ exports.changeAccessDesign = async (req, res) => {
           "design-update",
           "Design Access Removed",
           `Your access to the design "${designData.designName}" has been removed`,
-          req.body.userId
+          req.body.userId,
+          `/design/${designId}`,
+          [],
+          { designId }
         );
       }
     } catch (notifError) {

@@ -592,7 +592,11 @@ function DesignHead({
               )}
             </>
           ) : (
-            <span onClick={handleInputClick} className="headTitleInput" style={{ height: "20px" }}>
+            <span
+              onClick={handleInputClick}
+              className="headTitleInput design-name"
+              style={{ height: "20px" }}
+            >
               {design?.designName ?? "Untitled Design"}
             </span>
           )}

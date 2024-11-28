@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Avatar, Box, IconButton, ListItemIcon, ListItemText } from "@mui/material";
 import {
@@ -15,6 +16,7 @@ import { CustomMenuItem } from "../DesignSpace/CommentContainer.jsx";
 import { formatDateDetail } from "./backend/HomepageActions.jsx";
 
 function Notif({ notif }) {
+  const navigate = useNavigate();
   const { user, users, userDoc } = useSharedProps();
 
   // Notification data
@@ -59,6 +61,23 @@ function Notif({ notif }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleNotificationClick = async (notification) => {
+    // Mark as read
+    await handleChangeNotifReadStatus();
+
+    // Navigate to the specified path
+    navigate(notification.navigateTo);
+
+    // Store actions and references in localStorage to be picked up by the destination page
+    localStorage.setItem(
+      "pendingNotificationActions",
+      JSON.stringify({
+        actions: notification.actions,
+        references: notification.references,
+      })
+    );
+  };
 
   const handleChangeNotifReadStatus = async () => {
     // Call changeNotifReadStatus

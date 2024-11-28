@@ -92,7 +92,7 @@ exports.sendCommentNotifications = async (
         `You were mentioned in a comment on design "${designDoc.data().designName}"`,
         commentUserId,
         `/design/${designId}`,
-        ["Show comment tab", "Set comment type and for", "Highlight comment"],
+        ["Show comment tab", "Hide drawers", "Set comment type and for", "Highlight comment"],
         !isReply ? { commentId } : { commentId, replyId }
       );
     }
@@ -107,7 +107,7 @@ exports.sendCommentNotifications = async (
         }"`,
         commentUserId,
         `/design/${designId}`,
-        ["Show comment tab", "Set comment type and for", "Highlight comment"],
+        ["Show comment tab", "Hide drawers", "Set comment type and for", "Highlight comment"],
         !isReply ? { commentId } : { commentId, replyId }
       );
     }
@@ -125,7 +125,7 @@ exports.sendCommentNotifications = async (
         }"`,
         commentUserId,
         `/design/${designId}`,
-        ["Show comment tab", "Set comment type and for", "Highlight comment"],
+        ["Show comment tab", "Hide drawers", "Set comment type and for", "Highlight comment"],
         !isReply ? { commentId } : { commentId, replyId }
       );
     }

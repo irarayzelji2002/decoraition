@@ -444,10 +444,10 @@ const ManageAcessModal = ({
 
   // Notification highlight
   const highlightUserInModal = (userId) => {
-    console.log("manage access - attempting to highlight userId:", userId);
+    console.log("notif - attempting to highlight userId:", userId);
     // Remove the extra quote in the element ID
     const userElement = document.getElementById(`drawerUser-${userId}`);
-    console.log("manage access - found userElement:", userElement);
+    console.log("notif - found userElement:", userElement);
 
     if (userElement) {
       userElement.scrollIntoView({ behavior: "smooth" });
@@ -456,11 +456,11 @@ const ManageAcessModal = ({
         userElement.classList.remove("highlight-animation");
       }, 3000);
     } else {
-      console.log("manage access - userElement not found in DOM, retrying in 500ms");
+      console.log("notif - userElement not found in DOM, retrying in 500ms");
       // Add a retry mechanism
       setTimeout(() => {
         const retryElement = document.getElementById(`drawerUser-${userId}`);
-        console.log("manage access - retry found userElement:", retryElement);
+        console.log("notif - retry found userElement:", retryElement);
         if (retryElement) {
           retryElement.scrollIntoView({ behavior: "smooth" });
           retryElement.classList.add("highlight-animation");
@@ -475,7 +475,7 @@ const ManageAcessModal = ({
   useEffect(() => {
     const handleNotificationActions = async () => {
       console.log(
-        "handleNotificationActions called - isCollaboratorsLoaded:",
+        "notif (manage access) - handleNotificationActions called - isCollaboratorsLoaded:",
         isCollaboratorsLoaded,
         "isOpen:",
         isOpen
@@ -483,12 +483,12 @@ const ManageAcessModal = ({
       if (!isCollaboratorsLoaded || !isOpen) return;
 
       const pendingActions = localStorage.getItem("pendingNotificationActions");
-      console.log("manage access - pendingActions from localStorage:", pendingActions);
+      console.log("notif (manage access) - pendingActions from localStorage:", pendingActions);
 
       if (pendingActions) {
         try {
           const parsedActions = JSON.parse(pendingActions);
-          console.log("manage access - parsed pendingActions:", parsedActions);
+          console.log("notif (manage access) - parsed pendingActions:", parsedActions);
 
           const { actions, references, timestamp, completed } = parsedActions;
 
@@ -503,37 +503,39 @@ const ManageAcessModal = ({
           }, []);
 
           for (const [index, action] of actions.entries()) {
-            console.log("manage access - Processing action:", action, "at index:", index);
+            console.log("notif (manage access) - Processing action:", action, "at index:", index);
 
             // Check if this action is already completed
             const isAlreadyCompleted = uniqueCompleted.some((c) => c.index === index);
             if (isAlreadyCompleted) {
-              console.log(`manage access - Action at index ${index} already completed`);
+              console.log(`notif (manage access) - Action at index ${index} already completed`);
               continue;
             }
 
             // Check if all previous actions are completed
             const previousActionsCompleted =
               uniqueCompleted.filter((c) => c.index < index).length === index;
-            console.log("manage access - previousActionsCompleted:", previousActionsCompleted);
+            console.log(
+              "notif (manage access) - previousActionsCompleted:",
+              previousActionsCompleted
+            );
 
             if (action === "Highlight user id" && previousActionsCompleted) {
               const userId = references?.userId;
-              console.log("manage access - Found userId to highlight:", userId);
+              console.log("notif (manage access) - Found userId to highlight:", userId);
 
               if (userId) {
                 highlightUserInModal(userId);
+                uniqueCompleted.push({ action, index, timestamp });
+                localStorage.setItem(
+                  "pendingNotificationActions",
+                  JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+                );
               }
 
-              uniqueCompleted.push({ action, index, timestamp });
-              localStorage.setItem(
-                "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
-              );
-
-              if (index === actions.length - 1) {
+              if (index === actions.length - 1 && uniqueCompleted.length === actions.length) {
                 console.log(
-                  "manage access - Removing pendingNotificationActions from localStorage"
+                  "notif (manage access) - Removing pendingNotificationActions from localStorage"
                 );
                 localStorage.removeItem("pendingNotificationActions");
               }

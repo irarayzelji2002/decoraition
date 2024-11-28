@@ -46,8 +46,15 @@ function CommentTabs({
   isOwnerEditorCommenter,
   changeMode,
 }) {
-  const { user, userDoc, userComments, userReplies, userDesignsComments, isDarkMode } =
-    useSharedProps();
+  const {
+    user,
+    userDoc,
+    userComments,
+    userReplies,
+    userDesignsComments,
+    isDarkMode,
+    notificationUpdate,
+  } = useSharedProps();
   const [commentForTab, setCommentForTab] = useState(true); // true for All Comments, false for For You
   const [userOwnedComments, setUserOwnedComments] = useState([]);
   const [userOwnedReplies, setUserOwnedReplies] = useState([]);
@@ -437,35 +444,71 @@ function CommentTabs({
   // Notification highlight
   useEffect(() => {
     const handleNotificationActions = async () => {
+      console.log(
+        "notif (comment tabs) - handleNotificationActions called - tabs loaded:",
+        !!commentTypeTab
+      );
+      if (typeof commentTypeTab === "undefined") return;
+
       const pendingActions = localStorage.getItem("pendingNotificationActions");
+      console.log("notif (comment tabs) - pendingActions from localStorage:", pendingActions);
+
       if (pendingActions) {
-        const { actions, references, timestamp, completed, type, title } =
-          JSON.parse(pendingActions);
+        try {
+          const parsedActions = JSON.parse(pendingActions);
+          console.log("notif (comment tabs) - parsed pendingActions:", parsedActions);
 
-        for (const [index, action] of actions.entries()) {
-          const previousActionsCompleted =
-            completed.filter((c) => c.index < index).length === index;
+          const { actions, references, timestamp, completed, type, title } = parsedActions;
 
-          if (action === "Set comment type and for" && previousActionsCompleted) {
-            // false if mentions-related notif, true if comment/reply-related notif
-            const commentForTab = type === "mention" ? false : true;
-            // false if resolved, true if open
-            const commentTypeTab = title?.toLowercase().includes("resolved") ? false : true;
-            setCommentForTab(commentForTab);
-            setCommentTypeTab(commentTypeTab);
+          const uniqueCompleted = completed.reduce((acc, current) => {
+            const x = acc.find((item) => item.index === current.index);
+            if (!x) return acc.concat([current]);
+            return acc;
+          }, []);
 
-            completed.push({ action, index, timestamp });
-            localStorage.setItem(
-              "pendingNotificationActions",
-              JSON.stringify({ actions, references, timestamp, completed })
+          for (const [index, action] of actions.entries()) {
+            console.log("notif (comment tabs) - Processing action:", action, "at index:", index);
+
+            const isAlreadyCompleted = uniqueCompleted.some((c) => c.index === index);
+            if (isAlreadyCompleted) {
+              console.log(`notif (comment tabs) - Action at index ${index} already completed`);
+              continue;
+            }
+
+            const previousActionsCompleted =
+              uniqueCompleted.filter((c) => c.index < index).length === index;
+            console.log(
+              "notif (comment tabs) - previousActionsCompleted:",
+              previousActionsCompleted
             );
+
+            if (action === "Set comment type and for" && previousActionsCompleted) {
+              const commentForTab = type === "mention" ? false : true;
+              const commentTypeTab = title?.toLowerCase()?.includes("resolved") ? false : true;
+              setCommentForTab(commentForTab);
+              setCommentTypeTab(commentTypeTab);
+              uniqueCompleted.push({ action, index, timestamp });
+              localStorage.setItem(
+                "pendingNotificationActions",
+                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+              );
+            }
+
+            if (index === actions.length - 1 && uniqueCompleted.length === actions.length) {
+              console.log(
+                "notif (comment tabs) - Removing pendingNotificationActions from localStorage"
+              );
+              localStorage.removeItem("pendingNotificationActions");
+            }
           }
+        } catch (error) {
+          console.error("Error processing notification actions:", error);
         }
       }
     };
 
     handleNotificationActions();
-  }, []);
+  }, [commentTypeTab, setCommentForTab, setCommentTypeTab, notificationUpdate]);
 
   return (
     <div className="comment-section" ref={commentSectionRef}>

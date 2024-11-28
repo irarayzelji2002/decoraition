@@ -272,7 +272,17 @@ const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
         </Paper>
       )}
       {emails.length > 0 && (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, margin: "0px 16px 16px 16px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            maxHeight: "25vh",
+            overflow: "auto",
+            margin: "0",
+            padding: "16px",
+          }}
+        >
           {emails.map((email, index) => (
             <CustomTooltip
               key={index}

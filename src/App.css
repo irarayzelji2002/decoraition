@@ -273,6 +273,10 @@ select:-webkit-autofill {
   margin-bottom: 6px;
 }
 
+.user-details .notifContent strong {
+  font-weight: bold;
+}
+
 .user-details .notifDate {
   font-size: 0.8rem;
   font-weight: 300;
@@ -284,7 +288,7 @@ select:-webkit-autofill {
 }
 
 .highlight-animation {
-  animation: highlight-notif 1.5s ease-in-out infinite;
+  animation: highlight-notif 1.5s ease-in-out infinite !important;
 }
 
 @keyframes highlight-notif {

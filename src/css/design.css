@@ -100,10 +100,11 @@
   white-space: nowrap !important;
 }
 
-.headTitleInput.design-name {
-  padding: 10px !important;
-  margin-left: -10px !important;
+.navhead.design-name,
+.navhead.project-name {
+  padding: 5px 10px !important;
   border-radius: 10px !important;
+  width: fit-content !important;
 }
 
 .promptBar {

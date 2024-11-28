@@ -257,7 +257,7 @@ exports.changeCommentStatus = async (req, res) => {
             }`,
             req.body.userId, // notifBy
             `/design/${designId}`,
-            ["Show comment tab", "Set comment type and for", "Highlight comment"],
+            ["Show comment tab", "Hide drawers", "Set comment type and for", "Highlight comment"],
             { commentId }
           );
         } else if (
@@ -275,7 +275,7 @@ exports.changeCommentStatus = async (req, res) => {
             }`,
             req.body.userId, // notifBy
             `/design/${designId}`,
-            ["Show comment tab", "Set comment type and for", "Highlight comment"],
+            ["Show comment tab", "Hide drawers", "Set comment type and for", "Highlight comment"],
             { commentId }
           );
         }

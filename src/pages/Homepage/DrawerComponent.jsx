@@ -38,7 +38,12 @@ import NotifTab from "./NotifTab";
 import { ArrowBackIosRounded as ArrowBackIosRoundedIcon } from "@mui/icons-material";
 import { DesignIcn, FAQ, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/DesignSvg.jsx";
 
-const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
+const DrawerComponent = ({
+  isDrawerOpen = false,
+  onClose,
+  isNotifOpen = false,
+  setIsNotifOpen,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
@@ -59,7 +64,6 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
   } = useSharedProps();
   const [userDesignsLatest, setUserDesignsLatest] = useState([]);
   const [userProjectsLatest, setUserProjectsLatest] = useState([]);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
   const [clickedId, setClickedId] = useState("");
   const [optionsState, setOptionsState] = useState({
@@ -130,11 +134,11 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
   };
 
   const handleNotifClick = () => {
-    setIsNotifOpen(true);
+    if (setIsNotifOpen) setIsNotifOpen(true);
   };
 
   const handleNotifClose = () => {
-    setIsNotifOpen(false);
+    if (setIsNotifOpen) setIsNotifOpen(false);
   };
 
   const toggleOptions = (id) => {

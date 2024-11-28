@@ -27,6 +27,7 @@ function Notif({ notif }) {
   const [senderUsername, setSenderUsername] = useState("");
   const [senderProfilePic, setSenderProfilePic] = useState("");
   const [timeDiff, setTimeDiff] = useState("");
+  const [notifClickDisabled, setNotifClickDisabled] = useState(false);
 
   const [showOptions, setShowOptions] = useState(false);
   const dropdownRef = useRef(null);
@@ -69,6 +70,7 @@ function Notif({ notif }) {
     const currentPath = window.location.pathname;
     const targetPath = notification.navigateTo;
 
+    if (notification.actions.length === 0) return;
     if (currentPath === targetPath) {
       // Store actions without navigating
       localStorage.setItem(
@@ -81,11 +83,16 @@ function Notif({ notif }) {
           timestamp: Date.now(),
         })
       );
+      console.log("notif - setItem same path", {
+        actions: notification.actions,
+        references: notification.references,
+        type: notification.type,
+        completed: [],
+        timestamp: Date.now(),
+      });
       // Trigger re-render by updating state instead of reloading
       setNotificationUpdate((prev) => prev + 1);
     } else {
-      // Navigate to the specified path
-      navigate(notification.navigateTo);
       // Store actions and references in localStorage
       localStorage.setItem(
         "pendingNotificationActions",
@@ -100,11 +107,21 @@ function Notif({ notif }) {
           isReadInApp: notification.isReadInApp,
         })
       );
+      console.log("notif - setItem diff path", {
+        actions: notification.actions,
+        references: notification.references,
+        type: notification.type,
+        completed: [],
+        timestamp: Date.now(),
+      });
+      // Navigate to the specified path
+      navigate(notification.navigateTo);
     }
   };
 
   const handleChangeNotifReadStatus = async () => {
     // Call changeNotifReadStatus
+    setNotifClickDisabled(true);
     const result = await changeNotifReadStatus(notif.id, isReadInApp, user, userDoc);
     console.log("notif - change notif status", result);
     if (!result.success) {
@@ -112,6 +129,7 @@ function Notif({ notif }) {
       return;
     }
     showToast("success", result.message);
+    setNotifClickDisabled(false);
     if (isReadInApp) toggleOptions();
   };
 
@@ -182,8 +200,11 @@ function Notif({ notif }) {
   return (
     <div>
       <div
-        className={`notif-box ${!isReadInApp && "unread"}`}
-        onClick={() => handleNotificationClick(notif)}
+        className={`notif-box ${!isReadInApp && "unread"} ${
+          notifClickDisabled && "notif-disabled"
+        }`}
+        style={{ cursor: notif?.actions?.length === 0 && isReadInApp ? "auto" : "pointer" }}
+        onClick={() => (!notifClickDisabled ? handleNotificationClick(notif) : {})}
       >
         <div className="hoverOverlay"></div>
         {!isReadInApp && <FaCircle className="unreadCircle" />}

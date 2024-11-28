@@ -556,6 +556,18 @@ tr:hover td {
   opacity: 0.2;
 }
 
+.notif-box.notif-disabled {
+  cursor: auto !important;
+}
+.notif-box.notif-disabled .hoverOverlay {
+  background-image: none;
+  opacity: 0 !important;
+}
+.notif-box.notif-disabled:hover .hoverOverlay {
+  background-color: transparent !important;
+  opacity: 0 !important;
+}
+
 .notif-box .profile-section {
   margin-bottom: 0;
   display: flex;

@@ -52,6 +52,7 @@ function Design() {
     designVersions,
     userDesignVersions,
     comments,
+    notificationUpdate,
   } = useSharedProps();
   const { designId } = useParams(); // Get designId from the URL
   const { isDarkMode } = useSharedProps();
@@ -157,8 +158,20 @@ function Design() {
 
   useEffect(() => {
     if (isOwner || isOwnerEditor) {
-      setShowPromptBar(true);
-      setShowComments(false); // initially hide comments
+      // Check for pending notification actions before setting defaults
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      const parsedActions = pendingActions ? JSON.parse(pendingActions) : null;
+      if (
+        parsedActions?.type === "comment" ||
+        parsedActions?.type === "reply" ||
+        parsedActions?.type === "mention"
+      ) {
+        setShowPromptBar(false); // show notif default
+        setShowComments(true);
+      } else {
+        setShowPromptBar(true); // default
+        setShowComments(false);
+      }
     } else if (isOwnerEditorCommenter || isCollaborator) {
       setShowPromptBar(false);
       setShowComments(true); // initially show comments
@@ -557,30 +570,60 @@ function Design() {
   // Notifcation highlight
   useEffect(() => {
     const handleNotificationActions = async () => {
+      console.log("notif (design) - handleNotificationActions called - design loaded:", !!design);
+      if (!design) return;
+
       const pendingActions = localStorage.getItem("pendingNotificationActions");
+      console.log("notif (design) - pendingActions from localStorage:", pendingActions);
+
       if (pendingActions) {
-        const { actions, references, timestamp, completed } = JSON.parse(pendingActions);
+        try {
+          const parsedActions = JSON.parse(pendingActions);
+          console.log("notif (design) - parsed pendingActions:", parsedActions);
 
-        for (const [index, action] of actions.entries()) {
-          // Only proceed if all previous actions are completed
-          const previousActionsCompleted =
-            completed.filter((c) => c.index < index).length === index;
+          const { actions, references, timestamp, completed, type } = parsedActions;
 
-          if (action === "Show comment tab" && previousActionsCompleted) {
-            setShowComments(true);
-            // Mark action as completed
-            completed.push({ action, index, timestamp });
-            localStorage.setItem(
-              "pendingNotificationActions",
-              JSON.stringify({ actions, references, timestamp, completed })
-            );
+          const uniqueCompleted = completed.reduce((acc, current) => {
+            const x = acc.find((item) => item.index === current.index);
+            if (!x) return acc.concat([current]);
+            return acc;
+          }, []);
+
+          for (const [index, action] of actions.entries()) {
+            console.log("notif (design) - Processing action:", action, "at index:", index);
+
+            const isAlreadyCompleted = uniqueCompleted.some((c) => c.index === index);
+            if (isAlreadyCompleted) {
+              console.log(`notif (design) - Action at index ${index} already completed`);
+              continue;
+            }
+
+            const previousActionsCompleted =
+              uniqueCompleted.filter((c) => c.index < index).length === index;
+            console.log("notif (design) - previousActionsCompleted:", previousActionsCompleted);
+
+            if (action === "Show comment tab" && previousActionsCompleted) {
+              setShowComments(true);
+              uniqueCompleted.push({ action, index, timestamp });
+              localStorage.setItem(
+                "pendingNotificationActions",
+                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted, type })
+              );
+            }
+
+            if (index === actions.length - 1 && uniqueCompleted.length === actions.length) {
+              console.log("notif (design) - Removing pendingNotificationActions from localStorage");
+              localStorage.removeItem("pendingNotificationActions");
+            }
           }
+        } catch (error) {
+          console.error("Error processing notification actions:", error);
         }
       }
     };
 
     handleNotificationActions();
-  }, []);
+  }, [design, notificationUpdate]);
 
   if (loading) {
     return <LoadingPage message="Please wait, we're loading your design." />;

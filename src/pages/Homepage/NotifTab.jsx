@@ -111,7 +111,7 @@ const NotifTab = ({ isNotifOpen, onClose }) => {
           })
         );
 
-    console.log("notif - filteredNotifs", filteredNotifs);
+    // console.log("notif - filteredNotifs", filteredNotifs);
     // Return only the number of notifications up to the display limit
     return filteredNotifs.slice(0, displayLimit);
   };
@@ -306,7 +306,7 @@ export default NotifTab;
 
 export const filterButtonGroupStyles = {
   flexWrap: "wrap",
-  justifyContent: "start",
+  justifyContent: "center",
   display: "flex",
   gap: "10px !important",
   padding: "10px",

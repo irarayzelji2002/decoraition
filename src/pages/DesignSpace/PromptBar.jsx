@@ -16,6 +16,7 @@ import {
   ArrowBackIosRounded as ArrowBackIosRoundedIcon,
   KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
   CloseRounded as CloseRoundedIcon,
+  HelpOutline as HelpOutlineIcon,
 } from "@mui/icons-material";
 import {
   Modal,
@@ -59,6 +60,8 @@ import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 import { usePreventNavigation } from "../../hooks/usePreventNavigation";
 import { checkValidServiceWorker } from "../../serviceWorkerRegistration";
 import { AutoTokenizer } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.5.0";
+import TooltipWithClickAway from "../../components/TooltipWithClickAway";
+import { DescriptionTooltip } from "./Design";
 
 const theme = extendTheme({
   components: {
@@ -170,6 +173,45 @@ function PromptBar({
 
   const navigate = useNavigate();
   const [showNavDialog, setShowNavDialog] = useState(false);
+
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchStartHeight, setTouchStartHeight] = useState(null);
+
+  const [showStyleRefHelp, setShowStyleRefHelp] = useState(false);
+
+  // Tooltip states
+  const [showGuide, setShowGuide] = useState(false);
+  const [showGuideLocked, setShowGuideLocked] = useState(false);
+  const [showPromptTooltip, setShowPromptTooltip] = useState(false);
+  const [promptTooltipClickLocked, setPromptTooltipClickLocked] = useState(false);
+  const [showNumberOfImagesTooltip, setShowNumberOfImagesTooltip] = useState(false);
+  const [numberOfImagesTooltipClickLocked, setNumberOfImagesTooltipClickLocked] = useState(false);
+  const [showBaseImageTooltip, setShowBaseImageTooltip] = useState(false);
+  const [baseImageTooltipClickLocked, setBaseImageTooltipClickLocked] = useState(false);
+  const [showSelectMaskTooltip, setShowSelectMaskTooltip] = useState(false);
+  const [selectMaskTooltipClickLocked, setSelectMaskTooltipClickLocked] = useState(false);
+  const [showStyleRefTooltip, setShowStyleRefTooltip] = useState(false);
+  const [styleRefTooltipClickLocked, setStyleRefTooltipClickLocked] = useState(false);
+  const [showColorPaletteTooltip, setShowColorPaletteTooltip] = useState(false);
+  const [colorPaletteTooltipClickLocked, setColorPaletteTooltipClickLocked] = useState(false);
+
+  const handleClickOutside = (event) => {
+    if (!event.target.closest(".styleRefHelp")) {
+      setShowStyleRefHelp(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showStyleRefHelp) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showStyleRefHelp]);
 
   useEffect(() => {
     // Clear any leftover history state when arriving at homepage
@@ -1009,22 +1051,22 @@ function PromptBar({
 
   return (
     <>
-      <CssVarsProvider theme={theme}>
-        <div className="promptBar" ref={promptBarRef}>
-          <div className={window.innerWidth > 768 ? "resizeHandle" : ""} ref={resizeHandleRef}>
-            <div className={window.innerWidth > 768 ? "resizeHandleChildDiv" : ""}>
-              <div className={window.innerWidth > 768 ? "sliderIndicator" : ""}></div>
-            </div>
+      <div className="promptBar" ref={promptBarRef}>
+        <div className={window.innerWidth > 768 ? "resizeHandle" : ""} ref={resizeHandleRef}>
+          <div className={window.innerWidth > 768 ? "resizeHandleChildDiv" : ""}>
+            <div className={window.innerWidth > 768 ? "sliderIndicator" : ""}></div>
           </div>
-          <div
-            className={window.innerWidth <= 768 ? "resizeHandle height" : ""}
-            ref={resizeHandleHeightRef}
-          >
-            <div className={window.innerWidth <= 768 ? "resizeHandleChildDiv" : ""}>
-              <div className={window.innerWidth <= 768 ? "sliderIndicator" : ""}></div>
-            </div>
+        </div>
+        <div
+          className={window.innerWidth <= 768 ? "resizeHandle height" : ""}
+          ref={resizeHandleHeightRef}
+        >
+          <div className={window.innerWidth <= 768 ? "resizeHandleChildDiv" : ""}>
+            <div className={window.innerWidth <= 768 ? "sliderIndicator" : ""}></div>
           </div>
-          {isLess768 && (
+        </div>
+        {isLess768 && (
+          <CssVarsProvider theme={theme}>
             <IconButton
               sx={{
                 color: "var(--color-white)",
@@ -1056,24 +1098,60 @@ function PromptBar({
                 }}
               />
             </IconButton>
-          )}
-          <div
-            style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "662.8px" }}
-            className="transitionMinHeight"
-          >
-            <h3>
-              Describe your idea
-              <span style={{ color: "var(--color-quaternary)" }}> *</span>
-            </h3>
-            <div
-              onClick={(e) => {
-                if (disabled) showToast("info", "Please select an image first");
-                else e.stopPropagation();
-              }}
+          </CssVarsProvider>
+        )}
+        <div
+          style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "662.8px" }}
+          className="transitionMinHeight"
+        >
+          <h6>
+            Show me a guide
+            <TooltipWithClickAway
+              open={showGuide}
+              setOpen={setShowGuide}
+              tooltipClickLocked={showGuideLocked}
+              setTooltipClickLocked={setShowGuideLocked}
+              title={
+                <DescriptionTooltip
+                  image="/img/design-guide.gif"
+                  description="Here is a guide process"
+                />
+              }
+              className="helpTooltip inPromptBar"
             >
+              <div style={{ display: "flex" }}>
+                <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+              </div>
+            </TooltipWithClickAway>
+          </h6>
+
+          <h3>
+            Describe your idea
+            <span style={{ color: "var(--color-quaternary)" }}> *</span>
+            <TooltipWithClickAway
+              open={showPromptTooltip}
+              setOpen={setShowPromptTooltip}
+              tooltipClickLocked={promptTooltipClickLocked}
+              setTooltipClickLocked={setPromptTooltipClickLocked}
+              title={
+                <DescriptionTooltip description="Tips: Make it as descriptive and as objective as possible for the AI to generate better tailored images." />
+              }
+              className="helpTooltip inPromptBar"
+            >
+              <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+            </TooltipWithClickAway>
+          </h3>
+
+          <div
+            onClick={(e) => {
+              if (disabled) showToast("info", "Please select an image first");
+              else e.stopPropagation();
+            }}
+          >
+            <CssVarsProvider theme={theme}>
               <FormControl>
                 <Textarea
-                  placeholder="Enter a prompt"
+                  placeholder="Enter a prompt (e.g. 'A futuristic room with neon lights')"
                   value={prompt}
                   onChange={(e) => {
                     setPrompt(e.target.value);
@@ -1107,18 +1185,33 @@ function PromptBar({
                   {generationErrors?.prompt}
                 </FormHelperText>
               </FormControl>
-            </div>
+            </CssVarsProvider>
+          </div>
 
-            <h3 style={{ marginTop: "35px" }}>
-              Adjust number of images to generate
-              <span style={{ color: "var(--color-quaternary)" }}> *</span>
-            </h3>
-            <div
-              onClick={(e) => {
-                if (disabled) showToast("info", "Please select an image first");
-                else e.stopPropagation();
-              }}
+          <h3 style={{ marginTop: "35px" }}>
+            Adjust number of images to generate
+            <span style={{ color: "var(--color-quaternary)" }}> *</span>
+            <TooltipWithClickAway
+              open={showNumberOfImagesTooltip}
+              setOpen={setShowNumberOfImagesTooltip}
+              tooltipClickLocked={numberOfImagesTooltipClickLocked}
+              setTooltipClickLocked={setNumberOfImagesTooltipClickLocked}
+              title={
+                <DescriptionTooltip description="Tips: Less images take quicker waiting time, while more images take longer waiting time." />
+              }
+              className="helpTooltip inPromptBar"
             >
+              <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+            </TooltipWithClickAway>
+          </h3>
+
+          <div
+            onClick={(e) => {
+              if (disabled) showToast("info", "Please select an image first");
+              else e.stopPropagation();
+            }}
+          >
+            <CssVarsProvider theme={theme}>
               <FormControl>
                 <Slider
                   aria-labelledby="track-false-slider"
@@ -1166,25 +1259,42 @@ function PromptBar({
                   {generationErrors?.numberOfImages}
                 </FormHelperText>
               </FormControl>
-            </div>
-            {!isNextGeneration ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: "20px",
-                }}
-              >
-                <div style={{ width: "100%" }}>
-                  <h3 style={{ marginTop: 0 }}>Upload an image of the space</h3>
-                  <h6>optional</h6>
-                  {baseImage && (
-                    <div className="fileInputChip">
-                      <div className="fileInputChipImage">
-                        <img src={baseImagePreview} alt="" />
-                      </div>
-                      <div className="fileInputChipText">{baseImage.name}</div>
+            </CssVarsProvider>
+          </div>
+          {!isNextGeneration ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: "20px",
+              }}
+            >
+              <div style={{ width: "100%" }}>
+                <h3 style={{ marginTop: 0 }}>
+                  Upload an image of the space{" "}
+                  <TooltipWithClickAway
+                    open={showBaseImageTooltip}
+                    setOpen={setShowBaseImageTooltip}
+                    tooltipClickLocked={baseImageTooltipClickLocked}
+                    setTooltipClickLocked={setBaseImageTooltipClickLocked}
+                    title={
+                      <DescriptionTooltip description="Tips: Upload a base image for the AI to decorate the layout a certain room." />
+                    }
+                    className="helpTooltip inPromptBar"
+                  >
+                    <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+                  </TooltipWithClickAway>
+                </h3>
+
+                <h6>optional</h6>
+                {baseImage && (
+                  <div className="fileInputChip">
+                    <div className="fileInputChipImage">
+                      <img src={baseImagePreview} alt="" />
+                    </div>
+                    <div className="fileInputChipText">{baseImage.name}</div>
+                    <CssVarsProvider theme={theme}>
                       <IconButton
                         onClick={() => {
                           setBaseImage(null);
@@ -1207,15 +1317,19 @@ function PromptBar({
                       >
                         <CloseRoundedIcon />
                       </IconButton>
-                    </div>
-                  )}
+                    </CssVarsProvider>
+                  </div>
+                )}
+                <CssVarsProvider theme={theme}>
                   <FormControl>
                     <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
                       {generationErrors?.baseImage}
                     </FormHelperText>
                   </FormControl>
-                </div>
+                </CssVarsProvider>
+              </div>
 
+              <CssVarsProvider theme={theme}>
                 <Button
                   size="md"
                   disabled={disabled || baseImage}
@@ -1235,26 +1349,42 @@ function PromptBar({
                 >
                   <AddImage />
                 </Button>
+              </CssVarsProvider>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: "20px",
+              }}
+            >
+              <div style={{ width: "100%" }}>
+                <h3 style={{ margin: 0 }}>
+                  Select an area to edit{" "}
+                  <TooltipWithClickAway
+                    open={showSelectMaskTooltip}
+                    setOpen={setShowSelectMaskTooltip}
+                    tooltipClickLocked={selectMaskTooltipClickLocked}
+                    setTooltipClickLocked={setSelectMaskTooltipClickLocked}
+                    title={
+                      <DescriptionTooltip description="Tips: Choose a certain area to edit, refine it with various tools, then describe precisely on what to put in that area." />
+                    }
+                    className="helpTooltip inPromptBar"
+                  >
+                    <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+                  </TooltipWithClickAway>
+                </h3>
               </div>
-            ) : (
+
               <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: "20px",
+                onClick={(e) => {
+                  if (disabled) showToast("info", "Please select an image first");
+                  else e.stopPropagation();
                 }}
               >
-                <div style={{ width: "100%" }}>
-                  <h3 style={{ margin: 0 }}>Select an area to edit</h3>
-                </div>
-
-                <div
-                  onClick={(e) => {
-                    if (disabled) showToast("info", "Please select an image first");
-                    else e.stopPropagation();
-                  }}
-                >
+                <CssVarsProvider theme={theme}>
                   <Button
                     size="md"
                     disabled={disabled}
@@ -1274,27 +1404,43 @@ function PromptBar({
                   >
                     {isSelectingMask ? <DeselectMask /> : <SelectMask />}
                   </Button>
-                </div>
+                </CssVarsProvider>
               </div>
-            )}
+            </div>
+          )}
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: "35px",
-              }}
-            >
-              <div style={{ width: "100%" }}>
-                <h3 style={{ marginTop: 0 }}>Upload an image for style reference</h3>
-                <h6>optional</h6>
-                {styleRef && (
-                  <div className="fileInputChip">
-                    <div className="fileInputChipImage">
-                      <img src={styleRefPreview} alt="" />
-                    </div>
-                    <div className="fileInputChipText">{styleRef.name}</div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: "35px",
+            }}
+          >
+            <div style={{ width: "100%" }}>
+              <h3 style={{ marginTop: 0 }}>
+                Upload an image for style reference
+                <TooltipWithClickAway
+                  open={showStyleRefTooltip}
+                  setOpen={setShowStyleRefTooltip}
+                  tooltipClickLocked={styleRefTooltipClickLocked}
+                  setTooltipClickLocked={setStyleRefTooltipClickLocked}
+                  title={
+                    <DescriptionTooltip description="Tips: Upload an image that represents the style or color you want to achieve. This helps in generating more stylized results." />
+                  }
+                  className="helpTooltip inPromptBar"
+                >
+                  <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+                </TooltipWithClickAway>
+              </h3>
+              <h6>optional</h6>
+              {styleRef && (
+                <div className="fileInputChip">
+                  <div className="fileInputChipImage">
+                    <img src={styleRefPreview} alt="" />
+                  </div>
+                  <div className="fileInputChipText">{styleRef.name}</div>
+                  <CssVarsProvider theme={theme}>
                     <IconButton
                       onClick={() => {
                         setStyleRef(null);
@@ -1317,21 +1463,25 @@ function PromptBar({
                     >
                       <CloseRoundedIcon />
                     </IconButton>
-                  </div>
-                )}
+                  </CssVarsProvider>
+                </div>
+              )}
+              <CssVarsProvider theme={theme}>
                 <FormControl>
                   <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
                     {generationErrors?.styleReference}
                   </FormHelperText>
                 </FormControl>
-              </div>
+              </CssVarsProvider>
+            </div>
 
-              <div
-                onClick={(e) => {
-                  if (disabled) showToast("info", "Please select an image first");
-                  else e.stopPropagation();
-                }}
-              >
+            <div
+              onClick={(e) => {
+                if (disabled) showToast("info", "Please select an image first");
+                else e.stopPropagation();
+              }}
+            >
+              <CssVarsProvider theme={theme}>
                 <Button
                   size="md"
                   disabled={disabled || styleRef}
@@ -1351,38 +1501,57 @@ function PromptBar({
                 >
                   <AddImage />
                 </Button>
+              </CssVarsProvider>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: "35px",
+            }}
+          >
+            <div style={{ width: "100%" }}>
+              <div style={{ display: "inline-flex" }} className="inline-flex-prompt-bar-2">
+                <div style={{ marginTop: 0, marginRight: "20px" }}>
+                  <h3>
+                    Use a color palette
+                    <TooltipWithClickAway
+                      open={showColorPaletteTooltip}
+                      setOpen={setShowColorPaletteTooltip}
+                      tooltipClickLocked={colorPaletteTooltipClickLocked}
+                      setTooltipClickLocked={setColorPaletteTooltipClickLocked}
+                      title={
+                        <DescriptionTooltip description="Tips: Create a color pallete. This helps in generating closer color suggestions." />
+                      }
+                      className="helpTooltip inPromptBar"
+                    >
+                      <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+                    </TooltipWithClickAway>
+                  </h3>
+                  <h6 style={{ marginBottom: "10px" }}>optional</h6>
+                </div>
               </div>
             </div>
 
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                marginTop: "35px",
+                display: isSmallWidth ? "flex" : "inline-flex",
+                width: "100%",
+                flexDirection: isSmallWidth ? "column" : "row",
+                flexFlow: isSmallWidth ? "column" : "row",
+                flexWrap: isSmallWidth ? "wrap" : "nowrap",
+                gap: "20px",
+              }}
+              className="inline-flex-prompt-bar"
+              onClick={(e) => {
+                if (disabled) showToast("info", "Please select an image first");
+                else e.stopPropagation();
               }}
             >
-              <div style={{ width: "100%" }}>
-                <div style={{ display: "inline-flex" }} className="inline-flex-prompt-bar-2">
-                  <h3 style={{ marginTop: 0, marginRight: "20px" }}>Use a color palette</h3>
-                  <h6 style={{ marginTop: "2px" }}>optional</h6>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: isSmallWidth ? "flex" : "inline-flex",
-                  width: "100%",
-                  flexDirection: isSmallWidth ? "column" : "row",
-                  flexFlow: isSmallWidth ? "column" : "row",
-                  flexWrap: isSmallWidth ? "wrap" : "nowrap",
-                }}
-                className="inline-flex-prompt-bar"
-                onClick={(e) => {
-                  if (disabled) showToast("info", "Please select an image first");
-                  else e.stopPropagation();
-                }}
-              >
+              <CssVarsProvider theme={theme}>
                 <FormControl sx={{ width: "100%" }}>
                   <Select
                     id="date-modified-select"
@@ -1506,7 +1675,6 @@ function PromptBar({
                   sx={{
                     borderRadius: "100%",
                     marginTop: isSmallWidth ? "15px" : "4px",
-                    marginLeft: isSmallWidth ? "auto" : "30px",
                     marginRight: isSmallWidth ? "auto" : "0px",
                     marginBottom: "4px",
                     padding: "12px 10px 12px 14px",
@@ -1522,21 +1690,23 @@ function PromptBar({
                 >
                   <AddColor />
                 </Button>
-              </div>
+              </CssVarsProvider>
             </div>
           </div>
-          {/* Generate Image button */}
-          <div
-            onClick={(e) => {
-              if (disabled) showToast("info", "Please select an image first");
-              else if (!isOnline)
-                showToast("info", "You are offline. Please check your internet connection.");
-              else if (showComments) showToast("info", "Please hide the comments tab");
-              else if (isNextGeneration && !isSelectingMask)
-                showToast("info", "Please select a mask before generating");
-              else e.stopPropagation();
-            }}
-          >
+        </div>
+        {/* Generate Image button */}
+        <div
+          onClick={(e) => {
+            if (disabled) showToast("info", "Please select an image first");
+            else if (!isOnline)
+              showToast("info", "You are offline. Please check your internet connection.");
+            else if (showComments) showToast("info", "Please hide the comments tab");
+            else if (isNextGeneration && !isSelectingMask)
+              showToast("info", "Please select a mask before generating");
+            else e.stopPropagation();
+          }}
+        >
+          <CssVarsProvider theme={theme}>
             <FormControl>
               <FormHelperText sx={{ color: "var(--color-quaternary)", marginLeft: 0 }}>
                 {generationErrors?.general}
@@ -1596,9 +1766,9 @@ function PromptBar({
             >
               Generate Image
             </Button>
-          </div>
+          </CssVarsProvider>
         </div>
-      </CssVarsProvider>
+      </div>
 
       {/* Upload base image modal */}
       <Dialog open={baseImageModalOpen} onClose={handleBaseImageModalClose} sx={dialogStyles}>

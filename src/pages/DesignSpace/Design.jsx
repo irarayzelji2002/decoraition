@@ -23,6 +23,7 @@ import {
   ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
   ArrowBackIosRounded as ArrowBackIosRoundedIcon,
   KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
 import DesignSpace from "./DesignSpace";
 import PromptBar from "./PromptBar";
@@ -162,7 +163,7 @@ function Design() {
       setShowPromptBar(false);
       setShowComments(true); // initially show comments
     }
-    if (!changeMode) {
+    if (!location?.state?.changeMode) {
       if (isOwner) setChangeMode("Editing");
       else if (isOwnerEditor) setChangeMode("Editing");
       else if (isOwnerEditorCommenter) setChangeMode("Commenting");
@@ -171,7 +172,7 @@ function Design() {
     console.log(
       `commentCont - isOwner: ${isOwner}, isOwnerEditor: ${isOwnerEditor}, isOwnerEditorCommenter: ${isOwnerEditorCommenter}, isCollaborator: ${isCollaborator}`
     );
-  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator]);
+  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator, location?.state?.changeMode]);
 
   useEffect(() => {
     console.log(`commentCont - changeMode: ${changeMode}`);
@@ -225,19 +226,28 @@ function Design() {
   }, []);
 
   useEffect(() => {
-    if (designId && userDesigns.length > 0) {
+    if (designId && (userDesigns.length > 0 || designs.length > 0)) {
       const fetchedDesign =
         userDesigns.find((d) => d.id === designId) || designs.find((d) => d.id === designId);
 
       if (!fetchedDesign) {
         console.error("Design not found.");
       } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
+        // Check if user has access
+        const hasAccess = isCollaboratorDesign(fetchedDesign, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to design.");
+          setLoading(false);
+          showToast("error", "You don't have access to this design");
+          navigate("/");
+          return;
+        }
         setDesign(fetchedDesign);
         console.log("current design:", fetchedDesign);
       }
     }
     // setLoading(false);
-  }, [designId, design, userDesigns]);
+  }, [designId, design, designs, userDesigns, isCollaborator]);
 
   useEffect(() => {
     if (
@@ -535,6 +545,15 @@ function Design() {
     });
   }, [isPinpointing, pinpointLocation, pinpointSelectedImage, selectedImage]);
 
+  const handleDownloadImage = (imageSrc) => {
+    const link = document.createElement("a");
+    link.href = imageSrc;
+    link.download = "image.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return <LoadingPage message="Please wait, we're loading your design." />;
   }
@@ -822,7 +841,7 @@ function Design() {
               >
                 <Box sx={{ display: "flex" }}>
                   {(designVersion?.description || designVersion?.createdAt) && !isSelectingMask && (
-                    <ClickAwayListener onClickAway={() => setOpenDescTooltip(false)} sx={{}}>
+                    <ClickAwayListener onClickAway={() => setOpenDescTooltip(false)}>
                       <CustomTooltip
                         title={
                           <DescriptionTooltip
@@ -1111,6 +1130,33 @@ function Design() {
                                       }}
                                     >
                                       {infoVisible ? <UnviewInfoIcon /> : <ViewInfoIcon />}
+                                    </IconButton>
+                                    <IconButton
+                                      sx={{
+                                        color: "var(--color-white)",
+                                        marginRight: "30px",
+                                        borderRadius: "50%",
+                                        opacity: "0.3",
+                                        width: "40px",
+                                        height: "40px",
+                                        position: "absolute",
+                                        top: "8px",
+                                        right: "56px", // Adjusted to place it beside the existing button
+                                        zIndex: "1",
+                                        "&:hover": {
+                                          backgroundColor: "var(--iconButtonHover2)",
+                                        },
+                                        "& .MuiTouchRipple-root span": {
+                                          backgroundColor: "var(--iconButtonActive2)",
+                                        },
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        handleDownloadImage(image.link);
+                                      }}
+                                    >
+                                      <DownloadIcon />
                                     </IconButton>
                                   </div>
                                 ) : (
@@ -1530,31 +1576,34 @@ export const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const CustomTooltip = styled(({ className, ...props }) => (
-  <Tooltip
-    {...props}
-    classes={{ popper: className }}
-    slotProps={{
-      popper: {
-        modifiers: [
-          {
-            name: "offset",
-            options: {
-              offset: [-8, -6],
+export const CustomTooltip = styled(
+  React.forwardRef(({ className, ...props }, ref) => (
+    <Tooltip
+      {...props}
+      ref={ref}
+      classes={{ popper: className }}
+      slotProps={{
+        popper: {
+          modifiers: [
+            {
+              name: "offset",
+              options: {
+                offset: [-8, -6],
+              },
             },
-          },
-        ],
-      },
-    }}
-  />
-))(({ theme }) => ({
+          ],
+        },
+      }}
+    />
+  ))
+)(({ theme }) => ({
   [`& .${tooltipClasses.arrow}`]: {
     color: "transparent",
   },
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: "var(--iconBg)",
     color: "var(--color-white)",
-    maxWidth: "320px",
+    maxWidth: "600px",
     width: "100%",
     borderRadius: "10px",
     boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
@@ -1566,7 +1615,7 @@ const CustomTooltip = styled(({ className, ...props }) => (
   },
 }));
 
-export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
+export const DescriptionTooltip = ({ description = "", createdAt = "", image = "" }) => {
   const displayDate = formatDateDetailComma(createdAt);
 
   return (
@@ -1578,10 +1627,22 @@ export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
         p: "5px",
         textAlign: "justify",
         padding: "5px 10px",
-        minWidth: "calc(320px - 40px)",
+        // minWidth: "calc(320px - 40px)",
+        maxWidth: image !== "" ? "600px" : "calc(320px - 40px)", // Adjust maxWidth based on image presence
       }}
     >
       <Box>
+        {image && (
+          <Box
+            component="img"
+            src={image}
+            alt="Tooltip"
+            sx={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+          />
+        )}
         {description && (
           <Typography
             sx={{
@@ -1603,7 +1664,7 @@ export const DescriptionTooltip = ({ description = "", createdAt = "" }) => {
     </Box>
   );
 };
-
+//0 for viewer, 1 for editor, 2 for commenter, 3 for owner
 // Check if user is owner (manage)
 export const isOwnerDesign = (design, userId) => {
   const isOwner = design.owner === userId;
@@ -1615,13 +1676,13 @@ export const isOwnerEditorDesign = (design, userId) => {
   if (design.designSettings.generalAccessSetting === 0) {
     // Restricted Access
     const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
+    const isEditor = design.editors?.includes(userId);
     return isOwner || isEditor;
   } else {
     // Anyone with the link
     if (design.designSettings.generalAccessRole === 1) return true;
     const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
+    const isEditor = design.editors?.includes(userId);
     return isOwner || isEditor;
   }
 };
@@ -1631,8 +1692,8 @@ export const isOwnerEditorCommenterDesign = (design, userId) => {
   if (design.designSettings.generalAccessSetting === 0) {
     // Restricted Access
     const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    const isCommenter = design.commenters.includes(userId);
+    const isEditor = design.editors?.includes(userId);
+    const isCommenter = design.commenters?.includes(userId);
     return isOwner || isEditor || isCommenter;
   } else {
     // Anyone with the link
@@ -1642,8 +1703,8 @@ export const isOwnerEditorCommenterDesign = (design, userId) => {
     )
       return true;
     const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    const isCommenter = design.commenters.includes(userId);
+    const isEditor = design.editors?.includes(userId);
+    const isCommenter = design.commenters?.includes(userId);
     return isOwner || isEditor || isCommenter;
   }
 };
@@ -1653,9 +1714,9 @@ export const isCollaboratorDesign = (design, userId) => {
   if (design.designSettings.generalAccessSetting === 0) {
     // Restricted Access
     const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    const isCommenter = design.commenters.includes(userId);
-    const isViewer = design.viewers.includes(userId);
+    const isEditor = design.editors?.includes(userId);
+    const isCommenter = design.commenters?.includes(userId);
+    const isViewer = design.viewers?.includes(userId);
     return isOwner || isEditor || isCommenter || isViewer;
   } else {
     // Anyone with the link
@@ -1666,9 +1727,9 @@ export const isCollaboratorDesign = (design, userId) => {
     )
       return true;
     const isOwner = design.owner === userId;
-    const isEditor = design.editors.includes(userId);
-    const isCommenter = design.commenters.includes(userId);
-    const isViewer = design.viewers.includes(userId);
+    const isEditor = design.editors?.includes(userId);
+    const isCommenter = design.commenters?.includes(userId);
+    const isViewer = design.viewers?.includes(userId);
     return isOwner || isEditor || isCommenter || isViewer;
   }
 };

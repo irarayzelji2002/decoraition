@@ -1,6 +1,6 @@
 const { db, auth } = require("../firebase");
 
-exports.createNotification = async (userId, type, title, content) => {
+exports.createNotification = async (userId, type, title, content, notifBy) => {
   const notificationRef = db.collection("notifications").doc();
   const notificationData = {
     userId,
@@ -8,12 +8,13 @@ exports.createNotification = async (userId, type, title, content) => {
     title,
     content,
     isReadInApp: false,
+    notifBy,
     createdAt: new Date(),
   };
   await notificationRef.set(notificationData);
 };
 
-const createNotification = async (userId, type, title, content) => {
+const createNotification = async (userId, type, title, content, notifBy) => {
   const notificationRef = db.collection("notifications").doc();
   const notificationData = {
     userId,
@@ -21,6 +22,7 @@ const createNotification = async (userId, type, title, content) => {
     title,
     content,
     isReadInApp: false,
+    notifBy,
     createdAt: new Date(),
   };
   await notificationRef.set(notificationData);
@@ -55,7 +57,8 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
         userId,
         "mention",
         "Mentioned in Comment",
-        `You were mentioned in a comment on design "${designDoc.data().designName}"`
+        `You were mentioned in a comment on design "${designDoc.data().designName}"`,
+        commentUserId
       );
     }
 
@@ -64,7 +67,8 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
         userId,
         "comment",
         "New Comment on Your Design",
-        `A new comment was added to your design "${designDoc.data().designName}"`
+        `A new comment was added to your design "${designDoc.data().designName}"`,
+        commentUserId
       );
     }
 
@@ -76,9 +80,118 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
         userId,
         "comment",
         "New Comment on Collaborated Design",
-        `A new comment was added to design "${designDoc.data().designName}"`
+        `A new comment was added to design "${designDoc.data().designName}"`,
+        commentUserId
       );
     }
+  }
+};
+
+exports.changeNotifStatus = async (req, res) => {
+  const updatedDocuments = [];
+  let newStatus = true;
+  try {
+    const { notifId } = req.params;
+    const { userId, status } = req.body;
+    newStatus = !status;
+    const notifRef = await db.collection("notifications").doc(notifId);
+    const notifDoc = await notifRef.get();
+    if (!notifDoc.exists) {
+      return res.status(404).json({ error: "Notification not found" });
+    }
+
+    updatedDocuments.push({
+      ref: notifRef,
+      data: notifDoc.data(),
+      collection: "notifications",
+      id: notifRef.id,
+    });
+    const message = newStatus ? "Notification marked as read" : "Notification marked as unread";
+    await notifRef.update({ isReadInApp: newStatus });
+    res.json({ success: true, message: message, isReadInApp: newStatus });
+  } catch (error) {
+    console.error("Error changing comment status:", error);
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+    res
+      .status(500)
+      .json({ error: `Failed to mark notiifcation as ${newStatus ? "read" : "unread"}` });
+  }
+};
+
+exports.markAllAsRead = async (req, res) => {
+  const updatedDocuments = [];
+  let newStatus = true;
+  try {
+    const { userId } = req.body;
+
+    const notificationsRef = db.collection("notifications");
+    const unreadNotifs = await notificationsRef
+      .where("userId", "==", userId)
+      .where("isReadInApp", "==", false)
+      .get();
+    const batch = db.batch();
+    unreadNotifs.docs.forEach((doc) => {
+      batch.update(doc.ref, { isReadInApp: true });
+    });
+    await batch.commit();
+
+    res.json({
+      success: true,
+      message: "All notifications marked as read",
+      isReadInApp: newStatus,
+    });
+  } catch (error) {
+    console.error("Error changing comment status:", error);
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+    res.status(500).json({ error: "Failed to mark all notifications as read" });
+  }
+};
+
+exports.deleteNotif = async (req, res) => {
+  const updatedDocuments = [];
+  try {
+    const { notifId } = req.params;
+    const notifRef = await db.collection("notifications").doc(notifId);
+    const notifDoc = await notifRef.get();
+    if (!notifDoc.exists) {
+      return res.status(404).json({ error: "Notification not found" });
+    }
+    updatedDocuments.push({
+      ref: notifRef,
+      data: notifDoc.data(),
+      collection: "notifications",
+      id: notifRef.id,
+    });
+    await db.collection("notifications").doc(notifId).delete();
+    res.status(200).json({ success: true, message: "Notification deleted successfully" });
+  } catch (error) {
+    console.error("Error changing comment status:", error);
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+    res.status(500).json({ error: "Failed to delete notiifcation" });
   }
 };
 

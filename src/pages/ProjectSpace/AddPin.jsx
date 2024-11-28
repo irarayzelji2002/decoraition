@@ -20,6 +20,15 @@ import {
   addPinToDatabase,
   updatePinInDatabase,
 } from "./backend/ProjectDetails";
+import deepEqual from "deep-equal";
+import { showToast } from "../../functions/utils";
+import {
+  isManagerProject,
+  isManagerContentManagerProject,
+  isManagerContentManagerContributorProject,
+  isCollaboratorProject,
+} from "./Project";
+import { useSharedProps } from "../../contexts/SharedPropsContext";
 
 function AddPin({ EditMode }) {
   const location = useLocation();
@@ -34,6 +43,61 @@ function AddPin({ EditMode }) {
   const [pins, setPins] = useState([]);
   const [designs, setDesigns] = useState([]);
   const pinToEdit = location.state?.pinToEdit || null;
+  const { userDoc, projects, userProjects } = useSharedProps();
+  const [loadingProject, setLoadingProject] = useState(true);
+  const [project, setProject] = useState({});
+  const [isManager, setIsManager] = useState(false);
+  const [isManagerContentManager, setIsManagerContentManager] = useState(false);
+  const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
+    useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
+  // Get project
+  useEffect(() => {
+    if (projectId && userProjects.length > 0) {
+      const fetchedProject =
+        userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
+
+      if (!fetchedProject) {
+        console.error("Project not found.");
+        setLoadingProject(false);
+      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+        setProject(fetchedProject);
+        console.log("current project:", fetchedProject);
+      }
+    }
+    setLoadingProject(false);
+  }, [projectId, projects, userProjects]);
+
+  // Initialize access rights
+  useEffect(() => {
+    if (!project?.projectSettings || !userDoc?.id) return;
+    // Check if user has any access
+    const hasAccess = isCollaboratorProject(project, userDoc.id);
+    if (!hasAccess) {
+      showToast("error", "You don't have access to this portion of the project.");
+      navigate("/planMap/" + projectId);
+      return;
+    }
+    // If they have access, proceed with setting roles
+    setIsManager(isManagerProject(project, userDoc.id));
+    setIsManagerContentManager(isManagerContentManagerProject(project, userDoc.id));
+    setIsManagerContentManagerContributor(
+      isManagerContentManagerContributorProject(project, userDoc.id)
+    );
+    setIsCollaborator(isCollaboratorProject(project, userDoc.id));
+
+    // Check if none of the manager roles are true
+    if (
+      isManagerProject(project, userDoc.id) ||
+      isManagerContentManagerProject(project, userDoc.id) ||
+      isManagerContentManagerContributorProject(project, userDoc.id)
+    ) {
+    } else {
+      showToast("error", "You don't have access to this portion of the project.");
+      navigate("/planMap/" + projectId);
+      return;
+    }
+  }, [project, userDoc, navigate, projectId]);
 
   useEffect(() => {
     if (projectId) {
@@ -103,7 +167,7 @@ function AddPin({ EditMode }) {
   return (
     <>
       <TopBar state={"Add Pin"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
-      <div className="sectionBudget" style={{ background: "none" }}>
+      <div className="sectionBudget" style={{ background: "none", paddingTop: "104px" }}>
         <div className="budgetSpaceImg">
           <ImageFrame
             src="../../img/floorplan.png"

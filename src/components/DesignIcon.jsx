@@ -17,6 +17,7 @@ function DesignIcon({
   setOptionsState = () => {},
   isProjectSpace = false,
   openConfirmRemove = () => {},
+  isManagerContentManager = false,
 }) {
   const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
     useSharedProps();
@@ -81,7 +82,7 @@ function DesignIcon({
         toggleOptions={toggleOptions}
         object={design}
       />
-      {isProjectSpace && (
+      {isProjectSpace && isManagerContentManager && (
         <div
           className="options"
           style={{ right: "54px", width: "35px", height: "35px" }}

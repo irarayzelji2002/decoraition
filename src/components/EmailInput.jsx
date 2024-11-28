@@ -395,24 +395,27 @@ const UserInfoTooltip = ({ username, firstName, lastName, email, profilePic }) =
   </Box>
 );
 
-const CustomTooltip = styled(({ className, ...props }) => (
-  <Tooltip
-    {...props}
-    classes={{ popper: className }}
-    slotProps={{
-      popper: {
-        modifiers: [
-          {
-            name: "offset",
-            options: {
-              offset: [0, -6],
+const CustomTooltip = styled(
+  React.forwardRef(({ className, ...props }, ref) => (
+    <Tooltip
+      {...props}
+      ref={ref}
+      classes={{ popper: className }}
+      slotProps={{
+        popper: {
+          modifiers: [
+            {
+              name: "offset",
+              options: {
+                offset: [0, -6],
+              },
             },
-          },
-        ],
-      },
-    }}
-  />
-))(({ theme }) => ({
+          ],
+        },
+      }}
+    />
+  ))
+)(({ theme }) => ({
   [`& .${tooltipClasses.arrow}`]: {
     color: "var(--iconBg)",
   },

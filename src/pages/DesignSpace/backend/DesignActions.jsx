@@ -34,7 +34,14 @@ export const handleSidebarEffect = (isSidebarOpen) => {
   };
 };
 
-export const getDesignImage = (designId, userDesigns, userDesignVersions, index = 0) => {
+export const getDesignImage = (
+  designId,
+  designs,
+  userDesigns,
+  designVersions,
+  userDesignVersions,
+  index = 0
+) => {
   if (!designId) {
     console.log("No design ID provided");
     return "";
@@ -46,7 +53,9 @@ export const getDesignImage = (designId, userDesigns, userDesignVersions, index 
   }
 
   // Get the design
-  const fetchedDesign = userDesigns.find((design) => design.id === designId);
+  const fetchedDesign =
+    userDesigns.find((design) => design.id === designId) ||
+    designs.find((design) => design.id === designId);
   if (!fetchedDesign || !fetchedDesign.history || fetchedDesign.history.length === 0) {
     console.log("Design not found or has no history");
     return "";
@@ -58,9 +67,9 @@ export const getDesignImage = (designId, userDesigns, userDesignVersions, index 
     return "";
   }
 
-  const fetchedLatestDesignVersion = userDesignVersions.find(
-    (designVer) => designVer.id === latestDesignVersionId
-  );
+  const fetchedLatestDesignVersion =
+    userDesignVersions.find((designVer) => designVer.id === latestDesignVersionId) ||
+    designVersions.find((designVer) => designVer.id === latestDesignVersionId);
   if (!fetchedLatestDesignVersion?.images?.length) {
     console.log("Latest design version not found or has no images");
     return "";
@@ -80,7 +89,9 @@ export const getProjectImage = (
   projectId,
   userProjects,
   projects,
+  designs,
   userDesigns,
+  designVersions,
   userDesignVersions,
   index = 0
 ) => {
@@ -96,7 +107,14 @@ export const getProjectImage = (
   const latestDesignId = fetchedProject.designs[fetchedProject.designs.length - 1];
 
   // Return the design image by calling getDesignImage
-  return getDesignImage(latestDesignId, userDesigns, userDesignVersions, index);
+  return getDesignImage(
+    latestDesignId,
+    designs,
+    userDesigns,
+    designVersions,
+    userDesignVersions,
+    index
+  );
 };
 
 export const handleNameChange = async (designId, newName, user, userDoc, setIsEditingName) => {
@@ -729,7 +747,10 @@ export const generateMask = async (
   } catch (error) {
     console.error("Error:", error);
     let errorMessage = "";
-    if (error.message === "NetworkError when attempting to fetch resource.")
+    if (
+      error.message === "NetworkError when attempting to fetch resource." ||
+      error.message === "Failed to fetch"
+    )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || "Failed to generate mask";
     return {
@@ -841,7 +862,10 @@ export const previewMask = async (
     console.log("error catch", error.message);
     let formErrors = {};
     let errorMessage = "";
-    if (error.message === "NetworkError when attempting to fetch resource.")
+    if (
+      error.message === "NetworkError when attempting to fetch resource." ||
+      error.message === "Failed to fetch"
+    )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || "Failed to combine masks";
     formErrors.combinedMask = errorMessage;
@@ -1041,7 +1065,10 @@ export const generateNextImage = async (
   } catch (error) {
     console.error("Error:", error);
     let errorMessage = "";
-    if (error.message === "NetworkError when attempting to fetch resource.")
+    if (
+      error.message === "NetworkError when attempting to fetch resource." ||
+      error.message === "Failed to fetch"
+    )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
     return {
@@ -1130,7 +1157,10 @@ export const generateFirstImage = async (
   } catch (error) {
     console.error("Error:", error);
     let errorMessage = "";
-    if (error.message === "NetworkError when attempting to fetch resource.")
+    if (
+      error.message === "NetworkError when attempting to fetch resource." ||
+      error.message === "Failed to fetch"
+    )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
     return {

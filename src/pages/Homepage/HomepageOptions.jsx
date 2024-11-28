@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import "../../css/homepage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { showToast } from "../../functions/utils";
@@ -28,6 +28,18 @@ import InfoModal from "../../components/InfoModal";
 
 import IconButton from "@mui/material/IconButton";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import {
+  isOwnerDesign,
+  isOwnerEditorDesign,
+  isOwnerEditorCommenterDesign,
+  isCollaboratorDesign,
+} from "../DesignSpace/Design.jsx";
+import {
+  isManagerProject,
+  isManagerContentManagerProject,
+  isManagerContentManagerContributorProject,
+  isCollaboratorProject,
+} from "../ProjectSpace/Project.jsx";
 
 import {
   CopyLinkIcon,
@@ -38,6 +50,7 @@ import {
   DownloadIcon,
   DeleteIcon,
   DetailsIcon,
+  RestoreIcon,
 } from "../../components/svg/DefaultMenuIcons";
 
 import { OpenInNew as OpenInNewIcon } from "@mui/icons-material";
@@ -46,7 +59,7 @@ import deepEqual from "deep-equal";
 function HomepageOptions({
   isDesign,
   id,
-  object,
+  object, // design or project object
   onOpen,
   isTable = false,
   isDrawer = false,
@@ -75,6 +88,7 @@ function HomepageOptions({
   const [showShareModal, setShowShareModal] = useState(false);
   const [showManageAccessModal, setShowManageAccessModal] = useState(false);
   const [showViewCollabModal, setShowViewCollabModal] = useState(false);
+  const [shouldOpenViewCollab, setShouldOpenViewCollab] = useState(false);
   const [isViewCollab, setIsViewCollab] = useState(true);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
@@ -85,45 +99,98 @@ function HomepageOptions({
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const optionsRef = useRef(null);
 
+  const [role, setRole] = useState(0);
+  const [isDownloadVisible, setIsDownloadVisible] = useState(false);
+  const [isRenameVisible, setIsRenameVisible] = useState(false);
+  const [isDeleteVisible, setIsDeleteVisible] = useState(false);
+  const [isMakeCopyVisible, setIsMakeCopyVisible] = useState(false);
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false);
+  const [isRestoreVisible, setIsRestoreVisible] = useState(false);
+
   useEffect(() => {
-    // Find access level of the user (to display Manage Access/View Collaborators in ShareMenu)
+    if (!object || !user || !userDoc) return;
+    let newRole = 0;
+
     if (isDesign) {
       const design = object;
-      if (!design || !user || !userDoc) return;
-      // Check if user is owner or editor (manage access), then commenters and viewers (view only)
-      if (userDoc.id === design.owner || userDoc.id === design.ownerId) {
-        setIsViewCollab(false);
-        return;
+      // First check if restricted access
+      if (design?.designSettings?.generalAccessSetting === 0) {
+        // Only check explicit roles
+        if (userDoc.id === design.owner) newRole = 3;
+        else if (design.editors?.includes(userDoc.id)) newRole = 1;
+        else if (design.commenters?.includes(userDoc.id)) newRole = 2;
+        else if (design.viewers?.includes(userDoc.id)) newRole = 0;
+      } else {
+        // Anyone with link - check both explicit roles and general access
+        if (userDoc.id === design.owner) newRole = 3;
+        else if (
+          design.editors?.includes(userDoc.id) ||
+          design?.designSettings?.generalAccessRole === 1
+        )
+          newRole = 1;
+        else if (
+          design.commenters?.includes(userDoc.id) ||
+          design?.designSettings?.generalAccessRole === 2
+        )
+          newRole = 2;
+        else newRole = design?.designSettings?.generalAccessRole ?? 0;
       }
-      if (design.editors?.includes(userDoc.id)) {
-        setIsViewCollab(false);
-        return;
-      }
-      if (design.commenters?.includes(userDoc.id) || design.viewers?.includes(userDoc.id)) {
-        setIsViewCollab(true);
-        return;
-      }
-      setIsViewCollab(true);
+      // Set role and all dependent flags
+      setRole(newRole);
+      setIsViewCollab(newRole === 0 || newRole === 2);
+      if (design.history && design.history.length > 0)
+        setIsRestoreVisible(newRole === 1 || newRole === 3);
+      setIsRenameVisible(newRole === 1 || newRole === 3);
+      setIsDeleteVisible(newRole === 3);
+      // Set visibility based on design settings
+      setIsDownloadVisible(
+        !!design?.designSettings?.allowDownload || newRole === 1 || newRole === 3
+      );
+      setIsHistoryVisible(
+        !!design?.designSettings?.allowViewHistory || newRole === 1 || newRole === 3
+      );
+      setIsMakeCopyVisible(!!design?.designSettings?.allowCopy || newRole === 1 || newRole === 3);
     } else {
       const project = object;
-      if (!project || !user || !userDoc) return;
+      // First check if restricted access
+      if (project?.projectSettings?.generalAccessSetting === 0) {
+        // Only check explicit roles
+        if (project.managers?.includes(userDoc.id)) newRole = 3;
+        else if (project.contentManager?.includes(userDoc.id)) newRole = 2;
+        else if (project.contributors?.includes(userDoc.id)) newRole = 1;
+        else if (project.viewers?.includes(userDoc.id)) newRole = 0;
+      } else {
+        // Anyone with link - check both explicit roles and general access
+        if (project.managers?.includes(userDoc.id)) newRole = 3;
+        else if (
+          project.contentManager?.includes(userDoc.id) ||
+          project?.projectSettings?.generalAccessRole === 2
+        )
+          newRole = 2;
+        else if (
+          project.contributors?.includes(userDoc.id) ||
+          project?.projectSettings?.generalAccessRole === 1
+        )
+          newRole = 1;
+        else newRole = project?.projectSettings?.generalAccessRole ?? 0;
+      }
 
-      // Check if user is manager or content manager (manage access), then contributor and viewers (view only)
-      if (project.managers?.includes(userDoc.id)) {
-        setIsViewCollab(false);
-        return;
-      }
-      if (project.contentManagers?.includes(userDoc.id)) {
-        setIsViewCollab(false);
-        return;
-      }
-      if (project.contributors?.includes(userDoc.id) || project.viewers?.includes(userDoc.id)) {
-        setIsViewCollab(true);
-        return;
-      }
-      setIsViewCollab(true);
+      // Set role and all dependent flags
+      setRole(newRole);
+      setIsViewCollab(newRole !== 3);
+      setIsRenameVisible(newRole === 2 || newRole === 3);
+      setIsDeleteVisible(newRole === 3);
+      // Set visibility based on project settings
+      setIsDownloadVisible(!!project?.projectSettings?.allowDownload || newRole > 0);
     }
-  }, [object, user, userDoc]);
+  }, [object, user, userDoc, isDesign]);
+
+  useEffect(() => {
+    if (shouldOpenViewCollab && !showManageAccessModal) {
+      setShowViewCollabModal(true);
+      setShouldOpenViewCollab(false);
+    }
+  }, [shouldOpenViewCollab, showManageAccessModal]);
 
   const handleToggleOptions = (id) => {
     setClickedId(id);
@@ -213,8 +280,8 @@ function HomepageOptions({
     if (emails.length === 0) {
       return { success: false, message: "No email addresses added" };
     }
-    if (!role) {
-      return { success: false, message: "Select a role" };
+    if (role < 0 || role > 4) {
+      return { success: false, message: "Select a valid role" };
     }
     try {
       let result;
@@ -331,6 +398,14 @@ function HomepageOptions({
     }
   };
 
+  const handleShowViewCollab = useCallback(() => {
+    setShouldOpenViewCollab(true);
+    closeShareModal();
+    setTimeout(() => {
+      setShowViewCollabModal(true);
+    }, 100);
+  }, []);
+
   // Make a Copy Functions
   const openCopyModal = (e) => {
     if (e) e.stopPropagation();
@@ -366,6 +441,8 @@ function HomepageOptions({
       return { success: false, message: "Failed to copy design" };
     }
   };
+
+  // Restore Functions (scrap)
 
   // Rename Functions
   const openRenameModal = (e) => {
@@ -482,6 +559,7 @@ function HomepageOptions({
               isViewCollab={isViewCollab}
               isHomepage={true}
               isDrawer={isDrawer}
+              isThumbnail={!isTable && !isDrawer}
             />
           ) : (
             <div
@@ -517,7 +595,7 @@ function HomepageOptions({
                 </div>
                 Settings
               </div>
-              {/* {!((isDrawer || isTable) && isDesign) && (
+              {!((isDrawer || isTable) && isDownloadVisible) && (
                 <div className="dropdown-item" onClick={(e) => openDownloadModal(e)}>
                   <div className="icon">
                     <DownloadIcon style={{ fontSize: 20 }} className="icon" />
@@ -525,26 +603,38 @@ function HomepageOptions({
                   Download
                 </div>
               )}
-              {!(isDrawer || isTable) && isDesign && (
+              {!(isDrawer || isTable) && isDesign && isMakeCopyVisible && (
                 <div className="dropdown-item" onClick={(e) => openCopyModal(e)}>
                   <div className="icon">
                     <MakeACopyIcon style={{ fontSize: 20 }} className="icon" />
                   </div>
                   Make a copy
                 </div>
+              )}
+              {/* {!(isDrawer || isTable) && isDesign && isRestoreVisible && (
+                <div className="dropdown-item" onClick={() => {}}>
+                  <div className="icon">
+                    <RestoreIcon style={{ fontSize: 20 }} className="icon" />
+                  </div>
+                  Restore
+                </div>
               )} */}
-              <div className="dropdown-item" onClick={(e) => openRenameModal(e)}>
-                <div className="icon">
-                  <RenameIcon style={{ fontSize: 20 }} className="icon" />
+              {isRenameVisible && (
+                <div className="dropdown-item" onClick={(e) => openRenameModal(e)}>
+                  <div className="icon">
+                    <RenameIcon style={{ fontSize: 20 }} className="icon" />
+                  </div>
+                  Rename
                 </div>
-                Rename
-              </div>
-              {/* <div className="dropdown-item" onClick={(e) => openDeleteModal(e)}>
-                <div className="icon">
-                  <DeleteIcon style={{ fontSize: 20 }} className="icon" />
+              )}
+              {isDeleteVisible && (
+                <div className="dropdown-item" onClick={(e) => openDeleteModal(e)}>
+                  <div className="icon">
+                    <DeleteIcon style={{ fontSize: 20 }} className="icon" />
+                  </div>
+                  Delete
                 </div>
-                Delete
-              </div> */}
+              )}
               <div className="dropdown-item" onClick={handleOpenInfoModal}>
                 <div className="icon">
                   <DetailsIcon style={{ fontSize: 20 }} className="icon" />
@@ -562,10 +652,7 @@ function HomepageOptions({
         handleShare={handleShare}
         isDesign={isDesign}
         object={object}
-        onShowViewCollab={() => {
-          closeShareModal();
-          setShowViewCollabModal(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={showManageAccessModal}
@@ -574,10 +661,7 @@ function HomepageOptions({
         isDesign={isDesign}
         object={object}
         isViewCollab={false}
-        onShowViewCollab={() => {
-          closeManageAccessModal();
-          setShowViewCollabModal(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={showViewCollabModal}

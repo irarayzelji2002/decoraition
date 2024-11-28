@@ -73,6 +73,11 @@ app.post("/api/google-login", async (req, res) => {
   }
 });
 
+// Catch-all handler for other routes, serving the React app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

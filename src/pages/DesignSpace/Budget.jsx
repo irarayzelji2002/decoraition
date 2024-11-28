@@ -49,6 +49,9 @@ import {
   isOwnerEditorCommenterDesign,
   isCollaboratorDesign,
 } from "./Design";
+import TooltipWithClickAway from "../../components/TooltipWithClickAway";
+import { DescriptionTooltip } from "./Design";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 const style = {
   position: "absolute",
@@ -125,6 +128,9 @@ function Budget() {
 
   const [currencyDetails, setCurrencyDetails] = useState([]);
 
+  const [showGuide, setShowGuide] = useState(false);
+  const [showGuideLocked, setShowGuideLocked] = useState(false);
+
   // Initialize access rights
   useEffect(() => {
     if (!design?.designSettings || !userDoc?.id) return;
@@ -141,18 +147,6 @@ function Budget() {
     setIsOwnerEditorCommenter(isOwnerEditorCommenterDesign(design, userDoc.id));
     setIsCollaborator(isCollaboratorDesign(design, userDoc.id));
   }, [design, userDoc]);
-
-  useEffect(() => {
-    if (!changeMode) {
-      if (isOwner) setChangeMode("Editing");
-      else if (isOwnerEditor) setChangeMode("Editing");
-      else if (isOwnerEditorCommenter) setChangeMode("Commenting");
-      else if (isCollaborator) setChangeMode("Viewing");
-    }
-    console.log(
-      `commentCont - isOwner: ${isOwner}, isOwnerEditor: ${isOwnerEditor}, isOwnerEditorCommenter: ${isOwnerEditorCommenter}, isCollaborator: ${isCollaborator}`
-    );
-  }, [isOwner, isOwnerEditor, isOwnerEditorCommenter, isCollaborator]);
 
   // Currency Functions
   const isoToFlagEmoji = (isoCode) => {
@@ -232,18 +226,27 @@ function Budget() {
 
   // Get design
   useEffect(() => {
-    if (designId && userDesigns.length > 0) {
+    if (designId && (userDesigns.length > 0 || designs.length > 0)) {
       const fetchedDesign =
         userDesigns.find((d) => d.id === designId) || designs.find((d) => d.id === designId);
 
       if (!fetchedDesign) {
         console.error("Design not found.");
       } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
+        // Check if user has access
+        const hasAccess = isCollaboratorDesign(fetchedDesign, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to design.");
+          setLoading(false);
+          showToast("error", "You don't have access to this design");
+          navigate("/");
+          return;
+        }
         setDesign(fetchedDesign);
         console.log("current design:", fetchedDesign);
       }
     }
-  }, [designId, design, userDesigns]);
+  }, [designId, design, designs, userDesigns, isCollaborator]);
 
   // Get latest design version
   useEffect(() => {
@@ -608,6 +611,22 @@ function Budget() {
                   <AddIconGradient />
                 </IconButton>
               )}
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <TooltipWithClickAway
+                  open={showGuide}
+                  setOpen={setShowGuide}
+                  tooltipClickLocked={showGuideLocked}
+                  setTooltipClickLocked={setShowGuideLocked}
+                  title={
+                    <DescriptionTooltip description="This page is where you can add a budget for your design. It is optional to use this feature." />
+                  }
+                  className="helpTooltip inBudget"
+                >
+                  <div style={{ display: "flex" }}>
+                    <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+                  </div>
+                </TooltipWithClickAway>
+              </div>
             </div>
           )}
         </div>
@@ -659,7 +678,7 @@ function Budget() {
                   key={index}
                   item={item}
                   onEdit={() =>
-                    navigate(`/editItem/${budget.id}/${item.id}`, {
+                    navigate(`/editItem/${designId}/${budget.id}/${item.id}`, {
                       state: { navigateFrom: navigateFrom },
                     })
                   }
@@ -714,7 +733,7 @@ function Budget() {
                 <div
                   className="small-button-container budget"
                   onClick={() =>
-                    navigate(`/addItem/${budget.id}`, {
+                    navigate(`/addItem/${designId}/${budget.id}`, {
                       state: { navigateFrom: navigateFrom },
                     })
                   }

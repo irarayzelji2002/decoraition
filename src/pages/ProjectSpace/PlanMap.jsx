@@ -37,10 +37,17 @@ import LoadingPage from "../../components/LoadingPage";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import ProjectSpace from "./ProjectSpace";
 import deepEqual from "deep-equal";
+import { showToast } from "../../functions/utils";
+import {
+  isManagerProject,
+  isManagerContentManagerProject,
+  isManagerContentManagerContributorProject,
+  isCollaboratorProject,
+} from "./Project";
 
 function PlanMap() {
   const { projectId } = useParams();
-  const { isDarkMode, projects, userProjects } = useSharedProps();
+  const { userDoc, isDarkMode, projects, userProjects } = useSharedProps();
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
@@ -59,21 +66,59 @@ function PlanMap() {
   const [loadingImage, setLoadingImage] = useState(true);
   const [loadingProject, setLoadingProject] = useState(true);
 
+  const [isManager, setIsManager] = useState(false);
+  const [isManagerContentManager, setIsManagerContentManager] = useState(false);
+  const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
+    useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
+
   // Get project
   useEffect(() => {
-    if (projectId && userProjects.length > 0) {
+    if (projectId && (userProjects.length > 0 || projects.length > 0)) {
       const fetchedProject =
         userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
 
       if (!fetchedProject) {
         console.error("Project not found.");
-      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
-        setProject(fetchedProject);
-        console.log("current project:", fetchedProject);
+        setLoadingProject(false);
+      } else {
+        // Check if user has access
+        const hasAccess = isCollaboratorProject(fetchedProject, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to project.");
+          setLoadingProject(false);
+          showToast("error", "You don't have access to this project");
+          navigate("/");
+          return;
+        }
+
+        if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+          setProject(fetchedProject);
+          console.log("current project:", fetchedProject);
+        }
       }
     }
     setLoadingProject(false);
-  }, [projectId, projects, userProjects]);
+  }, [projectId, projects, userProjects, isCollaborator]);
+
+  // Initialize access rights
+  useEffect(() => {
+    if (!project?.projectSettings || !userDoc?.id) return;
+    // Check if user has any access
+    const hasAccess = isCollaboratorProject(project, userDoc.id);
+    if (!hasAccess) {
+      showToast("error", "You don't have access to this project");
+      navigate("/");
+      return;
+    }
+    // If they have access, proceed with setting roles
+    setIsManager(isManagerProject(project, userDoc.id));
+    setIsManagerContentManager(isManagerContentManagerProject(project, userDoc.id));
+    setIsManagerContentManagerContributor(
+      isManagerContentManagerContributorProject(project, userDoc.id)
+    );
+    setIsCollaborator(isCollaboratorProject(project, userDoc.id));
+  }, [project, userDoc]);
 
   useEffect(() => {
     if (user) {
@@ -183,16 +228,21 @@ function PlanMap() {
     }
   };
 
-  const handleStyleRefContinue = () => {
-    // Handle the continue action
-  };
-
   const handlePlanImageContinue = () => {
     if (initPlanImage) {
-      handlePlanImageUpload(initPlanImage, projectId, setPlanImage);
+      handlePlanImageUpload(initPlanImage, projectId, setPlanImage).then(() => {
+        showToast("success", "Plan map uploaded successfully");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500); // Adjust the timeout as needed
+      });
       setInitPlanImage(null);
     }
     setStyleRefModalOpen(false);
+  };
+
+  const handleNoPlanImage = () => {
+    showToast("error", "Please upload a plan map first");
   };
 
   if (loadingImage) {
@@ -244,6 +294,18 @@ function PlanMap() {
                         designId={design.designId}
                         deletePin={() => deletePin(design.id)} // Pass design.id to deletePin
                         editPin={() => navigateToEditPin(design.id)} // Pass design.id to editPin
+                        manager={
+                          isManagerContentManager &&
+                          (changeMode === "Managing Content" || changeMode === "Managing")
+                        }
+                        contributor={
+                          (isManager ||
+                            isManagerContentManager ||
+                            isManagerContentManagerContributor) &&
+                          (changeMode === "Managing Content" ||
+                            changeMode === "Managing" ||
+                            changeMode === "Contributing")
+                        }
                       />
                     </>
                   );
@@ -262,45 +324,60 @@ function PlanMap() {
         </div>
 
         {/* Floating Action Button */}
-        <div className="circle-button-container">
-          {menuOpen && (
-            <div className="small-buttons" style={{ cursor: "pointer" }}>
-              <div className="small-button-container" onClick={handleStyleRefModalOpen}>
-                <span className="small-button-text">Change plan</span>
-                <div className="small-circle-button">
-                  <ChangePlan />
+        {(isManager || isManagerContentManager || isManagerContentManagerContributor) &&
+          (changeMode === "Managing Content" ||
+            changeMode === "Managing" ||
+            changeMode === "Contributing") && (
+            <div className="circle-button-container">
+              {menuOpen && (
+                <div className="small-buttons" style={{ cursor: "pointer" }}>
+                  {isManagerContentManagerContributor &&
+                    (changeMode === "Managing Content" ||
+                      changeMode === "Managing" ||
+                      changeMode === "Contributing") && (
+                      <>
+                        <div className="small-button-container" onClick={handleStyleRefModalOpen}>
+                          <span className="small-button-text">Change plan</span>
+                          <div className="small-circle-button">
+                            <ChangePlan />
+                          </div>
+                        </div>{" "}
+                        <div
+                          className="small-button-container"
+                          onClick={planImage ? navigateToPinLayout : handleNoPlanImage}
+                        >
+                          <span className="small-button-text">Change pins order</span>
+                          <div className="small-circle-button">
+                            <ChangeOrder />
+                          </div>
+                        </div>
+                        <div
+                          className="small-button-container"
+                          onClick={planImage ? navigateToAdjustPin : handleNoPlanImage}
+                        >
+                          <span className="small-button-text">Adjust Pins</span>
+                          <div className="small-circle-button">
+                            <AdjustPin />
+                          </div>
+                        </div>
+                        <div
+                          className="small-button-container"
+                          onClick={planImage ? navigateToAddPin : handleNoPlanImage}
+                        >
+                          <span className="small-button-text">Add a Pin</span>
+                          <div className="small-circle-button">
+                            <AddPin />
+                          </div>
+                        </div>
+                      </>
+                    )}
                 </div>
-              </div>
-              <div
-                className="small-button-container"
-                onClick={planImage ? navigateToPinLayout : null}
-              >
-                <span className="small-button-text">Change pins order</span>
-                <div className="small-circle-button">
-                  <ChangeOrder />
-                </div>
-              </div>
-              <div
-                className="small-button-container"
-                onClick={planImage ? navigateToAdjustPin : null}
-              >
-                <span className="small-button-text">Adjust Pins</span>
-                <div className="small-circle-button">
-                  <AdjustPin />
-                </div>
-              </div>
-              <div className="small-button-container" onClick={planImage ? navigateToAddPin : null}>
-                <span className="small-button-text">Add a Pin</span>
-                <div className="small-circle-button">
-                  <AddPin />
-                </div>
+              )}
+              <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
+                {menuOpen ? <AddIcon /> : <AddIcon />}
               </div>
             </div>
           )}
-          <div className={`circle-button ${menuOpen ? "rotate" : ""} add`} onClick={toggleMenu}>
-            {menuOpen ? <AddIcon /> : <AddIcon />}
-          </div>
-        </div>
       </ProjectSpace>
 
       {/* Change Plan Modal */}
@@ -438,3 +515,10 @@ function PlanMap() {
 }
 
 export default PlanMap;
+
+export {
+  isManagerProject,
+  isManagerContentManagerProject,
+  isManagerContentManagerContributorProject,
+  isCollaboratorProject,
+};

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { IconButton, Menu, TextField } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -33,8 +33,9 @@ import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { handleNameChange } from "./backend/ProjectDetails";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 import deepEqual from "deep-equal";
+import _ from "lodash";
 
-function ProjectHead({ project, changeMode, setChangeMode }) {
+function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
   const { user, userDoc, handleLogout } = useSharedProps();
   const { projectId } = useParams();
   const isOnline = useNetworkStatus();
@@ -48,13 +49,14 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
 
   const [isChangeModeMenuOpen, setIsChangeModeMenuOpen] = useState(false);
   const [isChangeModeVisible, setIsChangeModeVisible] = useState(false);
-  const [role, setRole] = useState(0); //0 for viewer (default), 1 for editor, 2 for commenter, 3 for owner
+  const [role, setRole] = useState(null); //0 for viewer (default), 1 for editor, 2 for commenter, 3 for owner
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isManageAccessModalOpen, setIsManageAccessModalOpen] = useState(false);
   const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
   const [isViewCollab, setIsViewCollab] = useState(true);
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
+  const [shouldOpenViewCollab, setShouldOpenViewCollab] = useState(false);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteVisible, setIsDeleteVisible] = useState(false);
@@ -75,26 +77,86 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Find access level of the user (to display Manage Access/View Collaborators in ShareMenu)
     if (!project || !user || !userDoc) return;
 
-    // Check if user is manager or content manager (manage access), then contributor and viewers (view only)
-    if (project.managers?.includes(userDoc.id)) {
-      setIsViewCollab(false);
-      return;
+    let newRole = 0;
+
+    // First check if restricted access
+    if (project?.projectSettings?.generalAccessSetting === 0) {
+      // Only check explicit roles
+      if (project.managers?.includes(userDoc.id)) newRole = 3;
+      else if (project.contentManager?.includes(userDoc.id)) newRole = 2;
+      else if (project.contributors?.includes(userDoc.id)) newRole = 1;
+      else if (project.viewers?.includes(userDoc.id)) newRole = 0;
+    } else {
+      // Anyone with link - check both explicit roles and general access
+      if (project.managers?.includes(userDoc.id)) newRole = 3;
+      else if (
+        project.contentManager?.includes(userDoc.id) ||
+        project?.projectSettings?.generalAccessRole === 2
+      )
+        newRole = 2;
+      else if (
+        project.contributors?.includes(userDoc.id) ||
+        project?.projectSettings?.generalAccessRole === 1
+      )
+        newRole = 1;
+      else newRole = project?.projectSettings?.generalAccessRole ?? 0;
     }
-    if (project.contentManagers?.includes(userDoc.id)) {
-      setIsViewCollab(false);
-      return;
-    }
-    if (project.contributors?.includes(userDoc.id) || project.viewers?.includes(userDoc.id)) {
-      setIsViewCollab(true);
-      return;
-    }
-    setIsViewCollab(true);
 
     setNewName(project?.projectName ?? "Untitled Project");
+    // Set role and all dependent flags
+    setRole(newRole);
+    setIsViewCollab(newRole < 3);
+    setIsChangeModeVisible(newRole > 0);
+    setIsRenameVisible(newRole === 2 || newRole === 3);
+    setIsDeleteVisible(newRole === 3);
+    // Set visibility based on project settings
+    setIsDownloadVisible(!!project?.projectSettings?.allowDownload || newRole > 0);
+
+    handleDefaultChangeMode(newRole);
   }, [project, user, userDoc]);
+
+  useEffect(() => {
+    console.log("ProjectHead - changeMode role:", role);
+    console.log("ProjectHead - changeMode:", changeMode);
+  }, [role, changeMode]);
+
+  const handleDefaultChangeMode = (role) => {
+    if (!role) return;
+    if (role === 3) {
+      if (!location?.state?.changeMode) setChangeMode("Managing");
+    } else if (role === 2) {
+      if (!location?.state?.changeMode || location?.state?.changeMode === "Managing")
+        setChangeMode("Managing Content");
+    } else if (role === 1) {
+      if (
+        !location?.state?.changeMode ||
+        location?.state?.changeMode === "Managing" ||
+        location?.state?.changeMode === "Managing Content"
+      )
+        setChangeMode("Contributing");
+    } else if (role === 0) {
+      if (
+        !location?.state?.changeMode ||
+        location?.state?.changeMode === "Managing" ||
+        location?.state?.changeMode === "Managing Content" ||
+        location?.state?.changeMode === "Contributing"
+      )
+        setChangeMode("Viewing");
+    }
+  };
+
+  useEffect(() => {
+    handleDefaultChangeMode(role);
+  }, [role]);
+
+  useEffect(() => {
+    if (shouldOpenViewCollab && !isManageAccessModalOpen) {
+      setIsViewCollabModalOpen(true);
+      setShouldOpenViewCollab(false);
+    }
+  }, [shouldOpenViewCollab, isManageAccessModalOpen]);
 
   const handleEditNameToggle = () => {
     setIsEditingName((prev) => !prev);
@@ -235,8 +297,8 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
     if (emails.length === 0) {
       return { success: false, message: "No email addresses added" };
     }
-    if (!role) {
-      return { success: false, message: "Select a role" };
+    if (role < 0 || role > 4) {
+      return { success: false, message: "Select a valid role" };
     }
     try {
       const result = await handleAddCollaborators(
@@ -298,6 +360,14 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
       return { success: false, message: "Failed to change access of project" };
     }
   };
+
+  const handleShowViewCollab = useCallback(() => {
+    setShouldOpenViewCollab(true);
+    handleCloseManageAccessModal();
+    setTimeout(() => {
+      setIsViewCollabModalOpen(true);
+    }, 100);
+  }, []);
 
   // Rename Modal Action
   const handleRename = async (newName) => {
@@ -538,18 +608,33 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
               onOpenManageAccessModalView={handleOpenViewCollabModal}
               isViewCollab={isViewCollab}
             />
-          ) : isChangeModeMenuOpen && false ? (
-            <ChangeModeMenu onClose={handleClose} onBackToMenu={handleBackToMenu} />
+          ) : isChangeModeMenuOpen ? (
+            <ChangeModeMenu
+              onClose={handleClose}
+              onBackToMenu={handleBackToMenu}
+              role={role}
+              changeMode={changeMode}
+              setChangeMode={setChangeMode}
+              isDesign={false}
+            />
           ) : (
             <DefaultMenu
               isDesign={false}
               onOpenShareModal={handleShareClick}
               onCopyLink={handleCopyLink}
               onSetting={handleSettings}
+              onChangeMode={handleChangeModeClick}
+              changeMode={changeMode}
               onOpenDownloadModal={handleOpenDownloadModal}
               onOpenRenameModal={handleOpenRenameModal}
               onDelete={handleOpenDeleteModal}
               onOpenInfoModal={handleOpenInfoModal}
+              projectSettingsVisibility={{
+                isDownloadVisible,
+                isRenameVisible,
+                isDeleteVisible,
+                isChangeModeVisible,
+              }}
             />
           )}
         </Menu>
@@ -570,28 +655,22 @@ function ProjectHead({ project, changeMode, setChangeMode }) {
         handleShare={handleShare}
         isDesign={false}
         object={project}
-        onShowViewCollab={() => {
-          handleCloseShareModal();
-          setIsViewCollabModalOpen(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={isManageAccessModalOpen}
         onClose={handleCloseManageAccessModal}
-        handleSave={handleAccessChange}
+        handleAccessChange={handleAccessChange}
         isDesign={false}
         object={project}
         isViewCollab={false}
-        onShowViewCollab={() => {
-          handleCloseManageAccessModal();
-          setIsViewCollabModalOpen(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={isViewCollabModalOpen}
         onClose={handleCloseViewCollabModal}
         handleAccessChange={() => {}}
-        isDesign={true}
+        isDesign={false}
         object={project}
         isViewCollab={true}
       />

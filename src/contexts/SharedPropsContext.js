@@ -83,6 +83,14 @@ export function SharedPropsProvider({ children }) {
 
   useEffect(() => {
     const auth = getAuth();
+    const savedAuthState = localStorage.getItem("authState");
+
+    if (!savedAuthState) {
+      // No saved auth state, don't set up persistence or listener
+      setLoading(false);
+      return;
+    }
+
     setPersistence(auth, browserLocalPersistence)
       .then(() => {
         console.log("Persistence set to browserLocalPersistence");

@@ -86,6 +86,10 @@ exports.createUser = async (req, res) => {
       },
       colorPalettes: [],
       otp: null,
+      lockout: {
+        count: 0,
+        attemptAt: null,
+      },
       projects: [],
       designs: [],
       createdAt: new Date(),
@@ -126,6 +130,155 @@ exports.createUser = async (req, res) => {
       error: "Failed to create user",
       message: error.message,
     });
+  }
+};
+
+// Check lockout status on login
+exports.checkLockoutStatus = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const userSnapshot = await db.collection("users").where("email", "==", email).get();
+    if (userSnapshot.empty) {
+      return res.status(200).json({ isLocked: false });
+    }
+    const userDoc = userSnapshot.docs[0];
+    const userData = userDoc.data();
+
+    // Initialize lockout field if it doesn't exist
+    if (!userData.lockout) {
+      await db
+        .collection("users")
+        .doc(userDoc.id)
+        .update({
+          lockout: { count: 0, attemptAt: null },
+        });
+      return res.status(200).json({ isLocked: false });
+    }
+
+    const { count, attemptAt } = userData.lockout;
+
+    // If there are attempts and a timestamp exists
+    if (attemptAt) {
+      const lockoutTime = 1 * 60 * 1000; //  1 * 60 * 1000 for testing, 15 * 60 * 1000 for prod (minutes in milliseconds)
+      const now = new Date();
+      const timeSinceLastAttempt = now - attemptAt.toDate();
+
+      // If it's been more than 15 minutes since last attempt
+      if (timeSinceLastAttempt >= lockoutTime) {
+        // Reset the lockout regardless of count
+        await db.collection("users").doc(userDoc.id).update({
+          "lockout.count": 0,
+          "lockout.attemptAt": null,
+        });
+        return res.status(200).json({ isLocked: false });
+      }
+
+      // Only check for lockout if within time window
+      if (count >= 5) {
+        const remainingTime = Math.ceil((lockoutTime - timeSinceLastAttempt) / 60000);
+        return res.status(200).json({ isLocked: true, remainingMinutes: remainingTime });
+      }
+    }
+
+    return res.status(200).json({ isLocked: false });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return res.status(500).json({ error: "Failed to check lockout status" });
+  }
+};
+
+// Updating failed attempt count and time/reset lockout on login
+exports.updateFailedAttempts = async (req, res) => {
+  const updatedDocuments = [];
+  try {
+    const { email } = req.params;
+    const { reset } = req.body;
+    const existingUser = await db.collection("users").where("email", "==", email).get();
+    if (existingUser.empty) {
+      return res.status(400).json({ error: "Can't find user" });
+    }
+    const userFound = existingUser.docs[0];
+    const userData = userFound.data();
+    const userId = userFound.id;
+    const userRef = db.collection("users").doc(userId);
+    console.log("userId", userId);
+
+    if (!reset) {
+      // Check if there's an existing lockout with timestamp
+      if (userData.lockout?.attemptAt) {
+        const lockoutTime = 1 * 60 * 1000; // 1 minute for testing (change to 15 * 60 * 1000 for production)
+        const now = new Date();
+        const timeSinceLastAttempt = now - userData.lockout.attemptAt.toDate();
+
+        // If time has expired, treat this as the first attempt
+        if (timeSinceLastAttempt >= lockoutTime) {
+          updatedDocuments.push({
+            collection: "users",
+            id: userId,
+            field: "lockout",
+            previousValue: userData.lockout,
+          });
+          await userRef.update({
+            lockout: {
+              count: 1,
+              attemptAt: new Date(),
+            },
+          });
+          return res.status(200).json({ isLocked: false, attemptsLeft: 5 });
+        }
+      }
+
+      const currentCount = (userData.lockout?.count || 0) + 1;
+      updatedDocuments.push({
+        collection: "users",
+        id: userId,
+        field: "lockout",
+        previousValue: userData.lockout,
+      });
+      await userRef.update({
+        lockout: {
+          count: currentCount,
+          attemptAt: new Date(),
+        },
+      });
+      if (currentCount >= 6) {
+        return res.status(200).json({ isLocked: true, remainingMinutes: 1 }); // Change to 15 for production
+      }
+      return res.status(200).json({ isLocked: false, attemptsLeft: 6 - currentCount });
+    } else {
+      updatedDocuments.push({
+        collection: "users",
+        id: userId,
+        field: "lockout",
+        previousValue: userData.lockout,
+      });
+      await userRef.update({
+        lockout: {
+          count: 0,
+          attemptAt: null,
+        },
+      });
+      return res.status(200).json({ isLocked: false });
+    }
+  } catch (error) {
+    console.error("Error fetching user:", error);
+
+    // Rollback updates to existing documents
+    for (const doc of updatedDocuments) {
+      try {
+        await db
+          .collection(doc.collection)
+          .doc(doc.id)
+          .update({
+            [doc.field]: doc.previousValue,
+          });
+        console.log(`Rolled back ${doc.field} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    return res.status(500).json({ error: "Failed to check lockout status" });
   }
 };
 

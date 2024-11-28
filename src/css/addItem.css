@@ -4,12 +4,13 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  padding-top: 74px;
 }
 
 .left-column,
 .right-column {
   width: 40%;
-  height: 77vh;
+  height: 100%;
   padding: 40px;
   display: flex;
   flex-direction: column;

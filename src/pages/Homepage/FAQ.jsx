@@ -1,10 +1,14 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../../css/landing.css";
 import IconButton from "@mui/material/IconButton";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navigateTo = location.state?.navigateFrom || "/";
 
   const toggleFaq = (index) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -41,6 +45,11 @@ const FAQ = () => {
       answer:
         "Not at all! DecorAItion Planner provides an extensive and growing library of styles to suit your tastes. Whether you love modern, rustic, minimalistic, or eclectic designs, you’ll find something perfect for your room.",
     },
+    {
+      question: "Is there a limitation on what the AI can generate?",
+      answer:
+        "The AI stable-diffusion model used by DecorAItion Planner is highly advanced and can generate a wide range of design styles and customizations. However, the AI is still learning and improving, so there may be some limitations on extremely complex or unique designs. For the context of room interior design, the app is intended for designs.",
+    },
   ];
 
   return (
@@ -65,7 +74,7 @@ const FAQ = () => {
           }}
         >
           <IconButton
-            onClick={() => window.history.back()}
+            onClick={() => navigate(navigateTo)}
             style={{
               color: "var(--color-white)",
               fontSize: "2.5rem",

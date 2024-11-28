@@ -27,7 +27,10 @@ import {
   dialogContentStyles,
   dialogActionsStyles,
 } from "./RenameModal";
-import { KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon } from "@mui/icons-material";
+import {
+  HelpOutline,
+  KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
+} from "@mui/icons-material";
 import { getDesignImage } from "../pages/DesignSpace/backend/DesignActions";
 import { CustomMenuItem } from "../pages/DesignSpace/CommentContainer";
 import { formatDateLong } from "../pages/Homepage/backend/HomepageActions";
@@ -38,9 +41,12 @@ import {
   textFieldInputProps,
   textFieldStyles,
 } from "../pages/DesignSpace/DesignSettings";
+import { DescriptionTooltip } from "./CustomTooltip";
+import TooltipWithClickAway from "./TooltipWithClickAway";
 
 const ImportDesignModal = ({ open, onClose, project }) => {
-  const { user, userDoc, users, userDesigns, userDesignVersions } = useSharedProps();
+  const { user, userDoc, users, designs, userDesigns, designVersions, userDesignVersions } =
+    useSharedProps();
   const [inputValue, setInputValue] = useState("");
   const [originalDesignOptions, setOriginalDesignOptions] = useState([]);
   const [designOptions, setDesignOptions] = useState([]);
@@ -51,6 +57,8 @@ const ImportDesignModal = ({ open, onClose, project }) => {
   const [openDesignOptions, setOpenDesignOptions] = useState(false);
   const [error, setError] = useState("");
   const [isImportBtnDisabled, setIsImportBtnDisabled] = useState(false);
+  const [showInfoTooltip, setShowInfoTooltip] = useState(false);
+  const [infoTooltipClickLocked, setInfoTooltipClickLocked] = useState(false);
 
   const selectDesignRef = useRef(null);
 
@@ -81,6 +89,7 @@ const ImportDesignModal = ({ open, onClose, project }) => {
     const ownerFirstName = ownerUser?.firstName.toLowerCase();
     const ownerLastName = ownerUser?.lastName.toLowerCase();
     const ownerFullname = `${ownerFirstName} ${ownerLastName}`;
+    const ownerEmail = ownerUser?.email.toLowerCase();
     const createdAt = formatDateLong(design.createdAt).toLowerCase();
     const modifiedAt = formatDateLong(design.createdAt).toLowerCase();
 
@@ -95,6 +104,7 @@ const ImportDesignModal = ({ open, onClose, project }) => {
     if (ownerFullname === search) return 70;
     if (ownerFirstName === search) return 65;
     if (ownerLastName === search) return 60;
+    if (ownerEmail === search) return 58;
 
     if (modifiedAt.startsWith(search)) return 55;
     if (createdAt.startsWith(search)) return 50;
@@ -102,6 +112,7 @@ const ImportDesignModal = ({ open, onClose, project }) => {
     if (ownerFullname.startsWith(search)) return 40;
     if (ownerFirstName.startsWith(search)) return 35;
     if (ownerLastName.startsWith(search)) return 30;
+    if (ownerEmail.startsWith(search)) return 28;
 
     if (modifiedAt?.includes(search)) return 25;
     if (createdAt?.includes(search)) return 20;
@@ -109,6 +120,7 @@ const ImportDesignModal = ({ open, onClose, project }) => {
     if (ownerFullname?.includes(search)) return 10;
     if (ownerFirstName?.includes(search)) return 5;
     if (ownerLastName?.includes(search)) return 3;
+    if (ownerEmail?.includes(search)) return 2;
 
     return 0;
   };
@@ -245,8 +257,20 @@ const ImportDesignModal = ({ open, onClose, project }) => {
           justifyContent: "start",
         }}
       >
-        <Typography variant="body1" sx={{ marginBottom: "10px" }}>
+        <Typography variant="body1" sx={{ margin: "3px 0px 7px 0px" }}>
           Select a design to import
+          <TooltipWithClickAway
+            open={showInfoTooltip}
+            setOpen={setShowInfoTooltip}
+            tooltipClickLocked={infoTooltipClickLocked}
+            setTooltipClickLocked={setInfoTooltipClickLocked}
+            title={
+              <DescriptionTooltip description="Search a design by typing in the searchbox below, then select from the options. You can type a design name, modified date, created date or owner's details." />
+            }
+            className="helpTooltip inPromptBar"
+          >
+            <HelpOutline sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+          </TooltipWithClickAway>
         </Typography>
         <div style={{ display: "flex", justifyContent: "center", flexDirection: "column" }}>
           <TextField // Input field at the top
@@ -282,7 +306,9 @@ const ImportDesignModal = ({ open, onClose, project }) => {
                   >
                     <DesignInfoTooltip
                       design={design}
+                      designs={designs}
                       userDesigns={userDesigns}
+                      designVersions={designVersions}
                       userDesignVersions={userDesignVersions}
                       users={users}
                     />
@@ -317,8 +343,10 @@ const ImportDesignModal = ({ open, onClose, project }) => {
                   </Typography>
                   <DesignInfoBox
                     design={selectedDesign}
+                    designs={designs}
                     userDesigns={userDesigns}
                     userDesignVersions={userDesignVersions}
+                    designVersions={designVersions}
                     users={users}
                   />
                 </div>
@@ -380,7 +408,14 @@ const formControlStyles = {
   },
 };
 
-export const DesignInfoTooltip = ({ design, userDesigns, userDesignVersions, users }) => (
+export const DesignInfoTooltip = ({
+  design,
+  designs,
+  userDesigns,
+  designVersions,
+  userDesignVersions,
+  users,
+}) => (
   <Box
     sx={{
       display: "flex",
@@ -393,8 +428,14 @@ export const DesignInfoTooltip = ({ design, userDesigns, userDesignVersions, use
       <div className="select-image-preview" style={{ margin: "0" }}>
         <img
           src={
-            getDesignImage(design.id, userDesigns, userDesignVersions, 0) ||
-            "/img/transparent-image.png"
+            getDesignImage(
+              design.id,
+              designs,
+              userDesigns,
+              designVersions,
+              userDesignVersions,
+              0
+            ) || "/img/transparent-image.png"
           }
           alt=""
         />
@@ -448,7 +489,9 @@ export const DesignInfoTooltip = ({ design, userDesigns, userDesignVersions, use
 
 export const DesignInfoBox = ({
   design,
+  designs,
   userDesigns,
+  designVersions,
   userDesignVersions,
   users,
   className = "",
@@ -466,8 +509,14 @@ export const DesignInfoBox = ({
       <div className="select-image-preview" style={{ margin: "0", width: "63px", height: "63px" }}>
         <img
           src={
-            getDesignImage(design.id, userDesigns, userDesignVersions, 0) ||
-            "/img/transparent-image.png"
+            getDesignImage(
+              design.id,
+              designs,
+              userDesigns,
+              designVersions,
+              userDesignVersions,
+              0
+            ) || "/img/transparent-image.png"
           }
           alt=""
         />

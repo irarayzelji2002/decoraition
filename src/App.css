@@ -239,6 +239,50 @@ select:-webkit-autofill {
   width: 90%;
 }
 
+.helpTooltip {
+  margin-left: 10px !important;
+  padding: 6px !important;
+  height: 35px !important;
+  width: 35px !important;
+  transform: scale(0.9) !important;
+}
+
+.helpTooltip.inPromptBar {
+  margin-top: -5px !important;
+}
+
+.helpTooltip.inMeuItem {
+  margin-left: 0px !important;
+}
+
+.helpTooltip.inBudget {
+  margin-left: 0px !important;
+}
+
+.user-details .notifTitle {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--color-white);
+  margin-bottom: 6px;
+}
+
+.user-details .notifContent {
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--color-white);
+  margin-bottom: 6px;
+}
+
+.user-details .notifDate {
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--greyText);
+}
+
+.MuiDialogTitle-root .MuiTypography-root {
+  text-align: left !important;
+}
+
 @media (max-width: 480px) {
   .shorten-text {
     width: 45px;
@@ -257,6 +301,10 @@ select:-webkit-autofill {
   --color-primary: #faa653;
   --color-secondary: #f04f59;
   --color-tertiary: #27262c;
+  --color-yellow: #f9a754;
+  --color-orange: #f26b27;
+  --color-rose: #ef4e59;
+  --color-magenta: #eb0d79;
   --borders: #5e5e5e;
   --color-grey: #9d9ca6;
   --color-grey2: #c1c0ce;
@@ -495,8 +543,8 @@ select:-webkit-autofill {
   --table-rows-hover: #d2d1d6;
   --lighterDarkBg: #e4e4e4;
   --iconDark: #525156;
-  --greyText: #b2b2b4;
-  --greyTextDarker: #848385;
+  --greyText: #676767;
+  --greyTextDarker: #575757;
   --disabledButton: #aaaaaa;
   --disabledInput: #aaaaaa;
   --selectImagePreview: #9e9e9e;

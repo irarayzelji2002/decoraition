@@ -23,47 +23,49 @@ function SearchItem() {
   return (
     <div className="search-item-page">
       <TopBar state="Search Item" navigateTo={navigateTo} navigateFrom={navigateFrom} />
-      <Paper
-        component="form"
-        sx={{
-          p: "2px 4px",
-          display: "flex",
-          alignItems: "center",
-          width: "69%",
-          marginTop: "40px",
-          backgroundColor: "var(--bgMain)",
-          border: "2px solid var(--borderInput)",
-          borderRadius: "20px",
-          "&:focus-within": {
-            borderColor: "var(--brightFont)",
-          },
-        }}
-      >
-        <IconButton type="button" sx={{ p: "10px", color: "white" }} aria-label="search">
-          <SearchIcon sx={{ color: "white" }} />
-        </IconButton>
-        <InputBase
-          sx={{ ml: 1, flex: 1, color: "white" }}
-          placeholder="Search Item"
-          inputProps={{ "aria-label": "search google maps" }}
-        />
-      </Paper>
-      <div className="grid-container">
-        {items.map((item, index) => (
-          <div key={index} className="grid-item">
-            <div className="image-placeholder2"></div>
-            <div className="item-details">
-              <div className="item-name">{item.name}</div>
-              <div className="item-price" style={{ fontWeight: "bold" }}>
-                {item.price}
+      <div style={{ paddingTop: "74px" }}>
+        <Paper
+          component="form"
+          sx={{
+            p: "2px 4px",
+            display: "flex",
+            alignItems: "center",
+            width: "69%",
+            marginTop: "40px",
+            backgroundColor: "var(--bgMain)",
+            border: "2px solid var(--borderInput)",
+            borderRadius: "20px",
+            "&:focus-within": {
+              borderColor: "var(--brightFont)",
+            },
+          }}
+        >
+          <IconButton type="button" sx={{ p: "10px", color: "white" }} aria-label="search">
+            <SearchIcon sx={{ color: "white" }} />
+          </IconButton>
+          <InputBase
+            sx={{ ml: 1, flex: 1, color: "white" }}
+            placeholder="Search Item"
+            inputProps={{ "aria-label": "search google maps" }}
+          />
+        </Paper>
+        <div className="grid-container">
+          {items.map((item, index) => (
+            <div key={index} className="grid-item">
+              <div className="image-placeholder2"></div>
+              <div className="item-details">
+                <div className="item-name">{item.name}</div>
+                <div className="item-price" style={{ fontWeight: "bold" }}>
+                  {item.price}
+                </div>
+                <div className="item-store">{item.store}</div>
               </div>
-              <div className="item-store">{item.store}</div>
             </div>
-          </div>
-        ))}
-      </div>
-      <div className="select-button-container">
-        <button className="select-button">Select item</button>
+          ))}
+        </div>
+        <div className="select-button-container">
+          <button className="select-button">Select item</button>
+        </div>
       </div>
     </div>
   );

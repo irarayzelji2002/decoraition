@@ -257,7 +257,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
     const budgetId = selectedDesignVersionBudgetId;
     const fetchedBudget = userBudgets.find((budget) => budget.id === budgetId);
     if (!fetchedBudget) {
-      console.error("Budget not found.");
+      console.warn("Budget not found.");
     } else {
       if (fetchedBudget.budget?.amount > 0 || fetchedBudget.items?.length > 0) {
         setDownloadOptions((prev) => {
@@ -320,7 +320,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
     const projectBudgetId = project.projectBudgetId;
     const fetchedProjectBudget = userProjectBudgets.find((budget) => budget.id === projectBudgetId);
     if (!fetchedProjectBudget) {
-      console.error("Project Budget not found.");
+      console.warn("Project Budget not found.");
     } else {
       if (fetchedProjectBudget.budgets?.length > 0 || fetchedProjectBudget.budget?.amount > 0) {
         setDownloadOptions((prev) => {

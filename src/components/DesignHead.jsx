@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { IconButton, Menu, TextField } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -62,6 +62,7 @@ function DesignHead({
   const [isViewCollabModalOpen, setIsViewCollabModalOpen] = useState(false);
   const [isViewCollab, setIsViewCollab] = useState(false);
   const [isShareConfirmationModalOpen, setIsShareConfirmationModalOpen] = useState(false);
+  const [shouldOpenViewCollab, setShouldOpenViewCollab] = useState(false);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteVisible, setIsDeleteVisible] = useState(false);
@@ -131,7 +132,52 @@ function DesignHead({
       !!design?.designSettings?.allowViewHistory || newRole === 1 || newRole === 3
     );
     setIsMakeCopyVisible(!!design?.designSettings?.allowCopy || newRole === 1 || newRole === 3);
+
+    handleDefaultChangeMode(newRole);
   }, [design, user, userDoc]);
+
+  useEffect(() => {
+    console.log("DesignHead - changeMode role:", role);
+    console.log("DesignHead - changeMode:", changeMode);
+  }, [role, changeMode]);
+
+  const handleDefaultChangeMode = (role) => {
+    if (!role) return;
+    if (role === 3 || role === 1) {
+      if (!location?.state?.changeMode && !location.pathname.startsWith("/budget"))
+        setChangeMode("Editng");
+      else if (
+        location.pathname.startsWith("/budget") &&
+        location?.state?.changeMode === "Commenting"
+      )
+        setChangeMode("Editing");
+    } else if (role === 2) {
+      if (
+        (!location?.state?.changeMode || location?.state?.changeMode === "Editing") &&
+        !location.pathname.startsWith("/budget")
+      )
+        setChangeMode("Commenting");
+      else if (
+        location.pathname.startsWith("/budget") &&
+        location?.state?.changeMode === "Commenting"
+      )
+        setChangeMode("Viewing");
+    } else if (role === 0) {
+      if (
+        !location?.state?.changeMode ||
+        location?.state?.changeMode === "Editing" ||
+        location?.state?.changeMode === "Commenting"
+      )
+        setChangeMode("Viewing");
+    }
+  };
+
+  useEffect(() => {
+    if (shouldOpenViewCollab && !isManageAccessModalOpen) {
+      setIsViewCollabModalOpen(true);
+      setShouldOpenViewCollab(false);
+    }
+  }, [shouldOpenViewCollab, isManageAccessModalOpen]);
 
   const handleHistoryClick = () => {
     setIsHistoryOpen(true);
@@ -168,22 +214,6 @@ function DesignHead({
     setAnchorElShare(event.currentTarget);
     setIsShareMenuOpen(true);
   };
-
-  useEffect(() => {
-    console.log("Share menu state:", {
-      anchorElShare,
-      isShareMenuOpen,
-      isShareModalOpen,
-      isManageAccessModalOpen,
-      isViewCollabModalOpen,
-    });
-  }, [
-    anchorElShare,
-    isShareMenuOpen,
-    isShareModalOpen,
-    isManageAccessModalOpen,
-    isViewCollabModalOpen,
-  ]);
 
   const handleChangeModeClick = () => {
     setIsChangeModeMenuOpen(true);
@@ -320,8 +350,8 @@ function DesignHead({
     if (emails.length === 0) {
       return { success: false, message: "No email addresses added" };
     }
-    if (!role) {
-      return { success: false, message: "Select a role" };
+    if (role < 0 || role > 4) {
+      return { success: false, message: "Select a valid role" };
     }
     try {
       const result = await handleAddCollaborators(
@@ -384,6 +414,14 @@ function DesignHead({
       return { success: false, message: "Failed to change access of design" };
     }
   };
+
+  const handleShowViewCollab = useCallback(() => {
+    setShouldOpenViewCollab(true);
+    handleCloseManageAccessModal();
+    setTimeout(() => {
+      setIsViewCollabModalOpen(true);
+    }, 100);
+  }, []);
 
   // Make a Copy Modal Action
   const handleCopy = async (design, designVersionId, shareWithCollaborators = false) => {
@@ -709,6 +747,7 @@ function DesignHead({
               role={role}
               changeMode={changeMode}
               setChangeMode={setChangeMode}
+              isDesign={true}
             />
           ) : (
             <DefaultMenu
@@ -718,7 +757,7 @@ function DesignHead({
               onCopyLink={handleCopyLink}
               setIsSidebarOpen={handleHistoryClick} // design only
               onSetting={handleSettings}
-              onChangeMode={handleChangeModeClick} // design only
+              onChangeMode={handleChangeModeClick}
               changeMode={changeMode}
               onOpenDownloadModal={handleOpenDownloadModal}
               onOpenMakeCopyModal={handleOpenMakeCopyModal} // design only
@@ -757,10 +796,7 @@ function DesignHead({
         handleShare={handleShare}
         isDesign={true}
         object={design}
-        onShowViewCollab={() => {
-          handleCloseShareModal();
-          setIsViewCollabModalOpen(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={isManageAccessModalOpen}
@@ -769,10 +805,7 @@ function DesignHead({
         isDesign={true}
         object={design}
         isViewCollab={false}
-        onShowViewCollab={() => {
-          handleCloseManageAccessModal();
-          setIsViewCollabModalOpen(true);
-        }}
+        onShowViewCollab={handleShowViewCollab}
       />
       <ManageAccessModal
         isOpen={isViewCollabModalOpen}

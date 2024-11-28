@@ -35,6 +35,7 @@ function EnhancedTableHead(props) {
     onRequestSort,
     sortOrders,
     isProjectSpace,
+    isManagerContentManager,
   } = props;
   const createSortHandler = (property) => (event) => {
     event.stopPropagation();
@@ -110,7 +111,7 @@ function EnhancedTableHead(props) {
               </TableCell>
             )
         )}
-        {isProjectSpace && (
+        {isProjectSpace && isManagerContentManager && (
           <TableCell
             sx={{
               paddingTop: "5px",
@@ -179,6 +180,7 @@ function EnhancedTable({
   isHomepage,
   isProjectSpace,
   openConfirmRemove,
+  isManagerContentManager,
 }) {
   const navigate = useNavigate();
   const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
@@ -382,6 +384,7 @@ function EnhancedTable({
               rowCount={rows.length}
               sortOrders={sortOrders}
               isProjectSpace={isProjectSpace}
+              isManagerContentManager={isManagerContentManager}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
@@ -428,30 +431,28 @@ function EnhancedTable({
                       const value = row[column.id];
                       return (
                         !column.hidden && (
-                          <>
-                            <TableCell
-                              key={column.id}
-                              align={column.align}
-                              sx={{
-                                paddingTop: "5px",
-                                paddingBottom: "5px",
-                                borderBottom: "1px solid var(--table-stroke)",
-                                color: "var(--color-white)",
-                                backgroundColor: "var(--table-rows)",
-                                //   "&:hover": {
-                                //     color: "var(--color-white)",
-                                //     backgroundColor: "var(--table-rows-hover)",
-                                //   },
-                              }}
-                              onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
-                            >
-                              {column.format && !column.hidden ? column.format(value) : value}
-                            </TableCell>
-                          </>
+                          <TableCell
+                            key={`${row.id}-${column.id}`}
+                            align={column.align}
+                            sx={{
+                              paddingTop: "5px",
+                              paddingBottom: "5px",
+                              borderBottom: "1px solid var(--table-stroke)",
+                              color: "var(--color-white)",
+                              backgroundColor: "var(--table-rows)",
+                              //   "&:hover": {
+                              //     color: "var(--color-white)",
+                              //     backgroundColor: "var(--table-rows-hover)",
+                              //   },
+                            }}
+                            onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
+                          >
+                            {column.format && !column.hidden ? column.format(value) : value}
+                          </TableCell>
                         )
                       );
                     })}
-                    {isProjectSpace && (
+                    {isProjectSpace && isManagerContentManager && (
                       <TableCell
                         sx={{
                           paddingTop: "5px",
@@ -582,6 +583,7 @@ export default function HomepageTable({
   setOptionsState = () => {},
   isProjectSpace = false,
   openConfirmRemove = () => {},
+  isManagerContentManager = false,
 }) {
   const columns = [
     {
@@ -733,6 +735,7 @@ export default function HomepageTable({
       isHomepage={isHomepage}
       isProjectSpace={isProjectSpace}
       openConfirmRemove={openConfirmRemove}
+      isManagerContentManager={isManagerContentManager}
     />
   );
 }

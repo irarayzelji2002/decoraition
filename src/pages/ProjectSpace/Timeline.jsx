@@ -24,13 +24,19 @@ import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import ProjectSpace from "./ProjectSpace";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import deepEqual from "deep-equal";
+import {
+  isManagerProject,
+  isManagerContentManagerProject,
+  isManagerContentManagerContributorProject,
+  isCollaboratorProject,
+} from "./Project";
 
 function Timeline() {
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
-  const { isDarkMode, projects, userProjects } = useSharedProps();
+  const { user, userDoc, isDarkMode, projects, userProjects } = useSharedProps();
   const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
   const [project, setProject] = useState({});
   const [loadingProject, setLoadingProject] = useState(true);
@@ -44,22 +50,59 @@ function Timeline() {
   const [taskIdToDelete, setTaskIdToDelete] = useState(null); // Add state for taskId to delete
   const [loadingTasks, setLoadingTasks] = useState(true); // Add loading state for tasks
 
+  const [isManager, setIsManager] = useState(false);
+  const [isManagerContentManager, setIsManagerContentManager] = useState(false);
+  const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
+    useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
+
   // Get project
   useEffect(() => {
-    if (projectId && userProjects.length > 0) {
+    if (projectId && (userProjects.length > 0 || projects.length > 0)) {
       const fetchedProject =
         userProjects.find((d) => d.id === projectId) || projects.find((d) => d.id === projectId);
 
       if (!fetchedProject) {
         console.error("Project not found.");
         setLoadingProject(false);
-      } else if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
-        setProject(fetchedProject);
-        console.log("current project:", fetchedProject);
+      } else {
+        // Check if user has access
+        const hasAccess = isCollaboratorProject(fetchedProject, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to project.");
+          setLoadingProject(false);
+          showToast("error", "You don't have access to this project");
+          navigate("/");
+          return;
+        }
+
+        if (Object.keys(project).length === 0 || !deepEqual(project, fetchedProject)) {
+          setProject(fetchedProject);
+          console.log("current project:", fetchedProject);
+        }
       }
     }
     setLoadingProject(false);
-  }, [projectId, projects, userProjects]);
+  }, [projectId, projects, userProjects, isCollaborator]);
+
+  // Initialize access rights
+  useEffect(() => {
+    if (!project?.projectSettings || !userDoc?.id) return;
+    // Check if user has any access
+    const hasAccess = isCollaboratorProject(project, userDoc.id);
+    if (!hasAccess) {
+      showToast("error", "You don't have access to this project");
+      navigate("/");
+      return;
+    }
+    // If they have access, proceed with setting roles
+    setIsManager(isManagerProject(project, userDoc.id));
+    setIsManagerContentManager(isManagerContentManagerProject(project, userDoc.id));
+    setIsManagerContentManagerContributor(
+      isManagerContentManagerContributorProject(project, userDoc.id)
+    );
+    setIsCollaborator(isCollaboratorProject(project, userDoc.id));
+  }, [project, userDoc]);
 
   const openDeleteModal = (taskId) => {
     setTaskIdToDelete(taskId);
@@ -280,11 +323,17 @@ function Timeline() {
                   }
                 />
               </div>
-              <div className="add-event-button">
-                <button className="design-button" onClick={handleAddEventClick}>
-                  Add Event for {formatDate(date)}
-                </button>
-              </div>
+              {isManagerContentManagerContributor &&
+                (changeMode === "Managing Content" ||
+                  changeMode === "Managing" ||
+                  changeMode === "Contributing") && (
+                  <div className="add-event-button">
+                    <button className="design-button" onClick={handleAddEventClick}>
+                      Add Event for {formatDate(date)}
+                    </button>
+                  </div>
+                )}
+
               <div className="tasks-list">
                 <h2 style={{ color: "var(--color-white)" }}>All Tasks</h2>
                 {loadingTasks ? (
@@ -303,12 +352,20 @@ function Timeline() {
                         </p>
                       </div>
                       <div className="task-actions">
-                        <div onClick={() => handleEditClick(task.id)}>
-                          <EditPen />
-                        </div>
-                        <div onClick={() => openDeleteModal(task.id)}>
-                          <Trash />
-                        </div>
+                        {isManagerContentManagerContributor &&
+                          (changeMode === "Managing Content" ||
+                            changeMode === "Managing" ||
+                            changeMode === "Contributing") && (
+                            <div onClick={() => handleEditClick(task.id)}>
+                              <EditPen />
+                            </div>
+                          )}
+                        {isManagerContentManager &&
+                          (changeMode === "Managing Content" || changeMode === "Managing") && (
+                            <div onClick={() => openDeleteModal(task.id)}>
+                              <Trash />
+                            </div>
+                          )}
                       </div>
                     </div>
                   ))
@@ -353,12 +410,20 @@ function Timeline() {
                     </p>
                   </div>
                   <div className="task-actions">
-                    <div onClick={() => handleEditClick(task.id)}>
-                      <EditPen />
-                    </div>
-                    <div onClick={() => openDeleteModal(task.id)}>
-                      <Trash />
-                    </div>
+                    {isManagerContentManagerContributor &&
+                      (changeMode === "Managing Content" ||
+                        changeMode === "Managing" ||
+                        changeMode === "Contributing") && (
+                        <div onClick={() => handleEditClick(task.id)}>
+                          <EditPen />
+                        </div>
+                      )}
+                    {isManagerContentManager &&
+                      (changeMode === "Managing Content" || changeMode === "Managing") && (
+                        <div onClick={() => openDeleteModal(task.id)}>
+                          <Trash />
+                        </div>
+                      )}
                   </div>
                 </div>
               ))
@@ -394,12 +459,20 @@ function Timeline() {
               </div>
 
               <div className="task-actions">
-                <div onClick={() => handleEditClick(tasks[currentTaskIndex].id)}>
-                  <EditPen />
-                </div>
-                <div onClick={() => openDeleteModal(tasks[currentTaskIndex].id)}>
-                  <Trash />
-                </div>
+                {isManagerContentManagerContributor &&
+                  (changeMode === "Managing Content" ||
+                    changeMode === "Managing" ||
+                    changeMode === "Contributing") && (
+                    <div onClick={() => handleEditClick(tasks[currentTaskIndex].id)}>
+                      <EditPen />
+                    </div>
+                  )}
+                {isManagerContentManager &&
+                  (changeMode === "Managing Content" || changeMode === "Managing") && (
+                    <div onClick={() => openDeleteModal(tasks[currentTaskIndex].id)}>
+                      <Trash />
+                    </div>
+                  )}
               </div>
             </div>{" "}
             <div style={{ padding: "1rem", paddingTop: "0px" }}>

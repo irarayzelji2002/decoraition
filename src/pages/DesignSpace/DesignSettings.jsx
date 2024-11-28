@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import deepEqual from "deep-equal";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
@@ -29,6 +29,7 @@ import {
   AnyoneWithLinkIcon,
 } from "./svg/DesignAccessIcons";
 import LoadingPage from "../../components/LoadingPage";
+import { isCollaboratorDesign } from "./Design";
 
 export const theme = createTheme({
   components: {
@@ -58,8 +59,9 @@ export const theme = createTheme({
 const DesignSettings = () => {
   const { user, userDoc, designs, userDesigns } = useSharedProps();
   const { designId } = useParams({}); // Get the designId parameter from the URL
+  const navigate = useNavigate();
   const location = useLocation();
-  const navigateTo = location.state?.navigateFrom || "/";
+  const navigateTo = location.state?.navigateFrom || (designId ? `/design/${designId}` : "/");
   const navigateFrom = location.pathname;
 
   const [design, setDesign] = useState({});
@@ -82,7 +84,7 @@ const DesignSettings = () => {
   const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
 
   useEffect(() => {
-    if (designId && userDesigns.length > 0) {
+    if (designId && (userDesigns.length > 0 || designs.length > 0)) {
       const fetchedDesign =
         userDesigns.find((design) => design.id === designId) ||
         designs.find((design) => design.id === designId);
@@ -90,6 +92,16 @@ const DesignSettings = () => {
       if (!fetchedDesign) {
         console.error("Design not found.");
       } else if (Object.keys(design).length === 0 || !deepEqual(design, fetchedDesign)) {
+        // Check if user has access
+        const hasAccess = isCollaboratorDesign(fetchedDesign, userDoc?.id);
+        if (!hasAccess) {
+          console.error("No access to design.");
+          setLoading(false);
+          showToast("error", "You don't have access to this design");
+          navigate("/");
+          return;
+        }
+
         setDesign(fetchedDesign);
         setDesignName(fetchedDesign?.designName ?? "Untitled Design");
         setGeneralAccessSetting(fetchedDesign?.designSettings?.generalAccessSetting ?? 0);
@@ -213,33 +225,39 @@ const DesignSettings = () => {
         navigateTo={navigateTo}
         navigateFrom={navigateFrom}
       />
-      <SettingsContent
-        generalAccessSetting={generalAccessSetting}
-        setGeneralAccessSetting={setGeneralAccessSetting}
-        generalAccessRole={generalAccessRole}
-        setGeneralAccessRole={setGeneralAccessRole}
-        allowDownload={allowDownload}
-        setAllowDownload={setAllowDownload}
-        allowViewHistory={allowViewHistory}
-        setAllowViewHistory={setAllowViewHistory}
-        allowCopy={allowCopy}
-        setAllowCopy={setAllowCopy}
-        documentCopyByOwner={documentCopyByOwner}
-        setDocumentCopyByOwner={setDocumentCopyByOwner}
-        documentCopyByEditor={documentCopyByEditor}
-        setDocumentCopyByEditor={setDocumentCopyByEditor}
-        inactivityEnabled={inactivityEnabled}
-        setInactivityEnabled={setInactivityEnabled}
-        inactivityDays={inactivityDays}
-        setInactivityDays={setInactivityDays}
-        deletionDays={deletionDays}
-        setDeletionDays={setDeletionDays}
-        notifyDays={notifyDays}
-        setNotifyDays={setNotifyDays}
-        handleSaveDesignSettings={handleSaveDesignSettings}
-        allowEdit={allowEdit}
-        isDesignButtonDisabled={isDesignButtonDisabled}
-      />
+      <div style={{ paddingTop: "74px" }}>
+        <SettingsContent
+          generalAccessSetting={generalAccessSetting}
+          setGeneralAccessSetting={setGeneralAccessSetting}
+          generalAccessRole={generalAccessRole}
+          setGeneralAccessRole={setGeneralAccessRole}
+          allowDownload={allowDownload}
+          setAllowDownload={setAllowDownload}
+          allowViewHistory={allowViewHistory}
+          setAllowViewHistory={setAllowViewHistory}
+          allowCopy={allowCopy}
+          setAllowCopy={setAllowCopy}
+          documentCopyByOwner={documentCopyByOwner}
+          setDocumentCopyByOwner={setDocumentCopyByOwner}
+          documentCopyByEditor={documentCopyByEditor}
+          setDocumentCopyByEditor={setDocumentCopyByEditor}
+          inactivityEnabled={inactivityEnabled}
+          setInactivityEnabled={setInactivityEnabled}
+          inactivityDays={inactivityDays}
+          setInactivityDays={setInactivityDays}
+          deletionDays={deletionDays}
+          setDeletionDays={setDeletionDays}
+          notifyDays={notifyDays}
+          setNotifyDays={setNotifyDays}
+          handleSaveDesignSettings={handleSaveDesignSettings}
+          allowEdit={allowEdit}
+          isDesignButtonDisabled={isDesignButtonDisabled}
+          navigateTo={navigateTo}
+          navigateFrom={navigateFrom}
+          navigate={navigate}
+          designId={designId}
+        />
+      </div>
     </div>
   );
 };
@@ -272,6 +290,9 @@ const SettingsContent = ({
   handleSaveDesignSettings = () => {},
   allowEdit = false,
   isDesignButtonDisabled = false,
+  navigateTo,
+  navigateFrom,
+  navigate,
 }) => (
   <ThemeProvider theme={theme}>
     <div className="settingsContainer">
@@ -399,7 +420,11 @@ const SettingsContent = ({
           </Button>
           <Button
             variant="contained"
-            onClick={() => window.history.back()}
+            onClick={() =>
+              navigate(navigateTo, {
+                state: { navigateFrom: navigateFrom },
+              })
+            }
             sx={{
               color: "var(--color-white)",
               background: "transparent",
@@ -844,6 +869,16 @@ export const textFieldStyles = {
     textAlign: "left",
     marginLeft: 0,
     marginTop: "5px",
+  },
+  "& .Mui-error": {
+    color: "var(--color-quaternary) !important",
+    "& fieldset": {
+      borderColor: "var(--color-quaternary) !important",
+      borderRadius: "10px",
+    },
+    "&:hover fieldset": {
+      borderColor: "var(--color-quaternary) !important",
+    },
   },
 };
 

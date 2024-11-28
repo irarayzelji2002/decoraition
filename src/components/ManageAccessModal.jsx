@@ -45,6 +45,9 @@ import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
 import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
 import { selectStyles, selectStylesDisabled } from "../pages/DesignSpace/DesignSettings";
 import { DeleteIconGradient } from "./svg/DefaultMenuIcons";
+import { HelpOutline } from "@mui/icons-material";
+import { TooltipWithClickAwayMenuItem } from "./TooltipWithClickAway";
+import { DescriptionTooltip } from "./CustomTooltip";
 
 const ManageAcessModal = ({
   isOpen,
@@ -75,20 +78,37 @@ const ManageAcessModal = ({
   const [prevWidth, setPrevWidth] = useState(window.innerWidth);
   const [isSaveBtnDisabled, setIsSaveBtnDisabled] = useState(false);
   const contentRef = useRef(null);
+  const [isWrapped, setIsWrapped] = useState(false);
+  const [showLabelTooltip, setShowLabelTooltip] = useState(false);
+  const [labelTooltipClickLocked, setLabelTooltipClickLocked] = useState(false);
+  const [currentHoveredRole, setCurrentHoveredRole] = useState(null); // {role: number, userId: string} or null
 
-  // For testing
-  const dummyUsers = [
-    { userId: "1", username: "Guest 1", email: "em1@g.com", role: 3, roleLabel: "Owner" },
-    { userId: "2", username: "Guest 2", email: "em1@g.com", role: 1, roleLabel: "Editor" },
-    { userId: "3", username: "Guest 3", email: "em1@g.com", role: 1, roleLabel: "Editor" },
-    { userId: "4", username: "Guest 4", email: "em1@g.com", role: 1, roleLabel: "Editor" },
-    { userId: "5", username: "Guest 5", email: "em1@g.com", role: 1, roleLabel: "Editor" },
-    { userId: "6", username: "Guest 6", email: "em2@g.com", role: 2, roleLabel: "Commenter" },
-    { userId: "7", username: "Guest 7", email: "em2@g.com", role: 2, roleLabel: "Commenter" },
-    { userId: "8", username: "Guest 8", email: "em2@g.com", role: 2, roleLabel: "Commenter" },
-    { userId: "9", username: "Guest 9", email: "em3@g.com", role: 0, roleLabel: "Viewer" },
-    { userId: "10", username: "Guest 10", email: "em3@g.com", role: 0, roleLabel: "Viewer" },
-  ];
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const width = entry.contentRect.width;
+        console.log("Current width:", width);
+        setIsWrapped(width < 634);
+      }
+    });
+
+    const currentContainer = contentRef.current;
+    if (currentContainer) {
+      observer.observe(currentContainer);
+      // Initial check
+      setIsWrapped(currentContainer.offsetWidth < 634);
+    }
+
+    return () => {
+      if (currentContainer) {
+        observer.disconnect();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log("is wrapped", isWrapped);
+  }, [isWrapped]);
 
   // Close/Cancel button function
   const handleClose = () => {
@@ -134,10 +154,11 @@ const ManageAcessModal = ({
       showToast("success", result.message);
     } finally {
       setIsSaveBtnDisabled(false);
+      setError("");
+      setInitEmailsWithRole([]);
+      setEmailsWithRole([]);
+      console.log("manage access - onShowViewCollab:", onShowViewCollab);
       if (onShowViewCollab) {
-        setError("");
-        setInitEmailsWithRole([]);
-        setEmailsWithRole([]);
         onShowViewCollab();
       } else {
         handleClose();
@@ -183,54 +204,60 @@ const ManageAcessModal = ({
       }
 
       // Add editors
-      design.editors?.forEach((editorId) => {
-        const editorUser = users.find((user) => user.id === editorId);
-        if (editorUser) {
-          collaborators.push({
-            userId: editorId,
-            username: editorUser.username ?? `${editorUser.firstName} ${editorUser.lastName}`,
-            email: editorUser.email,
-            role: 1,
-            roleLabel: "Editor",
-            profilePic: editorUser.profilePic,
-          });
-        }
-      });
+      if (design.editors && Array.isArray(design.editors)) {
+        design.editors?.forEach((editorId) => {
+          const editorUser = users.find((user) => user.id === editorId);
+          if (editorUser) {
+            collaborators.push({
+              userId: editorId,
+              username: editorUser.username ?? `${editorUser.firstName} ${editorUser.lastName}`,
+              email: editorUser.email,
+              role: 1,
+              roleLabel: "Editor",
+              profilePic: editorUser.profilePic,
+            });
+          }
+        });
+      }
 
       // Add commenters
-      design.commenters?.forEach((commenterId) => {
-        const commenterUser = users.find((user) => user.id === commenterId);
-        if (commenterUser) {
-          collaborators.push({
-            userId: commenterId,
-            username:
-              commenterUser.username ?? `${commenterUser.firstName} ${commenterUser.lastName}`,
-            email: commenterUser.email,
-            role: 2,
-            roleLabel: "Commenter",
-            profilePic: commenterUser.profilePic,
-          });
-        }
-      });
+      if (design.commenters && Array.isArray(design.commenters)) {
+        design.commenters?.forEach((commenterId) => {
+          const commenterUser = users.find((user) => user.id === commenterId);
+          if (commenterUser) {
+            collaborators.push({
+              userId: commenterId,
+              username:
+                commenterUser.username ?? `${commenterUser.firstName} ${commenterUser.lastName}`,
+              email: commenterUser.email,
+              role: 2,
+              roleLabel: "Commenter",
+              profilePic: commenterUser.profilePic,
+            });
+          }
+        });
+      }
 
       // Add viewers
-      design.viewers?.forEach((viewerId) => {
-        const viewerUser = users.find((user) => user.id === viewerId);
-        if (viewerUser) {
-          collaborators.push({
-            userId: viewerId,
-            username: viewerUser.username ?? `${viewerUser.firstName} ${viewerUser.lastName}`,
-            email: viewerUser.email,
-            role: 0,
-            roleLabel: "Viewer",
-            profilePic: viewerUser.profilePic,
-          });
-        }
-      });
+      if (design.viewers && Array.isArray(design.viewers)) {
+        design.viewers?.forEach((viewerId) => {
+          const viewerUser = users.find((user) => user.id === viewerId);
+          if (viewerUser) {
+            collaborators.push({
+              userId: viewerId,
+              username: viewerUser.username ?? `${viewerUser.firstName} ${viewerUser.lastName}`,
+              email: viewerUser.email,
+              role: 0,
+              roleLabel: "Viewer",
+              profilePic: viewerUser.profilePic,
+            });
+          }
+        });
+      }
 
       setInitEmailsWithRole(collaborators);
       setEmailsWithRole(collaborators);
-      console.log("manage access - initEmailsWithRole:", initEmailsWithRole);
+      console.log("manage access - collaborators:", collaborators);
     } else {
       const project = object;
       setRoles([
@@ -252,67 +279,76 @@ const ManageAcessModal = ({
       const collaborators = [];
 
       // Add managers
-      project.managers?.forEach((managerId) => {
-        const managerUser = users.find((user) => user.id === managerId);
-        if (managerUser) {
-          collaborators.push({
-            userId: managerId,
-            username: managerUser.username ?? `${managerUser.firstName} ${managerUser.lastName}`,
-            email: managerUser.email,
-            role: 3,
-            roleLabel: "Manager",
-          });
-        }
-      });
+      if (project.managers && Array.isArray(project.managers)) {
+        project.managers.forEach((managerId) => {
+          const managerUser = users.find((user) => user.id === managerId);
+          if (managerUser) {
+            collaborators.push({
+              userId: managerId,
+              username: managerUser.username || `${managerUser.firstName} ${managerUser.lastName}`,
+              email: managerUser.email,
+              role: 3,
+              roleLabel: "Manager",
+            });
+          }
+        });
+      }
 
       // Add content managers
-      project.contentManagers?.forEach((contentManagerId) => {
-        const contentManagerUser = users.find((user) => user.id === contentManagerId);
-        if (contentManagerUser) {
-          collaborators.push({
-            userId: contentManagerId,
-            username:
-              contentManagerUser.username ??
-              `${contentManagerUser.firstName} ${contentManagerUser.lastName}`,
-            email: contentManagerUser.email,
-            role: 2,
-            roleLabel: "Content Manager",
-          });
-        }
-      });
+      if (project.contentManagers && Array.isArray(project.contentManagers)) {
+        project.contentManagers.forEach((contentManagerId) => {
+          const contentManagerUser = users.find((user) => user.id === contentManagerId);
+          if (contentManagerUser) {
+            collaborators.push({
+              userId: contentManagerId,
+              username:
+                contentManagerUser.username ||
+                `${contentManagerUser.firstName} ${contentManagerUser.lastName}`,
+              email: contentManagerUser.email,
+              role: 2,
+              roleLabel: "Content Manager",
+            });
+          }
+        });
+      }
 
       // Add contributors
-      project.contributors?.forEach((contributorId) => {
-        const contributorUser = users.find((user) => user.id === contributorId);
-        if (contributorUser) {
-          collaborators.push({
-            userId: contributorId,
-            username:
-              contributorUser.username ??
-              `${contributorUser.firstName} ${contributorUser.lastName}`,
-            email: contributorUser.email,
-            role: 1,
-            roleLabel: "Contributor",
-          });
-        }
-      });
+      if (project.contributors && Array.isArray(project.contributors)) {
+        project.contributors.forEach((contributorId) => {
+          const contributorUser = users.find((user) => user.id === contributorId);
+          if (contributorUser) {
+            collaborators.push({
+              userId: contributorId,
+              username:
+                contributorUser.username ||
+                `${contributorUser.firstName} ${contributorUser.lastName}`,
+              email: contributorUser.email,
+              role: 1,
+              roleLabel: "Contributor",
+            });
+          }
+        });
+      }
 
       // Add viewers
-      project.viewers?.forEach((viewerId) => {
-        const viewerUser = users.find((user) => user.id === viewerId);
-        if (viewerUser) {
-          collaborators.push({
-            userId: viewerId,
-            username: viewerUser.username ?? `${viewerUser.firstName} ${viewerUser.lastName}`,
-            email: viewerUser.email,
-            role: 0,
-            roleLabel: "Viewer",
-          });
-        }
-      });
+      if (project.viewers && Array.isArray(project.viewers)) {
+        project.viewers.forEach((viewerId) => {
+          const viewerUser = users.find((user) => user.id === viewerId);
+          if (viewerUser) {
+            collaborators.push({
+              userId: viewerId,
+              username: viewerUser.username || `${viewerUser.firstName} ${viewerUser.lastName}`,
+              email: viewerUser.email,
+              role: 0,
+              roleLabel: "Viewer",
+            });
+          }
+        });
+      }
 
       setInitEmailsWithRole(collaborators);
       setEmailsWithRole(collaborators);
+      console.log("manage access - collaborators:", collaborators);
     }
   }, [isOpen, users, object]);
 
@@ -340,6 +376,11 @@ const ManageAcessModal = ({
 
   const checkOverflow = () => {
     if (contentRef.current) {
+      const width = contentRef.current.offsetWidth;
+      console.log("Window resize - width:", width);
+      const isNewWrapped = width < 634;
+      setIsWrapped(isNewWrapped);
+
       const { scrollWidth, clientWidth } = contentRef.current;
       const currentWidth = window.innerWidth;
 
@@ -351,16 +392,14 @@ const ManageAcessModal = ({
       // );
       // console.log(`isOverflowing: ${isOverflowing}; hideLabels: ${hideLabels}`);
 
-      if (scrollWidth > clientWidth) {
+      if (isNewWrapped) {
         if (!isOverflowing) {
           setIsOverflowing(true);
           setHideLabels(true);
         }
-      } else if (scrollWidth === clientWidth) {
+      } else if (!isNewWrapped) {
         setIsOverflowing(false);
-        if (scrollWidth + labelWidth > currentWidth) {
-          setHideLabels(false);
-        }
+        setHideLabels(false);
       } else {
         if (isOverflowing) {
           setIsOverflowing(false);
@@ -368,7 +407,7 @@ const ManageAcessModal = ({
         }
       }
 
-      if (hideLabels && scrollWidth + labelWidth <= currentWidth) {
+      if (hideLabels && !isNewWrapped) {
         setHideLabels(false);
       }
 
@@ -429,6 +468,7 @@ const ManageAcessModal = ({
           width: "auto",
           padding: "0px",
           marginTop: 0,
+          minWidth: "50vw",
           "& .MuiDialog-paper": {
             width: "100%",
           },
@@ -484,6 +524,7 @@ const ManageAcessModal = ({
                     </Box>
                   </div>
                   <div
+                    className="drawerUserDetails"
                     style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
                   >
                     <Typography variant="body1" style={{ fontWeight: "bold" }}>
@@ -531,7 +572,7 @@ const ManageAcessModal = ({
                       sx={{
                         ...(isDisabled ? selectStylesDisabled : selectStyles),
                         marginLeft: "auto",
-                        width: hideLabels ? "90px" : isDesign ? "188px" : "200px",
+                        width: hideLabels ? "90px" : isDesign ? "188px" : "230px",
                         height: "100%",
                         "&.Mui-disabled": {
                           ...selectStylesDisabled["&.Mui-disabled"],
@@ -560,19 +601,66 @@ const ManageAcessModal = ({
                           sx={{ color: "var(--color-white) !important" }}
                         />
                       )}
+                      renderValue={(selected) => {
+                        const selectedRole = roles.find((role) => role.value === selected);
+                        return (
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <div style={{ marginRight: "10px", display: "flex" }}>
+                              {selectedRole?.icon}
+                            </div>
+                            {!isWrapped && <div>{selectedRole?.label}</div>}
+                          </div>
+                        );
+                      }}
                     >
                       {roles.map((roleOption) => (
                         <MenuItem
                           key={roleOption.value}
                           value={roleOption.value}
                           sx={menuItemStyles}
-                          disabled={roleOption.value === 3 && managerCount <= 1}
+                          disabled={isDesign ? roleOption.value === 3 : false}
                         >
                           <div style={{ display: "flex", alignItems: "center" }}>
                             <div style={{ marginRight: "10px", display: "flex" }}>
                               {roleOption.icon}
                             </div>
-                            {!hideLabels && <div>{roleOption.label}</div>}
+                            {!isWrapped ? (
+                              <div>{roleOption.label}</div>
+                            ) : (
+                              <TooltipWithClickAwayMenuItem
+                                open={
+                                  showLabelTooltip &&
+                                  currentHoveredRole?.role === roleOption.value &&
+                                  currentHoveredRole?.userId === user.userId
+                                }
+                                setOpen={(value) => {
+                                  setShowLabelTooltip(value);
+                                  if (!value) setCurrentHoveredRole(null);
+                                }}
+                                tooltipClickLocked={labelTooltipClickLocked}
+                                setTooltipClickLocked={setLabelTooltipClickLocked}
+                                title={
+                                  <DescriptionTooltip
+                                    description={roleOption.label}
+                                    minWidth={isDesign ? "100px" : "150px"}
+                                  />
+                                }
+                                className="helpTooltip inMenuItem"
+                                onMouseEnter={() => {
+                                  setCurrentHoveredRole({
+                                    role: roleOption.value,
+                                    userId: user.userId,
+                                  });
+                                }}
+                                onMouseLeave={() => {
+                                  if (!labelTooltipClickLocked) setCurrentHoveredRole(null);
+                                }}
+                              >
+                                <HelpOutline
+                                  sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }}
+                                />
+                              </TooltipWithClickAwayMenuItem>
+                            )}
                           </div>
                         </MenuItem>
                       ))}
@@ -588,8 +676,7 @@ const ManageAcessModal = ({
           >
             General Access
           </Typography>
-
-          <div className="drawerUser" style={{ gap: "0px" }}>
+          <div className="drawerUserLong">
             <Avatar
               sx={{
                 width: 56,
@@ -602,7 +689,7 @@ const ManageAcessModal = ({
               {generalAccessSetting === 0 ? <RestrictedIcon /> : <AnyoneWithLinkIcon />}
             </Avatar>
             {isViewCollab ? (
-              <div>
+              <div style={{ flexGrow: "1", width: "100%" }}>
                 <Typography variant="body1" style={{ fontWeight: "bold" }}>
                   {generalAccessSetting === 0 ? "Restricted" : "Anyone with link"}
                 </Typography>
@@ -615,18 +702,31 @@ const ManageAcessModal = ({
                 </Typography>
               </div>
             ) : (
-              <>
+              <div style={{ display: "flex", flexGrow: "1", width: "100%", flexWrap: "wrap" }}>
                 <Select
+                  className="drawerUserDetails"
                   value={generalAccessSetting}
                   onChange={(e) => setGeneralAccessSetting(parseInt(e.target.value, 10))}
                   sx={{
                     ...selectStyles,
                     flexGrow: 1,
+                    minWidth: isWrapped ? "100%" : "300px",
                     "& .MuiOutlinedInput-notchedOutline": {
-                      borderTopRightRadius: "0px",
-                      borderBottomRightRadius: "0px",
                       borderTopLeftRadius: "10px",
-                      borderBottomLeftRadius: "10px",
+                      borderTopRightRadius:
+                        generalAccessSetting === 0
+                          ? "10px"
+                          : generalAccessSetting === 1 && isWrapped
+                          ? "10px"
+                          : "0px",
+                      borderBottomLeftRadius:
+                        generalAccessSetting === 0
+                          ? "10px"
+                          : generalAccessSetting === 1 && isWrapped
+                          ? "0px"
+                          : "10px",
+                      borderBottomRightRadius:
+                        generalAccessSetting === 0 ? "10px" : generalAccessSetting === 1 && "0px",
                       border: "2px solid var(--borderInput)",
                     },
                   }}
@@ -673,47 +773,56 @@ const ManageAcessModal = ({
                     <Typography variant="caption">Anyone on the Internet can access</Typography>
                   </MenuItem>
                 </Select>
-                <Select
-                  value={generalAccessRole}
-                  onChange={(e) => setGeneralAccessRole(parseInt(e.target.value, 10))}
-                  sx={{
-                    ...selectStyles,
-                    marginLeft: "-2px",
-                    width: hideLabels ? "90px" : isDesign ? "188px" : "200px",
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderTopRightRadius: "10px",
-                      borderBottomRightRadius: "10px",
-                      borderTopLeftRadius: "0px",
-                      borderBottomLeftRadius: "0px",
-                      border: "2px solid var(--borderInput)",
-                    },
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        borderRadius: "10px",
-                        "& .MuiMenu-list": {
-                          padding: 0,
+                {generalAccessSetting === 1 && (
+                  <Select
+                    value={generalAccessRole}
+                    onChange={(e) => setGeneralAccessRole(parseInt(e.target.value, 10))}
+                    sx={{
+                      ...selectStyles,
+                      marginLeft: isWrapped ? "0px" : "-2px",
+                      width: isWrapped ? "100%" : isDesign ? "200px" : "230px",
+                      maxWidth: isWrapped ? "100%" : "unset",
+                      marginTop: isWrapped ? "-1px" : "0px",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderTopLeftRadius: isWrapped ? "0px" : "0px",
+                        borderTopRightRadius: isWrapped ? "0px" : "10px",
+                        borderBottomLeftRadius: isWrapped ? "10px" : "0px",
+                        borderBottomRightRadius: isWrapped ? "10px" : "10px",
+                        border: "2px solid var(--borderInput)",
+                        borderTop: isWrapped
+                          ? "2px solid transparent"
+                          : "2px solid var(--borderInput)",
+                      },
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          borderRadius: "10px",
+                          "& .MuiMenu-list": {
+                            padding: 0,
+                          },
                         },
                       },
-                    },
-                  }}
-                  IconComponent={(props) => (
-                    <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
-                  )}
-                >
-                  {generalAccessRoles.map((roleOption) => (
-                    <MenuItem key={roleOption.value} value={roleOption.value} sx={menuItemStyles}>
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <div style={{ marginRight: "10px", display: "flex" }}>
-                          {roleOption.icon}
+                    }}
+                    IconComponent={(props) => (
+                      <KeyboardArrowDownRoundedIcon
+                        sx={{ color: "var(--color-white) !important" }}
+                      />
+                    )}
+                  >
+                    {generalAccessRoles.map((roleOption) => (
+                      <MenuItem key={roleOption.value} value={roleOption.value} sx={menuItemStyles}>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ marginRight: "10px", display: "flex" }}>
+                            {roleOption.icon}
+                          </div>
+                          <div>{roleOption.label}</div>
                         </div>
-                        {!hideLabels && <div>{roleOption.label}</div>}
-                      </div>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              </div>
             )}
           </div>
         </div>

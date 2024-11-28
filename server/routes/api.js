@@ -73,6 +73,8 @@ router.post("/user/add-color-palette", authenticateUser, userController.addColor
 router.put("/user/update-color-palette", authenticateUser, userController.updateColorPalette);
 router.put("/user/delete-color-palette", authenticateUser, userController.deleteColorPalette);
 router.get("/user/get-other-user-data/:userId", userController.getOtherUserData);
+router.get("/user/check-lockout-status/:email", userController.checkLockoutStatus);
+router.put("/user/update-failed-attempt/:email", userController.updateFailedAttempts);
 
 // Design routes
 router.get("/design/:userId", authenticateUser, designController.fetchUserDesigns);
@@ -239,6 +241,16 @@ router.put(
   authenticateUser,
   projectController.removeDesignFromProject
 );
+router.get(
+  "/project/:projectId/budget",
+  authenticateUser,
+  projectBudgetController.getProjectBudget
+);
+router.put(
+  "/project/:projectId/update-budget",
+  authenticateUser,
+  projectBudgetController.updateProjectBudget
+);
 
 // Network check
 router.get("/health-check", (req, res) => {
@@ -252,5 +264,22 @@ router.get("/project/:projectId/timelineId", authenticateUser, timelineControlle
 router.get("/timeline/event/:taskId", authenticateUser, timelineController.getEventDetails);
 router.put("/timeline/event/:taskId", authenticateUser, timelineController.updateEvent);
 router.delete("/timeline/event/:taskId", authenticateUser, timelineController.deleteEvent);
+
+// Notification routes
+router.put(
+  "/notification/mark-all-as-read",
+  authenticateUser,
+  notificationController.markAllAsRead
+);
+router.put(
+  "/notification/:notifId/change-notif-status",
+  authenticateUser,
+  notificationController.changeNotifStatus
+);
+router.post(
+  "/notification/:notifId/delete-notif",
+  authenticateUser,
+  notificationController.deleteNotif
+);
 
 module.exports = router;

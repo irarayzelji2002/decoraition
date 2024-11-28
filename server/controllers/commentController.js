@@ -246,7 +246,8 @@ exports.changeCommentStatus = async (req, res) => {
             `Comment ${status ? "Resolved" : "Reopened"}`,
             `A comment on your design "${designDoc.data().designName}" was ${
               status ? "resolved" : "reopened"
-            }`
+            }`,
+            userId // notifBy
           );
         } else if (
           isCollaborator &&
@@ -260,7 +261,8 @@ exports.changeCommentStatus = async (req, res) => {
             `Comment ${status ? "Resolved" : "Reopened"}`,
             `A comment on design "${designDoc.data().designName}" was ${
               status ? "resolved" : "reopened"
-            }`
+            }`,
+            userId // notifBy
           );
         }
       }

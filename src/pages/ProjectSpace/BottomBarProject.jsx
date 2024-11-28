@@ -1,6 +1,6 @@
 import "../../css/bottomBar.css";
 import Button from "@mui/material/Button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 function BottomBarProject({
   Design = false,
@@ -11,26 +11,39 @@ function BottomBarProject({
   changeMode,
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const handleDesignClick = () => {
     navigate(`/project/${projId}`, {
-      state: { changeMode },
+      state: {
+        ...location.state,
+        changeMode: changeMode,
+      },
     });
   };
   const handlePlanMapClick = () => {
     navigate(`/planMap/${projId}`, {
-      state: { changeMode },
+      state: {
+        ...location.state,
+        changeMode: changeMode,
+      },
     });
   };
 
   const handleTimelineClick = () => {
     navigate(`/timeline/${projId}`, {
-      state: { changeMode },
+      state: {
+        ...location.state,
+        changeMode: changeMode,
+      },
     });
   };
 
   const handleBudgetClick = () => {
     navigate(`/projectBudget/${projId}`, {
-      state: { changeMode },
+      state: {
+        ...location.state,
+        changeMode: changeMode,
+      },
     });
   };
 

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { setPersistence, browserSessionPersistence, browserLocalPersistence } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import axios from "axios";
 import { showToast } from "../functions/utils";
@@ -48,6 +49,15 @@ export function useAuthProvider() {
 
   useEffect(() => {
     console.log("Setting up auth state listener");
+    // Check for existing auth state in local storage
+    const existingAuthState = localStorage.getItem("authState");
+    if (existingAuthState) {
+      const { user, userDoc } = JSON.parse(existingAuthState);
+      setUser(user);
+      setUserDoc(userDoc);
+    }
+
+    // Set up the auth state listener
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed. User:", user);
 
@@ -94,14 +104,6 @@ export function useAuthProvider() {
       }
     });
 
-    // Check for existing auth state on load
-    const existingAuthState = localStorage.getItem("authState");
-    if (existingAuthState) {
-      const { user, userDoc } = JSON.parse(existingAuthState);
-      setUser(user);
-      setUserDoc(userDoc);
-    }
-
     return () => unsubscribe();
   }, []);
 
@@ -119,6 +121,15 @@ export function useAuthProvider() {
     }
   };
 
+  const setPersistenceBasedOnRemember = async (rememberMe) => {
+    try {
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+      console.log(`Persistence set to ${rememberMe ? "local" : "session"}`);
+    } catch (error) {
+      console.error("Error setting persistence:", error);
+    }
+  };
+
   return {
     user,
     setUser,
@@ -128,6 +139,7 @@ export function useAuthProvider() {
     loading,
     setLoading,
     userDocFetched,
+    setPersistenceBasedOnRemember,
   };
 }
 

@@ -73,6 +73,9 @@ import {
 } from "./backend/DesignActions";
 import { togglePromptBar } from "./backend/DesignActions";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import TooltipWithClickAway from "../../components/TooltipWithClickAway";
+import { DescriptionTooltip } from "./Design";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 function SelectMaskCanvas({
   selectedImage,
@@ -188,6 +191,9 @@ function SelectMaskCanvas({
   const [pickedColorRemove, setPickedColorRemove] = useState("var(--removeMask)");
   const [brushSizeRemove, setBrushSizeRemove] = useState(40);
   const [opacityRemove, setOpacityRemove] = useState(0.5);
+
+  const [showGuide, setShowGuide] = useState(false);
+  const [showGuideLocked, setShowGuideLocked] = useState(false);
 
   // Canvas controls for sam mask
   // passed from parent:
@@ -1148,7 +1154,7 @@ function SelectMaskCanvas({
       {/* Controls */}
       <Box sx={canvasStyles.controls}>
         <div className="topMaskActions">
-          {/* Mask Prompt */}
+          {/* Mask Prompt */}{" "}
           <div className="maskPromptCont">
             <DelayedTooltip title="Type objects in the image to mask" delay={1000}>
               <TextField
@@ -1157,7 +1163,7 @@ function SelectMaskCanvas({
                   setMaskPrompt(e.target.value);
                   clearFieldError("maskPrompt");
                 }}
-                placeholder="Type objects in the image to mask"
+                placeholder="Type objects in the image to mask (ex. 'bed', 'lamp', 'walls')"
                 size="small"
                 helperText={errors?.maskPrompt || generationErrors?.maskPrompt}
                 variant="outlined"
@@ -1221,6 +1227,26 @@ function SelectMaskCanvas({
             >
               Generate Mask
             </Button>
+            <h6>
+              Show me a guide
+              <TooltipWithClickAway
+                open={showGuide}
+                setOpen={setShowGuide}
+                tooltipClickLocked={showGuideLocked}
+                setTooltipClickLocked={setShowGuideLocked}
+                title={
+                  <DescriptionTooltip
+                    image="/img/mask-guide.gif"
+                    description="Quick masking guide"
+                  />
+                }
+                className="helpTooltip inPromptBar"
+              >
+                <div style={{ display: "flex" }}>
+                  <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+                </div>
+              </TooltipWithClickAway>
+            </h6>
 
             <div className="showPreviewButton">
               {/* <ToggleButton

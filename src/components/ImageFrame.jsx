@@ -1,11 +1,16 @@
 import React, { useRef, useEffect, useState } from "react";
 import Draggable from "react-draggable";
 import { fetchPlanImage } from "../pages/ProjectSpace/backend/ProjectDetails";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { Button } from "@mui/material";
 
 const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, projectId }) => {
   const frameRef = useRef(null);
   const imageRef = useRef(null);
   const [planImage, setPlanImage] = useState("");
+  const [scale, setScale] = useState(1);
+  const [showPins, setShowPins] = useState(true);
 
   useEffect(() => {
     fetchPlanImage(projectId, setPlanImage);
@@ -62,39 +67,66 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
     };
   };
 
+  const handleZoomIn = () => {
+    setScale((prevScale) => Math.min(prevScale + 0.1, 3));
+  };
+
+  const handleZoomOut = () => {
+    setScale((prevScale) => Math.max(prevScale - 0.1, 0.5));
+  };
+
+  const togglePinsVisibility = () => {
+    setShowPins((prevShowPins) => !prevShowPins);
+  };
+
   return (
-    <div className="image-frame-other" ref={frameRef} style={{ position: "relative" }}>
-      {planImage ? (
-        <img
-          src={planImage}
-          alt={alt}
-          className="image-preview-other"
-          ref={imageRef}
-          style={{ display: "block" }}
-        />
-      ) : (
-        <div className="no-content" style={{ height: "80vh" }}>
-          <p>Please upload an image to place your pins</p>
-        </div>
-      )}
-      {imageRef.current &&
-        pins.map((pin) => {
-          const position = getPinPosition(pin, imageRef.current.getBoundingClientRect());
-          return (
-            <Draggable
-              key={pin.id}
-              bounds="parent"
-              disabled={!draggable}
-              position={{ x: position.x, y: position.y }}
-              onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
-            >
-              <div className="pin" style={{ position: "absolute" }}>
-                <MapPinIcon number={pin.order} fill={pin.color || color} />
-              </div>
-            </Draggable>
-          );
-        })}
-    </div>
+    <>
+      <div className="image-frame-other" ref={frameRef} style={{ position: "relative" }}>
+        {/* <div className="zoom-controls">
+          <button onClick={handleZoomIn}>+</button>
+          <button onClick={handleZoomOut}>-</button>
+        </div> */}
+        {planImage ? (
+          <img
+            src={planImage}
+            alt={alt}
+            className="image-preview-other"
+            ref={imageRef}
+            style={{ display: "block", transform: `scale(${scale})`, transformOrigin: "top left" }}
+          />
+        ) : (
+          <div className="no-content" style={{ height: "80vh" }}>
+            <p>Please upload an image to place your pins</p>
+          </div>
+        )}
+        {imageRef.current &&
+          showPins &&
+          pins.map((pin) => {
+            const position = getPinPosition(pin, imageRef.current.getBoundingClientRect());
+            return (
+              <Draggable
+                key={pin.id}
+                bounds="parent"
+                disabled={!draggable}
+                position={{ x: position.x, y: position.y }}
+                onStop={(e, data) => updatePinPosition(pin.id, data.x, data.y)}
+              >
+                <div className="pin" style={{ position: "absolute" }}>
+                  <MapPinIcon number={pin.order} fill={pin.color || color} />
+                </div>
+              </Draggable>
+            );
+          })}
+      </div>
+      <Button onClick={togglePinsVisibility}>
+        {showPins ? (
+          <VisibilityOffIcon sx={{ color: "var(--color-white)" }} />
+        ) : (
+          <VisibilityIcon sx={{ color: "var(--color-white)" }} />
+        )}
+      </Button>
+      <h6>Pin Visibility</h6>
+    </>
   );
 };
 

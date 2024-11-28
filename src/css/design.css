@@ -385,10 +385,15 @@ h6 {
 
 .image-actual-info {
   padding-left: 12px;
+  max-width: 450px;
+
   flex-grow: 1;
   justify-content: center;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* Hide overflow */
+  white-space: nowrap; /* Prevent text from wrapping */
+  text-overflow: ellipsis; /*
 }
 
 .fit-view {
@@ -1419,14 +1424,11 @@ s .dialog .MuiDialog-paper {
     padding: 20px;
     padding-right: 40px;
     padding-top: 0px;
-    /* touch-action: none;
-    user-select: none;
-    -webkit-user-select: none; */
     position: relative;
     transition: height 0.1s ease;
   }
   .promptBar .transitionMinHeight {
-    padding-top: 20px;
+    padding-top: 100px;
     padding-bottom: 20px;
   }
   .comment-section .transitionMinHeight {
@@ -1445,7 +1447,7 @@ s .dialog .MuiDialog-paper {
   }
   .promptBarIconButtonInside {
     display: block !important;
-    margin-top: 60px !important;
+    margin-top: 100px !important;
     height: 40px;
     width: 40px;
   }
@@ -1495,6 +1497,8 @@ s .dialog .MuiDialog-paper {
   }
   .promptBar {
     padding-right: 20px;
+    overflow-y: auto; /* Enable vertical scrolling */
+    -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
   }
   .placeholderDiv {
     margin-top: 25px;

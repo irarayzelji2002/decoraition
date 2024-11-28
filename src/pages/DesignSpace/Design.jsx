@@ -611,6 +611,7 @@ function Design() {
                   style={{
                     paddingBottom: isMobileLayout && !showComments ? "61px" : "0px",
                     height: "100%",
+                    overflow: "auto",
                   }}
                 >
                   <PromptBar

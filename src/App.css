@@ -284,26 +284,14 @@ select:-webkit-autofill {
 }
 
 .highlight-animation {
-  animation: highlight-notif 2s ease-in-out infinite;
+  animation: highlight-notif 1.5s ease-in-out infinite;
 }
 
 @keyframes highlight-notif {
   0% {
     background-color: transparent;
   }
-  40% {
-    background-color: rgba(248, 154, 71, 0.5);
-  }
-  45% {
-    background-color: rgba(241, 95, 62, 0.5);
-  }
   50% {
-    background-color: rgba(241, 95, 62, 0.5);
-  }
-  55% {
-    background-color: rgba(241, 95, 62, 0.5);
-  }
-  60% {
     background-color: rgba(248, 154, 71, 0.5);
   }
   100% {

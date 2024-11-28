@@ -1120,7 +1120,7 @@ exports.changeAccessProject = async (req, res) => {
     // Send notifications
     try {
       // 1. Get user settings for all users who need to be notified
-      const userSettingsPromises = emailsWithRole.map((user) =>
+      const userSettingsPromises = initEmailsWithRole.map((user) =>
         db.collection("users").doc(user.userId).get()
       );
       const userDocs = await Promise.all(userSettingsPromises);

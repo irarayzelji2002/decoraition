@@ -552,7 +552,7 @@ function DesignHead({
           const parsedActions = JSON.parse(pendingActions);
           console.log("notif (design head) - parsed pendingActions:", parsedActions);
 
-          const { actions, references, timestamp, completed, type } = parsedActions;
+          const { actions, references, timestamp, completed, type, title } = parsedActions;
 
           const uniqueCompleted = completed.reduce((acc, current) => {
             const x = acc.find((item) => item.index === current.index);
@@ -581,14 +581,28 @@ function DesignHead({
               uniqueCompleted.push({ action, index, timestamp });
               localStorage.setItem(
                 "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                  title,
+                })
               );
             } else if (action === "Open view collaborators modal" && previousActionsCompleted) {
               setIsViewCollabModalOpen(true);
               uniqueCompleted.push({ action, index, timestamp });
               localStorage.setItem(
                 "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                  title,
+                })
               );
             } else if (action === "Hide drawers" && previousActionsCompleted) {
               setDrawerOpen(false);
@@ -596,7 +610,14 @@ function DesignHead({
               uniqueCompleted.push({ action, index, timestamp });
               localStorage.setItem(
                 "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted, type })
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                  title,
+                })
               );
             }
 

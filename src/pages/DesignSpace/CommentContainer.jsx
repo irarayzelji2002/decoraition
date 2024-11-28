@@ -812,7 +812,7 @@ const CommentContainer = ({
           const parsedActions = JSON.parse(pendingActions);
           console.log("notif (comment cont) - parsed pendingActions:", parsedActions);
 
-          const { actions, references, timestamp, completed } = parsedActions;
+          const { actions, references, timestamp, completed, type, title } = parsedActions;
 
           const uniqueCompleted = completed.reduce((acc, current) => {
             const x = acc.find((item) => item.index === current.index);
@@ -837,11 +837,20 @@ const CommentContainer = ({
             );
 
             if (action === "Highlight comment" && previousActionsCompleted) {
-              highlightComment(commentId);
+              const isReply = title?.toLowerCase().includes("reply");
+              const commentId = isReply ? references?.replyId : references?.commentId;
+              highlightComment(commentId, isReply);
               uniqueCompleted.push({ action, index, timestamp });
               localStorage.setItem(
                 "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                  title,
+                })
               );
             }
 

@@ -445,7 +445,7 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
           const parsedActions = JSON.parse(pendingActions);
           console.log("notif (project head) - parsed pendingActions:", parsedActions);
 
-          const { actions, references, timestamp, completed } = parsedActions;
+          const { actions, references, timestamp, completed, type, title } = parsedActions;
 
           const uniqueCompleted = completed.reduce((acc, current) => {
             const x = acc.find((item) => item.index === current.index);
@@ -474,14 +474,28 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
               uniqueCompleted.push({ action, index, timestamp });
               localStorage.setItem(
                 "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                  title,
+                })
               );
             } else if (action === "Open view collaborators modal" && previousActionsCompleted) {
               setIsViewCollabModalOpen(true);
               uniqueCompleted.push({ action, index, timestamp });
               localStorage.setItem(
                 "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                  title,
+                })
               );
             }
 

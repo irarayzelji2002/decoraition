@@ -78,9 +78,12 @@ function Notif({ notif }) {
         JSON.stringify({
           actions: notification.actions,
           references: notification.references,
-          type: notification.type,
           completed: [],
           timestamp: Date.now(),
+          type: notification.type,
+          title: notification.title,
+          content: notification.content,
+          isReadInApp: notification.isReadInApp,
         })
       );
       console.log("notif - setItem same path", {
@@ -99,8 +102,8 @@ function Notif({ notif }) {
         JSON.stringify({
           actions: notification.actions,
           references: notification.references,
-          timestamp: Date.now(),
           completed: [],
+          timestamp: Date.now(),
           type: notification.type,
           title: notification.title,
           content: notification.content,

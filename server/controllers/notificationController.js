@@ -119,7 +119,7 @@ exports.sendCommentNotifications = async (
       await createNotification(
         userId,
         "comment",
-        `New ${!isReply ? "Comment" : "reply"} on Collaborated Design`,
+        `New ${!isReply ? "Comment" : "Reply"} on Collaborated Design`,
         `A new ${!isReply ? "comment" : "reply"} was added to design "${
           designDoc.data().designName
         }"`,

@@ -490,7 +490,7 @@ const ManageAcessModal = ({
           const parsedActions = JSON.parse(pendingActions);
           console.log("notif (manage access) - parsed pendingActions:", parsedActions);
 
-          const { actions, references, timestamp, completed } = parsedActions;
+          const { actions, references, timestamp, completed, type, title } = parsedActions;
 
           // Filter out duplicate completed actions
           const uniqueCompleted = completed.reduce((acc, current) => {
@@ -529,7 +529,14 @@ const ManageAcessModal = ({
                 uniqueCompleted.push({ action, index, timestamp });
                 localStorage.setItem(
                   "pendingNotificationActions",
-                  JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+                  JSON.stringify({
+                    actions,
+                    references,
+                    timestamp,
+                    completed: uniqueCompleted,
+                    type,
+                    title,
+                  })
                 );
               }
 

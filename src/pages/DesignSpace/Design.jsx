@@ -596,7 +596,7 @@ function Design() {
       if (pendingActions) {
         try {
           const parsedActions = JSON.parse(pendingActions);
-          const { actions, references, timestamp, completed, type } = parsedActions;
+          const { actions, references, timestamp, completed, type, title } = parsedActions;
 
           const uniqueCompleted = completed.reduce((acc, current) => {
             const x = acc.find((item) => item.index === current.index);
@@ -629,6 +629,7 @@ function Design() {
                   timestamp,
                   completed: uniqueCompleted,
                   type,
+                  title
                 })
               );
             }

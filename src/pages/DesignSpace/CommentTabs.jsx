@@ -490,7 +490,14 @@ function CommentTabs({
               uniqueCompleted.push({ action, index, timestamp });
               localStorage.setItem(
                 "pendingNotificationActions",
-                JSON.stringify({ actions, references, timestamp, completed: uniqueCompleted })
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                  title,
+                })
               );
             }
 

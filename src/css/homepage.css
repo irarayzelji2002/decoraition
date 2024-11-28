@@ -221,7 +221,7 @@ h2 {
   display: flex;
   gap: 10px;
   flex-direction: row;
-  margin: 10px 20px;
+  padding: 10px 20px;
 }
 
 .drawerUserLong {

@@ -706,15 +706,48 @@ const CommentContainer = ({
   };
 
   // Notification highlight
-  // To FIX: need to expand all parent above the comment
-  const highlightComment = (commentId) => {
-    const commentElement = document.getElementById(`comment"-${commentId}`);
-    if (commentElement) {
-      commentElement.scrollIntoView({ behavior: "smooth" });
-      commentElement.classList.add("highlight-animation");
-      setTimeout(() => {
-        commentElement.classList.remove("highlight-animation");
-      }, 3000);
+  const highlightComment = (commentId, isReply = false) => {
+    if (isReply) {
+      const parentComment = rootCommentRoot;
+      if (parentComment) {
+        // Find initial reply
+        let currentReplyId = commentId;
+        const replyChain = [];
+
+        // Build chain using replyId instead of the full reply object
+        const findReply = (replies, replyId) => replies.find((r) => r.replyId === replyId);
+        let replyId = currentReplyId;
+        while (replyId) {
+          const reply = findReply(parentComment.replies, replyId);
+          if (!reply) break;
+          replyChain.push(reply.replyId);
+          replyId = reply.replyTo?.replyId || null;
+        }
+
+        // Expand the parent comment
+        setIsRepliesExpanded(true);
+
+        // Wait for expansion before highlighting
+        setTimeout(() => {
+          const replyElement = document.getElementById(`comment-${commentId}`);
+          if (replyElement) {
+            replyElement.scrollIntoView({ behavior: "smooth" });
+            replyElement.classList.add("highlight-animation");
+            setTimeout(() => {
+              replyElement.classList.remove("highlight-animation");
+            }, 3000);
+          }
+        }, 300);
+      }
+    } else {
+      const commentElement = document.getElementById(`comment-${commentId}`);
+      if (commentElement) {
+        commentElement.scrollIntoView({ behavior: "smooth" });
+        commentElement.classList.add("highlight-animation");
+        setTimeout(() => {
+          commentElement.classList.remove("highlight-animation");
+        }, 3000);
+      }
     }
   };
 
@@ -730,8 +763,10 @@ const CommentContainer = ({
 
           if (action === "Highlight comment" && previousActionsCompleted) {
             const commentId = references?.replyId || references?.commentId;
+            const isReply = !!references?.replyId;
+
             if (commentId) {
-              highlightComment(commentId);
+              highlightComment(commentId, isReply);
             }
 
             completed.push({ action, index, timestamp });

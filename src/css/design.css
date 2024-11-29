@@ -100,6 +100,13 @@
   white-space: nowrap !important;
 }
 
+.navhead.design-name,
+.navhead.project-name {
+  padding: 5px 10px !important;
+  border-radius: 10px !important;
+  width: fit-content !important;
+}
+
 .promptBar {
   min-height: calc(100vh - 214px);
   width: 500px;
@@ -242,7 +249,7 @@ h6 {
   font-weight: 400;
   font-size: var(--font-size-small);
   margin: 0;
-  margin-top: -8px;
+  /* margin-top: -8px; */
 }
 
 .image-placeholder {
@@ -385,10 +392,15 @@ h6 {
 
 .image-actual-info {
   padding-left: 12px;
+  max-width: 450px;
+
   flex-grow: 1;
   justify-content: center;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* Hide overflow */
+  white-space: nowrap; /* Prevent text from wrapping */
+  text-overflow: ellipsis; /*
 }
 
 .fit-view {
@@ -1419,18 +1431,17 @@ s .dialog .MuiDialog-paper {
     padding: 20px;
     padding-right: 40px;
     padding-top: 0px;
-    touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     position: relative;
     transition: height 0.1s ease;
   }
   .promptBar .transitionMinHeight {
-    padding-top: 20px;
+    padding-top: 100px;
     padding-bottom: 20px;
   }
   .comment-section .transitionMinHeight {
-    padding-top: 10px;
+    padding-top: 100px;
     padding-bottom: 20px;
   }
   .promptBarIconButton,
@@ -1439,13 +1450,13 @@ s .dialog .MuiDialog-paper {
   }
   .commentSectionIconButtonInside {
     display: block !important;
-    margin-top: 31px !important;
+    margin-top: 100px !important;
     height: 40px;
     width: 40px;
   }
   .promptBarIconButtonInside {
     display: block !important;
-    margin-top: 60px !important;
+    margin-top: 100px !important;
     height: 40px;
     width: 40px;
   }
@@ -1495,6 +1506,8 @@ s .dialog .MuiDialog-paper {
   }
   .promptBar {
     padding-right: 20px;
+    overflow-y: auto; /* Enable vertical scrolling */
+    -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
   }
   .placeholderDiv {
     margin-top: 25px;
@@ -1894,7 +1907,8 @@ s .dialog .MuiDialog-paper {
 
 .showPreviewButton {
   /* margin-left: 30px; */
-  margin-left: 19px;
+  /* margin-left: 19px; */
+  margin-left: -8px;
   min-width: 164px;
 }
 
@@ -2245,7 +2259,7 @@ s .dialog .MuiDialog-paper {
   position: absolute;
   transform: translate(-50%, -100%);
   cursor: pointer;
-  z-index: 10;
+  /* z-index: 10; */
 }
 
 /* Loading/Progress */
@@ -2285,4 +2299,13 @@ s .dialog .MuiDialog-paper {
   margin-top: 3px;
   height: 50px;
   max-width: 90%;
+}
+
+@media (max-width: 768px) {
+}
+
+@media (max-height: 600px) {
+  .small-buttons {
+    flex-direction: row;
+  }
 }

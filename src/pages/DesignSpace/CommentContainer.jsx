@@ -85,7 +85,7 @@ const CommentContainer = ({
   changeMode,
 }) => {
   const { designId } = useParams();
-  const { user, users, userDoc } = useSharedProps();
+  const { user, users, userDoc, notificationUpdate } = useSharedProps();
 
   // Root comment states for display
   const [commenterUserId, setCommenterUserId] = useState("");
@@ -705,6 +705,171 @@ const CommentContainer = ({
     showToast("success", result.message);
   };
 
+  // Notification highlight
+  const highlightComment = (commentId, isReply = false) => {
+    console.log("notif (comment cont) - highlighting comment:", {
+      commentId,
+      isReply,
+      rootCommentRoot,
+      comment,
+    });
+
+    if (isReply) {
+      const parentComment = rootCommentRoot;
+      console.log("notif (comment cont) - parent comment:", parentComment);
+
+      if (parentComment) {
+        // Find initial reply
+        let currentReplyId = commentId;
+        const replyChain = [];
+
+        // Build chain using replyId instead of the full reply object
+        const findReply = (replies, replyId) => replies.find((r) => r.replyId === replyId);
+        let replyId = currentReplyId;
+
+        console.log("notif (comment cont) - building reply chain for:", currentReplyId);
+
+        while (replyId) {
+          const reply = findReply(parentComment.replies, replyId);
+          console.log("notif (comment cont) - found reply:", reply);
+          if (!reply) break;
+          replyChain.push(reply.replyId);
+          replyId = reply.replyTo?.replyId || null;
+        }
+
+        console.log("notif (comment cont) - complete reply chain:", replyChain);
+
+        // Expand the parent comment
+        setIsRepliesExpanded(true);
+        console.log("notif (comment cont) - expanded replies");
+
+        // Wait for expansion before highlighting
+        setTimeout(() => {
+          // For replies, use replyId instead of just commentId
+          const replyElement = document.getElementById(`reply-${commentId}`);
+          console.log("notif (comment cont) - attempting to find reply element:", replyElement);
+
+          if (replyElement) {
+            replyElement.scrollIntoView({ behavior: "smooth" });
+            replyElement.classList.add("highlight-animation");
+            setTimeout(() => {
+              replyElement.classList.remove("highlight-animation");
+            }, 3000);
+          } else {
+            console.log("notif (comment cont) - reply element not found in DOM, retrying in 500ms");
+            setTimeout(() => {
+              const retryElement = document.getElementById(`reply-${commentId}`);
+              console.log("notif (comment cont) - retry found reply element:", retryElement);
+              if (retryElement) {
+                retryElement.scrollIntoView({ behavior: "smooth" });
+                retryElement.classList.add("highlight-animation");
+                setTimeout(() => {
+                  retryElement.classList.remove("highlight-animation");
+                }, 3000);
+              }
+            }, 500);
+          }
+        }, 300);
+      }
+    } else {
+      console.log("notif (comment cont) - highlighting root comment:", commentId);
+      const commentElement = document.getElementById(`comment-${commentId}`);
+      console.log("notif (comment cont) - found comment element:", commentElement);
+
+      if (commentElement) {
+        commentElement.scrollIntoView({ behavior: "smooth" });
+        commentElement.classList.add("highlight-animation");
+        setTimeout(() => {
+          commentElement.classList.remove("highlight-animation");
+        }, 3000);
+      } else {
+        console.log("notif (comment cont) - comment element not found in DOM, retrying in 500ms");
+        setTimeout(() => {
+          const retryElement = document.getElementById(`comment-${commentId}`);
+          console.log("notif (comment cont) - retry found comment element:", retryElement);
+          if (retryElement) {
+            retryElement.scrollIntoView({ behavior: "smooth" });
+            retryElement.classList.add("highlight-animation");
+            setTimeout(() => {
+              retryElement.classList.remove("highlight-animation");
+            }, 3000);
+          }
+        }, 500);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleNotificationActions = async () => {
+      console.log("notif (comment cont) - handleNotificationActions called - comment:", comment);
+      if (!comment) return;
+
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      console.log("notif (comment cont) - pendingActions from localStorage:", pendingActions);
+
+      if (pendingActions) {
+        try {
+          const parsedActions = JSON.parse(pendingActions);
+          console.log("notif (comment cont) - parsed pendingActions:", parsedActions);
+
+          const { actions, references, timestamp, completed, type, title } = parsedActions;
+
+          const uniqueCompleted = completed.reduce((acc, current) => {
+            const x = acc.find((item) => item.index === current.index);
+            if (!x) return acc.concat([current]);
+            return acc;
+          }, []);
+
+          for (const [index, action] of actions.entries()) {
+            console.log("notif (comment cont) - Processing action:", action, "at index:", index);
+
+            const isAlreadyCompleted = uniqueCompleted.some((c) => c.index === index);
+            if (isAlreadyCompleted) {
+              console.log(`notif (comment cont) - Action at index ${index} already completed`);
+              continue;
+            }
+
+            const previousActionsCompleted =
+              uniqueCompleted.filter((c) => c.index < index).length === index;
+            console.log(
+              "notif (comment cont) - previousActionsCompleted:",
+              previousActionsCompleted
+            );
+
+            if (action === "Highlight comment" && previousActionsCompleted) {
+              const isReply = title?.toLowerCase().includes("reply");
+              const commentId = isReply ? references?.replyId : references?.commentId;
+              highlightComment(commentId, isReply);
+              uniqueCompleted.push({ action, index, timestamp });
+              localStorage.setItem(
+                "pendingNotificationActions",
+                JSON.stringify({
+                  actions,
+                  references,
+                  timestamp,
+                  completed: uniqueCompleted,
+                  type,
+                  title,
+                })
+              );
+            }
+
+            if (index === actions.length - 1 && uniqueCompleted.length === actions.length) {
+              console.log(
+                "notif (comment cont) - Removing pendingNotificationActions from localStorage"
+              );
+              localStorage.removeItem("pendingNotificationActions");
+            }
+          }
+        } catch (error) {
+          console.error("Error processing notification actions:", error);
+        }
+      }
+    };
+
+    handleNotificationActions();
+  }, [comment, commentId, notificationUpdate]);
+
   return (
     <>
       <div
@@ -712,6 +877,7 @@ const CommentContainer = ({
           ${activeComment === commentId ? "active" : ""}
           ${isReply ? "reply" : ""}
           ${isReplyToReply ? "reply-to-reply" : ""}`}
+        id={isReply ? `reply-${comment.replyId}` : `comment-${commentId}`}
         onClick={() => setActiveComment(commentId)}
       >
         <div className="profile-section">

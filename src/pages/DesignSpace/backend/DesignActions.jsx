@@ -208,6 +208,7 @@ export const handleCopyDesign = async (
       return {
         success: true,
         message: "Design copied successfully",
+        designId: response.data.designId,
       };
     } else {
       return {

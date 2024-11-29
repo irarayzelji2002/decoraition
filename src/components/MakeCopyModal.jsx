@@ -34,6 +34,7 @@ import {
   selectStylesDisabled,
   menuItemStyles,
 } from "../pages/DesignSpace/DesignSettings";
+import { GradientCircularLoading } from "./ManageAccessModal";
 
 const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
   const { user } = useSharedProps();
@@ -43,6 +44,8 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
   const [versionDetails, setVersionDetails] = useState([]);
   const [error, setError] = useState("");
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMakeACopyDisabled, setIsMakeACopyDisabled] = useState(false);
 
   const handleClose = () => {
     onClose();
@@ -53,19 +56,28 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
   };
 
   const onSubmit = async () => {
-    const result = await handleCopy(design, selectedDesignVersionId, shareWithCollaborators);
-    if (!result.success) {
-      if (result.message === "Select a version to copy") setError(result.message);
-      else showToast("error", result.message);
-      return;
+    try {
+      setIsMakeACopyDisabled(true);
+      const result = await handleCopy(design, selectedDesignVersionId, shareWithCollaborators);
+      if (!result.success) {
+        if (result.message === "Select a version to copy") setError(result.message);
+        else showToast("error", result.message);
+        return;
+      }
+      showToast(
+        "success",
+        `Design copied${
+          selectedDesignVersionDate ? ` from version on ${selectedDesignVersionDate}` : ""
+        }`
+      );
+      // Open new tab with copied design
+      if (result.designId) {
+        window.open(`/design/${result.designId}`, "_blank");
+      }
+    } finally {
+      handleClose();
+      setIsMakeACopyDisabled(false);
     }
-    showToast(
-      "success",
-      `Design copied${
-        selectedDesignVersionDate ? ` from version on ${selectedDesignVersionDate}` : ""
-      }`
-    );
-    handleClose();
   };
 
   const handleSelect = (selectedId) => {
@@ -83,22 +95,29 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
 
   useEffect(() => {
     const getVersionDetails = async () => {
-      if (design?.history && design.history.length > 0) {
-        const result = await fetchVersionDetails(design, user);
-        if (!result.success) {
-          console.error("Error:", result.message);
-          setSelectedDesignVersionId("");
-          setVersionDetails([]);
-          return;
+      setIsLoading(true);
+      try {
+        if (design?.history && design.history.length > 0) {
+          const result = await fetchVersionDetails(design, user);
+          if (!result.success) {
+            console.error("Error:", result.message);
+            setSelectedDesignVersionId("");
+            setVersionDetails([]);
+            return;
+          }
+          let versionDetails = result.versionDetails;
+          versionDetails = versionDetails.reverse();
+          setVersionDetails(versionDetails);
+          const latestVersion = versionDetails[0];
+          if (latestVersion) {
+            setSelectedDesignVersionId(latestVersion.id);
+            setSelectedDesignVersionDate(formatDateDetailComma(latestVersion.createdAt));
+          }
         }
-        let versionDetails = result.versionDetails;
-        versionDetails = versionDetails.reverse();
-        setVersionDetails(versionDetails);
-        const latestVersion = versionDetails[0];
-        if (latestVersion) {
-          setSelectedDesignVersionId(latestVersion.id);
-          setSelectedDesignVersionDate(formatDateDetailComma(latestVersion.createdAt));
-        }
+      } catch (error) {
+        console.error("Error fetching version details:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -141,40 +160,54 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
           </IconButton>
         </DialogTitle>
         <DialogContent sx={dialogContentStyles}>
-          <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-            Select a version to copy
-            <IconButton onClick={() => setIsHistoryOpen(true)}>
-              <OpenInFullRoundedIcon
-                sx={{ color: "var(--color-white)", fontSize: "1.2rem", marginLeft: "20px" }}
-              />
-            </IconButton>
-          </Typography>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <FormControl sx={formControlStyles}>
-              <Select
-                labelId="date-modified-select-label"
-                id="date-modified-select"
-                value={selectedDesignVersionId}
-                onChange={(e) => {
-                  const selectedId = e.target.value;
-                  handleSelect(selectedId);
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      borderRadius: "10px",
-                      "& .MuiMenu-list": {
-                        padding: 0,
+          {!isLoading ? (
+            <>
+              <Typography variant="body1" sx={{ marginBottom: "10px" }}>
+                Select a version to copy
+                <IconButton onClick={() => setIsHistoryOpen(true)}>
+                  <OpenInFullRoundedIcon
+                    sx={{ color: "var(--color-white)", fontSize: "1.2rem", marginLeft: "20px" }}
+                  />
+                </IconButton>
+              </Typography>
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <FormControl sx={formControlStyles}>
+                  <Select
+                    labelId="date-modified-select-label"
+                    id="date-modified-select"
+                    value={selectedDesignVersionId}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      handleSelect(selectedId);
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          borderRadius: "10px",
+                          maxHeight: "40vh !important",
+                          minWidth: "calc(50vw - 123px) !important",
+                          "& .MuiMenu-list": {
+                            padding: 0,
+                          },
+                        },
                       },
-                    },
-                  },
-                }}
-                IconComponent={(props) => (
-                  <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
-                )}
-                sx={selectStyles}
-              >
-                {/* <MenuItem value="" sx={menuItemStyles}>
+                    }}
+                    IconComponent={(props) => (
+                      <KeyboardArrowDownRoundedIcon
+                        sx={{ color: "var(--color-white) !important" }}
+                      />
+                    )}
+                    sx={{
+                      ...selectStyles,
+                      "& .MuiSelect-select.MuiInputBase-input": {
+                        ...selectStyles["& .MuiSelect-select.MuiInputBase-input"],
+                        paddingRight: "0px !important",
+                        display: "flex",
+                        alignItems: "center",
+                      },
+                    }}
+                  >
+                    {/* <MenuItem value="" sx={menuItemStyles}>
                 <em>None</em>
               </MenuItem>
               <MenuItem sx={menuItemStyles} value="versionId">
@@ -185,57 +218,79 @@ const MakeCopyModal = ({ isOpen, onClose, handleCopy, design }) => {
                 </ListItemIcon>
                 <Typography variant="inherit">December 25, 2021, 12:00 PM</Typography>
               </MenuItem> */}
-                {versionDetails.map((version) => (
-                  <MenuItem key={version.id} sx={menuItemStyles} value={version.id}>
-                    <div className="select-image-preview">
-                      <img src={version.imagesLink[0]} alt="" />
-                    </div>
-                    <Typography variant="inherit">
-                      {formatDateDetailComma(version.createdAt)}
-                    </Typography>
-                  </MenuItem>
-                ))}
-              </Select>
-              {error && <div className="error-text">{error}</div>}
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={shareWithCollaborators}
-                    onChange={(e) => setShareWithCollaborators(e.target.checked)}
+                    {versionDetails.map((version) => (
+                      <MenuItem
+                        key={version.id}
+                        sx={{ ...menuItemStyles, display: "flex", alignItems: "center" }}
+                        value={version.id}
+                      >
+                        <div className="select-image-preview">
+                          <img src={version.imagesLink[0]} alt="" />
+                        </div>
+                        <Typography variant="inherit">
+                          {formatDateDetailComma(version.createdAt)}
+                        </Typography>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {error && <div className="error-text">{error}</div>}
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={shareWithCollaborators}
+                        onChange={(e) => setShareWithCollaborators(e.target.checked)}
+                        sx={{
+                          color: "var(--color-white)",
+                          "&.Mui-checked": {
+                            color: "var(--brightFont)",
+                          },
+                          borderRadius: "50%",
+                          "& .MuiSvgIcon-root": {
+                            fontSize: 28,
+                          },
+                          "&:hover": {
+                            backgroundColor: "var(--iconButtonHover)",
+                          },
+                          "&:active": {
+                            backgroundColor: "var(--iconButtonActive)",
+                          },
+                        }}
+                        icon={<CheckboxIcon />}
+                        checkedIcon={<CheckboxCheckedIcon />}
+                      />
+                    }
+                    label="Share with collaborators"
                     sx={{
                       color: "var(--color-white)",
-                      "&.Mui-checked": {
-                        color: "var(--brightFont)",
-                      },
-                      borderRadius: "50%",
-                      "& .MuiSvgIcon-root": {
-                        fontSize: 28,
-                      },
-                      "&:hover": {
-                        backgroundColor: "var(--iconButtonHover)",
-                      },
-                      "&:active": {
-                        backgroundColor: "var(--iconButtonActive)",
+                      margin: " 5px 0px auto -9px !important",
+                      "& .MuiTypography-root": {
+                        marginLeft: "3px",
                       },
                     }}
-                    icon={<CheckboxIcon />}
-                    checkedIcon={<CheckboxCheckedIcon />}
                   />
-                }
-                label="Share with collaborators"
-                sx={{
-                  color: "var(--color-white)",
-                  "& .MuiTypography-root": {
-                    marginLeft: "3px",
-                  },
-                }}
-              />
-            </FormControl>
-          </div>
+                </FormControl>
+              </div>
+            </>
+          ) : (
+            <GradientCircularLoading />
+          )}
         </DialogContent>
         <DialogActions sx={dialogActionsStyles}>
           {/* Make Copy Button */}
-          <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={onSubmit}
+            sx={{
+              ...gradientButtonStyles,
+              opacity: isMakeACopyDisabled || isLoading ? "0.5" : "1",
+              cursor: isMakeACopyDisabled || isLoading ? "default" : "pointer",
+              "&:hover": {
+                backgroundImage: !isMakeACopyDisabled && !isLoading && "var(--gradientButtonHover)",
+              },
+            }}
+            disabled={isMakeACopyDisabled || isLoading}
+          >
             Make a copy
           </Button>
 

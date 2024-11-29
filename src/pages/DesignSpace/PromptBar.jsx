@@ -1104,8 +1104,8 @@ function PromptBar({
           style={{ minHeight: applyMinHeight ? "calc(100% - 129.2px)" : "662.8px" }}
           className="transitionMinHeight"
         >
-          <h6>
-            Show me a guide
+          <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
+            <h6>Show me a guide</h6>
             <TooltipWithClickAway
               open={showGuide}
               setOpen={setShowGuide}
@@ -1117,13 +1117,13 @@ function PromptBar({
                   description="Here is a guide process"
                 />
               }
-              className="helpTooltip inPromptBar"
+              className="helpTooltip"
             >
               <div style={{ display: "flex" }}>
                 <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
               </div>
             </TooltipWithClickAway>
-          </h6>
+          </div>
 
           <h3>
             Describe your idea

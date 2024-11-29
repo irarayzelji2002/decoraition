@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Avatar, Box, IconButton, ListItemIcon, ListItemText } from "@mui/material";
 import {
@@ -15,7 +16,8 @@ import { CustomMenuItem } from "../DesignSpace/CommentContainer.jsx";
 import { formatDateDetail } from "./backend/HomepageActions.jsx";
 
 function Notif({ notif }) {
-  const { user, users, userDoc } = useSharedProps();
+  const navigate = useNavigate();
+  const { user, users, userDoc, notificationUpdate, setNotificationUpdate } = useSharedProps();
 
   // Notification data
   const [type, setType] = useState("");
@@ -25,6 +27,7 @@ function Notif({ notif }) {
   const [senderUsername, setSenderUsername] = useState("");
   const [senderProfilePic, setSenderProfilePic] = useState("");
   const [timeDiff, setTimeDiff] = useState("");
+  const [notifClickDisabled, setNotifClickDisabled] = useState(false);
 
   const [showOptions, setShowOptions] = useState(false);
   const dropdownRef = useRef(null);
@@ -60,8 +63,68 @@ function Notif({ notif }) {
     };
   }, []);
 
+  const handleNotificationClick = async (notification) => {
+    // Mark as read
+    if (!isReadInApp) await handleChangeNotifReadStatus();
+
+    const currentPath = window.location.pathname;
+    const targetPath = notification.navigateTo;
+
+    if (notification.actions.length === 0) return;
+    if (currentPath === targetPath) {
+      // Store actions without navigating
+      localStorage.setItem(
+        "pendingNotificationActions",
+        JSON.stringify({
+          actions: notification.actions,
+          references: notification.references,
+          completed: [],
+          timestamp: Date.now(),
+          type: notification.type,
+          title: notification.title,
+          content: notification.content,
+          isReadInApp: notification.isReadInApp,
+        })
+      );
+      console.log("notif - setItem same path", {
+        actions: notification.actions,
+        references: notification.references,
+        type: notification.type,
+        completed: [],
+        timestamp: Date.now(),
+      });
+      // Trigger re-render by updating state instead of reloading
+      setNotificationUpdate((prev) => prev + 1);
+    } else {
+      // Store actions and references in localStorage
+      localStorage.setItem(
+        "pendingNotificationActions",
+        JSON.stringify({
+          actions: notification.actions,
+          references: notification.references,
+          completed: [],
+          timestamp: Date.now(),
+          type: notification.type,
+          title: notification.title,
+          content: notification.content,
+          isReadInApp: notification.isReadInApp,
+        })
+      );
+      console.log("notif - setItem diff path", {
+        actions: notification.actions,
+        references: notification.references,
+        type: notification.type,
+        completed: [],
+        timestamp: Date.now(),
+      });
+      // Navigate to the specified path
+      navigate(notification.navigateTo);
+    }
+  };
+
   const handleChangeNotifReadStatus = async () => {
     // Call changeNotifReadStatus
+    setNotifClickDisabled(true);
     const result = await changeNotifReadStatus(notif.id, isReadInApp, user, userDoc);
     console.log("notif - change notif status", result);
     if (!result.success) {
@@ -69,6 +132,7 @@ function Notif({ notif }) {
       return;
     }
     showToast("success", result.message);
+    setNotifClickDisabled(false);
     if (isReadInApp) toggleOptions();
   };
 
@@ -139,8 +203,11 @@ function Notif({ notif }) {
   return (
     <div>
       <div
-        className={`notif-box ${!isReadInApp && "unread"}`}
-        onClick={() => (!isReadInApp ? handleChangeNotifReadStatus() : {})}
+        className={`notif-box ${!isReadInApp && "unread"} ${
+          notifClickDisabled && "notif-disabled"
+        }`}
+        style={{ cursor: notif?.actions?.length === 0 && isReadInApp ? "auto" : "pointer" }}
+        onClick={() => (!notifClickDisabled ? handleNotificationClick(notif) : {})}
       >
         <div className="hoverOverlay"></div>
         {!isReadInApp && <FaCircle className="unreadCircle" />}

@@ -1,6 +1,15 @@
 const { db, auth } = require("../firebase");
 
-exports.createNotification = async (userId, type, title, content, notifBy) => {
+exports.createNotification = async (
+  userId,
+  type,
+  title,
+  content,
+  notifBy,
+  navigateTo,
+  actions,
+  references
+) => {
   const notificationRef = db.collection("notifications").doc();
   const notificationData = {
     userId,
@@ -9,12 +18,24 @@ exports.createNotification = async (userId, type, title, content, notifBy) => {
     content,
     isReadInApp: false,
     notifBy,
+    navigateTo,
+    actions,
+    references,
     createdAt: new Date(),
   };
   await notificationRef.set(notificationData);
 };
 
-const createNotification = async (userId, type, title, content, notifBy) => {
+const createNotification = async (
+  userId,
+  type,
+  title,
+  content,
+  notifBy,
+  navigateTo,
+  actions,
+  references
+) => {
   const notificationRef = db.collection("notifications").doc();
   const notificationData = {
     userId,
@@ -23,12 +44,23 @@ const createNotification = async (userId, type, title, content, notifBy) => {
     content,
     isReadInApp: false,
     notifBy,
+    navigateTo,
+    actions,
+    references,
     createdAt: new Date(),
   };
   await notificationRef.set(notificationData);
 };
 
-exports.sendCommentNotifications = async (designDoc, commentUserId, action, mentions = []) => {
+exports.sendCommentNotifications = async (
+  designId,
+  designDoc,
+  commentUserId,
+  mentions = [],
+  isReply,
+  commentId,
+  replyId = null
+) => {
   const designOwner = designDoc.data().owner;
   const editors = designDoc.data().editors || [];
   const commenters = designDoc.data().commenters || [];
@@ -58,7 +90,10 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
         "mention",
         "Mentioned in Comment",
         `You were mentioned in a comment on design "${designDoc.data().designName}"`,
-        commentUserId
+        commentUserId,
+        `/design/${designId}`,
+        ["Show comment tab", "Hide drawers", "Set comment type and for", "Highlight comment"],
+        !isReply ? { commentId } : { commentId, replyId }
       );
     }
 
@@ -66,9 +101,14 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
       await createNotification(
         userId,
         "comment",
-        "New Comment on Your Design",
-        `A new comment was added to your design "${designDoc.data().designName}"`,
-        commentUserId
+        `New ${!isReply ? "Comment" : "Reply"} on Your Design`,
+        `A new ${!isReply ? "comment" : "reply"} was added to your design "${
+          designDoc.data().designName
+        }"`,
+        commentUserId,
+        `/design/${designId}`,
+        ["Show comment tab", "Hide drawers", "Set comment type and for", "Highlight comment"],
+        !isReply ? { commentId } : { commentId, replyId }
       );
     }
 
@@ -79,9 +119,14 @@ exports.sendCommentNotifications = async (designDoc, commentUserId, action, ment
       await createNotification(
         userId,
         "comment",
-        "New Comment on Collaborated Design",
-        `A new comment was added to design "${designDoc.data().designName}"`,
-        commentUserId
+        `New ${!isReply ? "Comment" : "Reply"} on Collaborated Design`,
+        `A new ${!isReply ? "comment" : "reply"} was added to design "${
+          designDoc.data().designName
+        }"`,
+        commentUserId,
+        `/design/${designId}`,
+        ["Show comment tab", "Hide drawers", "Set comment type and for", "Highlight comment"],
+        !isReply ? { commentId } : { commentId, replyId }
       );
     }
   }

@@ -13,6 +13,7 @@ import {
   Divider,
   IconButton,
   Box,
+  CircularProgress,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
@@ -48,6 +49,7 @@ import { DeleteIconGradient } from "./svg/DefaultMenuIcons";
 import { HelpOutline } from "@mui/icons-material";
 import { TooltipWithClickAwayMenuItem } from "./TooltipWithClickAway";
 import { DescriptionTooltip } from "./CustomTooltip";
+import Loading from "./Loading";
 
 const ManageAcessModal = ({
   isOpen,
@@ -58,7 +60,7 @@ const ManageAcessModal = ({
   isViewCollab,
   onShowViewCollab = () => {},
 }) => {
-  const { users } = useSharedProps();
+  const { users, notificationUpdate } = useSharedProps();
   // object is design if isDesign is true, else it is project
   const [roles, setRoles] = useState([]);
   // Design: 0 for viewer, 1 for editor (default), 2 for commenter, 3 for owner
@@ -82,6 +84,7 @@ const ManageAcessModal = ({
   const [showLabelTooltip, setShowLabelTooltip] = useState(false);
   const [labelTooltipClickLocked, setLabelTooltipClickLocked] = useState(false);
   const [currentHoveredRole, setCurrentHoveredRole] = useState(null); // {role: number, userId: string} or null
+  const [isCollaboratorsLoaded, setIsCollaboratorsLoaded] = useState(false);
 
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -350,6 +353,8 @@ const ManageAcessModal = ({
       setEmailsWithRole(collaborators);
       console.log("manage access - collaborators:", collaborators);
     }
+
+    setIsCollaboratorsLoaded(true);
   }, [isOpen, users, object]);
 
   const getAccessRoleText = (generalAccessRole) => {
@@ -433,6 +438,124 @@ const ManageAcessModal = ({
   useEffect(() => {
     console.log("manage access - emailsWithRole:", emailsWithRole);
   }, [emailsWithRole]);
+  useEffect(() => {
+    console.log("manage access - isCollaboratorsLoaded", isCollaboratorsLoaded);
+  }, [isCollaboratorsLoaded]);
+
+  // Notification highlight
+  const highlightUserInModal = (userId) => {
+    console.log("notif - attempting to highlight userId:", userId);
+    // Remove the extra quote in the element ID
+    const userElement = document.getElementById(`drawerUser-${userId}`);
+    console.log("notif - found userElement:", userElement);
+
+    if (userElement) {
+      userElement.scrollIntoView({ behavior: "smooth" });
+      userElement.classList.add("highlight-animation");
+      setTimeout(() => {
+        userElement.classList.remove("highlight-animation");
+      }, 3000);
+    } else {
+      console.log("notif - userElement not found in DOM, retrying in 500ms");
+      // Add a retry mechanism
+      setTimeout(() => {
+        const retryElement = document.getElementById(`drawerUser-${userId}`);
+        console.log("notif - retry found userElement:", retryElement);
+        if (retryElement) {
+          retryElement.scrollIntoView({ behavior: "smooth" });
+          retryElement.classList.add("highlight-animation");
+          setTimeout(() => {
+            retryElement.classList.remove("highlight-animation");
+          }, 3000);
+        }
+      }, 500);
+    }
+  };
+
+  useEffect(() => {
+    const handleNotificationActions = async () => {
+      console.log(
+        "notif (manage access) - handleNotificationActions called - isCollaboratorsLoaded:",
+        isCollaboratorsLoaded,
+        "isOpen:",
+        isOpen
+      );
+      if (!isCollaboratorsLoaded || !isOpen) return;
+
+      const pendingActions = localStorage.getItem("pendingNotificationActions");
+      console.log("notif (manage access) - pendingActions from localStorage:", pendingActions);
+
+      if (pendingActions) {
+        try {
+          const parsedActions = JSON.parse(pendingActions);
+          console.log("notif (manage access) - parsed pendingActions:", parsedActions);
+
+          const { actions, references, timestamp, completed, type, title } = parsedActions;
+
+          // Filter out duplicate completed actions
+          const uniqueCompleted = completed.reduce((acc, current) => {
+            const x = acc.find((item) => item.index === current.index);
+            if (!x) {
+              return acc.concat([current]);
+            } else {
+              return acc;
+            }
+          }, []);
+
+          for (const [index, action] of actions.entries()) {
+            console.log("notif (manage access) - Processing action:", action, "at index:", index);
+
+            // Check if this action is already completed
+            const isAlreadyCompleted = uniqueCompleted.some((c) => c.index === index);
+            if (isAlreadyCompleted) {
+              console.log(`notif (manage access) - Action at index ${index} already completed`);
+              continue;
+            }
+
+            // Check if all previous actions are completed
+            const previousActionsCompleted =
+              uniqueCompleted.filter((c) => c.index < index).length === index;
+            console.log(
+              "notif (manage access) - previousActionsCompleted:",
+              previousActionsCompleted
+            );
+
+            if (action === "Highlight user id" && previousActionsCompleted) {
+              const userId = references?.userId;
+              console.log("notif (manage access) - Found userId to highlight:", userId);
+
+              if (userId) {
+                highlightUserInModal(userId);
+                uniqueCompleted.push({ action, index, timestamp });
+                localStorage.setItem(
+                  "pendingNotificationActions",
+                  JSON.stringify({
+                    actions,
+                    references,
+                    timestamp,
+                    completed: uniqueCompleted,
+                    type,
+                    title,
+                  })
+                );
+              }
+
+              if (index === actions.length - 1 && uniqueCompleted.length === actions.length) {
+                console.log(
+                  "notif (manage access) - Removing pendingNotificationActions from localStorage"
+                );
+                localStorage.removeItem("pendingNotificationActions");
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error processing notification actions:", error);
+        }
+      }
+    };
+
+    handleNotificationActions();
+  }, [isCollaboratorsLoaded, isOpen, notificationUpdate]);
 
   return (
     <Dialog open={isOpen} onClose={handleClose} sx={dialogStyles}>
@@ -482,193 +605,203 @@ const ManageAcessModal = ({
             People with access
           </Typography>
           <div style={{ overflow: "auto", maxHeight: "50vh" }}>
-            {initEmailsWithRole.map((user) => {
-              //initEmailsWithRole to dummyUsers, emailsWithRole to dummyUsers
-              const currentUser = emailsWithRole.find((u) => u.userId === user.userId);
-              const managerCount = emailsWithRole.filter((u) => u.role === 3).length;
+            {isCollaboratorsLoaded ? (
+              <>
+                {initEmailsWithRole.map((user) => {
+                  //initEmailsWithRole to dummyUsers, emailsWithRole to dummyUsers
+                  const currentUser = emailsWithRole.find((u) => u.userId === user.userId);
+                  const managerCount = emailsWithRole.filter((u) => u.role === 3).length;
 
-              // Determine if select should be disabled
-              const isDisabled = isDesign
-                ? currentUser?.role === 3 // Disable for design owner
-                : currentUser?.role === 3 && managerCount <= 1; // Disable for last project manager
+                  // Determine if select should be disabled
+                  const isDisabled = isDesign
+                    ? currentUser?.role === 3 // Disable for design owner
+                    : currentUser?.role === 3 && managerCount <= 1; // Disable for last project manager
 
-              return (
-                <div className="drawerUser" key={user.userId}>
-                  <div style={{ marginRight: "6px", marginTop: "auto", marginBottom: "auto" }}>
-                    <Box
-                      sx={{
-                        width: 53,
-                        height: 53,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "var(--gradientButton)",
-                        borderRadius: "50%",
-                        padding: "3px",
-                      }}
-                    >
-                      <Avatar
-                        sx={{
-                          width: 53,
-                          height: 53,
-                          borderRadius: "50%",
-                          boxShadow: "0 0 0 3px var(--gradientButton)",
-                          "& .MuiAvatar-img": {
+                  return (
+                    <div className="drawerUser" key={user.userId} id={`drawerUser-${user.userId}`}>
+                      <div style={{ marginRight: "6px", marginTop: "auto", marginBottom: "auto" }}>
+                        <Box
+                          sx={{
+                            width: 53,
+                            height: 53,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "var(--gradientButton)",
                             borderRadius: "50%",
-                          },
-                          ...stringAvatarColor(user.username),
-                        }}
-                        children={stringAvatarInitials(user.username)}
-                        src={user.profilePic ?? ""}
-                      />
-                    </Box>
-                  </div>
-                  <div
-                    className="drawerUserDetails"
-                    style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
-                  >
-                    <Typography variant="body1" style={{ fontWeight: "bold" }}>
-                      {user.username}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      style={{ fontSize: "0.75rem", lineHeight: "1.5" }}
-                    >
-                      {user.email}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      style={{ fontSize: "0.75rem", lineHeight: "1.5" }}
-                    >
-                      {`${!isViewCollab ? "Previous role: " : ""}${user.roleLabel}`}
-                    </Typography>
-                  </div>
-                  {!isViewCollab && (
-                    <Select
-                      value={currentUser?.role ?? 1}
-                      onChange={(e) => {
-                        const newRole = parseInt(e.target.value, 10);
-                        const roleLabel = roles.find((r) => r.value === newRole)?.label;
-
-                        // Update emailsWithRole while preserving at least one manager for projects
-                        setEmailsWithRole((prev) => {
-                          const updatedRoles = prev.map((u) =>
-                            u.userId === user.userId ? { ...u, role: newRole, roleLabel } : u
-                          );
-
-                          // Check if we're removing the last manager in a project
-                          if (!isDesign && currentUser?.role === 3 && newRole !== 3) {
-                            const remainingManagers = updatedRoles.filter((u) => u.role === 3);
-                            if (remainingManagers.length === 0) {
-                              // Prevent the change if it would remove the last manager
-                              return prev;
-                            }
-                          }
-
-                          return updatedRoles;
-                        });
-                      }}
-                      disabled={isDisabled}
-                      sx={{
-                        ...(isDisabled ? selectStylesDisabled : selectStyles),
-                        marginLeft: "auto",
-                        width: hideLabels ? "90px" : isDesign ? "188px" : "230px",
-                        height: "100%",
-                        "&.Mui-disabled": {
-                          ...selectStylesDisabled["&.Mui-disabled"],
-                          "& .MuiSelect-select": {
-                            ...selectStylesDisabled["&.Mui-disabled"]["& .MuiSelect-select"],
-                            padding: "12px 40px 12px 20px",
-                            opacity: 0,
-                          },
-                        },
-                      }}
-                      MenuProps={{
-                        PaperProps: {
-                          sx: {
-                            borderRadius: "10px",
-                            "& .MuiMenu-list": {
-                              padding: 0,
-                            },
-                            "& .MuiMenuItem-root[aria-disabled='true']": {
-                              display: "none",
-                            },
-                          },
-                        },
-                      }}
-                      IconComponent={(props) => (
-                        <KeyboardArrowDownRoundedIcon
-                          sx={{ color: "var(--color-white) !important" }}
-                        />
-                      )}
-                      renderValue={(selected) => {
-                        const selectedRole = roles.find((role) => role.value === selected);
-                        return (
-                          <div style={{ display: "flex", alignItems: "center" }}>
-                            <div style={{ marginRight: "10px", display: "flex" }}>
-                              {selectedRole?.icon}
-                            </div>
-                            {!isWrapped && <div>{selectedRole?.label}</div>}
-                          </div>
-                        );
-                      }}
-                    >
-                      {roles.map((roleOption) => (
-                        <MenuItem
-                          key={roleOption.value}
-                          value={roleOption.value}
-                          sx={menuItemStyles}
-                          disabled={isDesign ? roleOption.value === 3 : false}
+                            padding: "3px",
+                          }}
                         >
-                          <div style={{ display: "flex", alignItems: "center" }}>
-                            <div style={{ marginRight: "10px", display: "flex" }}>
-                              {roleOption.icon}
-                            </div>
-                            {!isWrapped ? (
-                              <div>{roleOption.label}</div>
-                            ) : (
-                              <TooltipWithClickAwayMenuItem
-                                open={
-                                  showLabelTooltip &&
-                                  currentHoveredRole?.role === roleOption.value &&
-                                  currentHoveredRole?.userId === user.userId
+                          <Avatar
+                            sx={{
+                              width: 53,
+                              height: 53,
+                              borderRadius: "50%",
+                              boxShadow: "0 0 0 3px var(--gradientButton)",
+                              "& .MuiAvatar-img": {
+                                borderRadius: "50%",
+                              },
+                              ...stringAvatarColor(user.username),
+                            }}
+                            children={stringAvatarInitials(user.username)}
+                            src={user.profilePic ?? ""}
+                          />
+                        </Box>
+                      </div>
+                      <div
+                        className="drawerUserDetails"
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Typography variant="body1" style={{ fontWeight: "bold" }}>
+                          {user.username}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          style={{ fontSize: "0.75rem", lineHeight: "1.5" }}
+                        >
+                          {user.email}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          style={{ fontSize: "0.75rem", lineHeight: "1.5" }}
+                        >
+                          {`${!isViewCollab ? "Previous role: " : ""}${user.roleLabel}`}
+                        </Typography>
+                      </div>
+                      {!isViewCollab && (
+                        <Select
+                          value={currentUser?.role ?? 1}
+                          onChange={(e) => {
+                            const newRole = parseInt(e.target.value, 10);
+                            const roleLabel = roles.find((r) => r.value === newRole)?.label;
+
+                            // Update emailsWithRole while preserving at least one manager for projects
+                            setEmailsWithRole((prev) => {
+                              const updatedRoles = prev.map((u) =>
+                                u.userId === user.userId ? { ...u, role: newRole, roleLabel } : u
+                              );
+
+                              // Check if we're removing the last manager in a project
+                              if (!isDesign && currentUser?.role === 3 && newRole !== 3) {
+                                const remainingManagers = updatedRoles.filter((u) => u.role === 3);
+                                if (remainingManagers.length === 0) {
+                                  // Prevent the change if it would remove the last manager
+                                  return prev;
                                 }
-                                setOpen={(value) => {
-                                  setShowLabelTooltip(value);
-                                  if (!value) setCurrentHoveredRole(null);
-                                }}
-                                tooltipClickLocked={labelTooltipClickLocked}
-                                setTooltipClickLocked={setLabelTooltipClickLocked}
-                                title={
-                                  <DescriptionTooltip
-                                    description={roleOption.label}
-                                    minWidth={isDesign ? "100px" : "150px"}
-                                  />
-                                }
-                                className="helpTooltip inMenuItem"
-                                onMouseEnter={() => {
-                                  setCurrentHoveredRole({
-                                    role: roleOption.value,
-                                    userId: user.userId,
-                                  });
-                                }}
-                                onMouseLeave={() => {
-                                  if (!labelTooltipClickLocked) setCurrentHoveredRole(null);
-                                }}
-                              >
-                                <HelpOutline
-                                  sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }}
-                                />
-                              </TooltipWithClickAwayMenuItem>
-                            )}
-                          </div>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                </div>
-              );
-            })}
+                              }
+
+                              return updatedRoles;
+                            });
+                          }}
+                          disabled={isDisabled}
+                          sx={{
+                            ...(isDisabled ? selectStylesDisabled : selectStyles),
+                            marginLeft: "auto",
+                            width: hideLabels ? "90px" : isDesign ? "188px" : "230px",
+                            height: "100%",
+                            "&.Mui-disabled": {
+                              ...selectStylesDisabled["&.Mui-disabled"],
+                              "& .MuiSelect-select": {
+                                ...selectStylesDisabled["&.Mui-disabled"]["& .MuiSelect-select"],
+                                padding: "12px 40px 12px 20px",
+                                opacity: 0,
+                              },
+                            },
+                          }}
+                          MenuProps={{
+                            PaperProps: {
+                              sx: {
+                                borderRadius: "10px",
+                                "& .MuiMenu-list": {
+                                  padding: 0,
+                                },
+                                "& .MuiMenuItem-root[aria-disabled='true']": {
+                                  display: "none",
+                                },
+                              },
+                            },
+                          }}
+                          IconComponent={(props) => (
+                            <KeyboardArrowDownRoundedIcon
+                              sx={{ color: "var(--color-white) !important" }}
+                            />
+                          )}
+                          renderValue={(selected) => {
+                            const selectedRole = roles.find((role) => role.value === selected);
+                            return (
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                <div style={{ marginRight: "10px", display: "flex" }}>
+                                  {selectedRole?.icon}
+                                </div>
+                                {!isWrapped && <div>{selectedRole?.label}</div>}
+                              </div>
+                            );
+                          }}
+                        >
+                          {roles.map((roleOption) => (
+                            <MenuItem
+                              key={roleOption.value}
+                              value={roleOption.value}
+                              sx={menuItemStyles}
+                              disabled={isDesign ? roleOption.value === 3 : false}
+                            >
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                <div style={{ marginRight: "10px", display: "flex" }}>
+                                  {roleOption.icon}
+                                </div>
+                                {!isWrapped ? (
+                                  <div>{roleOption.label}</div>
+                                ) : (
+                                  <TooltipWithClickAwayMenuItem
+                                    open={
+                                      showLabelTooltip &&
+                                      currentHoveredRole?.role === roleOption.value &&
+                                      currentHoveredRole?.userId === user.userId
+                                    }
+                                    setOpen={(value) => {
+                                      setShowLabelTooltip(value);
+                                      if (!value) setCurrentHoveredRole(null);
+                                    }}
+                                    tooltipClickLocked={labelTooltipClickLocked}
+                                    setTooltipClickLocked={setLabelTooltipClickLocked}
+                                    title={
+                                      <DescriptionTooltip
+                                        description={roleOption.label}
+                                        minWidth={isDesign ? "100px" : "150px"}
+                                      />
+                                    }
+                                    className="helpTooltip inMenuItem"
+                                    onMouseEnter={() => {
+                                      setCurrentHoveredRole({
+                                        role: roleOption.value,
+                                        userId: user.userId,
+                                      });
+                                    }}
+                                    onMouseLeave={() => {
+                                      if (!labelTooltipClickLocked) setCurrentHoveredRole(null);
+                                    }}
+                                  >
+                                    <HelpOutline
+                                      sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }}
+                                    />
+                                  </TooltipWithClickAwayMenuItem>
+                                )}
+                              </div>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            ) : (
+              <GradientCircularLoading />
+            )}
           </div>
           <Typography
             variant="body1"
@@ -888,4 +1021,38 @@ const menuItemStyles = {
   "&.Mui-selected:hover": {
     backgroundColor: "var(--dropdownSelectedHover) !important",
   },
+};
+
+export const GradientCircularLoading = ({ size = 45 }) => {
+  // 20 small, 45 large
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        padding: "20px 20px 10px 20px",
+      }}
+    >
+      <svg width={0} height={0}>
+        <defs>
+          <linearGradient id="gradientFont" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style={{ stopColor: "#ea1179", stopOpacity: 1 }} />
+            <stop offset="40%" style={{ stopColor: "#f36b24", stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: "#faa652", stopOpacity: 1 }} />
+          </linearGradient>
+        </defs>
+      </svg>
+      <CircularProgress
+        variant="indeterminate"
+        thickness={6}
+        size={size}
+        sx={{
+          "& .MuiCircularProgress-circle": {
+            stroke: "url(#gradientFont)",
+            strokeLinecap: "round",
+          },
+        }}
+      />
+    </Box>
+  );
 };

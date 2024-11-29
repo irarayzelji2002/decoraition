@@ -269,7 +269,10 @@ exports.updateDesignName = async (req, res) => {
           "design-update",
           "Design Renamed",
           `The design "${previousName}" has been renamed to "${name}"`,
-          req.body.userId
+          req.body.userId,
+          `/design/${designId}`,
+          ["Highlight design name"],
+          { designId }
         );
       }
     } catch (notifError) {
@@ -406,6 +409,7 @@ exports.restoreDesignVersion = async (req, res) => {
   try {
     const { designId, versionId } = req.params;
     const { userId } = req.body;
+    console.log("restoreDesignVersion - ", { designId, versionId, userId });
 
     // Get the design document & version to restore
     const designDoc = await db.collection("designs").doc(designId).get();
@@ -452,23 +456,38 @@ exports.restoreDesignVersion = async (req, res) => {
     });
 
     // Create new budget for restored version
-    const originalBudget = await db.collection("budgets").doc(versionDoc.data().budgetId).get();
+    let newBudgetData;
+    const versionData = versionDoc.data();
 
-    const newBudgetData = originalBudget.exists
-      ? {
+    // Check if version has a valid budgetId
+    if (versionData?.budgetId) {
+      console.log("restoreDesignVersion - getting orig budget with ID:", versionData.budgetId);
+      const originalBudget = await db.collection("budgets").doc(versionData.budgetId).get();
+
+      if (originalBudget.exists) {
+        newBudgetData = {
           designVersionId: newVersionRef.id,
           budget: originalBudget.data().budget,
           items: originalBudget.data().items,
           createdAt: new Date(),
           modifiedAt: new Date(),
-        }
-      : {
-          designVersionId: newVersionRef.id,
-          budget: { amount: 0, currency: getPHCurrency() },
-          items: [],
-          createdAt: new Date(),
-          modifiedAt: new Date(),
         };
+      }
+    }
+
+    // If no valid budget found, create default budget
+    if (!newBudgetData) {
+      console.log("restoreDesignVersion - creating default budget");
+      newBudgetData = {
+        designVersionId: newVersionRef.id,
+        budget: { amount: 0, currency: getPHCurrency() },
+        items: [],
+        createdAt: new Date(),
+        modifiedAt: new Date(),
+      };
+    }
+
+    console.log("restoreDesignVersion - creating new budget with data:", newBudgetData);
     const newBudgetRef = await db.collection("budgets").add(newBudgetData);
     createdDocuments.push({ collection: "budgets", id: newBudgetRef.id });
 
@@ -522,6 +541,7 @@ exports.copyDesign = async (req, res) => {
   try {
     const { designId, versionId } = req.params;
     const { userId, shareWithCollaborators } = req.body;
+    console.log("copyDesign - ", { designId, versionId, userId, shareWithCollaborators });
 
     // Get original design and version documents
     const origDesignDoc = await db.collection("designs").doc(designId).get();
@@ -536,13 +556,6 @@ exports.copyDesign = async (req, res) => {
         .status(403)
         .json({ error: "User does not have permission to create design version" });
     }
-
-    // Get original budget document
-    const origBudgetDoc = await db.collection("budgets").doc(versionId?.budgetId).get();
-    if (!origBudgetDoc.exists) {
-      return res.status(404).json({ error: "Original budget not found" });
-    }
-    const origBudgetData = origBudgetDoc.data();
 
     // Step 1: Create empty design document first (following dependency order)
     const emptyDesignData = {
@@ -562,7 +575,6 @@ exports.copyDesign = async (req, res) => {
 
     // Step 2.1: Create new version for the design
     const versionDoc = await db.collection("designVersions").doc(versionId).get();
-    const originalBudget = await db.collection("budgets").doc(versionDoc.data().budgetId).get();
     const newVersionData = {
       description: versionDoc.data().description,
       images: versionDoc.data().images,
@@ -574,24 +586,46 @@ exports.copyDesign = async (req, res) => {
     const newVersionRef = await db.collection("designVersions").add(newVersionData);
     const newVersionId = newVersionRef.id;
     createdDocuments.push({ collection: "designVersions", id: newVersionId });
+    console.log("copyDesign - created new designVersion", newVersionId);
 
     // Step 2.2: Create new budget for the version
-    const newBudgetData = {
-      designVersionId: newVersionId,
-      budget: originalBudget.data().budget,
-      items: originalBudget.data().items,
-      createdAt: new Date(),
-      modifiedAt: new Date(),
-    };
+    let newBudgetData;
+    const versionData = versionDoc.data();
+    // Check if version has a valid budgetId
+    if (versionData?.budgetId) {
+      console.log("copyDesign - getting orig budget with ID:", versionData.budgetId);
+      const originalBudget = await db.collection("budgets").doc(versionData.budgetId).get();
+      if (originalBudget.exists) {
+        newBudgetData = {
+          designVersionId: newVersionId,
+          budget: originalBudget.data().budget,
+          items: originalBudget.data().items,
+          createdAt: new Date(),
+          modifiedAt: new Date(),
+        };
+      }
+    }
+    // If no valid budget found, create default budget
+    if (!newBudgetData) {
+      console.log("copyDesign - creating default budget");
+      newBudgetData = {
+        designVersionId: newVersionRef.id,
+        budget: { amount: 0, currency: getPHCurrency() },
+        items: [],
+        createdAt: new Date(),
+        modifiedAt: new Date(),
+      };
+    }
 
     const newBudgetRef = await db.collection("budgets").add(newBudgetData);
     const newBudgetId = newBudgetRef.id;
     createdDocuments.push({ collection: "budgets", id: newBudgetRef.id });
     await newVersionRef.update({ budgetId: newBudgetRef.id });
+    console.log("copyDesign - created new budget", newBudgetRef.id);
 
     // Step 3: Create empty items (following dependency order)
     const newItemIds = [];
-    for (const origItemId of origBudgetData.items) {
+    for (const origItemId of newBudgetData.items) {
       const emptyItemRef = await db.collection("items").add({
         itemName: "",
         description: "",
@@ -606,6 +640,7 @@ exports.copyDesign = async (req, res) => {
       newItemIds.push(emptyItemRef.id);
       createdDocuments.push({ collection: "items", id: emptyItemRef.id });
     }
+    console.log("copyDesign - created empty items", newItemIds);
 
     // Step 4: Update user's designs array (parent collection update)
     const userRef = db.collection("users").doc(userId);
@@ -623,6 +658,7 @@ exports.copyDesign = async (req, res) => {
       previousValue: userData.designs,
     });
     await userRef.update({ designs: updatedDesigns });
+    console.log("copyDesign - updated user designs of copy (updatedDesigns)", updatedDesigns);
 
     // Step 5: Update version's copiedDesigns array
     const versionRef = db.collection("designVersions").doc(versionId);
@@ -633,9 +669,11 @@ exports.copyDesign = async (req, res) => {
       field: "copiedDesigns",
       previousValue: previousCopiedDesigns,
     });
+    const newCopiedDesigns = [...previousCopiedDesigns, newDesignId];
     await versionRef.update({
-      copiedDesigns: [...previousCopiedDesigns, newDesignId],
+      copiedDesigns: newCopiedDesigns,
     });
+    console.log("copyDesign - updated version's copiedDesigns array", newCopiedDesigns);
 
     // Step 6: Update design document with full data
     const fullDesignData = {
@@ -671,17 +709,20 @@ exports.copyDesign = async (req, res) => {
       modifiedAt: new Date(),
     };
     await newDesignRef.update(fullDesignData);
+    console.log("copyDesign - updated design document with full data", fullDesignData);
 
     // Step 7: Update budget document with full data
-    await newBudgetRef.update({
-      budget: origBudgetData.budget,
+    const updatedBudgetData = {
+      budget: newBudgetData.budget,
       items: newItemIds,
       modifiedAt: new Date(),
-    });
+    };
+    await newBudgetRef.update(updatedBudgetData);
+    console.log("copyDesign - updated budget document with full data", updatedBudgetData);
 
     // Step 8: Update items with full data
-    for (let i = 0; i < origBudgetData.items.length; i++) {
-      const origItemDoc = await db.collection("items").doc(origBudgetData.items[i]).get();
+    for (let i = 0; i < newBudgetData.items.length; i++) {
+      const origItemDoc = await db.collection("items").doc(newBudgetData.items[i]).get();
       if (origItemDoc.exists) {
         const origItemData = origItemDoc.data();
         await db
@@ -694,6 +735,7 @@ exports.copyDesign = async (req, res) => {
           });
       }
     }
+    console.log("copyDesign - updated items with full data (ids)", newItemIds);
 
     res.status(200).json({
       success: true,
@@ -916,7 +958,10 @@ exports.shareDesign = async (req, res) => {
                 `You have been given ${getRoleNameDesign(role)} access to the design "${
                   designData.designName
                 }"`,
-                req.body.userId //notifBy
+                req.body.userId, //notifBy
+                `/design/${designId}`,
+                ["Open view collaborators modal", "Highlight user id"],
+                { designId, userId }
               );
             } catch (notifError) {
               console.error("Error sending notification to user:", userId, notifError);
@@ -1132,7 +1177,7 @@ exports.changeAccessDesign = async (req, res) => {
     // Send notifications
     try {
       // 1. Get user settings for all users who need to be notified
-      const userSettingsPromises = emailsWithRole.map((user) =>
+      const userSettingsPromises = initEmailsWithRole.map((user) =>
         db.collection("users").doc(user.userId).get()
       );
       const userDocs = await Promise.all(userSettingsPromises);
@@ -1168,7 +1213,10 @@ exports.changeAccessDesign = async (req, res) => {
           "design-update",
           "Design Role Updated",
           `Your role in the design "${designData.designName}" has been changed to ${user.roleLabel}`,
-          req.body.userId
+          req.body.userId,
+          `/design/${designId}`,
+          ["Open view collaborators modal", "Highlight user id"],
+          { designId, userId: user.userId }
         );
       }
 
@@ -1188,7 +1236,10 @@ exports.changeAccessDesign = async (req, res) => {
           "design-update",
           "Design Access Removed",
           `Your access to the design "${designData.designName}" has been removed`,
-          req.body.userId
+          req.body.userId,
+          `/design/${designId}`,
+          [],
+          { designId }
         );
       }
     } catch (notifError) {

@@ -28,6 +28,7 @@ import {
   ListItemText,
   Button,
   Box,
+  Badge,
 } from "@mui/material";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
@@ -37,7 +38,12 @@ import NotifTab from "./NotifTab";
 import { ArrowBackIosRounded as ArrowBackIosRoundedIcon } from "@mui/icons-material";
 import { DesignIcn, FAQ, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/DesignSvg.jsx";
 
-const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
+const DrawerComponent = ({
+  isDrawerOpen = false,
+  onClose,
+  isNotifOpen = false,
+  setIsNotifOpen,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const navigateFrom = location.pathname;
@@ -52,11 +58,18 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
     userDesignVersions,
     projects,
     userProjects,
+    userNotifications,
     isDarkMode,
     setIsDarkMode,
   } = useSharedProps();
   const [userDesignsLatest, setUserDesignsLatest] = useState([]);
   const [userProjectsLatest, setUserProjectsLatest] = useState([]);
+  const [notifCount, setNotifCount] = useState(0);
+  const [clickedId, setClickedId] = useState("");
+  const [optionsState, setOptionsState] = useState({
+    showOptions: false,
+    selectedId: null,
+  });
 
   // Sorting designs by latest modifiedAt
   useEffect(() => {
@@ -120,21 +133,13 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
     return getDesignImage(latestDesignId);
   };
 
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-
   const handleNotifClick = () => {
-    setIsNotifOpen(true);
+    if (setIsNotifOpen) setIsNotifOpen(true);
   };
 
   const handleNotifClose = () => {
-    setIsNotifOpen(false);
+    if (setIsNotifOpen) setIsNotifOpen(false);
   };
-
-  const [clickedId, setClickedId] = useState("");
-  const [optionsState, setOptionsState] = useState({
-    showOptions: false,
-    selectedId: null,
-  });
 
   const toggleOptions = (id) => {
     setOptionsState((prev) => {
@@ -164,6 +169,12 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
   useEffect(() => {
     console.log("showOptions:", optionsState.showOptions, "; selectedId:", optionsState.selectedId);
   }, [optionsState]);
+
+  useEffect(() => {
+    // Calculate unread notifications count
+    const unreadCount = userNotifications.filter((notif) => !notif.isReadInApp).length;
+    setNotifCount(unreadCount);
+  }, [userNotifications]);
 
   return (
     <Drawer
@@ -213,7 +224,18 @@ const DrawerComponent = ({ isDrawerOpen = false, onClose }) => {
             {isDarkMode ? <DarkModeIcon /> : <LightModeIcon />}
           </IconButton>
           <IconButton onClick={handleNotifClick} sx={{ ...iconButtonStyles, marginRight: "15px" }}>
-            <NotificationsIcon />
+            <Badge
+              sx={{
+                cursor: "pointer",
+                "& .MuiBadge-badge": {
+                  backgroundColor: "var(--color-secondary)",
+                  color: "white",
+                },
+              }}
+              badgeContent={notifCount > 99 ? "99+" : notifCount}
+            >
+              <NotificationsIcon />
+            </Badge>
           </IconButton>
           <div>
             <NotifTab isNotifOpen={isNotifOpen} onClose={handleNotifClose} />

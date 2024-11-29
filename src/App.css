@@ -240,7 +240,7 @@ select:-webkit-autofill {
 }
 
 .helpTooltip {
-  margin-left: 10px !important;
+  /* margin-left: 10px !important; */
   padding: 6px !important;
   height: 35px !important;
   width: 35px !important;
@@ -251,10 +251,8 @@ select:-webkit-autofill {
   margin-top: -5px !important;
 }
 
-.helpTooltip.inMeuItem {
-  margin-left: 0px !important;
-}
-
+.helpTooltip.inMeuItem,
+.helpTooltip.showGuide,
 .helpTooltip.inBudget {
   margin-left: 0px !important;
 }
@@ -273,6 +271,10 @@ select:-webkit-autofill {
   margin-bottom: 6px;
 }
 
+.user-details .notifContent strong {
+  font-weight: bold;
+}
+
 .user-details .notifDate {
   font-size: 0.8rem;
   font-weight: 300;
@@ -281,6 +283,22 @@ select:-webkit-autofill {
 
 .MuiDialogTitle-root .MuiTypography-root {
   text-align: left !important;
+}
+
+.highlight-animation {
+  animation: highlight-notif 1.5s ease-in-out infinite !important;
+}
+
+@keyframes highlight-notif {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(248, 154, 71, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 @media (max-width: 480px) {

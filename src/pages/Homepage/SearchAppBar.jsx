@@ -104,7 +104,12 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
           >
             <MenuIcon sx={{ color: "var(--color-white)" }} />
           </IconButton>
-          <DrawerComponent isDrawerOpen={isDrawerOpen} onClose={handleDrawerClose} />
+          <DrawerComponent
+            isDrawerOpen={isDrawerOpen}
+            onClose={handleDrawerClose}
+            isNotifOpen={isNotifOpen}
+            setIsNotifOpen={setIsNotifOpen}
+          />
 
           <Paper
             component="form"

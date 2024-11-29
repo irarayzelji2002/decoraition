@@ -37,7 +37,7 @@ import { GradientCircularLoading } from "../../components/ManageAccessModal";
 const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title }) => {
   const navigate = useNavigate();
   const designLinkRef = useRef(null);
-  const { user, userDoc, designs, designVersions } = useSharedProps();
+  const { user, users, userDoc, designs, designVersions } = useSharedProps();
   const [selectedDesignVersionId, setSelectedDesignVersionId] = useState("");
   const [selectedDesignVersionDetails, setSelectedVersionDetails] = useState({});
   const [versionDetails, setVersionDetails] = useState([]);
@@ -47,6 +47,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
   const [viewingImage, setViewingImage] = useState(0);
   const [openConfirmRestoreModal, setOpenConfirmRestoreModal] = useState(false);
   const [isRestoreButttonDisabled, setIsRestoreButtonDisabled] = useState(false);
+  const [isMakeACopyButtonDisabled, setIsMakeACopyButtonDisabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const handleSelectVersion = (e, versionId) => {
@@ -81,7 +82,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
     }
   };
 
-  // Restore utton function
+  // Restore button function
   const onConfirmRestore = async () => {
     try {
       setIsRestoreButtonDisabled(true);
@@ -104,7 +105,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
     }
   };
 
-  // Function call
+  // Restore function call
   const handleRestore = async (design, designVersionId) => {
     if (!design?.id || !designVersionId) {
       return {
@@ -127,6 +128,33 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
     } catch (error) {
       console.error("Error restoring design:", error);
       return { success: false, message: "Failed to restore design" };
+    }
+  };
+
+  // Make a copy button function
+  const handleCopy = async () => {
+    try {
+      setIsMakeACopyButtonDisabled(true);
+      const result = await handleCopy(design, selectedDesignVersionId, false);
+      if (!result.success) {
+        showToast("error", result.message);
+        return;
+      }
+      showToast(
+        "success",
+        `Design copied${
+          selectedDesignVersionDetails.displayDate
+            ? ` from version on ${selectedDesignVersionDetails.displayDate}`
+            : ""
+        }`
+      );
+      // Open new tab with copied design
+      if (result.designId) {
+        window.open(`/design/${result.designId}`, "_blank");
+      }
+    } finally {
+      handleClose();
+      setIsMakeACopyButtonDisabled(false);
     }
   };
 
@@ -200,6 +228,8 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                   const copiedVersion = designVersions.find((v) => v.id === latestVersionId);
 
                   if (!copiedVersion) return null;
+                  const ownerData = users.find((u) => u.id === copiedDesign.owner);
+                  const ownerUsername = `@${ownerData?.username}` || "Unknown User";
 
                   return {
                     id: copiedVersion.id,
@@ -212,6 +242,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                       id: copiedDesign.id,
                       designName: copiedDesign.designName,
                       owner: copiedDesign.owner,
+                      ownerUsername: ownerUsername,
                     },
                     copiedFrom: version.id,
                     imagesLink: copiedVersion.images?.map((img) => img.link) || [],
@@ -246,10 +277,9 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
       }
       return;
     }
-    if (isDrawerOpen) {
-      getVersionDetails();
-    }
-  }, [isDrawerOpen, design, designVersions, designs, user]);
+    // if (isDrawerOpen)
+    getVersionDetails();
+  }, [isDrawerOpen, design, designVersions, designs, user, users]);
 
   useEffect(() => {
     console.log("openConfirmRestoreModal", openConfirmRestoreModal);
@@ -377,7 +407,7 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                                     {copiedVersion.design.designName}
                                   </div>
                                   <div className="copyByTitle">
-                                    Copied by {copiedVersion.design.owner}
+                                    Copied by {copiedVersion.design.ownerUsername}
                                   </div>
                                 </div>
                               </div>
@@ -454,18 +484,31 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                       setViewingImage(0);
                     }}
                     sx={{
-                      background: "var(--gradientButton)", // Gradient background
-                      borderRadius: "20px", // Button border radius
-                      color: "var(--always-white)", // Button text color
-                      fontWeight: "bold",
-                      textTransform: "none",
+                      ...gradientButtonStyles,
                       minWidth: "200px",
-                      "&:hover": {
-                        background: "var(--gradientButtonHover)", // Reverse gradient on hover
-                      },
                     }}
                   >
                     View
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={(e) => {
+                      if (e) e.stopPropagation();
+                      setOpenViewModal(true);
+                      handleCopy(e, selectedDesignVersionId);
+                    }}
+                    sx={{
+                      ...gradientButtonStyles,
+                      minWidth: "200px",
+                      opacity: isMakeACopyButtonDisabled ? "0.5" : "1",
+                      cursor: isMakeACopyButtonDisabled ? "default" : "pointer",
+                      "&:hover": {
+                        backgroundImage:
+                          !isMakeACopyButtonDisabled && !isLoading && "var(--gradientButtonHover)",
+                      },
+                    }}
+                  >
+                    Make a copy
                   </Button>
                   {selectedDesignVersionId !== versionDetails[0]?.id && (
                     <Button
@@ -476,15 +519,8 @@ const Version = ({ isDrawerOpen, onClose, design, isHistory, handleSelect, title
                         handleSelectVersion(e, selectedDesignVersionId);
                       }}
                       sx={{
-                        background: "var(--gradientButton)", // Gradient background
-                        borderRadius: "20px", // Button border radius
-                        color: "var(--always-white)", // Button text color
-                        fontWeight: "bold",
-                        textTransform: "none",
+                        ...gradientButtonStyles,
                         minWidth: "200px",
-                        "&:hover": {
-                          background: "var(--gradientButtonHover)", // Reverse gradient on hover
-                        },
                       }}
                     >
                       Restore

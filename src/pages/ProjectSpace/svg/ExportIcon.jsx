@@ -10,10 +10,10 @@ function ExportIcon() {
     <svg
       width="30"
       height="30"
-      style={{
-        marginRight: "18px",
-        marginTop: "-5.5px",
-      }}
+      // style={{
+      //   marginRight: "18px",
+      //   marginTop: "-5.5px",
+      // }}
       viewBox="0 0 384 300"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

@@ -250,15 +250,22 @@
 
 .SubtitleBudget {
   font-size: var(--font-size-h5);
-
   width: 100%;
   max-width: 600px;
   margin-bottom: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
   font-weight: bold;
+}
+
+.imageAndItems {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: start;
+  gap: 15px;
+  width: 100%;
 }
 
 .add-item-btn {

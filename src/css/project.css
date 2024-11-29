@@ -90,14 +90,30 @@ body {
   padding: 10px;
 }
 
+.allBudgetsCont {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 0px 20px;
+}
+
 .sectionBudget {
   height: fit-content;
   background-color: var(--nav-card-modal);
   display: flex;
   justify-content: start;
-  padding: 30px;
+  padding: 20px;
   margin-bottom: 12px;
-  border-radius: 24px;
+  border-radius: 20px;
+  width: 40vw;
+}
+
+.indivBudgetHeader {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .budgetHolder {
@@ -117,11 +133,27 @@ body {
   max-height: 300px !important;
   padding-bottom: 0px !important; /* 16:9 aspect ratio */
   position: relative;
-  border: var(--nav-card-modal) 3px solid;
-  border-radius: 24px;
-  margin: 2%;
-  background-color: var(--lighterDarkBg);
+  border-radius: 11px;
+  background-color: var(--thumbnailFill);
+  border: 1px solid var(--thumbnailBorder);
 }
+.image-frame-project img {
+  border-radius: inherit;
+}
+
+.item-frame-project {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  border-radius: 11px;
+  background-color: var(--thumbnailFill);
+  border: 1px solid var(--thumbnailBorder);
+}
+
+.item-frame-project img {
+  border-radius: inherit;
+}
+
 .image-preview {
   height: 100%;
   width: 100%;
@@ -130,34 +162,35 @@ body {
 }
 
 .SubtitlePrice {
-  font-size: var(--font-size-tiny);
+  font-size: var(--font-size-h6);
   font-weight: bold;
   color: var(--color-white);
   width: fit-content;
   border-radius: 24px;
   background-color: var(--budget-capsule);
+  padding: 2px 12px;
 }
 
 .itemList {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 30px;
   justify-content: start;
-  width: 100%;
+  min-width: 0;
   height: 100%;
+  flex-grow: 1;
+  gap: 5px;
 }
 
 .item {
-  width: 90%;
+  width: 100%;
   height: 100%;
-  border-top: var(--inputBg) 2px solid;
   display: flex;
   justify-content: start;
   align-items: center;
-  padding: 12px;
-  margin-top: 24px;
+  padding: 12px 0px;
   display: flex;
+  flex-grow: 1;
 }
 .layout.horizontal {
   display: flex;
@@ -230,13 +263,22 @@ body {
   width: 20px;
 }
 
+@media (max-width: 927px) {
+  .sectionBudget {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .sectionBudget {
     flex-direction: column;
     align-items: center;
   }
   .item {
-    width: 70%;
+    /* width: 70%; */
     overflow: hidden;
   }
 }

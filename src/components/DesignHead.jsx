@@ -440,7 +440,7 @@ function DesignHead({
       if (result.success) {
         handleClose();
         handleCloseMakeCopyModal();
-        return { success: true, message: "Design copied" };
+        return { success: true, message: "Design copied", designId: result?.designId };
       } else {
         return { success: false, message: "Failed to copy design" };
       }

@@ -593,14 +593,14 @@ function HomepageOptions({
                 </div>
                 Settings
               </div>
-              {!((isDrawer || isTable) && isDownloadVisible) && (
+              {/* {!((isDrawer || isTable) && isDownloadVisible) && (
                 <div className="dropdown-item" onClick={(e) => openDownloadModal(e)}>
                   <div className="icon">
                     <DownloadIcon style={{ fontSize: 20 }} className="icon" />
                   </div>
                   Download
                 </div>
-              )}
+              )} */}
               {!(isDrawer || isTable) && isDesign && isMakeCopyVisible && (
                 <div className="dropdown-item" onClick={(e) => openCopyModal(e)}>
                   <div className="icon">

@@ -109,6 +109,16 @@ body {
   width: 40vw;
 }
 
+.sectionPins {
+  height: fit-content;
+  background-color: var(--nav-card-modal);
+  display: flex;
+  justify-content: start;
+
+  margin-bottom: 12px;
+  border-radius: 20px;
+}
+
 .indivBudgetHeader {
   display: flex;
   justify-content: space-between;
@@ -270,10 +280,20 @@ body {
     justify-content: center;
     width: 100%;
   }
+  .sectionPins {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
   .sectionBudget {
+    flex-direction: column;
+    align-items: center;
+  }
+  .sectionPins {
     flex-direction: column;
     align-items: center;
   }

@@ -259,7 +259,7 @@ function PlanMap() {
         setChangeMode={setChangeMode}
       >
         {menuOpen && <div className="overlay" onClick={toggleMenu}></div>}
-        <div className="sectionBudget" style={{ background: "none", maxWidth: "100%" }}>
+        <div className="sectionPins" style={{ background: "none", maxWidth: "100%" }}>
           <div className="budgetSpaceImg" style={{ background: "none", height: "100%" }}>
             {planImage ? (
               <ImageFrame

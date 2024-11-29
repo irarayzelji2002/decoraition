@@ -193,19 +193,39 @@ const MapPin = ({
         <div style={{ display: "flex", width: "100%", justifyContent: "flex-end" }}>
           {!editMode ? (
             <>
-              <div aria-label="delete" style={{ cursor: "pointer" }} onClick={handleExportClick}>
+              <div
+                aria-label="delete"
+                style={{ cursor: "pointer", marginRight: "6px" }}
+                onClick={handleExportClick}
+              >
                 <ExportIcon />
               </div>
               {isContributor && (
                 <>
-                  <div aria-label="edit" onClick={editPin}>
+                  <div
+                    aria-label="edit"
+                    onClick={editPin}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
                     <EditPen />
                   </div>
                 </>
               )}
 
               {isManager && (
-                <div aria-label="delete" onClick={() => setDeleteConfirmOpen(true)}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  aria-label="delete"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                >
                   <Trash />
                 </div>
               )}

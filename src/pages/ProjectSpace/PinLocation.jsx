@@ -102,8 +102,8 @@ function PinLocation({ EditMode }) {
 
   return (
     <>
-      <TopBar state={"Add Pin"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
-      <div className="sectionBudget" style={{ background: "none", paddingTop: "74px" }}>
+      <TopBar state={"Adjust Pin Locations"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
+      <div className="sectionPins" style={{ background: "none", paddingTop: "74px" }}>
         <div className="budgetSpaceImg">
           <ImageFrame projectId={projectId} alt="design preview" pins={pins} setPins={setPins} />
           <button

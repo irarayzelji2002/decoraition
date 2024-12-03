@@ -81,6 +81,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [passwordMatch, setPasswordMatch] = useState(null);
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -88,6 +89,20 @@ const Signup = () => {
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    if (confirmPassword) {
+      setPasswordMatch(e.target.value === confirmPassword);
+    }
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value);
+    if (password) {
+      setPasswordMatch(e.target.value === password);
+    }
   };
 
   const handleValidation = () => {
@@ -158,6 +173,10 @@ const Signup = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const isPasswordValid = (password) => {
+    return password.length >= 6 && /[!@#$%^&*]/.test(password);
   };
 
   return (
@@ -259,11 +278,29 @@ const Signup = () => {
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               error={!!errors.password}
               helperText={
-                errors.password || (password.length >= 50 ? "Character limit reached!" : "")
+                errors.password ||
+                (password.length >= 50 ? "Character limit reached!" : "") ||
+                (passwordMatch === false
+                  ? "Passwords do not match"
+                  : passwordMatch === true && !isPasswordValid(password)
+                  ? "Passwords match but do not satisfy the criteria"
+                  : passwordMatch === true
+                  ? "Passwords match"
+                  : "")
               }
+              FormHelperTextProps={{
+                style: {
+                  color:
+                    passwordMatch === true && !isPasswordValid(password)
+                      ? "var(--brightFont)"
+                      : passwordMatch === true
+                      ? "var(--green)"
+                      : "var(--color-quaternary)",
+                },
+              }}
               InputProps={{
                 style: { color: "var(--color-white)" },
                 endAdornment: (
@@ -298,12 +335,29 @@ const Signup = () => {
               type={showPassword ? "text" : "password"}
               placeholder="Confirm your password"
               value={confirmPassword} // Changed from password to confirmPassword
-              onChange={(e) => setConfirmPassword(e.target.value)} // Update handler
+              onChange={handleConfirmPasswordChange} // Update handler
               error={!!errors.confirmPassword} // Updated error reference
               helperText={
                 errors.confirmPassword ||
-                (confirmPassword.length >= 50 ? "Character limit reached!" : "")
+                (confirmPassword.length >= 50 ? "Character limit reached!" : "") ||
+                (passwordMatch === false
+                  ? "Passwords do not match"
+                  : passwordMatch === true && !isPasswordValid(password)
+                  ? "Passwords match but do not satisfy the criteria"
+                  : passwordMatch === true
+                  ? "Passwords match"
+                  : "")
               } // Updated helper text reference
+              FormHelperTextProps={{
+                style: {
+                  color:
+                    passwordMatch === true && !isPasswordValid(password)
+                      ? "var(--brightFont)"
+                      : passwordMatch === true
+                      ? "var(--green)"
+                      : "var(--color-quaternary)",
+                },
+              }}
               InputProps={{
                 style: { color: "var(--color-white)" },
                 endAdornment: (

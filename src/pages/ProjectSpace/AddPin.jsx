@@ -167,7 +167,7 @@ function AddPin({ EditMode }) {
   return (
     <>
       <TopBar state={"Add Pin"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
-      <div className="sectionBudget" style={{ background: "none", paddingTop: "104px" }}>
+      <div className="sectionPins" style={{ background: "none", paddingTop: "104px" }}>
         <div className="budgetSpaceImg">
           <ImageFrame
             src="../../img/floorplan.png"

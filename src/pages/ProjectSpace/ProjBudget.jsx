@@ -164,7 +164,23 @@ function ProjBudget() {
       };
     });
 
-    return currencyDetails;
+    // Filter to only include USD and PHP
+    const filteredCurrencies = currencyDetails.filter(
+      (currency) => currency.currencyCode === "PHP" || currency.currencyCode === "USD"
+    );
+    return filteredCurrencies;
+  };
+
+  const getValidCurrency = (budgetCurrency) => {
+    // First check if currencyDetails is populated
+    if (!currencyDetails || currencyDetails.length === 0) {
+      return budgetCurrency ?? getPHCurrency();
+    }
+    // Then check if the budget currency is valid
+    const isValidCurrency = currencyDetails.some(
+      (currency) => currency.currencyCode === budgetCurrency?.currencyCode
+    );
+    return isValidCurrency ? budgetCurrency : getPHCurrency();
   };
 
   useEffect(() => {
@@ -225,6 +241,11 @@ function ProjBudget() {
     }
     setLoading(false);
   }, [project, projectBudgets, userProjectBudgets, getPHCurrency]);
+
+  useEffect(() => {
+    if (projectBudget && projectBudget?.budget?.currency)
+      setBudgetCurrencyForInput(getValidCurrency(projectBudget.budget?.currency));
+  }, [projectBudget, currencyDetails]);
 
   // Get project designs and their latest versions
   useEffect(() => {
@@ -456,8 +477,8 @@ function ProjBudget() {
     if (opening) {
       setIsEditingBudget(editing);
       // Set input values when opening the modal
-      setBudgetAmountForInput(budgetAmount);
-      setBudgetCurrencyForInput(budgetCurrency);
+      setBudgetAmountForInput(budgetAmountForInput || budgetAmount);
+      setBudgetCurrencyForInput(budgetCurrencyForInput || getValidCurrency(budgetCurrency));
     } else {
       setIsEditingBudget(false);
     }
@@ -692,7 +713,9 @@ function ProjBudget() {
                                 flexDirection: "column",
                               }}
                             >
-                              <span className="SubtitleBudget">{item.itemName}</span>
+                              <span className="SubtitleBudget">
+                                {item.quantity + " " + item.itemName}
+                              </span>
                               <span
                                 className="SubtitlePrice inItemList"
                                 style={{ backgroundColor: "transparent" }}
@@ -710,7 +733,7 @@ function ProjBudget() {
                         </React.Fragment>
                       ))
                     ) : (
-                      <div className="placeholderDiv" style={{ marginTop: "10px" }}>
+                      <div className="placeholderDiv" style={{ margin: "10px 0px 20px 0px" }}>
                         <img
                           src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
                           style={{ width: "100px" }}

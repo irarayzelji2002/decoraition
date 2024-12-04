@@ -110,13 +110,13 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
     setRole(newRole);
     setIsViewCollab(newRole < 3);
     setIsChangeModeVisible(newRole > 0);
-    setIsRenameVisible(newRole === 2 || newRole === 3);
-    setIsDeleteVisible(newRole === 3);
+    setIsRenameVisible((newRole === 2 || newRole === 3) && changeMode === "Managing");
+    setIsDeleteVisible(newRole === 3 && changeMode === "Managing");
     // Set visibility based on project settings
     setIsDownloadVisible(!!project?.projectSettings?.allowDownload || newRole > 0);
 
     handleDefaultChangeMode(newRole);
-  }, [project, user, userDoc]);
+  }, [project, user, userDoc, changeMode]);
 
   useEffect(() => {
     console.log("ProjectHead - changeMode role:", role);

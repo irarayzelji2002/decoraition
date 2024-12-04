@@ -125,8 +125,8 @@ function DesignHead({
     setIsChangeModeVisible(newRole > 0);
     if (design.history && design.history.length > 0)
       setIsRestoreVisible(newRole === 1 || newRole === 3);
-    setIsRenameVisible(newRole === 1 || newRole === 3);
-    setIsDeleteVisible(newRole === 3);
+    setIsRenameVisible((newRole === 1 || newRole === 3) && changeMode === "Editing");
+    setIsDeleteVisible(newRole === 3 && changeMode === "Editing");
     // Set visibility based on design settings
     setIsDownloadVisible(!!design?.designSettings?.allowDownload || newRole === 1 || newRole === 3);
     setIsHistoryVisible(
@@ -135,7 +135,7 @@ function DesignHead({
     setIsMakeCopyVisible(!!design?.designSettings?.allowCopy || newRole === 1 || newRole === 3);
 
     handleDefaultChangeMode(newRole);
-  }, [design, user, userDoc]);
+  }, [design, user, userDoc, changeMode]);
 
   useEffect(() => {
     console.log("DesignHead - changeMode role:", role);

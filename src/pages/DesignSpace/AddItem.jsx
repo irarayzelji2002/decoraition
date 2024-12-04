@@ -76,7 +76,11 @@ const AddItem = () => {
       };
     });
 
-    return currencyDetails;
+    // Filter to only include USD and PHP
+    const filteredCurrencies = currencyDetails.filter(
+      (currency) => currency.currencyCode === "PHP" || currency.currencyCode === "USD"
+    );
+    return filteredCurrencies;
   };
 
   useEffect(() => {

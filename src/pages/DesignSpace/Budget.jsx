@@ -175,7 +175,23 @@ function Budget() {
       };
     });
 
-    return currencyDetails;
+    // Filter to only include USD and PHP
+    const filteredCurrencies = currencyDetails.filter(
+      (currency) => currency.currencyCode === "PHP" || currency.currencyCode === "USD"
+    );
+    return filteredCurrencies;
+  };
+
+  const getValidCurrency = (budgetCurrency) => {
+    // First check if currencyDetails is populated
+    if (!currencyDetails || currencyDetails.length === 0) {
+      return budgetCurrency ?? getPHCurrency();
+    }
+    // Then check if the budget currency is valid
+    const isValidCurrency = currencyDetails.some(
+      (currency) => currency.currencyCode === budgetCurrency?.currencyCode
+    );
+    return isValidCurrency ? budgetCurrency : getPHCurrency();
   };
 
   useEffect(() => {
@@ -419,6 +435,11 @@ function Budget() {
     }
   }, [budgets, userBudgets]);
 
+  useEffect(() => {
+    if (budget && budget?.budget?.currency)
+      setBudgetCurrencyForInput(getValidCurrency(budget.budget?.currency));
+  }, [budget, currencyDetails]);
+
   // Update items when relevant data changes
   useEffect(() => {
     let mounted = true;
@@ -453,7 +474,7 @@ function Budget() {
 
   useEffect(() => {
     setBudgetAmount(budget?.budget?.amount ?? 0);
-    setBudgetCurrency(budget?.budget?.currency ?? getPHCurrency());
+    setBudgetCurrency(getValidCurrency(budget?.budget?.currency));
   }, [budget]);
 
   useEffect(() => {
@@ -483,8 +504,8 @@ function Budget() {
     if (opening) {
       setIsEditingBudget(editing);
       // Set input values when opening the modal
-      setBudgetAmountForInput(budgetAmount);
-      setBudgetCurrencyForInput(budgetCurrency);
+      setBudgetAmountForInput(budgetAmountForInput || budgetAmount);
+      setBudgetCurrencyForInput(budgetCurrencyForInput || getValidCurrency(budgetCurrency));
     } else {
       setIsEditingBudget(false);
     }
@@ -737,6 +758,8 @@ function Budget() {
             )}
           </div>
         </div>
+
+        {/* Action Button Menu */}
         {isOwnerEditor && changeMode === "Editing" && (
           <div className="circle-button-container">
             {menuOpen && (
@@ -787,45 +810,7 @@ function Budget() {
           </div>
         )}
 
-        {/* {isBudgetModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2 style={{ color: "var(--color-white)" }}>
-                {setIsEditingBudget ? "Edit the budget" : "Add a Budget"}
-              </h2>
-              <CloseRoundedIcon
-                className="close-icon"
-                onClick={() => toggleBudgetModal(false, isEditingBudget)}
-              />
-            </div>
-            <div className="modal-body">
-              <input
-                type="text"
-                className="rounded-input"
-                placeholder="Currency"
-                value={budgetCurrency}
-                onChange={(e) => setBudgetCurrency(e.target.value)}
-              />
-              <input
-                type="text"
-                className="rounded-input"
-                placeholder="Enter budget"
-                value={budgetAmount}
-                onChange={(e) => setBudgetAmount(e.target.value)}
-              />
-            </div>
-
-            <button
-              className="add-item-btn"
-              style={{ height: "40px" }}
-              onClick={() => handleUpdateBudget(budgetAmount, budgetCurrency)}
-            >
-              {setIsEditingBudget ? "Edit budget" : "Add Budget"}
-            </button>
-          </div>
-        </div>
-      )} */}
+        {/* Add/Edit Budget Modal */}
         {isBudgetModalOpen && (
           <Dialog
             open={isBudgetModalOpen}
@@ -930,6 +915,8 @@ function Budget() {
             </DialogActions>
           </Dialog>
         )}
+
+        {/* Remove Budget Modal */}
         {isRemoveBudgetModalOpen && (
           <Dialog
             open={isRemoveBudgetModalOpen}

@@ -176,6 +176,7 @@ export const shadeColor = (color, percent) => {
 export const showToast = (
   type,
   message,
+  time = 3000,
   {
     icon,
     style = {
@@ -195,7 +196,7 @@ export const showToast = (
 ) => {
   const toastOptions = {
     position,
-    autoClose,
+    time,
     hideProgressBar,
     closeOnClick,
     pauseOnHover,

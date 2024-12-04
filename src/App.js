@@ -13,6 +13,7 @@ import Terms from "./pages/Account/Terms.jsx";
 import Privacy from "./pages/Account/Privacy.jsx";
 import Login from "./pages/Account/Login.jsx";
 import Register from "./pages/Account/Register.jsx";
+import VerifyEmail from "./pages/Account/VerifyEmail.jsx";
 import Users from "./users.js";
 import ChangePassw from "./pages/Account/ChangePass.jsx";
 import OneTP from "./pages/Account/Otp.jsx";
@@ -93,6 +94,14 @@ function App() {
                 element={
                   <AuthPublicRoute>
                     <Register />
+                  </AuthPublicRoute>
+                }
+              />
+              <Route
+                path="/verify-email/:token"
+                element={
+                  <AuthPublicRoute>
+                    <VerifyEmail />
                   </AuthPublicRoute>
                 }
               />

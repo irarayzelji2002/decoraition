@@ -95,6 +95,21 @@ export default function LoginModal() {
 
     try {
       setIsLoginDisabled(true);
+
+      // Check if email exists and is verified
+      try {
+        const checkEmailResponse = await axios.get(`/api/check-email-verification/${email}`);
+        if (checkEmailResponse.data.exists && !checkEmailResponse.data.isVerified) {
+          setErrors({
+            general:
+              "Please verify your email before logging in. Check your inbox for the verification link.",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking email verification:", error);
+      }
+
       // First check lockout status through backend API
       const lockoutResponse = await axios.get(`/api/user/check-lockout-status/${email}`);
       if (lockoutResponse.data.isLocked) {

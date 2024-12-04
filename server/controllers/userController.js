@@ -86,6 +86,7 @@ exports.createUser = async (req, res) => {
       },
       colorPalettes: [],
       otp: null,
+      isVerified: connectedAccount === 0 || connectedAccount === 1 ? true : false,
       lockout: {
         count: 0,
         attemptAt: null,
@@ -97,6 +98,25 @@ exports.createUser = async (req, res) => {
     };
     await db.collection("users").doc(firebaseUserId).set(userData);
     createdUserDoc = true;
+
+    if (!(connectedAccount === 0 || connectedAccount === 1)) {
+      // Send verification email
+      // Generate verification token
+      const verificationToken = jwt.sign(
+        { email: email.toLowerCase(), userId: firebaseUserId },
+        process.env.REACT_APP_JWT_SECRET,
+        { expiresIn: "1m" } // change to 24h on prod
+      );
+
+      // Send verification email
+      const verificationLink = `${process.env.REACT_APP_URL}/verify-email/${verificationToken}`;
+      await sendEmail(
+        email,
+        "DecorAItion Email Verification",
+        `<p>Hi ${username}! Please verify your email by clicking this link: <a href="${verificationLink}">Verify Email</a></p>
+      <p>This link will expire in 1 minute.</p>` // change to 24 hours on prod
+      );
+    }
 
     res.status(200).json({ message: "User created successfully", userId });
   } catch (error) {
@@ -130,6 +150,130 @@ exports.createUser = async (req, res) => {
       error: "Failed to create user",
       message: error.message,
     });
+  }
+};
+
+// Confirm email verification
+exports.confirmEmailVerification = async (req, res) => {
+  const { token } = req.params;
+  try {
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.REACT_APP_JWT_SECRET);
+    } catch (error) {
+      console.log("Token verification error:", error);
+      return res.status(401).json({
+        success: false,
+        expired: true,
+        message: "Invalid or expired token. Please register again.",
+      });
+    }
+    const { email } = decoded;
+
+    const userDoc = await db.collection("users").where("email", "==", email).get();
+    if (userDoc.empty) {
+      return res.status(404).json({ success: false, expired: null, message: "User not found" });
+    }
+
+    await db.collection("users").doc(userDoc.docs[0].id).update({
+      isVerified: true,
+      modifiedAt: new Date(),
+    });
+
+    res.status(200).json({ success: true, expired: false, message: "Email verified successfully" });
+  } catch (error) {
+    console.error("Error verifying email:", error);
+    res.status(500).json({ success: false, expired: null, message: "Failed to verify email" });
+  }
+};
+
+// Check if email exists and is verified
+exports.checkEmailVerification = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const userDocs = await db.collection("users").where("email", "==", email).get();
+
+    if (userDocs.empty) {
+      return res.status(200).json({ exists: false });
+    }
+
+    const userDoc = userDocs.docs[0];
+    const userData = userDoc.data();
+
+    // Check if isVerified field exists
+    if (userData.isVerified === undefined) {
+      // If field doesn't exist, update document with isVerified: true
+      await db.collection("users").doc(userDoc.id).update({
+        isVerified: true,
+        modifiedAt: new Date(),
+      });
+
+      return res.status(200).json({
+        exists: true,
+        isVerified: true,
+      });
+    }
+
+    // If field exists, return its value
+    res.status(200).json({
+      exists: true,
+      isVerified: userData.isVerified,
+    });
+  } catch (error) {
+    console.error("Error checking email verification:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete unverified user
+exports.deleteUnverifiedUser = async (req, res) => {
+  try {
+    const { token } = req.params;
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.REACT_APP_JWT_SECRET);
+      // If token is valid, proceed with deletion using decoded.userId
+      await auth.deleteUser(decoded.userId);
+      await db.collection("users").doc(decoded.userId).delete();
+      return res.status(200).json({ message: "Unverified user deleted successfully" });
+    } catch (tokenError) {
+      console.log("Token verification error:", tokenError);
+      // Token is expired, try to find and delete user by email
+      try {
+        // Try to extract email from expired token without verification
+        const decodedWithoutVerification = jwt.decode(token);
+        if (!decodedWithoutVerification || !decodedWithoutVerification.email) {
+          return res.status(401).json({
+            message: "Invalid token structure. Unable to delete user.",
+          });
+        }
+
+        // Find user by email
+        const email = decodedWithoutVerification.email;
+        const userDoc = await db.collection("users").where("email", "==", email).get();
+        if (userDoc.empty) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        const userId = userDoc.docs[0].id;
+
+        // Delete from Firebase Auth and users collection
+        await auth.deleteUser(userId);
+        await db.collection("users").doc(userId).delete();
+        console.log(`Unverified user deleted successfully, userId: ${userId}, email: ${email}`);
+
+        return res.status(200).json({
+          message: "Unverified user deleted successfully using email lookup",
+        });
+      } catch (deleteError) {
+        console.error("Error during user deletion:", deleteError);
+        return res.status(500).json({
+          message: "Failed to delete unverified user after token expiration",
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error in deleteUnverifiedUser:", error);
+    return res.status(500).json({ message: "Failed to delete unverified user" });
   }
 };
 

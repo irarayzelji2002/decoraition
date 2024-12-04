@@ -85,8 +85,9 @@ h5 {
 .terms-checkbox {
   display: flex;
   align-items: center;
-  color: #fff; /* Adjust color as needed */
+  color: var(--color-white);
   font-size: 0.875rem !important;
+  flex-direction: column;
 }
 
 .terms-checkbox input[type="checkbox"] {

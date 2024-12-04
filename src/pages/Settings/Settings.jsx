@@ -422,9 +422,9 @@ function Settings() {
         message = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
         showToast("error", message);
       } else {
-        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
         if (file.size > maxSize) {
-          message = "Image size must be less than 5MB";
+          message = "Image size must be less than 2MB";
           showToast("error", message);
         }
       }

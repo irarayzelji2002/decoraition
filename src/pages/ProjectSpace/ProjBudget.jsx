@@ -286,7 +286,7 @@ function ProjBudget() {
                     (itemId) =>
                       userItems.find((i) => i.id === itemId) || items.find((i) => i.id === itemId)
                   )
-                  .filter(Boolean) || [];
+                  .filter((itemId) => itemId) || [];
 
               itemsMap[design.id] = budgetItems;
 
@@ -374,28 +374,6 @@ function ProjBudget() {
     setBudgetCurrency(projectBudget?.budget?.currency ?? getPHCurrency());
   }, [projectBudget]);
 
-  // Compute total costs effect
-  // useEffect(() => {
-  //   const computeTotalCosts = () => {
-  //     const costs = {};
-  //     let totalCostSum = 0;
-  //     for (const design of projectDesigns) {
-  //       const items = designItems[design.id] || [];
-  //       const designTotal = items.reduce((sum, item) => {
-  //         if (item.includedInTotal !== false) {
-  //           return sum + parseFloat(item.cost?.amount || 0) * (item.quantity || 1);
-  //         }
-  //         return sum;
-  //       }, 0);
-  //       costs[design.id] = designTotal.toFixed(2);
-  //       totalCostSum += designTotal;
-  //     }
-  //     setTotalCosts(costs);
-  //     setFormattedTotalCost(totalCostSum.toFixed(2));
-  //   };
-  //   computeTotalCosts();
-  // }, [projectDesigns, designItems]);
-
   // Budget validation
   const handleValidation = (budgetAmount) => {
     let error = "";
@@ -475,13 +453,15 @@ function ProjBudget() {
 
   const toggleBudgetModal = (opening, editing) => {
     setMenuOpen(false);
-    if (opening && editing) setIsEditingBudget(true);
-    else setIsEditingBudget(false);
-    if (!opening) {
+    if (opening) {
+      setIsEditingBudget(editing);
+      // Set input values when opening the modal
       setBudgetAmountForInput(budgetAmount);
       setBudgetCurrencyForInput(budgetCurrency);
+    } else {
+      setIsEditingBudget(false);
     }
-    setIsBudgetModalOpen(!isBudgetModalOpen);
+    setIsBudgetModalOpen(opening);
   };
 
   const getBudgetColor = (budgetAmount, totalCost, isDarkMode) => {
@@ -528,7 +508,11 @@ function ProjBudget() {
               } else if (formattedTotalCost === "0.00") {
                 return (
                   <>
-                    Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
+                    Total Cost:{" "}
+                    <strong>
+                      {budgetCurrency?.currencyCode} {formattedTotalCost}
+                    </strong>
+                    , Budget:{" "}
                     <strong>
                       {budgetCurrency?.currencyCode} {formatNumber(budgetAmount)}
                     </strong>
@@ -537,13 +521,21 @@ function ProjBudget() {
               } else if (budgetAmount === 0) {
                 return (
                   <>
-                    Total Cost: <strong>{formattedTotalCost}</strong>, No added budget
+                    Total Cost:{" "}
+                    <strong>
+                      {budgetCurrency?.currencyCode} {formattedTotalCost}
+                    </strong>
+                    , No added budget
                   </>
                 );
               } else {
                 return (
                   <>
-                    Total Cost: <strong>{formattedTotalCost}</strong>, Budget:{" "}
+                    Total Cost:{" "}
+                    <strong>
+                      {budgetCurrency?.currencyCode} {formattedTotalCost}
+                    </strong>
+                    , Budget:{" "}
                     <strong>
                       {budgetCurrency?.currencyCode} {formatNumber(budgetAmount)}
                     </strong>
@@ -597,9 +589,67 @@ function ProjBudget() {
                     <span className="SubtitleBudget" style={{ fontSize: "1.4rem" }}>
                       {design.designName}
                     </span>
-                    <span className="SubtitlePrice">
-                      Total Cost: {budgetCurrency?.currencyCode} {totalCosts[design.id]}
-                    </span>
+                    {(() => {
+                      const designBudget = designBudgets[design.id];
+                      const designTotalCost = totalCosts[design.id] || "0.00";
+                      const designBudgetAmount = designBudget?.budget?.amount || 0;
+                      const designBudgetCurrency =
+                        designBudget?.budget?.currency?.currencyCode || "PHP";
+                      return (
+                        <span
+                          className="SubtitlePrice"
+                          style={{
+                            backgroundColor: getBudgetColor(
+                              designBudgetAmount,
+                              parseFloat(designTotalCost),
+                              isDarkMode
+                            ),
+                          }}
+                        >
+                          {(() => {
+                            if (designTotalCost === "0.00" && designBudgetAmount === 0) {
+                              return <>No cost and added budget</>;
+                            } else if (designTotalCost === "0.00") {
+                              return (
+                                <>
+                                  Total Cost:{" "}
+                                  <strong>
+                                    {designBudgetCurrency} {designTotalCost}
+                                  </strong>
+                                  , Budget:{" "}
+                                  <strong>
+                                    {designBudgetCurrency} {formatNumber(designBudgetAmount)}
+                                  </strong>
+                                </>
+                              );
+                            } else if (designBudgetAmount === 0) {
+                              return (
+                                <>
+                                  Total Cost:{" "}
+                                  <strong>
+                                    {designBudgetCurrency} {designTotalCost}
+                                  </strong>
+                                  , No added budget
+                                </>
+                              );
+                            } else {
+                              return (
+                                <>
+                                  Total Cost:{" "}
+                                  <strong>
+                                    {designBudgetCurrency} {designTotalCost}
+                                  </strong>
+                                  , Budget:{" "}
+                                  <strong>
+                                    {designBudgetCurrency} {formatNumber(designBudgetAmount)}
+                                  </strong>
+                                </>
+                              );
+                            }
+                          })()}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <IconButton
                     onClick={() => window.open(`/budget/${design.id}`, "_blank")}
@@ -618,7 +668,7 @@ function ProjBudget() {
                   <div className="image-frame-project">
                     <img
                       src={designImages[design.id] || "/img/transparent-image.png"}
-                      alt={`design preview`}
+                      alt=""
                       className="image-preview"
                       style={{ marginRight: "10px" }}
                     />
@@ -631,7 +681,7 @@ function ProjBudget() {
                             <div className="item-frame-project">
                               <img
                                 src={itemImages[item.id] || "/img/transparent-image.png"}
-                                alt={`item preview`}
+                                alt=""
                                 style={{ width: "80px", height: "80px" }}
                               />
                             </div>
@@ -644,7 +694,7 @@ function ProjBudget() {
                             >
                               <span className="SubtitleBudget">{item.itemName}</span>
                               <span
-                                className="SubtitlePrice"
+                                className="SubtitlePrice inItemList"
                                 style={{ backgroundColor: "transparent" }}
                               >
                                 {item.cost?.currency?.currencyCode}{" "}
@@ -660,7 +710,7 @@ function ProjBudget() {
                         </React.Fragment>
                       ))
                     ) : (
-                      <div className="placeholderDiv">
+                      <div className="placeholderDiv" style={{ marginTop: "10px" }}>
                         <img
                           src={`/img/design-placeholder${!isDarkMode ? "-dark" : ""}.png`}
                           style={{ width: "100px" }}

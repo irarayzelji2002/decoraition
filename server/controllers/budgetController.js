@@ -395,3 +395,64 @@ exports.createDefaultBudget = async (req, res) => {
     res.status(500).json({ error: "Failed to create default budget" });
   }
 };
+
+exports.checkBudgetExists = async (req, res) => {
+  try {
+    const { designVersionId } = req.params;
+    const budgetsRef = db.collection("budgets");
+
+    // Get all budgets for this design version
+    const budgetSnapshot = await budgetsRef.where("designVersionId", "==", designVersionId).get();
+
+    if (budgetSnapshot.empty) {
+      // No budgets found
+      return res.json({ exists: false });
+    }
+
+    // If multiple budgets found, keep oldest and delete others
+    if (budgetSnapshot.docs.length > 1) {
+      console.log(
+        `Found ${budgetSnapshot.docs.length} budgets for designVersion ${designVersionId}, cleaning up...`
+      );
+
+      // Convert to array and sort by creation time (oldest first)
+      const budgets = budgetSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      budgets.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeA - timeB;
+      });
+
+      // Keep oldest budget, delete the rest
+      const budgetsToDelete = budgets.slice(1);
+      for (const budget of budgetsToDelete) {
+        await budgetsRef.doc(budget.id).delete();
+        console.log(`Deleted duplicate budget ${budget.id}`);
+      }
+
+      return res.json({
+        exists: true,
+        cleaned: true,
+        deletedCount: budgetsToDelete.length,
+        remainingBudget: budgets[0],
+      });
+    }
+
+    // Single budget found
+    return res.json({
+      exists: true,
+      cleaned: false,
+      remainingBudget: {
+        id: budgetSnapshot.docs[0].id,
+        ...budgetSnapshot.docs[0].data(),
+      },
+    });
+  } catch (error) {
+    console.error("Error checking budget:", error);
+    res.status(500).json({ error: "Failed to check budget" });
+  }
+};

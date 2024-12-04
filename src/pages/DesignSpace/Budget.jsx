@@ -290,13 +290,29 @@ function Budget() {
         setBudget(fetchedBudget || {});
 
         if (!fetchedBudget) {
-          console.error(
-            `Init Budget page - No budget found for design version ${designVersion.id}`
-          );
-          // Create new budget if none exists
-          const newBudget = await createDefaultBudget(designVersion.id, user, userDoc);
-          setBudget(newBudget);
+          // Double check with backend to ensure no budget exists
+          try {
+            const checkResponse = await axios.get(`/api/design/budget/check/${designVersion.id}`, {
+              headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+            });
+
+            if (!checkResponse.data.exists) {
+              console.log(
+                `No budget found for design version ${designVersion.id}, creating new one`
+              );
+              const newBudget = await createDefaultBudget(designVersion.id, user, userDoc);
+              setBudget(newBudget);
+            } else {
+              // Budget exists in backend but not in local state yet
+              console.log("Budget exists in backend but not loaded yet");
+              return;
+            }
+          } catch (err) {
+            console.error("Error checking budget existence:", err);
+            return;
+          }
         } else {
+          console.log("Init Budget page - fetchedBudget", fetchedBudget);
           setBudget(fetchedBudget);
         }
 
@@ -339,6 +355,12 @@ function Budget() {
   }, [designVersion, budgets, userBudgets, items, userItems]);
 
   const updateItems = useCallback(() => {
+    // Only proceed if we have both budget and budget.items
+    if (!budget || !budget.items) {
+      console.log("No budget or budget items available");
+      return;
+    }
+
     if (budget && budget.items) {
       // Keep existing items that are in the budget
       const updatedItems = designItems.filter((item) => budget.items?.includes(item.id));
@@ -357,15 +379,11 @@ function Budget() {
           }
         }
       });
-      console.log("updatedItems - modified", updatedItems);
 
-      if (!deepEqual(designItems, updatedItems)) {
+      if (updatedItems.length > 0 && !deepEqual(designItems, updatedItems)) {
         setDesignItems(updatedItems);
-        console.log("updatedItems - setDesignItems", updatedItems);
-      }
-
-      if (updatedItems.length > 0) {
         computeTotalCostAndExceededBudget(updatedItems, budget.budget?.amount);
+        console.log("updatedItems - setDesignItems", updatedItems);
       }
     } else {
       setDesignItems([]);
@@ -398,19 +416,34 @@ function Budget() {
       setBudget(fetchedBudget);
       setBudgetCurrency(fetchedBudget.budget?.currency ?? getPHCurrency());
       setBudgetAmount(fetchedBudget.budget?.amount ?? 0);
-      updateItems();
     }
   }, [budgets, userBudgets]);
 
+  // Update items when relevant data changes
   useEffect(() => {
-    console.log("User Items changed:", userItems);
-    const timer = setTimeout(() => {
-      updateItems();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [items, userItems, budget, updateItems]);
+    let mounted = true;
+
+    const handleItemsUpdate = async () => {
+      if (!mounted) return;
+
+      // Only update if we have necessary data
+      if (budget?.id && (userItems.length > 0 || items.length > 0)) {
+        console.log("Triggering items update with budget:", budget);
+        const timer = setTimeout(() => {
+          updateItems();
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    handleItemsUpdate();
+    return () => {
+      mounted = false;
+    };
+  }, [budget, items, userItems, updateItems]);
 
   useEffect(() => {
+    if (!designVersion?.images) return;
     console.log("Design version changed:", designVersion);
     const timer = setTimeout(() => {
       updateImagesLink();
@@ -447,13 +480,15 @@ function Budget() {
   // Budget Functions
   const toggleBudgetModal = (opening, editing) => {
     setMenuOpen(false);
-    if (opening && editing) setIsEditingBudget(true);
-    else setIsEditingBudget(false);
-    if (!opening) {
+    if (opening) {
+      setIsEditingBudget(editing);
+      // Set input values when opening the modal
       setBudgetAmountForInput(budgetAmount);
       setBudgetCurrencyForInput(budgetCurrency);
+    } else {
+      setIsEditingBudget(false);
     }
-    setIsBudgetModalOpen(!isBudgetModalOpen);
+    setIsBudgetModalOpen(opening);
   };
 
   const getBudgetColor = (budgetAmount, totalCost, isDarkMode) => {

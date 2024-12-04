@@ -96,6 +96,11 @@ router.post(
   authenticateUser,
   budgetController.createDefaultBudget
 );
+router.get(
+  "/design/budget/check/:designVersionId",
+  authenticateUser,
+  budgetController.checkBudgetExists
+);
 router.post(
   "/design/item/add-item",
   authenticateUser,

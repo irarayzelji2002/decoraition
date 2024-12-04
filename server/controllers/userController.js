@@ -492,8 +492,19 @@ exports.changePassword = async (req, res) => {
     }
 
     const user = await auth.getUserByEmail(email);
-    await auth.updateUser(user.uid, { password: newPassword });
-    res.status(200).json({ success: true });
+
+    // Check if new password matches old password by trying to sign in with the new password
+    try {
+      await signInWithEmailAndPassword(clientAuth, email, newPassword);
+      // If successful, it means the new password is the same as the old one
+      return res
+        .status(400)
+        .json({ message: "New password cannot be the same as your old password" });
+    } catch (signInError) {
+      // If sign-in fails, it means the new password is different from the old one, proceed with password update
+      await auth.updateUser(user.uid, { password: newPassword });
+      res.status(200).json({ success: true });
+    }
   } catch (error) {
     res.status(500).json({ message: "Failed to change password" });
   }

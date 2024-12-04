@@ -12,6 +12,8 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { jwtDecode } from "jwt-decode";
 import { showToast } from "../functions/utils";
+import { Link, Grid } from "@mui/material";
+import { gradientButtonStyles } from "../pages/DesignSpace/PromptBar";
 
 function isTokenExpired(token) {
   try {
@@ -28,6 +30,7 @@ export default function ChangePass({ email, token }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState("");
+  const [isChangePassBtnDisabled, setIsChangePassBtnDisabled] = useState(false);
 
   useEffect(() => {
     const checkTokenExpiration = () => {
@@ -62,15 +65,23 @@ export default function ChangePass({ email, token }) {
     }
 
     try {
+      setIsChangePassBtnDisabled(true);
       const response = await axios.put("/api/change-password", { email, newPassword, token });
       if (response.data.success) {
         showToast("success", "Password changed successfully");
         navigate("/login");
-      } else {
-        throw new Error("Failed to change password");
       }
     } catch (error) {
-      showToast("error", error.response?.data?.message || "Failed to change password");
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        // Handle the case where new password matches old password
+        setErrors({
+          newPassword: error.response.data.message,
+        });
+      } else {
+        showToast("error", error.response?.data?.message || "Failed to change password");
+      }
+    } finally {
+      setIsChangePassBtnDisabled(false);
     }
   };
 
@@ -133,16 +144,26 @@ export default function ChangePass({ email, token }) {
             fullWidth
             variant="contained"
             sx={{
-              mt: 3,
-              mb: 2,
-              backgroundImage: "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
-              borderRadius: "20px",
-              textTransform: "none",
-              fontWeight: "bold",
+              ...gradientButtonStyles,
+              mt: "24px !important",
+              mb: "16px !important",
+              opacity: isChangePassBtnDisabled ? "0.5" : "1",
+              cursor: isChangePassBtnDisabled ? "default" : "pointer",
+              "&:hover": {
+                backgroundImage: !isChangePassBtnDisabled && "var(--gradientButtonHover)",
+              },
             }}
+            disabled={isChangePassBtnDisabled}
           >
             Change Password
           </Button>
+          <Grid container>
+            <Grid item xs>
+              <Link href="/login" variant="body2" className="cancel-link">
+                Cancel
+              </Link>
+            </Grid>
+          </Grid>
         </Box>
       </Box>
     </Container>

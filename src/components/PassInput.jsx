@@ -28,6 +28,7 @@ export default function Password({ value, onChange, error, helperText, label }) 
         label=""
         sx={{ ...commonInputStyles, marginBottom: "20px" }}
         placeholder={label}
+        helperText={helperText}
         InputProps={{
           style: { color: "var(--color-white)" },
           endAdornment: (
@@ -48,7 +49,6 @@ export default function Password({ value, onChange, error, helperText, label }) 
           ),
         }}
       />
-      {helperText && <FormHelperText sx={{ color: "#ffffff" }}>{helperText}</FormHelperText>}
     </FormControl>
   );
 }

@@ -6,6 +6,8 @@ import { Box, styled } from "@mui/system";
 import Button from "@mui/material/Button";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { Link, Grid } from "@mui/material";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar";
 
 function OTP({ separator, length, value, onChange }) {
   const inputRefs = React.useRef(new Array(length).fill(null));
@@ -229,6 +231,7 @@ export default function OneTP() {
   const [otp, setOtp] = useState("");
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [error, setError] = useState("");
+  const [isVerifyBtnDisabled, setIsVerifyBtnDisabled] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -253,6 +256,7 @@ export default function OneTP() {
   };
 
   const handleVerify = async () => {
+    setIsVerifyBtnDisabled(true);
     try {
       const response = await axios.put("/api/verify-otp", { email, otp });
       if (response.data.success) {
@@ -261,6 +265,8 @@ export default function OneTP() {
       }
     } catch (error) {
       setError(error.response?.data?.message || "Invalid OTP");
+    } finally {
+      setIsVerifyBtnDisabled(false);
     }
   };
 
@@ -298,7 +304,7 @@ export default function OneTP() {
             Verify your account
           </h2>
           <h5 style={{ fontWeight: "400" }}>Enter the OTP code sent to {email}</h5>
-          {error && <p>{error}</p>}
+          {error && <p style={{ fontSize: "0.83em", color: "var(--color-quaternary)" }}>{error}</p>}
           <Box
             sx={{
               display: "flex",
@@ -340,20 +346,27 @@ export default function OneTP() {
             fullWidth
             variant="contained"
             sx={{
-              mt: 3,
-              mb: 2,
-              backgroundImage: "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
-              borderRadius: "20px",
-              textTransform: "none",
-              fontWeight: "bold",
+              ...gradientButtonStyles,
+              mt: "24px !important",
+              mb: "16px !important",
+              opacity: isVerifyBtnDisabled ? "0.5" : "1",
+              cursor: isVerifyBtnDisabled ? "default" : "pointer",
               "&:hover": {
-                backgroundImage: "var(--gradientButtonHover)",
+                backgroundImage: !isVerifyBtnDisabled && "var(--gradientButtonHover)",
               },
             }}
             onClick={handleVerify}
+            disabled={isVerifyBtnDisabled}
           >
             Verify
           </Button>
+          <Grid container>
+            <Grid item xs>
+              <Link href="/login" variant="body2" className="cancel-link">
+                Cancel
+              </Link>
+            </Grid>
+          </Grid>
         </center>
       </div>
     </div>

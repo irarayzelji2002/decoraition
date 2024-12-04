@@ -12,11 +12,13 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { commonInputStyles } from "../../components/Signup";
 import { textFieldInputProps } from "../DesignSpace/DesignSettings";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar";
 
 export default function ForgotPass1() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [isContinueBtnDisabled, setIsContinueBtnDisabled] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +36,7 @@ export default function ForgotPass1() {
     }
 
     // Call endpoint to check if email exists before sending otp & redorect to otp page
+    setIsContinueBtnDisabled(true);
     try {
       const response = await axios.post("/api/forgot-password", { email });
       if (response.data.success) {
@@ -42,6 +45,8 @@ export default function ForgotPass1() {
       }
     } catch (error) {
       setEmailError(error.response.data.message || "An error occurred");
+    } finally {
+      setIsContinueBtnDisabled(false);
     }
   };
 
@@ -90,16 +95,16 @@ export default function ForgotPass1() {
             fullWidth
             variant="contained"
             sx={{
-              mt: 3,
-              mb: 2,
-              backgroundImage: "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
-              borderRadius: "20px",
-              textTransform: "none",
-              fontWeight: "bold",
+              ...gradientButtonStyles,
+              mt: "24px !important",
+              mb: "16px !important",
+              opacity: isContinueBtnDisabled ? "0.5" : "1",
+              cursor: isContinueBtnDisabled ? "default" : "pointer",
               "&:hover": {
-                backgroundImage: "var(--gradientButtonHover)",
+                backgroundImage: !isContinueBtnDisabled && "var(--gradientButtonHover)",
               },
             }}
+            disabled={isContinueBtnDisabled}
           >
             Continue
           </Button>

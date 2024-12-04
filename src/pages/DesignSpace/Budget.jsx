@@ -515,9 +515,10 @@ function Budget() {
     } catch (error) {
       console.error("Error adding budget:", error);
       showToast("error", "Failed to add budget");
+    } finally {
+      setIsBudgetButtonDisabled(false);
+      setIsConfirmRemoveBudgetBtnDisabled(false);
     }
-    setIsBudgetButtonDisabled(false);
-    setIsConfirmRemoveBudgetBtnDisabled(false);
   };
 
   const handleRemoveBudget = async (budgetCurrency) => {

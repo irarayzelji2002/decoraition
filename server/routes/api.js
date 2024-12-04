@@ -241,13 +241,8 @@ router.put(
   authenticateUser,
   projectController.removeDesignFromProject
 );
-router.get(
-  "/project/:projectId/budget",
-  authenticateUser,
-  projectBudgetController.getProjectBudget
-);
 router.put(
-  "/project/:projectId/update-budget",
+  "/project/:projectBudgetId/update-budget",
   authenticateUser,
   projectBudgetController.updateProjectBudget
 );

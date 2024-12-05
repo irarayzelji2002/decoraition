@@ -79,9 +79,14 @@ function Settings() {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLinkAccountModalOpen, setIsLinkAccountModalOpen] = useState(false);
+  const [isGoogleBtnDisabled, setIsGoogleBtnDisabled] = useState(false);
+  const [isFacebookBtnDisabled, setIsFacebookBtnDisabled] = useState(false);
   const [isUnlinkAccountModalOpen, setIsUnlinkAccountModalOpen] = useState(false);
+  const [isUnlinkBtnDisabled, setIsUnlinkBtnDisabled] = useState(false);
   const [isChangeProfileModalOpen, setIsChangeProfileModalOpen] = useState(false);
+  const [isSavePhotoBtnDisabled, setIsSavePhotoBtnDisabled] = useState(false);
   const [isRemoveProfileModalOpen, setIsRemoveProfileModalOpen] = useState(false);
+  const [isRemoveProfileBtnDisabled, setIsRemoveProfileBtnDisabled] = useState(false);
 
   const [firstName, setFirstName] = useState(userDoc.firstName ?? "");
   const [lastName, setLastName] = useState(userDoc.lastName ?? "");
@@ -98,6 +103,12 @@ function Settings() {
   const [otp, setOtp] = useState(0);
   const [unlinkPassword, setUnlinkPassword] = useState("");
   const [unlinkConfirmPassword, setUnlinkConfirmPassword] = useState("");
+  const [passwordValidation, setPasswordValidation] = useState({
+    valid: true,
+    message: "",
+    color: "",
+  });
+  const [passwordMatch, setPasswordMatch] = useState(null);
 
   useEffect(() => {
     if (userDoc) {
@@ -447,6 +458,7 @@ function Settings() {
       return;
     }
 
+    setIsSavePhotoBtnDisabled(true);
     try {
       const formData = new FormData();
       formData.append("userId", userDoc.id);
@@ -470,10 +482,13 @@ function Settings() {
     } catch (error) {
       console.error("Error updating profile picture:", error);
       showToast("error", "Failed to update profile picture");
+    } finally {
+      setIsSavePhotoBtnDisabled(false);
     }
   };
 
   const handleRemovePhoto = async () => {
+    setIsRemoveProfileBtnDisabled(true);
     try {
       const response = await axios.put(
         "/api/user/remove-profile-pic",
@@ -495,6 +510,8 @@ function Settings() {
     } catch (error) {
       console.error("Error removing profile picture:", error);
       showToast("error", "Failed to remove profile picture");
+    } finally {
+      setIsRemoveProfileBtnDisabled(false);
     }
   };
 
@@ -514,6 +531,7 @@ function Settings() {
   };
 
   const reAuthenticateUser = async () => {
+    setIsUnlinkBtnDisabled(true);
     let reAuthUser;
     let providerId = null;
     let providerName = "";
@@ -567,6 +585,8 @@ function Settings() {
         // if user doesn't exist, it created an auth user without a user document, so this will clean up the auth user
         cleanupUnusedAuthUsers();
       }
+    } finally {
+      setIsUnlinkBtnDisabled(false);
     }
   };
 
@@ -647,6 +667,92 @@ function Settings() {
     }
   };
 
+  // Remove only the specified field error
+  const clearFieldError = (field, setErrors) => {
+    setErrors((prevErrors) => {
+      if (prevErrors && prevErrors[field]) {
+        const { [field]: _, ...remainingErrors } = prevErrors;
+        return remainingErrors;
+      }
+      return prevErrors;
+    });
+  };
+
+  const handleUnlinkPasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setUnlinkPassword(newPassword);
+    clearFieldError("password", setUnlinkErr);
+
+    // Only validate if password has length
+    if (newPassword.length > 0) {
+      const validation = isPasswordValid(newPassword);
+      setPasswordValidation(validation);
+    } else {
+      setPasswordValidation({ valid: true, message: "", color: "" });
+    }
+
+    // Update password match if confirm password exists
+    if (unlinkConfirmPassword.length > 0) {
+      setPasswordMatch(newPassword === unlinkConfirmPassword);
+    }
+  };
+
+  const handleUnlinkConfirmPasswordChange = (e) => {
+    const newConfirmPassword = e.target.value;
+    setUnlinkConfirmPassword(newConfirmPassword);
+    clearFieldError("confirmPassword", setUnlinkErr);
+
+    // Only check match if confirm password has length
+    if (newConfirmPassword.length > 0) {
+      setPasswordMatch(unlinkPassword === newConfirmPassword);
+    } else {
+      setPasswordMatch(null);
+    }
+  };
+
+  const isPasswordValid = (password) => {
+    // Don't check if password is empty
+    if (password.length === 0) return { valid: true, message: "" };
+    if (password.length < 6) {
+      return {
+        valid: false,
+        message: "Password must be at least 6 characters long",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (/^\s|\s$/.test(password)) {
+      return {
+        valid: false,
+        message: "Password cannot start or end with spaces",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (!/[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password must contain at least one special character",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (/[\t\n\r]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password cannot contain non-visible characters like tabs or newlines",
+        color: "var(--color-quaternary)",
+      };
+    }
+    return { valid: true, message: "Password is valid", color: "var(--brightGreen)" };
+  };
+
+  const handleUnlinkAccountModalClose = () => {
+    setIsUnlinkAccountModalOpen(false);
+    setUnlinkPassword("");
+    setUnlinkConfirmPassword("");
+    setPasswordValidation({ valid: true, message: "", color: "" });
+    setPasswordMatch(null);
+    setUnlinkErr(initUnlinkErr);
+  };
+
   const handleLinkAccount = async (provider) => {
     try {
       let newConnectedAccount = null;
@@ -656,10 +762,12 @@ function Settings() {
         // Clean up auth user that doesn't have a user document
         cleanupUnusedAuthUsers();
         if (provider === "google") {
+          setIsGoogleBtnDisabled(true);
           acctProvider = new GoogleAuthProvider();
           result = await linkWithPopup(user, acctProvider);
           newConnectedAccount = 0;
         } else if (provider === "facebook") {
+          setIsFacebookBtnDisabled(true);
           acctProvider = new FacebookAuthProvider();
           result = await linkWithPopup(user, acctProvider);
           newConnectedAccount = 1;
@@ -678,16 +786,21 @@ function Settings() {
             )} account`
           );
         }
+        return;
       }
       if (result?.user) {
         console.log("Account linked updating db:", result.user);
         handleConnectedAccountChange(newConnectedAccount);
       } else {
         console.log("No account was linked.");
+        return;
       }
     } catch (error) {
       console.error("Error unlinking account:", error);
       showToast("error", "Failed to link account.");
+    } finally {
+      setIsGoogleBtnDisabled(false);
+      setIsFacebookBtnDisabled(false);
     }
   };
 
@@ -1095,15 +1208,23 @@ function Settings() {
                 fontWeight: "bold",
                 width: "250px",
                 display: "flex",
+                opacity: isGoogleBtnDisabled ? "0.5" : "1",
+                cursor: isGoogleBtnDisabled ? "default" : "pointer",
                 "&:hover": {
-                  background: "var(--color-white-hover)",
+                  background: !isGoogleBtnDisabled && "var(--color-white-hover)",
                 },
                 color: "var(--color-black)",
-                background: "var(--color-white)",
+                background: "var(--always-white)",
+                "&.Mui-disabled": {
+                  opacity: 0.5,
+                  color: "var(--color-black)",
+                  background: "var(--always-white)",
+                },
                 "@media (max-width: 385px)": {
                   width: "215px",
                 },
               }}
+              disabled={isGoogleBtnDisabled}
             >
               Connect with Google
             </Button>
@@ -1118,15 +1239,23 @@ function Settings() {
                 fontWeight: "bold",
                 width: "250px",
                 display: "flex",
+                opacity: isFacebookBtnDisabled ? "0.5" : "1",
+                cursor: isFacebookBtnDisabled ? "default" : "pointer",
                 "&:hover": {
-                  background: "var(--color-blue-hover)",
+                  background: !isFacebookBtnDisabled && "var(--color-blue-hover)",
                 },
-                color: "var(--color-white)",
+                color: "var(--always-white)",
                 background: "var(--color-blue)",
+                "&.Mui-disabled": {
+                  opacity: 0.5,
+                  color: "var(--always-white)",
+                  background: "var(--color-blue)",
+                },
                 "@media (max-width: 385px)": {
                   width: "215px",
                 },
               }}
+              disabled={isFacebookBtnDisabled}
             >
               <div style={{ marginTop: "2px" }}>Connect with Facebook</div>
             </Button>
@@ -1159,7 +1288,7 @@ function Settings() {
       {isUnlinkAccountModalOpen && (
         <Dialog
           open={isUnlinkAccountModalOpen}
-          onClose={() => setIsUnlinkAccountModalOpen(false)}
+          onClose={handleUnlinkAccountModalClose}
           sx={dialogStyles}
         >
           <DialogTitle sx={dialogTitleStyles}>
@@ -1176,7 +1305,7 @@ function Settings() {
               Unlink connected account
             </Typography>
             <IconButton
-              onClick={() => setIsUnlinkAccountModalOpen(false)}
+              onClick={handleUnlinkAccountModalClose}
               sx={{
                 ...iconButtonStyles,
                 flexShrink: 0,
@@ -1193,14 +1322,36 @@ function Settings() {
             <Typography variant="body1" sx={{ marginBottom: "10px" }}>
               Password
             </Typography>
+            <p style={{ color: "gray", fontSize: "12px", margin: 0 }}>
+              At least 6 characters long, with 1 special character
+            </p>
             <TextField
               placeholder="Password"
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
               value={unlinkPassword}
-              onChange={(e) => setUnlinkPassword(e.target.value)}
-              helperText={getErrMessage("password", unlinkErr)}
+              onChange={handleUnlinkPasswordChange}
+              error={
+                !!unlinkErr.find((e) => e.field === "password")?.hasError ||
+                (!passwordValidation.valid && unlinkPassword.length > 0)
+              }
+              helperText={
+                unlinkErr.find((e) => e.field === "password")?.errMessage ||
+                (unlinkPassword.length >= 50
+                  ? "Character limit reached!"
+                  : unlinkPassword.length > 0
+                  ? passwordValidation.message
+                  : "")
+              }
+              FormHelperTextProps={{
+                style: {
+                  color:
+                    unlinkPassword.length > 0
+                      ? passwordValidation.color
+                      : "var(--color-quaternary)",
+                },
+              }}
               variant="outlined"
               fullWidth
               sx={{
@@ -1240,8 +1391,33 @@ function Settings() {
               name="confirmPassword"
               type={showPassword ? "text" : "password"}
               value={unlinkConfirmPassword}
-              onChange={(e) => setUnlinkConfirmPassword(e.target.value)}
-              helperText={getErrMessage("confirmPassword", unlinkErr)}
+              onChange={handleUnlinkConfirmPasswordChange}
+              error={
+                !!unlinkErr.find((e) => e.field === "confirmPassword")?.hasError ||
+                (passwordMatch === false && unlinkConfirmPassword.length > 0)
+              }
+              helperText={
+                unlinkErr.find((e) => e.field === "confirmPassword")?.errMessage ||
+                (unlinkConfirmPassword.length >= 50
+                  ? "Character limit reached!"
+                  : unlinkConfirmPassword.length > 0
+                  ? passwordMatch === false
+                    ? "Passwords do not match"
+                    : passwordMatch === true
+                    ? "Passwords match"
+                    : ""
+                  : "")
+              }
+              FormHelperTextProps={{
+                style: {
+                  color:
+                    unlinkConfirmPassword.length > 0
+                      ? passwordMatch === false
+                        ? "var(--color-quaternary)"
+                        : "var(--brightGreen)"
+                      : "var(--color-quaternary)",
+                },
+              }}
               variant="outlined"
               fullWidth
               sx={{
@@ -1279,7 +1455,15 @@ function Settings() {
               variant="contained"
               className="change-photo-btn"
               onClick={() => handleUnlink(true, connectedAccount === 0 ? "Google" : "Facebook")}
-              sx={gradientButtonStyles}
+              sx={{
+                ...gradientButtonStyles,
+                opacity: isUnlinkBtnDisabled ? "0.5" : "1",
+                cursor: isUnlinkBtnDisabled ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: !isUnlinkBtnDisabled && "var(--gradientButtonHover)",
+                },
+              }}
+              disabled={isUnlinkBtnDisabled}
             >
               Unlink {connectedAccount === 0 ? "Google" : "Facebook"} Account
             </Button>
@@ -1288,7 +1472,7 @@ function Settings() {
               variant="contained"
               color="primary"
               className="save-photo-btn"
-              onClick={() => setIsUnlinkAccountModalOpen(false)}
+              onClick={handleUnlinkAccountModalClose}
               sx={outlinedButtonStyles}
             >
               Cancel
@@ -1385,14 +1569,21 @@ function Settings() {
               color="primary"
               className="save-photo-btn"
               onClick={handleSavePhoto}
-              sx={{ ...outlinedButtonStyles, width: "100%" }}
+              sx={{
+                ...outlinedButtonStyles,
+                width: "100%",
+                opacity: isSavePhotoBtnDisabled ? "0.5" : "1",
+                cursor: isSavePhotoBtnDisabled ? "default" : "pointer",
+              }}
               onMouseOver={(e) =>
-                (e.target.style.backgroundImage =
-                  "var(--lightGradient), var(--gradientButtonHover)")
+                (e.target.style.backgroundImage = !isSavePhotoBtnDisabled
+                  ? "var(--lightGradient), var(--gradientButtonHover)"
+                  : "var(--lightGradient), var(--gradientButton)")
               }
               onMouseOut={(e) =>
                 (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
               }
+              disabled={isSavePhotoBtnDisabled}
             >
               Save photo
             </Button>
@@ -1446,7 +1637,7 @@ function Settings() {
             </IconButton>
           </DialogTitle>
           <DialogContent sx={dialogContentStyles}>
-            <Typography variant="body1" sx={{ color: "var(--color-white)" }}>
+            <Typography variant="body1" sx={{ color: "var(--color-white)", textAlign: "center" }}>
               Are you sure you want to remove your profile picture?
             </Typography>
           </DialogContent>
@@ -1456,7 +1647,15 @@ function Settings() {
               variant="contained"
               className="change-photo-btn"
               onClick={handleRemovePhoto}
-              sx={gradientButtonStyles}
+              sx={{
+                ...gradientButtonStyles,
+                opacity: isRemoveProfileBtnDisabled ? "0.5" : "1",
+                cursor: isRemoveProfileBtnDisabled ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: !isRemoveProfileBtnDisabled && "var(--gradientButtonHover)",
+                },
+              }}
+              disabled={isRemoveProfileBtnDisabled}
             >
               Yes
             </Button>

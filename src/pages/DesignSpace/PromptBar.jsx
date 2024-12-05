@@ -2130,7 +2130,7 @@ export const gradientButtonStyles = {
   },
   "&.Mui-disabled": {
     opacity: 0.5,
-    color: "var(--color-white)",
+    color: "var(--always-white)",
   },
 };
 
@@ -2145,6 +2145,10 @@ export const outlinedButtonStyles = {
   fontWeight: "bold",
   textTransform: "none",
   margin: "0 !important",
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    color: "var(--color-white)",
+  },
 };
 
 // const dummyUserColorPalettes = [

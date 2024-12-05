@@ -43,6 +43,8 @@ export default function LoginModal() {
   const [emailLimitReached, setEmailLimitReached] = useState(false);
   const [passwordLimitReached, setPasswordLimitReached] = useState(false);
   const [isLoginDisabled, setIsLoginDisabled] = useState(false);
+  const [isGoogleBtnDisabled, setIsGoogleBtnDisabled] = useState(false);
+  const [isFacebookBtnDisabled, setIsFacebookBtnDisabled] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
@@ -178,9 +180,11 @@ export default function LoginModal() {
       let acctProvider;
       let connectedAccount;
       if (provider === "google") {
+        setIsGoogleBtnDisabled(true);
         acctProvider = new GoogleAuthProvider();
         connectedAccount = 0;
       } else if (provider === "facebook") {
+        setIsFacebookBtnDisabled(true);
         acctProvider = new FacebookAuthProvider();
         connectedAccount = 1;
       }
@@ -255,8 +259,11 @@ export default function LoginModal() {
         throw new Error("Failed to create user");
       }
     } catch (error) {
-      console.error("Google login/signup error:", error);
-      showToast("error", "Google login/signup failed. Please try again.");
+      console.error(`${capitalizeFieldName(provider)} login/signup error:`, error);
+      showToast("error", `${capitalizeFieldName(provider)} login/signup failed. Please try again.`);
+    } finally {
+      setIsGoogleBtnDisabled(false);
+      setIsFacebookBtnDisabled(false);
     }
   };
 
@@ -507,10 +514,12 @@ export default function LoginModal() {
             "&:hover": {
               background: "transparent",
               color: "var(--color-white)",
-              backgroundColor: "var(--iconButtonHover)",
+              backgroundColor: !isGoogleBtnDisabled ? "var(--iconButtonHover)" : "transparent",
             },
             "&:active": {
-              backgroundColor: "var(--iconButtonHoverActive)",
+              backgroundColor: !isGoogleBtnDisabled
+                ? "var(--iconButtonHoverActive)"
+                : "transparent",
               boxShadow: "none",
             },
             "&:focus": {
@@ -518,7 +527,14 @@ export default function LoginModal() {
               boxShadow: "none",
             },
             maxWidth: "400px",
+            "&.Mui-disabled": {
+              opacity: 0.5,
+              color: "var(--color-white)",
+              background: "transparent",
+              cursor: "default",
+            },
           }}
+          disabled={isGoogleBtnDisabled}
         >
           Login with Google&nbsp;&nbsp;&nbsp;&nbsp;
         </Button>
@@ -538,10 +554,12 @@ export default function LoginModal() {
             "&:hover": {
               background: "transparent",
               color: "var(--color-white)",
-              backgroundColor: "var(--iconButtonHover)",
+              backgroundColor: !isFacebookBtnDisabled ? "var(--iconButtonHover)" : "transparent",
             },
             "&:active": {
-              backgroundColor: "var(--iconButtonHoverActive)",
+              backgroundColor: !isFacebookBtnDisabled
+                ? "var(--iconButtonHoverActive)"
+                : "transparent",
               boxShadow: "none",
             },
             "&:focus": {
@@ -550,7 +568,14 @@ export default function LoginModal() {
             },
             maxWidth: "400px",
             marginTop: "-12px",
+            "&.Mui-disabled": {
+              opacity: 0.5,
+              color: "var(--color-white)",
+              background: "transparent",
+              cursor: "default",
+            },
           }}
+          disabled={isFacebookBtnDisabled}
         >
           Login with Facebook
         </Button>

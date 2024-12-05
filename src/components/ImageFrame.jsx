@@ -16,7 +16,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
     fetchPlanImage(projectId, setPlanImage);
 
     const updateImageSize = () => {
-      if (imageRef.current) {
+      if (imageRef?.current) {
         const rect = imageRef.current.getBoundingClientRect();
         setPins((prevPins) =>
           prevPins.map((pin) => {
@@ -36,7 +36,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
   }, [imageRef, projectId, setPins]);
 
   useEffect(() => {
-    if (imageRef.current) {
+    if (imageRef?.current) {
       imageRef.current.onload = () => {
         const rect = imageRef.current.getBoundingClientRect();
         setPins((prevPins) =>
@@ -50,6 +50,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
   }, [planImage, setPins]);
 
   const updatePinPosition = (id, x, y) => {
+    if (!imageRef?.current) return;
     const rect = imageRef.current.getBoundingClientRect();
     const relativeX = (x / rect.width) * 100;
     const relativeY = (y / rect.height) * 100;
@@ -99,7 +100,7 @@ const ImageFrame = ({ src, alt, pins = [], setPins, draggable = true, color, pro
             <p>Please upload an image to place your pins</p>
           </div>
         )}
-        {imageRef.current &&
+        {imageRef?.current &&
           showPins &&
           pins.map((pin) => {
             const position = getPinPosition(pin, imageRef.current.getBoundingClientRect());

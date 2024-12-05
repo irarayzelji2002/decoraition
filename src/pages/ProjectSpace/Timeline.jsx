@@ -44,6 +44,7 @@ function Timeline() {
   const [date, setDate] = useState(new Date());
   const [tasks, setTasks] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleteBtnDisabled, setIsDeleteBtnDisabled] = useState(false);
   const [viewMode, setViewMode] = useState("calendar"); // "calendar", "list", "single"
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [timelineId, setTimelineId] = useState(null); // Add state for timelineId
@@ -168,6 +169,7 @@ function Timeline() {
     console.log("handleDelete called with taskId:", taskIdToDelete); // Debugging statement
     const currentUser = auth.currentUser;
     if (currentUser && taskIdToDelete) {
+      setIsDeleteBtnDisabled(true);
       try {
         await deleteTask(currentUser.uid, projectId, taskIdToDelete);
         showToast("success", "Task deleted successfully"); // Debugging statement
@@ -176,6 +178,8 @@ function Timeline() {
       } catch (error) {
         console.error("Error deleting task:", error); // Debugging statement
         showToast("error", "Error deleting task! Please try again.");
+      } finally {
+        setIsDeleteBtnDisabled(false);
       }
     }
   };

@@ -32,6 +32,7 @@ import {
   selectStylesDisabled,
   menuItemStyles,
 } from "../pages/DesignSpace/DesignSettings";
+import { set } from "lodash";
 
 const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
   // object is a design if isDesign is true else its a project object
@@ -39,6 +40,7 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
     useSharedProps();
   const sharedProps = useSharedProps();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isDownloadBtnDisabled, setIsDownloadBtnDisabled] = useState(false);
 
   // Design states
   const [selectedDesignCategory, setSelectedDesignCategory] = useState("Design");
@@ -134,39 +136,49 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
     }
 
     if (isDesign) {
-      const result = await handleDownload(
-        object,
-        selectedDesignCategory,
-        selectedDesignVersionId,
-        designFileType,
-        sharedProps
-      );
-      if (!result.success) {
-        showToast("error", result.message);
-        return;
-      }
-      if (selectedDesignCategory === "Design")
-        showToast(
-          "success",
-          `Design downloaded${
-            selectedDesignVersionDate ? ` with version on ${selectedDesignVersionDate}` : ""
-          }`
+      try {
+        setIsDownloadBtnDisabled(true);
+        const result = await handleDownload(
+          object,
+          selectedDesignCategory,
+          selectedDesignVersionId,
+          designFileType,
+          sharedProps
         );
-      else if (selectedDesignCategory === "Budget")
-        showToast("success", `Design Budget downloaded`);
-    } else if (!isDesign) {
-      const result = await handleDownload(
-        object,
-        selectedProjectCategory,
-        "", // No version id for projects
-        projectFileType,
-        sharedProps
-      );
-      if (!result.success) {
-        showToast("error", result.message);
-        return;
+        if (!result.success) {
+          showToast("error", result.message);
+          return;
+        }
+        if (selectedDesignCategory === "Design")
+          showToast(
+            "success",
+            `Design downloaded${
+              selectedDesignVersionDate ? ` with version on ${selectedDesignVersionDate}` : ""
+            }`
+          );
+        else if (selectedDesignCategory === "Budget")
+          showToast("success", `Design Budget downloaded`);
+      } finally {
+        setIsDownloadBtnDisabled(false);
       }
-      showToast("success", `Project ${selectedProjectCategory} downloaded`);
+    } else if (!isDesign) {
+      try {
+        setIsDownloadBtnDisabled(true);
+        const result = await handleDownload(
+          object,
+          selectedProjectCategory,
+          "", // No version id for projects
+          projectFileType,
+          sharedProps
+        );
+        if (!result.success) {
+          showToast("error", result.message);
+          return;
+        }
+        showToast("success", `Project ${selectedProjectCategory} downloaded`);
+      } finally {
+        setIsDownloadBtnDisabled(false);
+      }
     }
     handleClose();
   };
@@ -592,7 +604,20 @@ const DownloadModal = ({ isOpen, onClose, isDesign, object }) => {
           {downloadOptions.length > 0 && (
             <>
               {/* Download Button */}
-              <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={onSubmit}
+                sx={{
+                  ...gradientButtonStyles,
+                  opacity: isDownloadBtnDisabled ? "0.5" : "1",
+                  cursor: isDownloadBtnDisabled ? "default" : "pointer",
+                  "&:hover": {
+                    backgroundImage: !isDownloadBtnDisabled && "var(--gradientButtonHover)",
+                  },
+                }}
+                disabled={isDownloadBtnDisabled}
+              >
                 Download
               </Button>
             </>

@@ -421,7 +421,15 @@ function SelectMaskCanvas({
     if (!containerRef.current) return;
     adjustContainerWidth();
     adjustCss();
-  }, [showPromptBar, controlWidthPromptBar, showPreview]);
+  }, [
+    showPromptBar,
+    controlWidthPromptBar,
+    showPreview,
+    showAllOptions,
+    showGeneralOptions,
+    showAddRemoveOptions,
+    showSamOptions,
+  ]);
 
   useEffect(() => {
     if (samMaskModalOpen || pickColorModalOpen) {

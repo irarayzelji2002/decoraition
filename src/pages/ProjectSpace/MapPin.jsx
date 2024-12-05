@@ -31,6 +31,7 @@ const MapPin = ({
   const [textColor, setTextColor] = useState("#000000");
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const history = useNavigate();
+  const [isDeleteBtnDisabled, setIsDeleteBtnDisabled] = useState(false);
   const { designs, userDesigns, designVersions, userDesignVersions } = useSharedProps();
 
   useEffect(() => {
@@ -47,9 +48,14 @@ const MapPin = ({
   }, [pinColor]);
 
   const handleDelete = () => {
-    console.log(`Deleting pin with ID: ${pinId}`); // Debug log
-    deletePin(pinId);
-    setDeleteConfirmOpen(false);
+    try {
+      setIsDeleteBtnDisabled(true);
+      console.log(`Deleting pin with ID: ${pinId}`); // Debug log
+      deletePin(pinId);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setIsDeleteBtnDisabled(false);
+    }
   };
 
   const handleChange = (color) => {

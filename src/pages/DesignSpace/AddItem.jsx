@@ -42,7 +42,7 @@ const AddItem = () => {
   const [selectedImagePreview, setSelectedImagePreview] = useState(null);
   const [isUploadedImage, setIsUploadedImage] = useState(false);
   const [imageLink, setImageLink] = useState("");
-  const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
+  const [isAddItemBtnDisabled, setIsAddItemBtnDisabled] = useState(false);
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
@@ -269,12 +269,12 @@ const AddItem = () => {
 
   const handleAddItem = async (e) => {
     e.preventDefault();
-    setIsDesignButtonDisabled(true);
+    setIsAddItemBtnDisabled(true);
     const formErrors = handleValidation();
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
-      setIsDesignButtonDisabled(false);
+      setIsAddItemBtnDisabled(false);
       return;
     } else {
       setErrors({});
@@ -331,7 +331,7 @@ const AddItem = () => {
         showToast("error", "Failed to add item. Please try again.");
       }
     } finally {
-      setIsDesignButtonDisabled(false);
+      setIsAddItemBtnDisabled(false);
     }
   };
 
@@ -534,14 +534,14 @@ const AddItem = () => {
               fullWidth
               variant="contained"
               onClick={handleAddItem}
-              disabled={isDesignButtonDisabled}
+              disabled={isAddItemBtnDisabled}
               sx={{
                 ...gradientButtonStyles,
                 padding: "8px 16px",
-                opacity: isDesignButtonDisabled ? "0.5" : "1",
-                cursor: isDesignButtonDisabled ? "default" : "pointer",
+                opacity: isAddItemBtnDisabled ? "0.5" : "1",
+                cursor: isAddItemBtnDisabled ? "default" : "pointer",
                 "&:hover": {
-                  backgroundImage: !isDesignButtonDisabled && "var(--gradientButton)",
+                  backgroundImage: !isAddItemBtnDisabled && "var(--gradientButton)",
                 },
               }}
             >

@@ -18,6 +18,7 @@ import { textFieldStyles } from "./DesignSettings.jsx";
 import { MentionIconSmallGradient, SelectedComment, UnselectedComment } from "./svg/AddColor.jsx";
 import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar.jsx";
 import { CustomMenuItem, CustomTooltip, UserInfoTooltip } from "./CommentContainer.jsx";
+import { set } from "lodash";
 
 function AddCommentContainer({
   design,
@@ -49,6 +50,7 @@ function AddCommentContainer({
 
   const dropdownRef = useRef(null);
   const [isSingleLine, setIsSingleLine] = useState(true);
+  const [isAddCommentBtnDisabled, setIsAddCommentBtnDisabled] = useState(false);
   const textFieldRef = useRef(null);
   const textFieldInputRef = useRef(null);
 
@@ -299,23 +301,28 @@ function AddCommentContainer({
     }
 
     // Call addComment
-    const result = await addComment(
-      designId,
-      pinpointSelectedImage.imageId, //designVersionImageId
-      pinpointLocation,
-      commentContent,
-      mentions,
-      user,
-      userDoc
-    );
-    if (!result.success) {
-      if (result.message !== "Comment is required") showToast("error", result.message);
-      return;
+    setIsAddCommentBtnDisabled(true);
+    try {
+      const result = await addComment(
+        designId,
+        pinpointSelectedImage.imageId, //designVersionImageId
+        pinpointLocation,
+        commentContent,
+        mentions,
+        user,
+        userDoc
+      );
+      if (!result.success) {
+        if (result.message !== "Comment is required") showToast("error", result.message);
+        return;
+      }
+      setIsAddingComment(false);
+      handleCancelPinpoint();
+      setSelectedImage(null);
+      showToast("success", result.message);
+    } finally {
+      setIsAddCommentBtnDisabled(false);
     }
-    setIsAddingComment(false);
-    handleCancelPinpoint();
-    setSelectedImage(null);
-    showToast("success", result.message);
   };
 
   return (
@@ -619,8 +626,15 @@ function AddCommentContainer({
           fullWidth
           variant="contained"
           onClick={() => handleAddComment()}
-          sx={{ ...gradientButtonStyles }}
-          // mt: 3, mb: 2
+          sx={{
+            ...gradientButtonStyles,
+            opacity: isAddCommentBtnDisabled ? "0.5" : "1",
+            cursor: isAddCommentBtnDisabled ? "default" : "pointer",
+            "&:hover": {
+              backgroundImage: !isAddCommentBtnDisabled && "var(--gradientButtonHover)",
+            },
+          }}
+          disabled={isAddCommentBtnDisabled}
         >
           Add comment
         </Button>

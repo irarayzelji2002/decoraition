@@ -44,13 +44,14 @@ import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 
 const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) => {
   const { user, userDoc } = useSharedProps();
-  const isOnline = useNetworkStatus();
   const [colorPalette, setColorPalette] = useState({ paletteName: "", colors: [] });
   const defaultColor = "#000000";
   const [colorToEdit, setColorToEdit] = useState("");
   const [pickedColor, setPickedColor] = useState("");
   const [pickColorModalOpen, setPickColorModalOpen] = useState(false);
   const [errors, setErrors] = useState({ paletteName: "", colors: "" });
+  const [isAddEditPaletteBtnDisabled, setIsAddEditPaletteBtnDisabled] = useState(false);
+  const [isDeletePaletteBtnDisabled, setIsDeletePaletteBtnDisabled] = useState(false);
 
   useEffect(() => {
     console.log("color palette", colorPalette);
@@ -87,18 +88,24 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
       setErrors(formErrors);
       return;
     }
-    const result = await handleAddColorPaletteBackend(colorPalette, user, userDoc);
-    if (!result.success) {
-      if (result.message === "Color palette name is required")
-        formErrors.paletteName = result.message;
-      else if (result.message === "Color palette must have at least one color")
-        formErrors.colors = result.message;
-      else showToast("error", result.message);
-      setErrors(formErrors);
-      return;
+
+    setIsAddEditPaletteBtnDisabled(true);
+    try {
+      const result = await handleAddColorPaletteBackend(colorPalette, user, userDoc);
+      if (!result.success) {
+        if (result.message === "Color palette name is required")
+          formErrors.paletteName = result.message;
+        else if (result.message === "Color palette must have at least one color")
+          formErrors.colors = result.message;
+        else showToast("error", result.message);
+        setErrors(formErrors);
+        return;
+      }
+      showToast("success", result.message);
+      handleClose();
+    } finally {
+      setIsAddEditPaletteBtnDisabled(false);
     }
-    showToast("success", result.message);
-    handleClose();
   };
 
   const handleEditColorPalette = async () => {
@@ -109,30 +116,41 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
       user,
       userDoc
     );
-    if (!result.success) {
-      if (
-        result.message === "Name is the same as the current name" ||
-        result.message === "Color palette name is required"
-      )
-        formErrors.paletteName = result.message;
-      else if (result.message === "Color palette must have at least one color")
-        formErrors.colors = result.message;
-      else showToast("error", result.message);
-      setErrors(formErrors);
-      return;
+
+    setIsAddEditPaletteBtnDisabled(true);
+    try {
+      if (!result.success) {
+        if (
+          result.message === "Name is the same as the current name" ||
+          result.message === "Color palette name is required"
+        )
+          formErrors.paletteName = result.message;
+        else if (result.message === "Color palette must have at least one color")
+          formErrors.colors = result.message;
+        else showToast("error", result.message);
+        setErrors(formErrors);
+        return;
+      }
+      showToast("success", result.message);
+      handleClose();
+    } finally {
+      setIsAddEditPaletteBtnDisabled(false);
     }
-    showToast("success", result.message);
-    handleClose();
   };
 
   const handleDeleteColorPalette = async () => {
-    const result = await handleDeleteColorPaletteBackend(colorPalette, user, userDoc);
-    if (!result.success) {
-      showToast("error", result.message);
-      return;
+    setIsDeletePaletteBtnDisabled(true);
+    try {
+      const result = await handleDeleteColorPaletteBackend(colorPalette, user, userDoc);
+      if (!result.success) {
+        showToast("error", result.message);
+        return;
+      }
+      showToast("success", result.message);
+      handleClose();
+    } finally {
+      setIsDeletePaletteBtnDisabled(false);
     }
-    showToast("success", result.message);
-    handleClose();
   };
 
   // Picking color
@@ -336,14 +354,14 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
             <ButtonMUI
               fullWidth
               variant="contained"
-              disabled={!isOnline}
+              disabled={isAddEditPaletteBtnDisabled}
               sx={{
                 ...gradientButtonStyles,
                 color: "white !important",
-                opacity: !isOnline ? "0.5" : "1",
-                cursor: !isOnline ? "default" : "pointer",
+                opacity: isAddEditPaletteBtnDisabled ? "0.5" : "1",
+                cursor: isAddEditPaletteBtnDisabled ? "default" : "pointer",
                 "&:hover": {
-                  backgroundImage: isOnline && "var(--gradientButtonHover)",
+                  backgroundImage: !isAddEditPaletteBtnDisabled && "var(--gradientButtonHover)",
                 },
               }}
               onClick={() =>
@@ -356,20 +374,21 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
               <ButtonMUI
                 fullWidth
                 variant="contained"
-                disabled={!isOnline}
+                disabled={isDeletePaletteBtnDisabled}
                 sx={{
                   ...outlinedButtonStyles,
                   color: "var(--color-white)",
-                  opacity: !isOnline ? "0.5" : "1",
-                  cursor: !isOnline ? "default" : "pointer",
+                  opacity: isDeletePaletteBtnDisabled ? "0.5" : "1",
+                  cursor: isDeletePaletteBtnDisabled ? "default" : "pointer",
                   "&:hover": {
-                    backgroundImage: isOnline && "var(--gradientButtonHover)",
+                    backgroundImage: !isDeletePaletteBtnDisabled && "var(--gradientButtonHover)",
                   },
                 }}
                 onClick={() => handleDeleteColorPalette()}
                 onMouseOver={(e) =>
-                  (e.target.style.backgroundImage =
-                    "var(--lightGradient), var(--gradientButtonHover)")
+                  (e.target.style.backgroundImage = !isDeletePaletteBtnDisabled
+                    ? "var(--lightGradient), var(--gradientButtonHover)"
+                    : "var(--lightGradient), var(--gradientButton)")
                 }
                 onMouseOut={(e) =>
                   (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")

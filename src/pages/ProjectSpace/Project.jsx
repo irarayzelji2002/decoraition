@@ -517,7 +517,7 @@ function Project() {
             <SearchIcon sx={{ color: "var(--color-white)" }} />
           </IconButton>
           <InputBase
-            sx={{ ml: 1, flex: 1, color: "var(--color-white)" }}
+            sx={{ marginLeft: "8px", marginRight: "15px", flex: 1, color: "var(--color-white)" }}
             placeholder="Search designs on this project"
             inputProps={{ "aria-label": "search designs" }}
             value={searchQuery}

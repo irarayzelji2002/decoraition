@@ -67,7 +67,7 @@ const EditItem = () => {
   const [loading, setLoading] = useState(false);
   const [currencyDetails, setCurrencyDetails] = useState([]);
   const [defaultBudgetCurrency, setDefaultBudgetCurrency] = useState({});
-  const [isSaveBtnDisabled, setIsSaveBtnDisabled] = useState(false);
+  const [isEditItemBtnDisabled, setIsEditItemBtnDisabled] = useState(false);
   const [dragging, setDragging] = useState(false);
 
   const isoToFlagEmoji = (isoCode) => {
@@ -326,7 +326,7 @@ const EditItem = () => {
     }
 
     try {
-      setIsSaveBtnDisabled(true);
+      setIsEditItemBtnDisabled(true);
       const formData = new FormData();
       formData.append("budgetId", budgetId);
       formData.append("itemName", itemName);
@@ -378,7 +378,7 @@ const EditItem = () => {
         showToast("error", "Failed to update item. Please try again.");
       }
     } finally {
-      setIsSaveBtnDisabled(false);
+      setIsEditItemBtnDisabled(false);
     }
   };
 
@@ -579,14 +579,14 @@ const EditItem = () => {
               fullWidth
               variant="contained"
               onClick={handleEditItem}
-              disabled={isSaveBtnDisabled}
+              disabled={isEditItemBtnDisabled}
               sx={{
                 ...gradientButtonStyles,
                 padding: "8px 16px",
-                opacity: isSaveBtnDisabled ? "0.5" : "1",
-                cursor: isSaveBtnDisabled ? "default" : "pointer",
+                opacity: isEditItemBtnDisabled ? "0.5" : "1",
+                cursor: isEditItemBtnDisabled ? "default" : "pointer",
                 "&:hover": {
-                  backgroundImage: !isSaveBtnDisabled && "var(--gradientButton)",
+                  backgroundImage: !isEditItemBtnDisabled && "var(--gradientButton)",
                 },
               }}
             >

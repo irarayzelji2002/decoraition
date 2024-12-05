@@ -49,6 +49,7 @@
   font-weight: bold;
   margin-left: 3px;
   margin-top: 2px;
+  color: var(--color-white);
 }
 
 .separator {

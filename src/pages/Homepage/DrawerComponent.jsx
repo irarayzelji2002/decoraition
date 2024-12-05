@@ -613,6 +613,11 @@ export const iconButtonStyles = {
   "& .MuiTouchRipple-root span": {
     backgroundColor: "var(--iconButtonActive) !important",
   },
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    color: "var(--color-white)",
+    cursor: "default !important",
+  },
 };
 
 export const iconButtonStylesBrighter = {
@@ -623,6 +628,11 @@ export const iconButtonStylesBrighter = {
   },
   "& .MuiTouchRipple-root span": {
     backgroundColor: "var(--iconButtonActive2) !important",
+  },
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    color: "var(--color-white)",
+    cursor: "default !important",
   },
 };
 

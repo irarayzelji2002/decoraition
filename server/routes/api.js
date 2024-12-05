@@ -9,6 +9,7 @@ const projectBudgetController = require("../controllers/projectBudgetController"
 const budgetController = require("../controllers/budgetController");
 const planMapController = require("../controllers/planMapController");
 const timelineController = require("../controllers/timelineController");
+const downloadController = require("../controllers/downloadController");
 const { auth } = require("../firebase");
 const { upload } = require("../uploadConfig");
 
@@ -284,5 +285,8 @@ router.post(
   authenticateUser,
   notificationController.deleteNotif
 );
+
+// Download routes
+router.get("/download-image", downloadController.downloadImage);
 
 module.exports = router;

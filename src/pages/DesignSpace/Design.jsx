@@ -577,7 +577,7 @@ function Design() {
     });
   }, [isPinpointing, pinpointLocation, pinpointSelectedImage, selectedImage]);
 
-  const handleDownloadImage = (imageSrc) => {
+  const handleDownloadImage = (imageSrc, imageNum) => {
     const link = document.createElement("a");
     link.href = imageSrc;
     link.download = "image.png";
@@ -585,6 +585,19 @@ function Design() {
     link.click();
     document.body.removeChild(link);
   };
+
+  // const handleDownloadImage = async (imageSrc, imageNum) => {
+  //   try {
+  //     window.open(
+  //       `/api/download-image?url=${encodeURIComponent(
+  //         imageSrc
+  //       )}&filename=image${imageNum}-${Date.now()}`
+  //     );
+  //   } catch (error) {
+  //     console.error("Error downloading image:", error);
+  //     showToast("error", "Failed to download image");
+  //   }
+  // };
 
   // Notifcation highlight
   useEffect(() => {
@@ -629,7 +642,7 @@ function Design() {
                   timestamp,
                   completed: uniqueCompleted,
                   type,
-                  title
+                  title,
                 })
               );
             }
@@ -1187,75 +1200,80 @@ function Design() {
                                         </Typography>
                                       )}
                                     </div>
-                                    {isOwnerEditor && changeMode === "Editing" && (
+                                    <div className="image-info-buttons">
                                       <IconButton
+                                        className="downloadIconBtn"
                                         sx={{
                                           ...iconButtonStyles,
                                           opacity: "0.3",
                                           width: "40px",
                                           height: "40px",
+                                          padding: "3px 0px 0px 0px",
+                                          "&:hover": {
+                                            backgroundColor: "var(--iconButtonHover2)",
+                                          },
+                                          "& .MuiTouchRipple-root span": {
+                                            backgroundColor: "var(--iconButtonActive2)",
+                                          },
                                         }}
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           e.preventDefault();
-                                          console.log("editdesc - Image object:", image); // Add this
-                                          console.log("editdesc - Image ID:", image.imageId); // Add this
-                                          setImageDescToEdit(image.imageId);
-                                          setIsEditDescModalOpen(true);
+                                          handleDownloadImage(image.link, index + 1);
                                         }}
                                       >
-                                        <EditIcon />
+                                        <DownloadIcon sx={{ transform: "scale(1.3)" }} />
                                       </IconButton>
-                                    )}
-                                    <IconButton
-                                      sx={{
-                                        color: "var(--color-white)",
-                                        borderRadius: "50%",
-                                        opacity: "0.3",
-                                        width: "40px",
-                                        height: "40px",
-                                        "&:hover": {
-                                          backgroundColor: "var(--iconButtonHover2)",
-                                        },
-                                        "& .MuiTouchRipple-root span": {
-                                          backgroundColor: "var(--iconButtonActive2)",
-                                        },
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        setInfoVisible(!infoVisible);
-                                      }}
-                                    >
-                                      {infoVisible ? <UnviewInfoIcon /> : <ViewInfoIcon />}
-                                    </IconButton>
-                                    <IconButton
-                                      sx={{
-                                        color: "var(--color-white)",
-                                        marginRight: "30px",
-                                        borderRadius: "50%",
-                                        opacity: "0.3",
-                                        width: "40px",
-                                        height: "40px",
-                                        position: "absolute",
-                                        top: "8px",
-                                        right: "56px", // Adjusted to place it beside the existing button
-                                        zIndex: "1",
-                                        "&:hover": {
-                                          backgroundColor: "var(--iconButtonHover2)",
-                                        },
-                                        "& .MuiTouchRipple-root span": {
-                                          backgroundColor: "var(--iconButtonActive2)",
-                                        },
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        handleDownloadImage(image.link);
-                                      }}
-                                    >
-                                      <DownloadIcon />
-                                    </IconButton>
+                                      {isOwnerEditor && changeMode === "Editing" && (
+                                        <IconButton
+                                          className="editIconBtn"
+                                          sx={{
+                                            ...iconButtonStyles,
+                                            opacity: "0.3",
+                                            width: "40px",
+                                            height: "40px",
+                                            "&:hover": {
+                                              backgroundColor: "var(--iconButtonHover2)",
+                                            },
+                                            "& .MuiTouchRipple-root span": {
+                                              backgroundColor: "var(--iconButtonActive2)",
+                                            },
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            console.log("editdesc - Image object:", image);
+                                            console.log("editdesc - Image ID:", image.imageId);
+                                            setImageDescToEdit(image.imageId);
+                                            setIsEditDescModalOpen(true);
+                                          }}
+                                        >
+                                          <EditIcon />
+                                        </IconButton>
+                                      )}
+                                      <IconButton
+                                        className="viewInfoIconBtn"
+                                        sx={{
+                                          ...iconButtonStyles,
+                                          opacity: "0.3",
+                                          width: "40px",
+                                          height: "40px",
+                                          "&:hover": {
+                                            backgroundColor: "var(--iconButtonHover2)",
+                                          },
+                                          "& .MuiTouchRipple-root span": {
+                                            backgroundColor: "var(--iconButtonActive2)",
+                                          },
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          e.preventDefault();
+                                          setInfoVisible(!infoVisible);
+                                        }}
+                                      >
+                                        {infoVisible ? <UnviewInfoIcon /> : <ViewInfoIcon />}
+                                      </IconButton>
+                                    </div>
                                   </div>
                                 ) : (
                                   <IconButton

@@ -12,7 +12,6 @@ const { auth, db, clientAuth, clientDb } = require("./firebase");
 
 // Middleware
 const app = express();
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
 
@@ -20,11 +19,25 @@ app.use(express.urlencoded());
 app.use("/api", apiRoutes);
 
 // Middleware to handle CORS
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "*");
-  next();
-});
+const corsOptions = {
+  origin: [
+    /^http:\/\/localhost:\d+$/, // Matches any localhost port
+    "https://decoraition.onrender.com",
+    "https://decoraition.org",
+    "https://www.decoraition.org",
+    "https://ai-api.decoraition.org",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept"],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+// app.use((req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Origin, Accept");
+//   next();
+// });
 
 // Serve static files, manifest.json and service-worker.js from the React app
 app.use(express.static(path.join(__dirname, "build")));

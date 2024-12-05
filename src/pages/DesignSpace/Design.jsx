@@ -40,7 +40,12 @@ import { handleEditDescription } from "./backend/DesignActions";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { SelectedComment, UnselectedComment } from "./svg/AddColor";
 import LoadingPage from "../../components/LoadingPage";
-import { formatDateDetailComma } from "../Homepage/backend/HomepageActions";
+import {
+  formatDateDetailComma,
+  formatDateNowDash,
+  sanitizeFileName,
+  truncateString,
+} from "../Homepage/backend/HomepageActions";
 
 function Design() {
   const {
@@ -577,27 +582,33 @@ function Design() {
     });
   }, [isPinpointing, pinpointLocation, pinpointSelectedImage, selectedImage]);
 
-  const handleDownloadImage = (imageSrc, imageNum) => {
-    const link = document.createElement("a");
-    link.href = imageSrc;
-    link.download = "image.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const handleDownloadImage = async (imageSrc, imageNum) => {
+    try {
+      const response = await fetch(imageSrc);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
 
-  // const handleDownloadImage = async (imageSrc, imageNum) => {
-  //   try {
-  //     window.open(
-  //       `/api/download-image?url=${encodeURIComponent(
-  //         imageSrc
-  //       )}&filename=image${imageNum}-${Date.now()}`
-  //     );
-  //   } catch (error) {
-  //     console.error("Error downloading image:", error);
-  //     showToast("error", "Failed to download image");
-  //   }
-  // };
+      // Get sanitized and truncated design name
+      const designNamePart = design?.designName
+        ? `${sanitizeFileName(truncateString(design.designName, 20))}`
+        : "";
+
+      // Construct filename
+      link.download = `${designNamePart}-img${imageNum}-${formatDateNowDash()}.png`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+      showToast("success", "Image downloaded successfully");
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      showToast("error", "Failed to download image");
+    }
+  };
 
   // Notifcation highlight
   useEffect(() => {

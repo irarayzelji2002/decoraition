@@ -396,3 +396,46 @@ export const getUsernames = async (userIds) => {
   }
   return [];
 };
+
+export function formatDateNowDash() {
+  const now = new Date();
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const month = months[now.getMonth()];
+  const day = String(now.getDate()).padStart(2, "0");
+  const year = now.getFullYear();
+
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12; // Convert to 12-hour format
+
+  return `${month}-${day}-${year}-${String(hours).padStart(2, "0")}-${minutes}-${ampm}`;
+}
+
+// Sanitize filename - only allow alphanumeric, dots, dashes, and underscores
+export const sanitizeFileName = (str) => {
+  return str
+    .replace(/[^a-zA-Z0-9.-_\s]/g, "") // Remove special characters except dots, dashes, underscores
+    .replace(/\s+/g, "-") // Replace spaces with dashes
+    .trim();
+};
+
+// Truncate and sanitize design name
+export const truncateString = (str, maxLength) => {
+  if (str.length <= maxLength) return str;
+  return str.substring(0, maxLength) + "...";
+};

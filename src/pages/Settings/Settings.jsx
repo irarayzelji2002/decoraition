@@ -91,11 +91,18 @@ function Settings() {
   const [firstName, setFirstName] = useState(userDoc.firstName ?? "");
   const [lastName, setLastName] = useState(userDoc.lastName ?? "");
   const [username, setUsername] = useState(userDoc.username ?? "");
+  const [isSaveThreeInputsBtnDisabled, setIsSaveThreeInputsBtnDisabled] = useState(false);
+
   const [email, setEmail] = useState(userDoc.email ?? "");
+  const [isSaveEmailBtnDisabled, setIsSaveEmailBtnDisabled] = useState(false);
+
   const [theme, setTheme] = useState(userDoc.theme ?? 0);
+  const [isThemeToggleBtnDisabled, setIsThemeToggleBtnDisabled] = useState(false);
+
   const [connectedAccount, setConnectedAccount] = useState(userDoc.connectedAccount ?? null);
   const [profilePic, setProfilePic] = useState(userDoc.profilePic ?? null);
   const [profilePicPreview, setProfilePicPreview] = useState(userDoc.profilePic ?? "");
+
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -109,6 +116,7 @@ function Settings() {
     color: "",
   });
   const [passwordMatch, setPasswordMatch] = useState(null);
+  const [isSavePassBtnDisabled, setIsSavePassBtnDisabled] = useState(false);
 
   useEffect(() => {
     if (userDoc) {
@@ -250,14 +258,24 @@ function Settings() {
     if (hasError) {
       return false;
     }
+    setIsSaveThreeInputsBtnDisabled(true);
     const success = await handleUpdateUserDetails({
       firstName: trimmedFirstName,
       lastName: trimmedLastName,
       username: trimmedUsername,
     });
     setUserDetailsErr(initUserDetailsErr);
+    setIsSaveThreeInputsBtnDisabled(false);
     return success;
   };
+
+  useEffect(() => {
+    if (isSaveThreeInputsBtnDisabled) {
+      console.log(`${isSaveThreeInputsBtnDisabled}; opacity: 0.5; cursor: default`);
+    } else {
+      console.log(`${isSaveThreeInputsBtnDisabled}; opacity: 1; cursor: pointer`);
+    }
+  }, [isSaveThreeInputsBtnDisabled]);
 
   const handleChangeProfileModalClose = () => {
     setIsChangeProfileModalOpen(false);
@@ -349,11 +367,15 @@ function Settings() {
         return false;
       }
       // Proceed with updating email
+      setIsSaveEmailBtnDisabled(true);
       const success = await handleUpdateField("email", trimmedEmail);
       setEmailErr(initEmailErr);
+      setIsSaveEmailBtnDisabled(false);
       return success;
     } else if (field === "theme") {
+      setIsThemeToggleBtnDisabled(true);
       const success = await handleUpdateField("theme", value);
+      setIsThemeToggleBtnDisabled(false);
       return success;
     }
   };
@@ -900,11 +922,13 @@ function Settings() {
       return false;
     }
     // Proceed with updating password
+    setIsSavePassBtnDisabled(true);
     const success = await handleUpdatePassword({
       newPassword: values[1],
       confirmNewPassword: values[2],
     });
     setPassErr(initPassErr);
+    setIsSavePassBtnDisabled(false);
     return success;
   };
 
@@ -1110,6 +1134,7 @@ function Settings() {
                 errors={userDetailsErr}
                 initErrors={initUserDetailsErr}
                 setErrors={setUserDetailsErr}
+                disabled={isSaveThreeInputsBtnDisabled}
               />
             </div>
             <div className="inputField oneLine">
@@ -1123,6 +1148,7 @@ function Settings() {
                 initErrors={initEmailErr}
                 setErrors={setEmailErr}
                 isEditable={connectedAccount == null ? true : false}
+                disabled={isSaveEmailBtnDisabled}
               />
             </div>
             <div className="inputFieldThree password">
@@ -1136,6 +1162,7 @@ function Settings() {
                 initErrors={initPassErr}
                 setErrors={setPassErr}
                 isEditable={connectedAccount == null ? true : false}
+                disabled={isSavePassBtnDisabled}
               />
             </div>
             <div className="inputField">
@@ -1152,6 +1179,7 @@ function Settings() {
                 value={theme}
                 onToggle={handleThemeToggle}
                 isConnectedAccount={false}
+                disabled={isThemeToggleBtnDisabled}
               />
             </div>
           </Box>

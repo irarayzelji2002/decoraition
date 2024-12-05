@@ -9,23 +9,47 @@ import {
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { textFieldStyles } from "../DesignSpace/DesignSettings";
 
-const LongToggleInput = ({ label, value, onToggle, isConnectedAccount }) => {
+const LongToggleInput = ({ label, value, onToggle, isConnectedAccount, disabled = false }) => {
   const icon = isConnectedAccount ? (
     value === null ? (
-      <IconButton onClick={onToggle} sx={{ ...iconButtonStyles, padding: "10px" }}>
+      <IconButton
+        onClick={onToggle}
+        sx={{
+          ...iconButtonStyles,
+          padding: "10px",
+          opacity: disabled ? "0.5 !important" : "1 !important",
+        }}
+        disabled={disabled}
+      >
         <LinkIconSmallGradient />
       </IconButton>
     ) : (
-      <IconButton onClick={onToggle} sx={{ ...iconButtonStyles, padding: "10px" }}>
+      <IconButton
+        onClick={onToggle}
+        sx={{
+          ...iconButtonStyles,
+          padding: "10px",
+          cursor: disabled ? "default !important" : "pointer !important",
+        }}
+        disabled={disabled}
+      >
         <UnlinkIconSmallGradient />
       </IconButton>
     )
   ) : value === 0 ? (
-    <IconButton onClick={onToggle} sx={iconButtonStyles}>
+    <IconButton
+      onClick={onToggle}
+      sx={{ ...iconButtonStyles, opacity: disabled ? "0.5 !important" : "1 !important" }}
+      disabled={disabled}
+    >
       <DarkModeSmallGradient sx={{ color: "#FF894D" }} />
     </IconButton>
   ) : (
-    <IconButton onClick={onToggle} sx={iconButtonStyles}>
+    <IconButton
+      onClick={onToggle}
+      sx={{ ...iconButtonStyles, cursor: disabled ? "default !important" : "pointer !important" }}
+      disabled={disabled}
+    >
       <LightModeSmallGradient sx={{ color: "#FF894D" }} />
     </IconButton>
   );

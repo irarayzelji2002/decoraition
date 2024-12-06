@@ -7,7 +7,15 @@ import TopBar from "../../components/TopBar";
 import NoImage from "./svg/NoImage";
 import { showToast } from "../../functions/utils";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
-import { TextField, IconButton, Button, Typography, InputAdornment } from "@mui/material";
+import {
+  TextField,
+  IconButton,
+  Button,
+  Typography,
+  InputAdornment,
+  Paper,
+  Box,
+} from "@mui/material";
 import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftRoundedIcon,
   KeyboardArrowRightRounded as KeyboardArrowRightRoundedIcon,
@@ -16,10 +24,17 @@ import {
 import CurrencySelect from "../../components/CurrencySelect";
 import { getAllISOCodes, getAllInfoByISO } from "iso-country-currency";
 import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
-import { textFieldStyles, textFieldInputProps, priceTextFieldStyles } from "./AddItem";
+import {
+  textFieldStyles,
+  textFieldInputProps,
+  priceTextFieldStyles,
+  ItemInfoTooltip,
+} from "./AddItem";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import LoadingPage from "../../components/LoadingPage";
-import { isCollaboratorDesign, isOwnerEditorDesign } from "./Design";
+import { isOwnerEditorDesign } from "./Design";
+import { CustomMenuItem } from "./CommentContainer";
+import { menuItemStyles } from "./DesignSettings";
 
 const getPHCurrency = () => {
   let currency = {
@@ -69,6 +84,13 @@ const EditItem = () => {
   const [defaultBudgetCurrency, setDefaultBudgetCurrency] = useState({});
   const [isEditItemBtnDisabled, setIsEditItemBtnDisabled] = useState(false);
   const [dragging, setDragging] = useState(false);
+
+  const [ebaySearchQuery, setEbaySearchQuery] = useState("");
+  const [ebaySearchResults, setEbaySearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [searchItemClicked, setSearchItemClicked] = useState(null);
+  const [openSearchResultOptions, setOpenSearchResultOptions] = useState(false);
 
   const isoToFlagEmoji = (isoCode) => {
     return isoCode
@@ -224,6 +246,7 @@ const EditItem = () => {
 
     setInitImage(file);
     setIsUploadedImage(true);
+    setImageLink("");
     const reader = new FileReader();
     reader.onloadend = () => {
       console.log("FileReader result:", reader.result);
@@ -255,6 +278,101 @@ const EditItem = () => {
 
   const triggerFileInput = () => {
     document.getElementById("upload-image").click();
+  };
+
+  const handleEbaySearch = async () => {
+    if (!ebaySearchQuery.trim()) return;
+    setIsSearching(true);
+    try {
+      const response = await axios.get(`/api/ebay/search`, {
+        params: {
+          query: ebaySearchQuery,
+        },
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      });
+      setEbaySearchResults(response.data.items);
+    } catch (error) {
+      console.error("Error searching eBay items:", error);
+      showToast("error", "Failed to search eBay items");
+    } finally {
+      setIsSearching(false);
+      setOpenSearchResultOptions(true);
+    }
+  };
+
+  useEffect(() => {
+    console.log("clicked item:", searchItemClicked);
+    if (searchItemClicked) {
+      const item = searchItemClicked;
+      console.log("Selected item:", item);
+      setItemName(item.title);
+      setItemPrice(item.price.value);
+      setItemQuantity(1);
+
+      // Currency
+      const phCurrency = currencyDetails.find((currency) => currency.countryISO === "PH");
+      const usCurrency = currencyDetails.find((currency) => currency.countryISO === "US");
+      if (item.price.currency === "USD") setCurrency(usCurrency);
+      else if (item.price.currency === "PHP") setCurrency(phCurrency);
+      else {
+        const currencyToUse = currencyDetails.find(
+          (currency) => currency?.currencyCode === item.price.curreny
+        );
+        setCurrency(currencyToUse);
+      }
+
+      // Image
+      setImageLink(item?.thumbnailImages?.[0]?.imageUrl || item?.image?.imageUrl);
+      setImagePreview(item?.thumbnailImages?.[0]?.imageUrl || item?.image?.imageUrl);
+
+      setSelectedIndex(-1);
+      setOpenSearchResultOptions(false);
+      setEbaySearchQuery("");
+    }
+  }, [searchItemClicked]);
+
+  // Search item key down
+  const handleKeyDown = (event) => {
+    // Handle arrow keys for navigation when options are open
+    if (openSearchResultOptions && ebaySearchResults.length > 0) {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev < ebaySearchResults.length - 1 ? prev + 1 : prev));
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+      }
+    }
+
+    // Handle Enter key
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (openSearchResultOptions && ebaySearchResults.length > 0) {
+        // If options are open, select the highlighted item
+        const selectedItem =
+          selectedIndex >= 0 ? ebaySearchResults[selectedIndex] : ebaySearchResults[0];
+        setSearchItemClicked(selectedItem);
+        setSelectedIndex(-1);
+        setOpenSearchResultOptions(false);
+        setEbaySearchQuery("");
+      } else if (ebaySearchQuery) {
+        // If no options are open, and has search query, trigger search
+        handleEbaySearch();
+      }
+    }
+  };
+
+  // Search query change handler
+  const handleSearchQueryChange = (e) => {
+    const value = e.target.value;
+    setEbaySearchQuery(value);
+    // Hide options if search query is empty
+    if (!value.trim()) {
+      setOpenSearchResultOptions(false);
+      setSelectedIndex(-1);
+    }
   };
 
   // Remove only the specified field error
@@ -391,27 +509,83 @@ const EditItem = () => {
       <TopBar state={"Edit Item"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="add-item-container">
         <div className="left-column">
-          {/* <TextField
+          <TextField
             placeholder="Search for an item"
+            value={ebaySearchQuery}
+            onChange={handleSearchQueryChange}
+            onKeyDown={handleKeyDown}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start" sx={{ color: "var(--color-white)" }}>
                   <SearchIcon />
                 </InputAdornment>
               ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Button
+                    onClick={handleEbaySearch}
+                    disabled={isSearching}
+                    sx={{
+                      ...gradientButtonStyles,
+                      height: "51px",
+                      borderRadius: "0 10px 10px 0",
+                      paddingLeft: "15px",
+                      paddingRight: "15px",
+                      opacity: isSearching ? "0.5" : "1",
+                      cursor: isSearching ? "default" : "pointer",
+                      "&:hover": {
+                        backgroundImage: !isSearching && "var(--gradientButtonHover)",
+                      },
+                    }}
+                  >
+                    Search
+                  </Button>
+                </InputAdornment>
+              ),
             }}
             sx={{
               ...textFieldStyles,
               width: "100%",
-              marginBottom: "20px",
-              margiTop: "22px",
+              marginTop: "22px",
               "&.MuiTextField-root input": {
                 padding: "16px 15px 16px 5px !important",
+              },
+              "& .MuiInputBase-root": {
+                paddingRight: 0,
               },
             }}
             fullWidth
             inputProps={{ ...textFieldInputProps, maxLength: 100 }}
-          /> */}
+          />
+          <div style={{ position: "relative", width: "100%" }}>
+            {openSearchResultOptions && ebaySearchResults.length > 0 && (
+              <Paper
+                sx={{
+                  position: "absolute",
+                  zIndex: 1000,
+                  maxHeight: "500px",
+                  overflow: "auto",
+                  width: "100%",
+                  backgroundColor: "var(--iconBg)",
+                  boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
+                  borderRadius: "10px",
+                }}
+              >
+                {/* {ebaySearchResults.slice(0, 10).map((item, index) => ( */}
+                {ebaySearchResults.map((item, index) => (
+                  <CustomMenuItem
+                    key={item.itemId}
+                    onClick={() => setSearchItemClicked(item)}
+                    selected={index === selectedIndex}
+                    sx={{ ...menuItemStyles }}
+                  >
+                    <ItemInfoTooltip item={item} />
+                  </CustomMenuItem>
+                ))}
+              </Paper>
+            )}
+          </div>
+
           <div
             className="upload-section"
             onDragEnter={handleDragEnter}

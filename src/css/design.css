@@ -1403,6 +1403,11 @@ s .dialog .MuiDialog-paper {
   overflow: hidden;
 }
 
+.select-image-preview.item-preview {
+  width: 80px;
+  height: 80px;
+}
+
 .select-image-preview.version,
 .select-image-preview.budget {
   margin: 5px;

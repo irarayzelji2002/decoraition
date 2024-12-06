@@ -6,6 +6,8 @@ import { debounce } from "lodash";
 import { getAllISOCodes, getAllInfoByISO } from "iso-country-currency";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { showToast } from "../../functions/utils";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 import Item from "./Item";
 import {
@@ -259,7 +261,7 @@ function Budget() {
           return;
         }
         setDesign(fetchedDesign);
-        console.log("current design:", fetchedDesign);
+        console.log("Init Budget page - current design:", fetchedDesign);
       }
     }
   }, [designId, design, designs, userDesigns, isCollaborator]);
@@ -304,6 +306,22 @@ function Budget() {
           userBudgets.find((budget) => budget?.designVersionId === designVersion.id) ||
           budgets.find((budget) => budget?.designVersionId === designVersion.id);
         setBudget(fetchedBudget || {});
+
+        // If we found a budget but it doesn't match the designVersion's budgetId, update the designVersion document
+        if (
+          fetchedBudget &&
+          designVersion.budgetId &&
+          fetchedBudget.id !== designVersion.budgetId
+        ) {
+          console.log("Init Budget page - Correcting mismatched budgetId in designVersion");
+          try {
+            await updateDoc(doc(db, "designVersions", designVersion.id), {
+              budgetId: fetchedBudget.id,
+            });
+          } catch (err) {
+            console.error("Error updating designVersion budgetId:", err);
+          }
+        }
 
         if (!fetchedBudget) {
           // Double check with backend to ensure no budget exists

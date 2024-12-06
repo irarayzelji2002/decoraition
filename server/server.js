@@ -4,6 +4,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const apiRoutes = require("./routes/api");
+const ebayApiRoutes = require("./routes/ebay");
 const admin = require("firebase-admin");
 
 const { signInWithPopup, GoogleAuthProvider } = require("firebase/auth");
@@ -17,6 +18,7 @@ app.use(express.urlencoded());
 
 // API routes
 app.use("/api", apiRoutes);
+app.use("/api/ebay", ebayApiRoutes);
 
 // Middleware to handle CORS
 const corsOptions = {

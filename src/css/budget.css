@@ -137,6 +137,7 @@
   border: 1px solid var(--thumbnailBorder);
   background-origin: border-box;
   background-clip: padding-box, border-box;
+  align-self: center;
 }
 .itemName {
   font-size: var(--font-size-h7);

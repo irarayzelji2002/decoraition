@@ -38,6 +38,8 @@ const SearchAppBar = ({ onMenuClick, onSearchChange, searchQuery }) => {
       setSearchPlaceholder("Search your designs");
     } else if (location.pathname.startsWith("/seeAllProjects")) {
       setSearchPlaceholder("Search your projects");
+    } else if (location.pathname.startsWith("/trash")) {
+      setSearchPlaceholder("Search in trash");
     } else {
       setSearchPlaceholder("Search...");
     }

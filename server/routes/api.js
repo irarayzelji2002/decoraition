@@ -202,6 +202,7 @@ router.post(
   authenticateUser,
   commentController.deleteReply
 );
+router.post("/design/:designId/trash", authenticateUser, designController.moveDesignToTrash);
 
 // Project routes
 // router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);
@@ -255,6 +256,7 @@ router.put(
   authenticateUser,
   projectBudgetController.updateProjectBudget
 );
+router.post("/project/:projectId/trash", authenticateUser, projectController.moveProjectToTrash);
 
 // Network check
 router.get("/health-check", (req, res) => {

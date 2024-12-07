@@ -36,7 +36,15 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import NotifTab from "./NotifTab";
 import { ArrowBackIosRounded as ArrowBackIosRoundedIcon } from "@mui/icons-material";
-import { DesignIcn, FAQ, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/DesignSvg.jsx";
+import {
+  DesignIcn,
+  FAQ,
+  Home,
+  LogoutIcn,
+  ProjectIcn,
+  SettingsIcn,
+  DeleteIcn,
+} from "./svg/DesignSvg.jsx";
 
 const DrawerComponent = ({
   isDrawerOpen = false,
@@ -555,8 +563,21 @@ const DrawerComponent = ({
 
         <Divider sx={{ backgroundColor: "var(--inputBg)", my: 2 }} />
 
-        {/* Settings Menu Item */}
-        {/* path to change? */}
+        {/* Trash, FAQ, Settings, Sign Out Menu Items */}
+        <ListItemButton
+          onClick={() => {
+            onClose();
+            navigate("/trash", {
+              state: { navigateFrom: navigateFrom },
+            });
+          }}
+          sx={listItemStyles}
+        >
+          <ListItemIcon sx={listItemIconStyles}>
+            <DeleteIcn />
+          </ListItemIcon>
+          <ListItemText primary="Trash" />
+        </ListItemButton>
         <ListItemButton
           onClick={() => {
             onClose();

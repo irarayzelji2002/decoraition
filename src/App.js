@@ -23,6 +23,7 @@ import Details from "./pages/Homepage/Details.jsx";
 import SeeAllDesigns from "./pages/Homepage/SeeAllDesigns.jsx";
 import SeeAllProjects from "./pages/Homepage/SeeAllProjects.jsx";
 import Settings from "./pages/Settings/Settings.jsx";
+import Trash from "./pages/Trash/Trash.jsx";
 import Design from "./pages/DesignSpace/Design.jsx";
 import Budget from "./pages/DesignSpace/Budget.jsx";
 import AddItem from "./pages/DesignSpace/AddItem.jsx";
@@ -75,7 +76,6 @@ function App() {
               {/* PUBLIC ROUTES */}
               <Route path="/" element={<StartElement />} />
               <Route path="/landing" element={<Landing />} />
-              <Route path="/error" element={<Error />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
@@ -161,6 +161,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Settings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/trash"
+                element={
+                  <ProtectedRoute>
+                    <Trash />
                   </ProtectedRoute>
                 }
               />
@@ -343,6 +351,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Error */}
+              <Route path="*" element={<Error />} />
             </Routes>
           </Layout>
         </SharedPropsProvider>

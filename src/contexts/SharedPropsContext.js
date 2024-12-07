@@ -16,6 +16,8 @@ const initialState = {
   users: [],
   projects: [],
   designs: [],
+  deletedProjects: [],
+  deletedDesigns: [],
   designVersions: [],
   comments: [],
   notifications: [],
@@ -28,6 +30,8 @@ const initialState = {
   events: [],
   userProjects: [],
   userDesigns: [],
+  userDeletedProjects: [],
+  userDeletedDesigns: [],
   userDesignVersions: [],
   userDesignsComments: [],
   userComments: [],
@@ -52,6 +56,9 @@ export function SharedPropsProvider({ children }) {
   const setUsers = (users) => setState((prev) => ({ ...prev, users }));
   const setProjects = (projects) => setState((prev) => ({ ...prev, projects }));
   const setDesigns = (designs) => setState((prev) => ({ ...prev, designs }));
+  const setDeletedProjects = (deletedProjects) =>
+    setState((prev) => ({ ...prev, deletedProjects }));
+  const setDeletedDesigns = (deletedDesigns) => setState((prev) => ({ ...prev, deletedDesigns }));
   const setDesignVersions = (designVersions) => setState((prev) => ({ ...prev, designVersions }));
   const setComments = (comments) => setState((prev) => ({ ...prev, comments }));
   const setNotifications = (notifications) => setState((prev) => ({ ...prev, notifications }));
@@ -64,6 +71,10 @@ export function SharedPropsProvider({ children }) {
   const setEvents = (events) => setState((prev) => ({ ...prev, events }));
   const setUserProjects = (userProjects) => setState((prev) => ({ ...prev, userProjects }));
   const setUserDesigns = (userDesigns) => setState((prev) => ({ ...prev, userDesigns }));
+  const setUserDeletedProjects = (userDeletedProjects) =>
+    setState((prev) => ({ ...prev, userDeletedProjects }));
+  const setUserDeletedDesigns = (userDeletedDesigns) =>
+    setState((prev) => ({ ...prev, userDeletedDesigns }));
   const setUserDesignVersions = (userDesignVersions) =>
     setState((prev) => ({ ...prev, userDesignVersions }));
   const setUserDesignsComments = (userDesignsComments) =>
@@ -117,6 +128,8 @@ export function SharedPropsProvider({ children }) {
     "users",
     "projects",
     "designs",
+    "deletedProjects",
+    "deletedDesigns",
     "designVersions",
     "comments",
     "notifications",
@@ -132,6 +145,8 @@ export function SharedPropsProvider({ children }) {
     "userDoc",
     "userProjects",
     "userDesigns",
+    "userDeletedProjects",
+    "userDeletedDesigns",
     "userDesignVersions",
     "userDesignsComments",
     "userComments",
@@ -149,6 +164,8 @@ export function SharedPropsProvider({ children }) {
     users: setUsers,
     projects: setProjects,
     designs: setDesigns,
+    deletedprojects: setDeletedProjects,
+    deleteddesigns: setDeletedDesigns,
     designVersions: setDesignVersions,
     comments: setComments,
     notifications: setNotifications,
@@ -164,6 +181,8 @@ export function SharedPropsProvider({ children }) {
     userDoc: setUserDoc,
     userProjects: setUserProjects,
     userDesigns: setUserDesigns,
+    userDeletedProjects: setUserDeletedProjects,
+    userDeletedDesigns: setUserDeletedDesigns,
     userDesignVersions: setUserDesignVersions,
     userDesignsComments: setUserDesignsComments,
     userComments: setUserComments,
@@ -202,6 +221,8 @@ export function SharedPropsProvider({ children }) {
     setUsers,
     setProjects,
     setDesigns,
+    setDeletedProjects,
+    setDeletedDesigns,
     setDesignVersions,
     setComments,
     setNotifications,
@@ -214,6 +235,8 @@ export function SharedPropsProvider({ children }) {
     setEvents,
     setUserProjects,
     setUserDesigns,
+    setUserDeletedProjects,
+    setUserDeletedDesigns,
     setUserDesignVersions,
     setUserDesignsComments,
     setUserComments,
@@ -243,6 +266,12 @@ export function SharedPropsProvider({ children }) {
   useEffect(() => {
     console.log("Designs updated:", state.designs);
   }, [state.designs]);
+  useEffect(() => {
+    console.log("Deleted Projects updated:", state.deletedProjects);
+  }, [state.deletedProjects]);
+  useEffect(() => {
+    console.log("Deleted Designs updated:", state.deletedDesigns);
+  }, [state.deletedDesigns]);
   useEffect(() => {
     console.log("Design Versions updated:", state.designVersions);
   }, [state.designVersions]);
@@ -279,6 +308,12 @@ export function SharedPropsProvider({ children }) {
   useEffect(() => {
     console.log("User Designs updated:", state.userDesigns);
   }, [state.userDesigns]);
+  useEffect(() => {
+    console.log("User Deleted Projects updated:", state.userDeletedProjects);
+  }, [state.userDeletedProjects]);
+  useEffect(() => {
+    console.log("User Deleted Designs updated:", state.userDeletedDesigns);
+  }, [state.userDeletedDesigns]);
   useEffect(() => {
     console.log("User Design Versions updated:", state.userDesignVersions);
   }, [state.userDesignVersions]);

@@ -1233,7 +1233,7 @@ exports.importDesignToProject = async (req, res) => {
     if (!allowAction) {
       return res
         .status(403)
-        .json({ error: "User does not have permission to create a design for this project" });
+        .json({ error: "User does not have permission to import a design for this project" });
     }
 
     // Get the design document
@@ -1310,7 +1310,7 @@ exports.removeDesignFromProject = async (req, res) => {
     if (!projectDoc.exists) {
       return res.status(404).json({ message: "Project not found" });
     }
-    // Check user role in design
+    // Check user role in project
     const allowAction = isContentManagerProject(projectDoc, userId);
     if (!allowAction) {
       return res
@@ -1378,6 +1378,91 @@ exports.removeDesignFromProject = async (req, res) => {
       success: false,
       error: "Failed to remove design from project",
     });
+  }
+};
+
+// Move project to trash
+exports.moveProjectToTrash = async (req, res) => {
+  const updatedDocuments = [];
+  const createdDocuments = [];
+  try {
+    const { projectId } = req.params;
+    const { userId } = req.body;
+
+    // Get project document
+    const projectRef = db.collection("projects").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    // Check user role in project
+    const allowAction = isManagerProject(projectDoc, userId);
+    if (!allowAction) {
+      return res.status(403).json({ error: "User does not have permission to delete project" });
+    }
+
+    // Create document in deletedProjects collection
+    const projectData = projectDoc.data();
+    const deletedProjectData = {
+      ...projectData,
+      deletedAt: new Date(),
+      originalId: projectId,
+    };
+    const deletedProjectRef = await db.collection("deletedProjects").add(deletedProjectData);
+    createdDocuments.push({ collection: "deletedProjects", id: deletedProjectRef.id });
+
+    // Update user's deletedProjects and projects arrays
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    const userData = userDoc.data();
+    // Add to deletedProjects array
+    const updatedDeletedProjects = userData.deletedProjects || [];
+    updatedDeletedProjects.push(deletedProjectRef.id);
+    // Remove from projects array
+    const updatedProjects = (userData.projects || []).filter(
+      (project) => project.projectId !== projectId
+    );
+    updatedDocuments.push({
+      ref: userRef,
+      data: { deletedProjects: userData.deletedProjects, projects: userData.projects },
+      collection: "users",
+      id: userRef.id,
+    });
+    await userRef.update({
+      deletedProjects: updatedDeletedProjects,
+      projects: updatedProjects,
+    });
+    // Delete original project
+    await projectRef.delete();
+
+    res.status(200).json({
+      success: true,
+      message: "Project moved to trash successfully",
+    });
+  } catch (error) {
+    console.error("Error moving project to trash:", error);
+
+    // Rollback updated documents
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update(doc.data);
+        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+      }
+    }
+
+    // Rollback: delete all created documents
+    for (const doc of createdDocuments) {
+      try {
+        await db.collection(doc.collection).doc(doc.id).delete();
+        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
+      } catch (deleteError) {
+        console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
+      }
+    }
+
+    res.status(500).json({ error: "Failed to move project to trash" });
   }
 };
 

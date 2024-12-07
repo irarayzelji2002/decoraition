@@ -523,7 +523,7 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
         isNotifOpen={isNotifOpen}
         setIsNotifOpen={setIsNotifOpen}
       />
-      <div className="left">
+      <div className="left" style={{ width: "calc(100% - 88px)" }}>
         <IconButton
           size="large"
           edge="start"

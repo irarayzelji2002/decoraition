@@ -152,12 +152,13 @@ body {
 }
 
 .item-frame-project {
-  width: 80px;
-  height: 80px;
+  min-width: 75px;
+  height: 75px;
   position: relative;
   border-radius: 11px;
   background-color: var(--thumbnailFill);
   border: 1px solid var(--thumbnailBorder);
+  overflow: hidden;
 }
 
 .item-frame-project img {

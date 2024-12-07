@@ -19,7 +19,6 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import { visuallyHidden } from "@mui/utils";
 import { getUsername } from "./backend/HomepageActions";
 import "../../css/homepage.css";
-import { projectId } from "../../../server/firebaseConfig";
 import { TablePagination } from "@mui/material";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { CloseRounded as CloseRoundedIcon } from "@mui/icons-material";
@@ -36,6 +35,7 @@ function EnhancedTableHead(props) {
     sortOrders,
     isProjectSpace,
     isManagerContentManager,
+    isTrash,
   } = props;
   const createSortHandler = (property) => (event) => {
     event.stopPropagation();
@@ -131,24 +131,26 @@ function EnhancedTableHead(props) {
             </IconButton>
           </TableCell>
         )}
-        <TableCell
-          sx={{
-            paddingTop: "5px",
-            paddingBottom: "5px",
-            width: "34px",
-            backgroundColor: "var(--bgMain)",
-            color: "var(--color-white)",
-            borderBottom: "1px solid var(--table-stroke)",
-            "&:hover": {
+        {!isTrash && (
+          <TableCell
+            sx={{
+              paddingTop: "5px",
+              paddingBottom: "5px",
+              width: "34px",
               backgroundColor: "var(--bgMain)",
               color: "var(--color-white)",
-            },
-          }}
-        >
-          <IconButton aria-label="expand row" size="small" sx={{ visibility: "hidden" }}>
-            <MoreVertIcon />
-          </IconButton>
-        </TableCell>
+              borderBottom: "1px solid var(--table-stroke)",
+              "&:hover": {
+                backgroundColor: "var(--bgMain)",
+                color: "var(--color-white)",
+              },
+            }}
+          >
+            <IconButton aria-label="expand row" size="small" sx={{ visibility: "hidden" }}>
+              <MoreVertIcon />
+            </IconButton>
+          </TableCell>
+        )}
       </TableRow>
     </TableHead>
   );
@@ -181,10 +183,21 @@ function EnhancedTable({
   isProjectSpace,
   openConfirmRemove,
   isManagerContentManager,
+  isTrash,
 }) {
   const navigate = useNavigate();
-  const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
-    useSharedProps();
+  const {
+    designs,
+    userDesigns,
+    deletedDesigns,
+    userDeletedDesigns,
+    designVersions,
+    userDesignVersions,
+    projects,
+    userProjects,
+    deletedProjects,
+    userDeletedProjects,
+  } = useSharedProps();
 
   const [selected, setSelected] = useState([]);
   //   const [page, setPage] = useState(0);
@@ -320,6 +333,41 @@ function EnhancedTable({
     return fetchedLatestDesignVersion.images[0].link || "";
   };
 
+  const getTrashDesignImage = (designId) => {
+    if (!designId) {
+      console.log("No design ID provided");
+      return "";
+    }
+
+    // Get the design
+    const fetchedDeletedDesign =
+      userDeletedDesigns.find((design) => design.id === designId) ||
+      deletedDesigns.find((design) => design.id === designId);
+    if (
+      !fetchedDeletedDesign ||
+      !fetchedDeletedDesign.history ||
+      fetchedDeletedDesign.history.length === 0
+    ) {
+      return "";
+    }
+
+    // Get the latest designVersionId
+    const latestDesignVersionId =
+      fetchedDeletedDesign.history[fetchedDeletedDesign.history.length - 1];
+    if (!latestDesignVersionId) {
+      return "";
+    }
+    const fetchedLatestDesignVersion = designVersions.find(
+      (designVer) => designVer.id === latestDesignVersionId
+    );
+    if (!fetchedLatestDesignVersion?.images?.length) {
+      return "";
+    }
+
+    // Return the first image's link from the fetched design version
+    return fetchedLatestDesignVersion.images[0].link || "";
+  };
+
   const getProjectImage = (projectId) => {
     // Get the project
     const fetchedProject =
@@ -334,6 +382,22 @@ function EnhancedTable({
 
     // Return the design image by calling getDesignImage
     return getDesignImage(latestDesignId);
+  };
+
+  const getTrashProjectImage = (projectId) => {
+    // Get the project
+    const fetchedDeletedProject =
+      userDeletedProjects.find((project) => project.id === projectId) ||
+      deletedProjects.find((project) => project.id === projectId);
+    if (!fetchedDeletedProject || fetchedDeletedProject.designs.length === 0) {
+      return "";
+    }
+
+    // Get the latest designId (the last one in the designIds array)
+    const latestDesignId = fetchedDeletedProject.designs[fetchedDeletedProject.designs.length - 1];
+
+    // Return the design image by calling getDesignImage
+    return getTrashDesignImage(latestDesignId);
   };
 
   return (
@@ -385,6 +449,7 @@ function EnhancedTable({
               sortOrders={sortOrders}
               isProjectSpace={isProjectSpace}
               isManagerContentManager={isManagerContentManager}
+              isTrash={isTrash}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
@@ -424,7 +489,20 @@ function EnhancedTable({
                       onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
                     >
                       <div className="miniThumbnail">
-                        <img src={getDesignImage(row.id)} alt="" />
+                        <img
+                          src={(() => {
+                            if (isDesign) {
+                              return !isTrash
+                                ? getDesignImage(row.id)
+                                : getTrashDesignImage(row.id);
+                            } else {
+                              return !isTrash
+                                ? getProjectImage(row.id)
+                                : getTrashProjectImage(row.id);
+                            }
+                          })()}
+                          alt=""
+                        />
                       </div>
                     </TableCell>
                     {headCells.map((column) => {
@@ -480,49 +558,51 @@ function EnhancedTable({
                         </IconButton>
                       </TableCell>
                     )}
-                    <TableCell
-                      sx={{
-                        paddingTop: "5px",
-                        paddingBottom: "5px",
-                        width: "34px",
-                        borderBottom: "1px solid var(--table-stroke)",
-                        color: "var(--color-white)",
-                        backgroundColor: "var(--table-rows)",
-                        "&:hover": {
+                    {!isTrash && (
+                      <TableCell
+                        sx={{
+                          paddingTop: "5px",
+                          paddingBottom: "5px",
+                          width: "34px",
+                          borderBottom: "1px solid var(--table-stroke)",
                           color: "var(--color-white)",
-                          backgroundColor: "var(--table-rows-hover)",
-                        },
-                      }}
-                    >
-                      <IconButton
-                        aria-label="expand row"
-                        size="small"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleOptionsClick(row.id, event);
+                          backgroundColor: "var(--table-rows)",
+                          "&:hover": {
+                            color: "var(--color-white)",
+                            backgroundColor: "var(--table-rows-hover)",
+                          },
                         }}
-                        sx={{ color: "var(--color-white)" }}
                       >
-                        <MoreVertIcon />
-                      </IconButton>
+                        <IconButton
+                          aria-label="expand row"
+                          size="small"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleOptionsClick(row.id, event);
+                          }}
+                          sx={{ color: "var(--color-white)" }}
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
 
-                      {optionsState.showOptions && optionsState.selectedId === row.id && (
-                        <div style={{ position: "relative" }}>
-                          <HomepageOptions
-                            isDesign={isDesign}
-                            isTable={true}
-                            id={row.id}
-                            onOpen={(event) => {
-                              event.stopPropagation();
-                              handleClickAction(row.id, isDesign, navigate);
-                            }}
-                            optionsState={optionsState}
-                            setOptionsState={setOptionsState}
-                            object={row}
-                          />
-                        </div>
-                      )}
-                    </TableCell>
+                        {optionsState.showOptions && optionsState.selectedId === row.id && (
+                          <div style={{ position: "relative" }}>
+                            <HomepageOptions
+                              isDesign={isDesign}
+                              isTable={true}
+                              id={row.id}
+                              onOpen={(event) => {
+                                event.stopPropagation();
+                                handleClickAction(row.id, isDesign, navigate);
+                              }}
+                              optionsState={optionsState}
+                              setOptionsState={setOptionsState}
+                              object={row}
+                            />
+                          </div>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}
@@ -584,6 +664,7 @@ export default function HomepageTable({
   isProjectSpace = false,
   openConfirmRemove = () => {},
   isManagerContentManager = false,
+  isTrash = false,
 }) {
   const columns = [
     {
@@ -612,11 +693,11 @@ export default function HomepageTable({
       align: "left",
       format: (value) => value,
       sortKey: "createdAtTimestamp", // Used for sorting
-      hidden: false,
+      hidden: !isTrash ? false : true,
     },
     {
       id: "formattedModifiedAt",
-      label: "Modified",
+      label: !isTrash ? "Modified" : "Deleted",
       minWidth: 170,
       align: "left",
       format: (value) => value,
@@ -736,6 +817,7 @@ export default function HomepageTable({
       isProjectSpace={isProjectSpace}
       openConfirmRemove={openConfirmRemove}
       isManagerContentManager={isManagerContentManager}
+      isTrash={isTrash}
     />
   );
 }

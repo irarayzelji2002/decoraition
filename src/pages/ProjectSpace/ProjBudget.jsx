@@ -33,7 +33,10 @@ import {
   Button,
   Typography,
 } from "@mui/material";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import {
+  CloseRounded as CloseRoundedIcon,
+  HelpOutline as HelpOutlineIcon,
+} from "@mui/icons-material";
 import {
   dialogActionsStyles,
   dialogContentStyles,
@@ -46,6 +49,8 @@ import { textFieldInputProps } from "../DesignSpace/DesignSettings";
 import { AddBudget } from "../DesignSpace/svg/AddImage";
 import Loading from "../../components/Loading";
 import LoadingPage from "../../components/LoadingPage";
+import TooltipWithClickAway from "../../components/TooltipWithClickAway";
+import { DescriptionTooltip } from "../DesignSpace/Design";
 
 const getPHCurrency = () => {
   let currency = {
@@ -117,6 +122,10 @@ function ProjBudget() {
     useState(false);
   const [isCollaborator, setIsCollaborator] = useState(false);
   const [changeMode, setChangeMode] = useState(location?.state?.changeMode || "");
+
+  // Tooltip States
+  const [showGuide, setShowGuide] = useState(false);
+  const [showGuideLocked, setShowGuideLocked] = useState(false);
 
   // Initialize access rights
   useEffect(() => {
@@ -595,6 +604,20 @@ function ProjBudget() {
                     <AddIconGradient />
                   </IconButton>
                 )}
+                <TooltipWithClickAway
+                  open={showGuide}
+                  setOpen={setShowGuide}
+                  tooltipClickLocked={showGuideLocked}
+                  setTooltipClickLocked={setShowGuideLocked}
+                  title={
+                    <DescriptionTooltip description="This page is where you can see the individual budgets of the project's designs. You can also set an overall budget for the project." />
+                  }
+                  className="helpTooltip inBudget"
+                >
+                  <div style={{ display: "flex" }}>
+                    <HelpOutlineIcon sx={{ color: "var(--iconDark)", transform: "scale(0.9)" }} />
+                  </div>
+                </TooltipWithClickAway>
               </div>
             )}
         </div>

@@ -121,7 +121,7 @@ export default function SeeAllProjects() {
       await loadProjectDataForView();
     };
     loadData();
-  }, []);
+  }, [userProjects]);
 
   const handleOwnerChange = (owner) => {
     setSelectedOwner(owner);

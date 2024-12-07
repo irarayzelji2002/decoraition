@@ -12,6 +12,7 @@ export default function SelectSmall({
   onSortByChange = () => {},
   onOrderChange = () => {},
   isDesign = true,
+  isTrash = false,
 }) {
   return (
     <div className="scrollable-div">
@@ -70,12 +71,20 @@ export default function SelectSmall({
               Owner
             </MenuItem>
           )}
-          <MenuItem value="created" sx={menuItemStyles}>
-            Date Created
-          </MenuItem>
-          <MenuItem value="modified" sx={menuItemStyles}>
-            Date Modified
-          </MenuItem>
+          {!isTrash ? (
+            <>
+              <MenuItem value="created" sx={menuItemStyles}>
+                Date Created
+              </MenuItem>
+              <MenuItem value="modified" sx={menuItemStyles}>
+                Date Modified
+              </MenuItem>
+            </>
+          ) : (
+            <MenuItem value="deleted" sx={menuItemStyles}>
+              Date Deleted
+            </MenuItem>
+          )}
         </Select>
       </FormControl>
 

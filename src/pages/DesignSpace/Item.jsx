@@ -303,77 +303,72 @@ function Item({ item, onEdit, setDesignItems, budgetId, isOwnerEditor, changeMod
         <span style={{ fontSize: "12px" }}> x {item.quantity}</span>
       </div> */}
       <img src={item.image || "/img/transparent-image.png"} alt="" className="thumbnail" />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          margin: "12px",
-          width: "auto  ",
-          justifyContent: "center",
-        }}
-      >
-        <span className="itemName">{item.quantity + " " + item.itemName}</span>
-        <span className="itemPrice">
-          {item.cost.currency?.currencyCode + " " + formatNumber(item.cost.amount)}
-        </span>
-      </div>
-      {isOwnerEditor && changeMode === "Editing" && (
+      <div className="itemDetailsCont">
         <div
           style={{
             display: "flex",
-            flexDirection: "row",
-            marginLeft: "auto",
-            marginRight: "10px",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: "10px",
+            flexDirection: "column",
+            margin: "12px 12px 12px 0px",
+            width: "auto  ",
+            justifyContent: "center",
           }}
         >
-          {/* CheckBox */}
-          <div>
-            <Checkbox
-              checked={item.includedInTotal === true || item.includedInTotal === "true"}
-              onChange={() => {
-                toggleIncludedInTotal();
-                handleIncludedInTotalChange(item.id);
-              }}
-              value="included-in-total"
-              sx={{
-                color: "var(--color-white)",
-                "&.Mui-checked": {
-                  color: "var(--brightFont)",
-                },
-                borderRadius: "50%",
-                "& .MuiSvgIcon-root": {
-                  fontSize: 28,
-                },
-                "&:hover": {
-                  backgroundColor: "var(--iconButtonHover)",
-                },
-                "&:active": {
-                  backgroundColor: "var(--iconButtonActive)",
-                },
-                "& svg": {
-                  transform: "scale(0.88)",
-                },
-              }}
-              icon={<CheckboxIcon />}
-              checkedIcon={<CheckboxCheckedIcon />}
-            />
-          </div>
-          {/* Edit */}
-          <IconButton onClick={onEdit} sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}>
-            <EditIconSmallGradient />
-          </IconButton>
-          {/* Delete */}
-          <IconButton
-            onClick={handleOpenDelete}
-            sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
-          >
-            <DeleteIconGradient />
-          </IconButton>
+          <span className="itemName">{item.quantity + " " + item.itemName}</span>
+          <span className="itemPrice">
+            {item.cost.currency?.currencyCode + " " + formatNumber(item.cost.amount)}
+          </span>
         </div>
-      )}
+        {isOwnerEditor && changeMode === "Editing" && (
+          <div className="itemActions">
+            {/* CheckBox */}
+            <div>
+              <Checkbox
+                checked={item.includedInTotal === true || item.includedInTotal === "true"}
+                onChange={() => {
+                  toggleIncludedInTotal();
+                  handleIncludedInTotalChange(item.id);
+                }}
+                value="included-in-total"
+                sx={{
+                  color: "var(--color-white)",
+                  "&.Mui-checked": {
+                    color: "var(--brightFont)",
+                  },
+                  borderRadius: "50%",
+                  "& .MuiSvgIcon-root": {
+                    fontSize: 28,
+                  },
+                  "&:hover": {
+                    backgroundColor: "var(--iconButtonHover)",
+                  },
+                  "&:active": {
+                    backgroundColor: "var(--iconButtonActive)",
+                  },
+                  "& svg": {
+                    transform: "scale(0.88)",
+                  },
+                }}
+                icon={<CheckboxIcon />}
+                checkedIcon={<CheckboxCheckedIcon />}
+              />
+            </div>
+            {/* Edit */}
+            <IconButton
+              onClick={onEdit}
+              sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+            >
+              <EditIconSmallGradient />
+            </IconButton>
+            {/* Delete */}
+            <IconButton
+              onClick={handleOpenDelete}
+              sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+            >
+              <DeleteIconGradient />
+            </IconButton>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

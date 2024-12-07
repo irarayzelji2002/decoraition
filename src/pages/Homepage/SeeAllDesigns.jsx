@@ -309,7 +309,6 @@ export default function SeeAllDesigns() {
                             name={design.designName}
                             designId={design.id}
                             design={design}
-                            onDelete={() => handleDeleteDesign(user, design.id, navigate)}
                             onOpen={() =>
                               navigate(`/design/${design.id}`, {
                                 state: { designId: design.id },

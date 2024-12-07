@@ -8,16 +8,24 @@ import { useSharedProps } from "../contexts/SharedPropsContext";
 function ProjectOptionsHome({
   id,
   name,
-  onOpen,
+  onOpen = () => {},
   managers = "",
   createdAt = "",
   modifiedAt = "",
+  deletedAt = "",
   optionsState = {},
   project = {},
   setOptionsState = () => {},
+  isTrash = false,
 }) {
-  const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
-    useSharedProps();
+  const {
+    designs,
+    userDesigns,
+    designVersions,
+    userDesignVersions,
+    deletedDesigns,
+    userDeletedDesigns,
+  } = useSharedProps();
   const [clickedId, setClickedId] = useState("");
 
   const toggleOptions = (id) => {
@@ -98,35 +106,72 @@ function ProjectOptionsHome({
     return imageUrl;
   };
 
+  const getTrashLatestDesignImage = (projectId) => {
+    console.log("getTrashLatestDesignImage called with projectId:", projectId); // Debug log
+    const designsForProject =
+      userDeletedDesigns.filter((design) => design.projectId === projectId) ||
+      deletedDesigns.filter((design) => design.projectId === projectId);
+    if (designsForProject.length === 0) {
+      console.log("No deleted designs found for project:", projectId); // Debug log
+      return "";
+    }
+
+    const latestDesign = designsForProject.sort(
+      (a, b) => b?.deletedAt.toMillis() - a?.deletedAt.toMillis()
+    )[0];
+    if (!latestDesign) {
+      console.log("No latest deleted design found for project:", projectId); // Debug log
+      return "";
+    }
+
+    const latestDesignVersionId = latestDesign.history[latestDesign.history.length - 1];
+    const fetchedLatestDesignVersion = designVersions.find(
+      (designVer) => designVer.id === latestDesignVersionId
+    );
+
+    if (!fetchedLatestDesignVersion?.images?.length) {
+      console.log("No images found for latest deleted design version:", latestDesignVersionId); // Debug log
+      return "";
+    }
+
+    const imageUrl = fetchedLatestDesignVersion.images[0].link || "";
+    console.log("Image URL found:", imageUrl); // Debug log
+    return imageUrl;
+  };
+
   return (
     <div className="iconFrame">
-      <HomepageOptions
-        isDesign={false}
-        id={id}
-        onOpen={onOpen}
-        optionsState={optionsState}
-        setOptionsState={setOptionsState}
-        clickedId={clickedId}
-        setClickedId={setClickedId}
-        toggleOptions={toggleOptions}
-        object={project}
-      />
-      {/* Design image */}
+      {!isTrash && (
+        <HomepageOptions
+          isDesign={false}
+          id={id}
+          onOpen={onOpen}
+          optionsState={optionsState}
+          setOptionsState={setOptionsState}
+          clickedId={clickedId}
+          setClickedId={setClickedId}
+          toggleOptions={toggleOptions}
+          object={project}
+        />
+      )}
+      {/* Project image */}
       <div className="homepage-thumbnail" onClick={onOpen}>
         <img
-          src={getLatestDesignImage(project.id)}
+          src={!isTrash ? getLatestDesignImage(project.id) : getTrashLatestDesignImage(project.id)}
           className="pic"
           alt=""
           style={{ objectFit: "cover", objectPosition: "center" }}
         />
       </div>
 
-      {/* Design title */}
+      {/* Project title */}
       <div style={{ textAlign: "start", padding: "0px 3px", width: "100%" }}>
         <h3 className="titleDesign" onClick={onOpen}>
           {name}
         </h3>
-        <span className="dateModified">{`Modified ${modifiedAt}`}</span>
+        <span className="dateModified">
+          {!isTrash ? `Modified ${modifiedAt}` : `Deleted ${deletedAt}`}
+        </span>
       </div>
     </div>
   );

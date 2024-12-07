@@ -15,6 +15,8 @@ import {
   isCollaboratorProject,
 } from "./Project";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { Button } from "@mui/material";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar";
 
 function PinLocation({ EditMode }) {
   const location = useLocation();
@@ -24,7 +26,7 @@ function PinLocation({ EditMode }) {
   const navigate = useNavigate();
 
   const [pins, setPins] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSaveBtnDisabled, setIsSaveBtnDisabled] = useState(false);
   const { userDoc, projects, userProjects } = useSharedProps();
   const [loadingProject, setLoadingProject] = useState(true);
   const [project, setProject] = useState({});
@@ -89,14 +91,14 @@ function PinLocation({ EditMode }) {
   }, [projectId]);
 
   const savePinLocations = async () => {
-    setIsLoading(true);
+    setIsSaveBtnDisabled(true);
     try {
       await Promise.all(pins.map((pin) => updatePinLocation(projectId, pin.id, pin.location)));
       console.log("Pin locations updated successfully");
     } catch (error) {
       console.error("Error updating pin locations:", error);
     }
-    setIsLoading(false);
+    setIsSaveBtnDisabled(false);
     navigate(`/planMap/${projectId}`);
   };
 
@@ -106,17 +108,25 @@ function PinLocation({ EditMode }) {
       <div className="sectionPins" style={{ background: "none", paddingTop: "74px" }}>
         <div className="budgetSpaceImg">
           <ImageFrame projectId={projectId} alt="design preview" pins={pins} setPins={setPins} />
-          <button
-            className="add-item-btn"
+          <Button
+            // className="add-item-btn"
+            variant="contained"
             onClick={savePinLocations}
-            style={{
-              opacity: isLoading ? 0.5 : 1,
-              cursor: isLoading ? "default" : "pointer",
+            sx={{
+              ...gradientButtonStyles,
+              paddingLeft: "20px",
+              paddingRight: "20px",
+              maxWidth: "235px",
+              opacity: isSaveBtnDisabled ? "0.5" : "1",
+              cursor: isSaveBtnDisabled ? "default" : "pointer",
+              "&:hover": {
+                backgroundImage: !isSaveBtnDisabled && "var(--gradientButtonHover)",
+              },
             }}
-            disabled={isLoading}
+            disabled={isSaveBtnDisabled}
           >
-            {isLoading ? "Save Pin Locations" : "Save Pin Locations"}
-          </button>
+            {isSaveBtnDisabled ? "Save Pin Locations" : "Save Pin Locations"}
+          </Button>
         </div>
       </div>
     </>

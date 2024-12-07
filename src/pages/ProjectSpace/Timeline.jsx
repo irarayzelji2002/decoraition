@@ -30,6 +30,8 @@ import {
   isManagerContentManagerContributorProject,
   isCollaboratorProject,
 } from "./Project";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar";
+import { EditIconSmallGradient } from "../../components/svg/DefaultMenuIcons";
 
 function Timeline() {
   const navigate = useNavigate();
@@ -277,7 +279,10 @@ function Timeline() {
       setChangeMode={setChangeMode}
     >
       <div className="timeline-container">
-        <div className="center-me" style={{ flexDirection: "row", marginBottom: "20px" }}>
+        <div
+          className="center-me"
+          style={{ flexDirection: "row", marginBottom: "20px", paddingTop: "0px" }}
+        >
           <IconButton
             onClick={() => setViewMode("calendar")}
             sx={{
@@ -332,9 +337,14 @@ function Timeline() {
                   changeMode === "Managing" ||
                   changeMode === "Contributing") && (
                   <div className="add-event-button">
-                    <button className="design-button" onClick={handleAddEventClick}>
+                    <Button
+                      // className="design-button"
+                      variant="contained"
+                      onClick={handleAddEventClick}
+                      sx={{ ...gradientButtonStyles, maxWidth: "235px" }}
+                    >
                       Add Event for {formatDate(date)}
-                    </button>
+                    </Button>
                   </div>
                 )}
 
@@ -355,20 +365,26 @@ function Timeline() {
                             : "N/A"}
                         </p>
                       </div>
-                      <div className="task-actions">
+                      <div className="task-actions itemActions">
                         {isManagerContentManagerContributor &&
                           (changeMode === "Managing Content" ||
                             changeMode === "Managing" ||
                             changeMode === "Contributing") && (
-                            <div onClick={() => handleEditClick(task.id)}>
-                              <EditPen />
-                            </div>
+                            <IconButton
+                              onClick={() => handleEditClick(task.id)}
+                              sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+                            >
+                              <EditIconSmallGradient />
+                            </IconButton>
                           )}
                         {isManagerContentManager &&
                           (changeMode === "Managing Content" || changeMode === "Managing") && (
-                            <div onClick={() => openDeleteModal(task.id)}>
+                            <IconButton
+                              onClick={() => openDeleteModal(task.id)}
+                              sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+                            >
                               <Trash />
-                            </div>
+                            </IconButton>
                           )}
                       </div>
                     </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@mui/material";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
@@ -7,7 +8,6 @@ import update from "immutability-helper";
 import TopBar from "../../components/TopBar";
 import MapPin from "./MapPin";
 import { fetchPins, savePinOrder } from "./backend/ProjectDetails";
-import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import deepEqual from "deep-equal";
 import { showToast } from "../../functions/utils";
@@ -18,6 +18,7 @@ import {
   isCollaboratorProject,
 } from "./Project";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar";
 
 const ItemType = {
   PIN: "pin",
@@ -113,7 +114,7 @@ function PinOrder() {
   const navigateFrom = location.pathname;
   const { projectId } = useParams();
   const [pins, setPins] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [isSaveBtnDisabled, setisSaveBtnDisabled] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -140,15 +141,15 @@ function PinOrder() {
   };
 
   const handleSave = async () => {
-    setLoading(true);
+    setisSaveBtnDisabled(true);
     try {
       await savePinOrder(projectId, pins);
-      toast.success("Pins order saved successfully!");
+      showToast("success", "Pins order saved successfully!");
       navigate(`/planMap/${projectId}`);
     } catch (error) {
-      toast.error("Failed to save pins order.");
+      showToast("error", "Failed to save pins order.");
     } finally {
-      setLoading(false);
+      setisSaveBtnDisabled(false);
     }
   };
 
@@ -174,17 +175,25 @@ function PinOrder() {
               color={pin.color}
             />
           ))}
-          <button
-            className="add-item-btn"
+          <Button
+            // className="add-item-btn"
+            variant="contained"
             onClick={handleSave}
-            style={{
-              opacity: loading ? 0.5 : 1,
-              cursor: loading ? "default" : "pointer",
+            sx={{
+              ...gradientButtonStyles,
+              paddingLeft: "20px",
+              paddingRight: "20px",
+              maxWidth: "235px",
+              opacity: isSaveBtnDisabled ? 0.5 : 1,
+              cursor: isSaveBtnDisabled ? "default" : "pointer",
+              "&:hover": {
+                backgroundImage: !isSaveBtnDisabled && "var(--gradientButtonHover)",
+              },
             }}
-            disabled={loading}
+            disabled={isSaveBtnDisabled}
           >
             Save pins order and color
-          </button>
+          </Button>
         </div>
       </div>
     </DndProvider>

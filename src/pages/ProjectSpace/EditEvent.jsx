@@ -6,7 +6,7 @@ import { AddIcon, EditIcon, DeleteIcon } from "../../components/svg/DefaultMenuI
 import { updateTask, createEvent } from "./backend/ProjectDetails";
 import { auth } from "../../firebase";
 import { CustomSwitch } from "./ProjectSettings.jsx";
-import { Box, Modal } from "@mui/material";
+import { Box, Button, Icon, Modal } from "@mui/material";
 import RepeatSelector from "./RepeatSelector.jsx";
 import { ThemeProvider } from "@mui/system";
 import { theme } from "./ProjectSettings.jsx";
@@ -26,6 +26,8 @@ import {
   isManagerContentManagerContributorProject,
   isCollaboratorProject,
 } from "./Project";
+import { iconButtonStyles } from "../Homepage/DrawerComponent.jsx";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
 
 function EditEvent() {
   const { projectId } = useParams();
@@ -43,7 +45,7 @@ function EditEvent() {
   const [allowRepeat, setAllowRepeat] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
-  const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(false);
+  const [isSaveBtnDisabled, setIsSaveBtnDisabled] = useState(false);
   const { userDoc, projects, userProjects } = useSharedProps();
   const [loadingProject, setLoadingProject] = useState(true);
   const [project, setProject] = useState({});
@@ -283,9 +285,9 @@ function EditEvent() {
   };
 
   const handleSaveWithLoading = async () => {
-    setIsSaveButtonDisabled(true);
+    setIsSaveBtnDisabled(true);
     await handleSave();
-    setIsSaveButtonDisabled(false);
+    setIsSaveBtnDisabled(false);
   };
 
   const handleCancel = () => {
@@ -369,9 +371,13 @@ function EditEvent() {
             <div className="reminders">
               <div className="reminders-header">
                 <span>Reminders</span>
-                <button className="icon-button add-button" onClick={addReminder}>
+                <IconButton
+                  // className="icon-button add-button"
+                  onClick={addReminder}
+                  sx={iconButtonStyles}
+                >
                   <AddIcon />
-                </button>
+                </IconButton>
               </div>
               {formData.reminders.map((reminder, index) => (
                 <div key={reminder.id} className="reminder-item">
@@ -381,35 +387,46 @@ function EditEvent() {
                       {reminder.minutes.toString().padStart(2, "0")} {reminder.period}
                     </span>
                     <div className="reminder-actions">
-                      <button
-                        className="icon-button"
+                      <IconButton
+                        // className="icon-button"
                         onClick={() => {
                           setSelectedReminder(reminder);
                           setOpenModal(true);
                         }}
+                        sx={iconButtonStyles}
                       >
                         <EditPen />
-                      </button>{" "}
-                      <button className="icon-button" onClick={() => deleteReminder(reminder.id)}>
+                      </IconButton>{" "}
+                      <IconButton
+                        // className="icon-button"
+                        onClick={() => deleteReminder(reminder.id)}
+                        sx={iconButtonStyles}
+                      >
                         <Trash />
-                      </button>
+                      </IconButton>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <button
-              className="edit-event-button"
+            <Button
+              // className="edit-event-button"
+              variant="contained"
               onClick={handleSaveWithLoading}
-              disabled={isSaveButtonDisabled}
-              style={{
-                opacity: isSaveButtonDisabled ? "0.5" : "1",
-                cursor: isSaveButtonDisabled ? "default" : "pointer",
+              sx={{
+                ...gradientButtonStyles,
+                maxWidth: "235px",
+                opacity: isSaveBtnDisabled ? "0.5" : "1",
+                cursor: isSaveBtnDisabled ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: !isSaveBtnDisabled && "var(--gradientButtonHover)",
+                },
               }}
+              disabled={isSaveBtnDisabled}
             >
               Save event
-            </button>
+            </Button>
           </div>
         </div>
       </div>

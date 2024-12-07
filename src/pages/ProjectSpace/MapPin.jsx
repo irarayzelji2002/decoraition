@@ -2,13 +2,14 @@ import "../../css/planMap.css";
 import EditPen from "../DesignSpace/svg/EditPen";
 import ExportIcon, { Draggable } from "./svg/ExportIcon";
 import Trash from "../DesignSpace/svg/Trash";
-import { IconButton, Modal, Button } from "@mui/material";
-import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
+import { IconButton, Modal, Button, Icon } from "@mui/material";
+import { DeleteIcon, EditIconSmallGradient } from "../../components/svg/DefaultMenuIcons";
 import { useState, useEffect } from "react";
 import { ChromePicker } from "react-color";
 import SimpleDeleteConfirmation from "../../components/SimpleDeleteConfirmation";
 import { useNavigate } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
 
 const MapPin = ({
   title = "Untitled",
@@ -196,44 +197,53 @@ const MapPin = ({
           )} */}
           <span className="pinName">{title}</span>
         </div>
-        <div style={{ display: "flex", width: "100%", justifyContent: "flex-end" }}>
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            justifyContent: "flex-end",
+            gap: "10px",
+            alignItems: "center",
+            marginRight: "0px",
+          }}
+          className="itemActions"
+        >
           {!editMode ? (
             <>
-              <div
+              <IconButton
                 aria-label="delete"
-                style={{ cursor: "pointer", marginRight: "6px" }}
+                // style={{ cursor: "pointer", marginRight: "6px" }}
+                sx={{
+                  ...iconButtonStyles,
+                  width: "40px",
+                  height: "40px",
+                  padding: "6px",
+                  marginTop: "-5px",
+                }}
                 onClick={handleExportClick}
               >
                 <ExportIcon />
-              </div>
+              </IconButton>
               {isContributor && (
                 <>
-                  <div
+                  <IconButton
                     aria-label="edit"
                     onClick={editPin}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
+                    sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
                   >
-                    <EditPen />
-                  </div>
+                    <EditIconSmallGradient />
+                  </IconButton>
                 </>
               )}
 
               {isManager && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                <IconButton
+                  sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
                   aria-label="delete"
                   onClick={() => setDeleteConfirmOpen(true)}
                 >
                   <Trash />
-                </div>
+                </IconButton>
               )}
             </>
           ) : (

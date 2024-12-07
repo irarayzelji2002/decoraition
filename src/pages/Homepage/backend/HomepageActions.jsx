@@ -127,15 +127,15 @@ export const handleDeleteDesign = async (user, userDoc, designId) => {
         },
       }
     );
-
+    console.log("Trash - Design delete response:", response);
     if (response.status === 200) {
-      return { success: true, message: "Design deleted successfully" };
+      return { success: true, message: "Trash - Design deleted successfully" };
     } else {
-      return { success: false, message: "Failed to delete design" };
+      return { success: false, message: "Trash - Failed to delete design" };
     }
   } catch (error) {
     console.error("Error deleting design:", error.message);
-    return { success: false, message: "Failed to delete design" };
+    return { success: false, message: "Trash - Failed to delete design" };
   }
 };
 
@@ -199,15 +199,15 @@ export const handleDeleteProject = async (user, userDoc, projectId) => {
         },
       }
     );
-
+    console.log("Trash - Project delete response:", response);
     if (response.status === 200) {
-      return { success: false, message: "Project deleted successfully" };
+      return { success: false, message: "Trash - Project deleted successfully" };
     } else {
-      return { success: false, message: "Failed to delete project" };
+      return { success: false, message: "Trash - Failed to delete project" };
     }
   } catch (error) {
     console.error("Error deleting project:", error.message);
-    return { success: false, message: "Failed to delete project" };
+    return { success: false, message: "Trash - Failed to delete project" };
   }
 };
 

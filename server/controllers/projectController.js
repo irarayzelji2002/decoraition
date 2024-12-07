@@ -398,7 +398,7 @@ exports.fetchUserProjects = async (req, res) => {
     const { userId } = req.params;
     const projectsSnapshot = await db
       .collection("projects")
-      .where("managers", "array-contains", userId)
+      .where("managers", "in", userId)
       .orderBy("createdAt", "desc")
       .get();
 
@@ -1636,6 +1636,7 @@ exports.deleteProject = async (req, res) => {
         previousValue: previousProjects,
         newValue: updatedProjects,
       });
+      console.log(`Successfully updated document: ${userRef.path}, field: projects`);
     }
 
     // Update designs that reference this project
@@ -1651,6 +1652,7 @@ exports.deleteProject = async (req, res) => {
         previousValue: previousData.projectId,
         newValue: null,
       });
+      console.log(`Successfully updated document: ${userRef.path}, field: projectId`);
     }
 
     // 2. Delete project first (to trigger listeners)
@@ -1659,6 +1661,7 @@ exports.deleteProject = async (req, res) => {
       ref: projectRef,
       data: projectData,
     });
+    console.log(`Successfully deleted document: ${projectRef.path}`);
 
     // 3. Delete associated documents in correct order
     // Delete projectBudget
@@ -1672,6 +1675,7 @@ exports.deleteProject = async (req, res) => {
           ref: projectBudgetRef,
           data: projectBudgetData,
         });
+        console.log(`Successfully deleted document: ${projectBudgetRef.path}`);
       }
     }
 
@@ -1688,6 +1692,7 @@ exports.deleteProject = async (req, res) => {
           ref: planMapRef,
           data: planMapData,
         });
+        console.log(`Successfully deleted document: ${planMapRef.path}`);
 
         // Then delete associated pins
         const pinsToDelete = planMapData.pins || [];
@@ -1701,6 +1706,7 @@ exports.deleteProject = async (req, res) => {
               ref: pinRef,
               data: pinData,
             });
+            console.log(`Successfully deleted document: ${pinRef.path}`);
           }
         }
       }
@@ -1719,6 +1725,7 @@ exports.deleteProject = async (req, res) => {
           ref: timelineRef,
           data: timelineData,
         });
+        console.log(`Successfully deleted document: ${timelineRef.path}`);
 
         // Then delete associated events
         const eventsToDelete = timelineData.events || [];
@@ -1732,6 +1739,7 @@ exports.deleteProject = async (req, res) => {
               ref: eventRef,
               data: eventData,
             });
+            console.log(`Successfully deleted document: ${eventRef.path}`);
           }
         }
       }

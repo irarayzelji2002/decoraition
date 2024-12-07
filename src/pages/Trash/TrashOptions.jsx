@@ -110,19 +110,27 @@ function TrashOptions({
 
   const handleDelete = async () => {
     if (isDesign) {
+      console.log("Trash - Starting design deletion...");
       const result = await handleDeleteDesign(user, userDoc, id);
+      console.log("Trash - Delete result:", result);
       if (!result.success) {
+        console.log("Trash - Delete failed, showing error toast");
         showToast("error", "Failed to delete design");
         return;
       }
+      console.log("Trash - Delete succeeded, showing success toast");
       showToast("success", "Design deleted");
       closeDeleteModal();
     } else {
+      console.log("Trash - Starting project deletion...");
       const result = await handleDeleteProject(user, userDoc, id);
+      console.log("Trash - Delete result:", result);
       if (!result.success) {
+        console.log("Trash - Delete failed, showing error toast");
         showToast("error", "Failed to delete project");
         return;
       }
+      console.log("Trash - Delete succeeded, showing success toast");
       showToast("success", "Project deleted");
       closeDeleteModal();
     }

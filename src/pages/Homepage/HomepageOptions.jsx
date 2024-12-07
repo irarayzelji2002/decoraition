@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import "../../css/homepage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { showToast } from "../../functions/utils";
-import { handleDeleteDesign, handleDeleteProject } from "./backend/HomepageActions";
+import { handleMoveDesignToTrash, handleMoveProjectToTrash } from "./backend/HomepageActions";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import {
   handleNameChange as handleNameChangeDesign,
@@ -505,10 +505,28 @@ function HomepageOptions({
     toggleOptions(id);
   };
 
-  const handleDelete = (userId, id, navigate) => {
-    if (isDesign) handleDeleteDesign(userId, id, navigate);
-    else handleDeleteProject(userId, id, navigate);
-    closeDeleteModal();
+  const handleDelete = async () => {
+    if (isDesign) {
+      const result = await handleMoveDesignToTrash(user, userDoc, id);
+      if (!result.success) {
+        showToast("error", "Failed to move design to trash");
+      }
+      showToast("success", "Design moved to trash");
+      navigate("/trash", {
+        state: { navigateFrom: navigateFrom, tab: "Designs", designId: id },
+      });
+      closeDeleteModal();
+    } else {
+      const result = await handleMoveProjectToTrash(user, userDoc, id);
+      if (!result.success) {
+        showToast("error", "Failed to move project to trash");
+      }
+      showToast("success", "Project moved to trash");
+      navigate("/trash", {
+        state: { navigateFrom: navigateFrom, tab: "Projects", projectId: id },
+      });
+      closeDeleteModal();
+    }
   };
 
   // Info Functions
@@ -526,7 +544,6 @@ function HomepageOptions({
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      console.log("is it a table" + isTable);
     };
   }, []);
 
@@ -695,7 +712,7 @@ function HomepageOptions({
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={closeDeleteModal}
-        handleDelete={() => handleDelete(userDoc.id, id, navigate)}
+        handleDelete={handleDelete}
         isDesign={isDesign}
         object={object}
       />

@@ -39,7 +39,6 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
       }
       const result = await handleDelete();
       if (!result.success) {
-        setError(result.message);
         return;
       }
       handleClose();

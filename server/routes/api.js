@@ -83,7 +83,6 @@ router.put("/user/update-failed-attempt/:email", userController.updateFailedAtte
 // Design routes
 router.get("/design/:userId", authenticateUser, designController.fetchUserDesigns);
 router.post("/design/create", authenticateUser, designController.createDesign);
-router.post("/design/delete/:designId", authenticateUser, designController.deleteDesign);
 router.put("/design/:designId/update-name", authenticateUser, designController.updateDesignName);
 router.put(
   "/design/:designId/update-settings",
@@ -165,6 +164,13 @@ router.put(
   authenticateUser,
   designController.updateDesignProjectId
 );
+router.post("/design/:designId/delete", authenticateUser, designController.deleteDesign);
+router.post("/design/:designId/trash", authenticateUser, designController.moveDesignToTrash);
+router.post(
+  "/design/:designId/restoreFromTrash",
+  authenticateUser,
+  designController.restoreDesignFromTrash
+);
 
 // Comment routes
 router.post(
@@ -202,12 +208,10 @@ router.post(
   authenticateUser,
   commentController.deleteReply
 );
-router.post("/design/:designId/trash", authenticateUser, designController.moveDesignToTrash);
 
 // Project routes
 // router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);
 router.post("/project/create", authenticateUser, projectController.createProject);
-router.post("/project/delete/:projectId", authenticateUser, projectController.deleteProject);
 router.put(
   "/project/:projectId/update-name",
   authenticateUser,
@@ -256,7 +260,13 @@ router.put(
   authenticateUser,
   projectBudgetController.updateProjectBudget
 );
+router.post("/project/:projectId/delete", authenticateUser, projectController.deleteProject);
 router.post("/project/:projectId/trash", authenticateUser, projectController.moveProjectToTrash);
+router.post(
+  "/project/:projectId/restoreFromTrash",
+  authenticateUser,
+  projectController.restoreProjectFromTrash
+);
 
 // Network check
 router.get("/health-check", (req, res) => {

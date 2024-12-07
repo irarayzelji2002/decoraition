@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import SearchAppBar from "../Homepage/SearchAppBar.jsx";
 import "../../css/homepage.css";
@@ -35,6 +35,11 @@ export default function Trash() {
     userDeletedProjects,
     isDarkMode,
   } = useSharedProps();
+  const location = useLocation();
+  const navigateTo =
+    location.state?.navigateFrom ||
+    (location.state?.tab ? `/seeAll${location.state.tab}` : "/homepage");
+  const navigateFrom = location.pathname;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredDesigns, setFilteredDesigns] = useState([]);
@@ -57,6 +62,16 @@ export default function Trash() {
   const [order, setOrder] = useState("none");
 
   const [selectedTab, setSelectedTab] = useState("Designs");
+  const [optionsState, setOptionsState] = useState({
+    showOptions: false,
+    selectedId: null,
+  });
+
+  useEffect(() => {
+    if (location?.state) {
+      setSelectedTab(location.state?.tab || "Designs");
+    }
+  }, [location?.state]);
 
   const loadDesignDataForView = async () => {
     if (userDeletedDesigns.length > 0) {
@@ -497,6 +512,8 @@ export default function Trash() {
                               owner={design.owner}
                               deletedAt={formatDateLong(design?.deletedAt)}
                               isTrash={true}
+                              optionsState={optionsState}
+                              setOptionsState={setOptionsState}
                             />
                           </div>
                         ))}
@@ -509,6 +526,8 @@ export default function Trash() {
                           isHomepage={false}
                           page={page}
                           isTrash={true}
+                          optionsState={optionsState}
+                          setOptionsState={setOptionsState}
                         />
                       </div>
                     )
@@ -545,6 +564,8 @@ export default function Trash() {
                             })()}
                             deletedAt={formatDateLong(project?.deletedAt)}
                             isTrash={true}
+                            optionsState={optionsState}
+                            setOptionsState={setOptionsState}
                           />
                         </div>
                       ))}
@@ -557,6 +578,8 @@ export default function Trash() {
                         isHomepage={false}
                         page={page}
                         isTrash={true}
+                        optionsState={optionsState}
+                        setOptionsState={setOptionsState}
                       />
                     </div>
                   )

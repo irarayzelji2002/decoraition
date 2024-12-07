@@ -1757,8 +1757,9 @@ exports.updateDesignVersionCombinedMask = async (req, res) => {
 
 // Move design to trash
 exports.moveDesignToTrash = async (req, res) => {
-  const updatedDocuments = [];
-  const createdDocuments = [];
+  const batch = db.batch();
+  const previousStates = [];
+
   try {
     const { designId } = req.params;
     const { userId } = req.body;
@@ -1766,48 +1767,71 @@ exports.moveDesignToTrash = async (req, res) => {
     // Get design document
     const designRef = db.collection("designs").doc(designId);
     const designDoc = await designRef.get();
-    // Check user role in design
     if (!designDoc.exists) {
       return res.status(404).json({ error: "Design not found" });
     }
+
+    // Check user role in design
     const allowAction = isOwnerEditorDesign(designDoc, userId);
     if (!allowAction) {
       return res.status(403).json({ error: "User does not have permission to delete design" });
     }
 
-    // Create document in deletedDesigns collection
     const designData = designDoc.data();
+    // Store original state
+    previousStates.push({
+      ref: designRef,
+      data: designData,
+      type: "design",
+    });
+
+    // Create document in deletedDesigns with same ID
+    const deletedDesignRef = db.collection("deletedDesigns").doc(designId);
     const deletedDesignData = {
       ...designData,
       deletedAt: new Date(),
-      originalId: designId,
     };
-    const deletedDesignRef = await db.collection("deletedDesigns").add(deletedDesignData);
-    createdDocuments.push({ collection: "deletedDesigns", id: deletedDesignRef.id });
+    batch.set(deletedDesignRef, deletedDesignData);
 
-    // Update user's deletedDesigns array
-    const userRef = db.collection("users").doc(userId);
-    const userDoc = await userRef.get();
-    const userData = userDoc.data();
-    // Add to deletedDesigns array
-    const updatedDeletedDesigns = userData.deletedDesigns || [];
-    updatedDeletedDesigns.push(deletedDesignRef.id);
-    // Remove from designs array
-    const updatedDesigns = (userData.designs || []).filter(
-      (design) => design.designId !== designId
-    );
-    updatedDocuments.push({
-      ref: userRef,
-      data: { deletedDesigns: userData.deletedDesigns, designs: userData.designs },
-      collection: "users",
-      id: userRef.id,
-    });
-    await userRef.update({
-      deletedDesigns: updatedDeletedDesigns,
-      designs: updatedDesigns,
-    });
+    // Get all collaborators (owner, editors, commenters, viewers)
+    const collaborators = new Set([
+      designData.owner,
+      ...(designData.editors || []),
+      ...(designData.commenters || []),
+      ...(designData.viewers || []),
+    ]);
+
+    // Update each collaborator's document
+    for (const collaboratorId of collaborators) {
+      const userRef = db.collection("users").doc(collaboratorId);
+      const userDoc = await userRef.get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        previousStates.push({
+          ref: userRef,
+          data: userData,
+          type: "user",
+        });
+
+        // Update user's arrays
+        const updatedDesigns = (userData.designs || []).filter(
+          (design) => design.designId !== designId
+        );
+        const updatedDeletedDesigns = [...(userData.deletedDesigns || []), designId];
+
+        batch.update(userRef, {
+          designs: updatedDesigns,
+          deletedDesigns: updatedDeletedDesigns,
+        });
+      }
+    }
+
     // Delete original design
-    await designRef.delete();
+    batch.delete(designRef);
+
+    // Commit all changes
+    await batch.commit();
 
     res.status(200).json({
       success: true,
@@ -1816,33 +1840,137 @@ exports.moveDesignToTrash = async (req, res) => {
   } catch (error) {
     console.error("Error moving design to trash:", error);
 
-    // Rollback updated documents
-    for (const doc of updatedDocuments) {
-      try {
-        await doc.ref.update(doc.data);
-        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
-      } catch (rollbackError) {
-        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+    // Rollback using previous states
+    try {
+      const rollbackBatch = db.batch();
+      for (const state of previousStates) {
+        if (state.type === "design") {
+          rollbackBatch.set(state.ref, state.data);
+        } else if (state.type === "user") {
+          rollbackBatch.update(state.ref, state.data);
+        }
       }
-    }
-
-    // Rollback: delete all created documents
-    for (const doc of createdDocuments) {
-      try {
-        await db.collection(doc.collection).doc(doc.id).delete();
-        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
-      } catch (deleteError) {
-        console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
-      }
+      await rollbackBatch.commit();
+      console.log("Rollback completed successfully");
+    } catch (rollbackError) {
+      console.error("Rollback failed:", rollbackError.meessage);
     }
 
     res.status(500).json({ error: "Failed to move design to trash" });
   }
 };
 
-// Similar function for projects in projectController.js
-exports.moveProjectToTrash = async (req, res) => {
-  // Similar implementation as moveDesignToTrash
+// Restore design from trash
+exports.restoreDesignFromTrash = async (req, res) => {
+  const batch = db.batch();
+  const previousStates = [];
+
+  try {
+    const { designId } = req.params;
+    const { userId } = req.body;
+
+    // Get deleted design document
+    const deletedDesignRef = db.collection("deletedDesigns").doc(designId);
+    const deletedDesignDoc = await deletedDesignRef.get();
+    if (!deletedDesignDoc.exists) {
+      return res.status(404).json({ error: "Deleted design not found" });
+    }
+
+    // Check user role in design
+    const allowAction = isOwnerEditorDesign(deletedDesignDoc, userId);
+    if (!allowAction) {
+      return res.status(403).json({ error: "User does not have permission to restore design" });
+    }
+
+    const designData = deletedDesignDoc.data();
+    // Store original state
+    previousStates.push({
+      ref: deletedDesignRef,
+      data: designData,
+      type: "deletedDesign",
+    });
+
+    // Create document in designs collection with same ID
+    const designRef = db.collection("designs").doc(designId);
+    const restoredDesignData = {
+      ...designData,
+      deletedAt: null,
+      modifiedAt: new Date(),
+    };
+    batch.set(designRef, restoredDesignData);
+
+    // Get all collaborators (owner, editors, commenters, viewers)
+    const collaborators = new Set([
+      designData.owner,
+      ...(designData.editors || []),
+      ...(designData.commenters || []),
+      ...(designData.viewers || []),
+    ]);
+
+    // Update each collaborator's document
+    for (const collaboratorId of collaborators) {
+      const userRef = db.collection("users").doc(collaboratorId);
+      const userDoc = await userRef.get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        previousStates.push({
+          ref: userRef,
+          data: userData,
+          type: "user",
+        });
+
+        // Update user's arrays
+        const updatedDeletedDesigns = (userData.deletedDesigns || []).filter(
+          (id) => id !== designId
+        );
+
+        // Determine user's role in the design
+        let role = 0; // default viewer
+        if (collaboratorId === designData.owner) role = 3; // owner
+        else if (designData.editors?.includes(collaboratorId)) role = 1; // editor
+        else if (designData.commenters?.includes(collaboratorId)) role = 2; // commenter
+
+        const updatedDesigns = [...(userData.designs || []), { designId, role }];
+
+        batch.update(userRef, {
+          designs: updatedDesigns,
+          deletedDesigns: updatedDeletedDesigns,
+        });
+      }
+    }
+
+    // Delete from deletedDesigns
+    batch.delete(deletedDesignRef);
+
+    // Commit all changes
+    await batch.commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Design restored from trash",
+    });
+  } catch (error) {
+    console.error("Error restoring design form trash:", error);
+
+    // Rollback using previous states
+    try {
+      const rollbackBatch = db.batch();
+      for (const state of previousStates) {
+        if (state.type === "deletedDesign") {
+          rollbackBatch.set(state.ref, state.data);
+        } else if (state.type === "user") {
+          rollbackBatch.update(state.ref, state.data);
+        }
+      }
+      await rollbackBatch.commit();
+      console.log("Rollback completed successfully");
+    } catch (rollbackError) {
+      console.error("Rollback failed:", rollbackError);
+    }
+
+    res.status(500).json({ error: "Failed to restore design from trash" });
+  }
 };
 
 // Delete Design (TO DO: UPDATE BUDGET REFERENCE)

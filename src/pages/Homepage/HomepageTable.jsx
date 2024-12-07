@@ -22,6 +22,7 @@ import "../../css/homepage.css";
 import { TablePagination } from "@mui/material";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { CloseRounded as CloseRoundedIcon } from "@mui/icons-material";
+import TrashOptions from "../Trash/TrashOptions";
 
 function EnhancedTableHead(props) {
   const {
@@ -558,35 +559,36 @@ function EnhancedTable({
                         </IconButton>
                       </TableCell>
                     )}
-                    {!isTrash && (
-                      <TableCell
-                        sx={{
-                          paddingTop: "5px",
-                          paddingBottom: "5px",
-                          width: "34px",
-                          borderBottom: "1px solid var(--table-stroke)",
-                          color: "var(--color-white)",
-                          backgroundColor: "var(--table-rows)",
-                          "&:hover": {
-                            color: "var(--color-white)",
-                            backgroundColor: "var(--table-rows-hover)",
-                          },
-                        }}
-                      >
-                        <IconButton
-                          aria-label="expand row"
-                          size="small"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleOptionsClick(row.id, event);
-                          }}
-                          sx={{ color: "var(--color-white)" }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
 
-                        {optionsState.showOptions && optionsState.selectedId === row.id && (
-                          <div style={{ position: "relative" }}>
+                    <TableCell
+                      sx={{
+                        paddingTop: "5px",
+                        paddingBottom: "5px",
+                        width: "34px",
+                        borderBottom: "1px solid var(--table-stroke)",
+                        color: "var(--color-white)",
+                        backgroundColor: "var(--table-rows)",
+                        "&:hover": {
+                          color: "var(--color-white)",
+                          backgroundColor: "var(--table-rows-hover)",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleOptionsClick(row.id, event);
+                        }}
+                        sx={{ color: "var(--color-white)" }}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+
+                      {optionsState.showOptions && optionsState.selectedId === row.id && (
+                        <div style={{ position: "relative" }}>
+                          {!isTrash ? (
                             <HomepageOptions
                               isDesign={isDesign}
                               isTable={true}
@@ -599,10 +601,19 @@ function EnhancedTable({
                               setOptionsState={setOptionsState}
                               object={row}
                             />
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
+                          ) : (
+                            <TrashOptions
+                              isDesign={isDesign}
+                              id={row.id}
+                              object={row}
+                              isTable={true}
+                              optionsState={optionsState}
+                              setOptionsState={setOptionsState}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </TableCell>
                   </TableRow>
                 );
               })}

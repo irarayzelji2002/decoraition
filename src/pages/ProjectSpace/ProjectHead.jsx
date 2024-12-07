@@ -26,9 +26,10 @@ import {
   handleAccessChange as handleAccessChangeProject,
   useHandleNameChange,
   useProjectDetails,
+  handleDeleteDesign,
 } from "./backend/ProjectDetails";
 import { showToast } from "../../functions/utils.js";
-import { handleDeleteProject } from "../Homepage/backend/HomepageActions.jsx";
+import { handleMoveProjectToTrash } from "../Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { handleNameChange } from "./backend/ProjectDetails";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
@@ -382,6 +383,19 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
     } else {
       return { success: false, message: "Failed to update project name" };
     }
+  };
+
+  // Delete Modal Action
+  const handleDelete = async () => {
+    const result = await handleMoveProjectToTrash(user, userDoc, project.id);
+    if (!result.success) {
+      showToast("error", "Failed to move project to trash");
+    }
+    showToast("success", "Project moved to trash");
+    navigate("/trash", {
+      state: { navigateFrom: navigateFrom, tab: "Projects", projectId: project.id },
+    });
+    handleCloseDeleteModal();
   };
 
   // Copy Link Action
@@ -819,7 +833,7 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        handleDelete={() => handleDeleteProject(userDoc.id, project.id, navigate)}
+        handleDelete={handleDelete}
         isDesign={false}
         object={project}
       />

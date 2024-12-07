@@ -28,7 +28,7 @@ import {
   handleAddCollaborators,
   handleAccessChange as handleAccessChangeDesign,
 } from "../pages/DesignSpace/backend/DesignActions.jsx";
-import { handleDeleteDesign } from "../pages/Homepage/backend/HomepageActions.jsx";
+import { handleMoveDesignToTrash } from "../pages/Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../contexts/SharedPropsContext.js";
 import { toggleComments } from "../pages/DesignSpace/backend/DesignActions.jsx";
 import { useNetworkStatus } from "../hooks/useNetworkStatus.js";
@@ -489,6 +489,19 @@ function DesignHead({
       console.error("Error updating design name:", error);
       return { success: false, message: "Failed to update design name" };
     }
+  };
+
+  // Delete Modal Action
+  const handleDelete = async () => {
+    const result = await handleMoveDesignToTrash(user, userDoc, design.id);
+    if (!result.success) {
+      showToast("error", "Failed to move design to trash");
+    }
+    showToast("success", "Design moved to trash");
+    navigate("/trash", {
+      state: { navigateFrom: navigateFrom, tab: "Designs", designId: design.id },
+    });
+    handleCloseDeleteModal();
   };
 
   // Copy Link Action
@@ -991,7 +1004,7 @@ function DesignHead({
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        handleDelete={() => handleDeleteDesign(userDoc.id, design.id, navigate)}
+        handleDelete={handleDelete}
         isDesign={true}
         object={design}
       />

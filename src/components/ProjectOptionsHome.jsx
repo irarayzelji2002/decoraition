@@ -4,6 +4,7 @@ import HomepageOptions from "../pages/Homepage/HomepageOptions";
 import IconButton from "@mui/material/IconButton";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useSharedProps } from "../contexts/SharedPropsContext";
+import TrashOptions from "../pages/Trash/TrashOptions";
 
 function ProjectOptionsHome({
   id,
@@ -141,7 +142,7 @@ function ProjectOptionsHome({
 
   return (
     <div className="iconFrame">
-      {!isTrash && (
+      {!isTrash ? (
         <HomepageOptions
           isDesign={false}
           id={id}
@@ -152,6 +153,18 @@ function ProjectOptionsHome({
           setClickedId={setClickedId}
           toggleOptions={toggleOptions}
           object={project}
+        />
+      ) : (
+        <TrashOptions
+          isDesign={false}
+          id={id}
+          object={project}
+          isTable={false}
+          optionsState={optionsState}
+          setOptionsState={setOptionsState}
+          clickedId={clickedId}
+          setClickedId={setClickedId}
+          toggleOptions={toggleOptions}
         />
       )}
       {/* Project image */}

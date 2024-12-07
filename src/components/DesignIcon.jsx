@@ -5,6 +5,7 @@ import { useSharedProps } from "../contexts/SharedPropsContext";
 import { IconButton } from "@mui/material";
 import { CloseRounded as CloseRoundedIcon } from "@mui/icons-material";
 import { iconButtonStyles } from "../pages/Homepage/DrawerComponent";
+import TrashOptions from "../pages/Trash/TrashOptions";
 
 function DesignIcon({
   id,
@@ -115,7 +116,7 @@ function DesignIcon({
 
   return (
     <div className={projectType ? "iconFrameAlt" : "iconFrame"}>
-      {!isTrash && (
+      {!isTrash ? (
         <>
           <HomepageOptions
             isDesign={true}
@@ -158,6 +159,18 @@ function DesignIcon({
             </div>
           )}
         </>
+      ) : (
+        <TrashOptions
+          isDesign={true}
+          id={id}
+          object={design}
+          isTable={false}
+          optionsState={optionsState}
+          setOptionsState={setOptionsState}
+          clickedId={clickedId}
+          setClickedId={setClickedId}
+          toggleOptions={toggleOptions}
+        />
       )}
       {/* Design image */}
       <div className="homepage-thumbnail" onClick={onOpen}>

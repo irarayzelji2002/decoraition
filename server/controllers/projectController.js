@@ -1383,8 +1383,9 @@ exports.removeDesignFromProject = async (req, res) => {
 
 // Move project to trash
 exports.moveProjectToTrash = async (req, res) => {
-  const updatedDocuments = [];
-  const createdDocuments = [];
+  const batch = db.batch();
+  const previousStates = [];
+
   try {
     const { projectId } = req.params;
     const { userId } = req.body;
@@ -1395,45 +1396,68 @@ exports.moveProjectToTrash = async (req, res) => {
     if (!projectDoc.exists) {
       return res.status(404).json({ error: "Project not found" });
     }
+
     // Check user role in project
     const allowAction = isManagerProject(projectDoc, userId);
     if (!allowAction) {
       return res.status(403).json({ error: "User does not have permission to delete project" });
     }
 
-    // Create document in deletedProjects collection
     const projectData = projectDoc.data();
+    // Store original state
+    previousStates.push({
+      ref: projectRef,
+      data: projectData,
+      type: "project",
+    });
+
+    // Create document in deletedProjects with same ID
+    const deletedProjectRef = db.collection("deletedProjects").doc(projectId);
     const deletedProjectData = {
       ...projectData,
       deletedAt: new Date(),
-      originalId: projectId,
     };
-    const deletedProjectRef = await db.collection("deletedProjects").add(deletedProjectData);
-    createdDocuments.push({ collection: "deletedProjects", id: deletedProjectRef.id });
+    batch.set(deletedProjectRef, deletedProjectData);
 
-    // Update user's deletedProjects and projects arrays
-    const userRef = db.collection("users").doc(userId);
-    const userDoc = await userRef.get();
-    const userData = userDoc.data();
-    // Add to deletedProjects array
-    const updatedDeletedProjects = userData.deletedProjects || [];
-    updatedDeletedProjects.push(deletedProjectRef.id);
-    // Remove from projects array
-    const updatedProjects = (userData.projects || []).filter(
-      (project) => project.projectId !== projectId
-    );
-    updatedDocuments.push({
-      ref: userRef,
-      data: { deletedProjects: userData.deletedProjects, projects: userData.projects },
-      collection: "users",
-      id: userRef.id,
-    });
-    await userRef.update({
-      deletedProjects: updatedDeletedProjects,
-      projects: updatedProjects,
-    });
+    // Get all collaborators
+    const collaborators = new Set([
+      ...(projectData.managers || []),
+      ...(projectData.contentManagers || []),
+      ...(projectData.contributors || []),
+      ...(projectData.viewers || []),
+    ]);
+
+    // Update each collaborator's document
+    for (const collaboratorId of collaborators) {
+      const userRef = db.collection("users").doc(collaboratorId);
+      const userDoc = await userRef.get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        previousStates.push({
+          ref: userRef,
+          data: userData,
+          type: "user",
+        });
+
+        // Update user's arrays
+        const updatedProjects = (userData.projects || []).filter(
+          (project) => project.projectId !== projectId
+        );
+        const updatedDeletedProjects = [...(userData.deletedProjects || []), projectId];
+
+        batch.update(userRef, {
+          projects: updatedProjects,
+          deletedProjects: updatedDeletedProjects,
+        });
+      }
+    }
+
     // Delete original project
-    await projectRef.delete();
+    batch.delete(projectRef);
+
+    // Commit all changes
+    await batch.commit();
 
     res.status(200).json({
       success: true,
@@ -1442,27 +1466,136 @@ exports.moveProjectToTrash = async (req, res) => {
   } catch (error) {
     console.error("Error moving project to trash:", error);
 
-    // Rollback updated documents
-    for (const doc of updatedDocuments) {
-      try {
-        await doc.ref.update(doc.data);
-        console.log(`Rolled back ${doc.data} in ${doc.collection} document ${doc.id}`);
-      } catch (rollbackError) {
-        console.error(`Error rolling back ${doc.collection} document ${doc.id}:`, rollbackError);
+    // Rollback using previous states
+    try {
+      const rollbackBatch = db.batch();
+      for (const state of previousStates) {
+        if (state.type === "project") {
+          rollbackBatch.set(state.ref, state.data);
+        } else if (state.type === "user") {
+          rollbackBatch.update(state.ref, state.data);
+        }
       }
-    }
-
-    // Rollback: delete all created documents
-    for (const doc of createdDocuments) {
-      try {
-        await db.collection(doc.collection).doc(doc.id).delete();
-        console.log(`Deleted ${doc.id} document from ${doc.collection} collection`);
-      } catch (deleteError) {
-        console.error(`Error deleting ${doc.collection} document ${doc.id}:`, deleteError);
-      }
+      await rollbackBatch.commit();
+      console.log("Rollback completed successfully");
+    } catch (rollbackError) {
+      console.error("Rollback failed:", rollbackError.meessage);
     }
 
     res.status(500).json({ error: "Failed to move project to trash" });
+  }
+};
+
+// Restore project from trash
+exports.restoreProjectFromTrash = async (req, res) => {
+  const batch = db.batch();
+  const previousStates = [];
+
+  try {
+    const { projectId } = req.params;
+    const { userId } = req.body;
+
+    // Get deleted project document
+    const deletedProjectRef = db.collection("deletedProjects").doc(projectId);
+    const deletedProjectDoc = await deletedProjectRef.get();
+    if (!deletedProjectDoc.exists) {
+      return res.status(404).json({ error: "Deleted project not found" });
+    }
+
+    // Check user role in project
+    const allowAction = isManagerProject(deletedProjectDoc, userId);
+    if (!allowAction) {
+      return res.status(403).json({ error: "User does not have permission to restore project" });
+    }
+
+    const projectData = deletedProjectDoc.data();
+    // Store original state
+    previousStates.push({
+      ref: deletedProjectRef,
+      data: projectData,
+      type: "deletedProject",
+    });
+
+    // Create document in projects collection with same ID
+    const projectRef = db.collection("projects").doc(projectId);
+    const restoredProjectData = {
+      ...projectData,
+      deletedAt: null,
+      modifiedAt: new Date(),
+    };
+    batch.set(projectRef, restoredProjectData);
+
+    // Get all collaborators
+    const collaborators = new Set([
+      ...(projectData.managers || []),
+      ...(projectData.contentManagers || []),
+      ...(projectData.contributors || []),
+      ...(projectData.viewers || []),
+    ]);
+
+    // Update each collaborator's document
+    for (const collaboratorId of collaborators) {
+      const userRef = db.collection("users").doc(collaboratorId);
+      const userDoc = await userRef.get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        previousStates.push({
+          ref: userRef,
+          data: userData,
+          type: "user",
+        });
+
+        // Update user's arrays
+        const updatedDeletedProjects = (userData.deletedProjects || []).filter(
+          (id) => id !== projectId
+        );
+
+        // Determine user's role in the project
+        let role = 0; // default viewer
+        if (projectData.managers?.includes(collaboratorId)) role = 3; // manager
+        else if (projectData.contentManagers?.includes(collaboratorId)) role = 2; // content manager
+        else if (projectData.contributors?.includes(collaboratorId)) role = 1; // contributor
+
+        const updatedProjects = [...(userData.projects || []), { projectId, role }];
+
+        batch.update(userRef, {
+          projects: updatedProjects,
+          deletedProjects: updatedDeletedProjects,
+        });
+      }
+    }
+
+    // Delete from deletedProjects
+    batch.delete(deletedProjectRef);
+
+    // Commit all changes
+    await batch.commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Project restored from trash",
+    });
+  } catch (error) {
+    console.error("Error restoring project c:", error);
+
+    // Rollback using previous states
+    try {
+      const rollbackBatch = db.batch();
+      for (const state of previousStates) {
+        if (state.type === "deletedProject") {
+          rollbackBatch.set(state.ref, state.data);
+        } else if (state.type === "user") {
+          rollbackBatch.update(state.ref, state.data);
+        }
+      }
+      await rollbackBatch.commit();
+      console.log("Rollback completed successfully");
+    } catch (rollbackError) {
+      console.error("Rollback failed:", rollbackError);
+    }
+
+    res.status(500).json({ error: "Failed to restore project from trash" });
   }
 };
 

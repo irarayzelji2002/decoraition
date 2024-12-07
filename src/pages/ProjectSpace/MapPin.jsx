@@ -176,83 +176,76 @@ const MapPin = ({
           </div>
         </Modal>
       )}
-      <div className="mapPin" style={{ width: "100%" }}>
-        <div
-          className="ifMobile"
-          style={{
-            width: "50%",
-            maxWidth: "250px",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+      <div className="mapPin">
+        <div className="mapPinDetails">
           <img
-            src={getDesignImage(designId) || "/img/design-placeholder.png"}
+            src={getDesignImage(designId) || "/img/transparent-image.png"}
             className="image-pin"
-            alt={`design preview`}
+            alt=""
           />
           {/* {getDesignImage(designId) && (
             <img src={getDesignImage(designId)} className="image-pin" alt={`design preview`} />
           )} */}
-          <span className="pinName">{title}</span>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            width: "100%",
-            justifyContent: "flex-end",
-            gap: "10px",
-            alignItems: "center",
-            marginRight: "0px",
-          }}
-          className="itemActions"
-        >
-          {!editMode ? (
-            <>
-              <IconButton
-                aria-label="delete"
-                // style={{ cursor: "pointer", marginRight: "6px" }}
-                sx={{
-                  ...iconButtonStyles,
-                  width: "40px",
-                  height: "40px",
-                  padding: "6px",
-                  marginTop: "-5px",
-                }}
-                onClick={handleExportClick}
-              >
-                <ExportIcon />
-              </IconButton>
-              {isContributor && (
+          <div className="itemDetailsCont">
+            <div className="itemDetailsContText">
+              <span className="pinName">{title}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+                alignItems: "center",
+              }}
+              className="itemActions"
+            >
+              {!editMode ? (
                 <>
                   <IconButton
-                    aria-label="edit"
-                    onClick={editPin}
-                    sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+                    aria-label="delete"
+                    // style={{ cursor: "pointer", marginRight: "6px" }}
+                    sx={{
+                      ...iconButtonStyles,
+                      width: "40px",
+                      height: "40px",
+                      padding: "6px",
+                      marginTop: "-5px",
+                    }}
+                    onClick={handleExportClick}
                   >
-                    <EditIconSmallGradient />
+                    <ExportIcon />
                   </IconButton>
+                  {isContributor && (
+                    <>
+                      <IconButton
+                        aria-label="edit"
+                        onClick={editPin}
+                        sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+                      >
+                        <EditIconSmallGradient />
+                      </IconButton>
+                    </>
+                  )}
+
+                  {isManager && (
+                    <IconButton
+                      sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+                      aria-label="delete"
+                      onClick={() => setDeleteConfirmOpen(true)}
+                    >
+                      <Trash />
+                    </IconButton>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="draggable">
+                    <Draggable />
+                  </div>
                 </>
               )}
-
-              {isManager && (
-                <IconButton
-                  sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
-                  aria-label="delete"
-                  onClick={() => setDeleteConfirmOpen(true)}
-                >
-                  <Trash />
-                </IconButton>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="draggable">
-                <Draggable />
-              </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </div>
       <SimpleDeleteConfirmation

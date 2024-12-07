@@ -1985,7 +1985,7 @@ function PromptBar({
                   }}
                 >
                   <NoImage />
-                  <div className="image-placeholder">Upload an style reference</div>
+                  <div className="image-placeholder">Upload a style reference</div>
                 </div>
               </div>
             )}

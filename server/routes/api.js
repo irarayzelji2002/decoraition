@@ -230,7 +230,7 @@ router.post(
 router.get("/project/:projectId/designs", authenticateUser, projectController.fetchProjectDesigns);
 router.get("/project/:projectId/pins", authenticateUser, planMapController.getPins);
 router.post("/project/:projectId/pins/order", authenticateUser, planMapController.savePinOrder);
-router.delete("/project/:projectId/pin/:pinId", authenticateUser, planMapController.deletePin);
+router.post("/project/:projectId/deletePin", authenticateUser, planMapController.deletePin);
 router.put("/project/:projectId/pin/:pinId", authenticateUser, planMapController.updatePin);
 router.post("/project/:projectId/share", authenticateUser, projectController.shareProject);
 router.post(
@@ -245,6 +245,7 @@ router.post(
   upload.single("file"),
   planMapController.handlePlanImageUpload
 );
+router.post("/project/:projectId/add-pin", authenticateUser, planMapController.createPin);
 router.put(
   "/project/:projectId/import-design",
   authenticateUser,
@@ -274,12 +275,12 @@ router.get("/health-check", (req, res) => {
 });
 
 // Timeline routes
-router.post("/timeline/:timelineId/event", authenticateUser, timelineController.createEvent);
+router.post("/timeline/:timelineId/add-event", authenticateUser, timelineController.createEvent);
 router.get("/timeline/:timelineId/events", authenticateUser, timelineController.getEvents);
 router.get("/project/:projectId/timelineId", authenticateUser, timelineController.fetchTimelineId); // New route to fetch timeline
 router.get("/timeline/event/:taskId", authenticateUser, timelineController.getEventDetails);
 router.put("/timeline/event/:taskId", authenticateUser, timelineController.updateEvent);
-router.delete("/timeline/event/:taskId", authenticateUser, timelineController.deleteEvent);
+router.post("/timeline/:timelineId/delete-event", authenticateUser, timelineController.deleteEvent);
 
 // Notification routes
 router.put(

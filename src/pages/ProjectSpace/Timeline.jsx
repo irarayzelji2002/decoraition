@@ -173,7 +173,7 @@ function Timeline() {
     if (currentUser && taskIdToDelete) {
       setIsDeleteBtnDisabled(true);
       try {
-        await deleteTask(currentUser.uid, projectId, taskIdToDelete);
+        await deleteTask(timelineId, taskIdToDelete, user, userDoc);
         showToast("success", "Task deleted successfully"); // Debugging statement
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskIdToDelete));
         closeDeleteModal();

@@ -38,13 +38,13 @@ function AddPin({ EditMode }) {
   const projectId = location.state?.projectId;
   const CurrentPin = (location.state?.totalPins || 0) + 1;
   const navigate = useNavigate();
+  const { user, userDoc, projects, userProjects } = useSharedProps();
 
   const [owner, setOwner] = React.useState("");
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [pins, setPins] = useState([]);
   const [designs, setDesigns] = useState([]);
   const pinToEdit = location.state?.pinToEdit || null;
-  const { userDoc, projects, userProjects } = useSharedProps();
   const [loadingProject, setLoadingProject] = useState(true);
   const [project, setProject] = useState({});
   const [isManager, setIsManager] = useState(false);
@@ -154,7 +154,7 @@ function AddPin({ EditMode }) {
       if (currentPin) {
         const pinData = {
           designId: owner,
-          designName: currentPin.designName,
+          // designName: currentPin.designName,
           location: { x: currentPin.location.x, y: currentPin.location.y },
           color: currentPin.color,
           // Remove order property when updating
@@ -163,7 +163,7 @@ function AddPin({ EditMode }) {
         if (pinToEdit) {
           await updatePinInDatabase(projectId, pinToEdit.id, pinData);
         } else {
-          await addPinToDatabase(projectId, pinData);
+          await addPinToDatabase(projectId, pinData, userDoc, user);
         }
         navigate(`/planMap/${projectId}`);
       }
@@ -178,8 +178,8 @@ function AddPin({ EditMode }) {
       <div className="sectionPins" style={{ background: "none", paddingTop: "104px" }}>
         <div className="budgetSpaceImg">
           <ImageFrame
-            src="../../img/floorplan.png"
-            alt="design preview"
+            src="/img/transparent-image.png"
+            alt=""
             projectId={projectId}
             pins={pins}
             setPins={setPins}

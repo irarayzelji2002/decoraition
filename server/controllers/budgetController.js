@@ -386,7 +386,7 @@ exports.createDefaultBudget = async (req, res) => {
     // Update design version with the new budget ID
     await db.collection("designVersions").doc(designVersionId).update({ budgetId: budgetRef.id });
 
-    res.status(201).json({
+    res.status(200).json({
       id: budgetRef.id,
       ...budgetDoc.data(),
     });

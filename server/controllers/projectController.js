@@ -1629,13 +1629,13 @@ exports.deleteProject = async (req, res) => {
       const userData = userDoc.data();
       const previousProjects = [...userData.projects];
       const updatedProjects = previousProjects.filter((project) => project.projectId !== projectId);
-      await userRef.update({ projects: updatedProjects });
       updatedDocuments.push({
         ref: userRef,
         field: "projects",
         previousValue: previousProjects,
         newValue: updatedProjects,
       });
+      await userRef.update({ projects: updatedProjects });
       console.log(`Successfully updated document: ${userRef.path}, field: projects`);
     }
 
@@ -1645,22 +1645,22 @@ exports.deleteProject = async (req, res) => {
 
     for (const designDoc of designsWithProject.docs) {
       const previousData = designDoc.data();
-      await designDoc.ref.update({ projectId: null });
       updatedDocuments.push({
         ref: designDoc.ref,
         field: "projectId",
         previousValue: previousData.projectId,
         newValue: null,
       });
-      console.log(`Successfully updated document: ${userRef.path}, field: projectId`);
+      await designDoc.ref.update({ projectId: null });
+      console.log(`Successfully updated document: ${designDoc.ref.path}, field: projectId`);
     }
 
     // 2. Delete project first (to trigger listeners)
-    await projectRef.delete();
     deletedDocuments.push({
       ref: projectRef,
       data: projectData,
     });
+    await projectRef.delete();
     console.log(`Successfully deleted document: ${projectRef.path}`);
 
     // 3. Delete associated documents in correct order
@@ -1670,11 +1670,11 @@ exports.deleteProject = async (req, res) => {
       const projectBudgetDoc = await projectBudgetRef.get();
       if (projectBudgetDoc.exists) {
         const projectBudgetData = projectBudgetDoc.data();
-        await projectBudgetRef.delete();
         deletedDocuments.push({
           ref: projectBudgetRef,
           data: projectBudgetData,
         });
+        await projectBudgetRef.delete();
         console.log(`Successfully deleted document: ${projectBudgetRef.path}`);
       }
     }
@@ -1687,11 +1687,11 @@ exports.deleteProject = async (req, res) => {
         const planMapData = planMapDoc.data();
 
         // Delete planMap first to trigger listeners
-        await planMapRef.delete();
         deletedDocuments.push({
           ref: planMapRef,
           data: planMapData,
         });
+        await planMapRef.delete();
         console.log(`Successfully deleted document: ${planMapRef.path}`);
 
         // Then delete associated pins
@@ -1701,11 +1701,11 @@ exports.deleteProject = async (req, res) => {
           const pinDoc = await pinRef.get();
           if (pinDoc.exists) {
             const pinData = pinDoc.data();
-            await pinRef.delete();
             deletedDocuments.push({
               ref: pinRef,
               data: pinData,
             });
+            await pinRef.delete();
             console.log(`Successfully deleted document: ${pinRef.path}`);
           }
         }
@@ -1720,11 +1720,11 @@ exports.deleteProject = async (req, res) => {
         const timelineData = timelineDoc.data();
 
         // Delete timeline first to trigger listeners
-        await timelineRef.delete();
         deletedDocuments.push({
           ref: timelineRef,
           data: timelineData,
         });
+        await timelineRef.delete();
         console.log(`Successfully deleted document: ${timelineRef.path}`);
 
         // Then delete associated events
@@ -1734,11 +1734,11 @@ exports.deleteProject = async (req, res) => {
           const eventDoc = await eventRef.get();
           if (eventDoc.exists) {
             const eventData = eventDoc.data();
-            await eventRef.delete();
             deletedDocuments.push({
               ref: eventRef,
               data: eventData,
             });
+            await eventRef.delete();
             console.log(`Successfully deleted document: ${eventRef.path}`);
           }
         }

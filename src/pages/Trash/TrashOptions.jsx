@@ -253,6 +253,20 @@ const ConfirmDeleteForeverModal = ({
           {formatDateDetailComma(object?.deletedAt)?.includes(",") ? "at " : ""}
           {formatDateDetailComma(object?.deletedAt)} permanently?
         </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            marginBottom: "10px",
+            textAlign: "center",
+            fontSize: "0.875rem",
+            fontWeight: "400",
+            color: "var(--greyText)",
+          }}
+        >
+          This will permanently delete the{" "}
+          {isDesign ? "design. You and the design's editors" : "project. The project's managers"}{" "}
+          will not be able to restore it anymore after deletion.
+        </Typography>
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
         <Button

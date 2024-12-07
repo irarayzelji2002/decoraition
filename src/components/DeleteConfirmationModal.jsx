@@ -111,7 +111,8 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
             color: "var(--greyText)",
           }}
         >
-          This will delete the {isDesign ? "design" : "project"} for all collaborators. You can
+          Collaborators of the {isDesign ? "design" : "project"} will not be able to edit or view it
+          anymore, but {isDesign ? "you and the design's editors" : "the project's managers"} can
           restore it from the trash within 30 days.
         </Typography>
       </DialogContent>

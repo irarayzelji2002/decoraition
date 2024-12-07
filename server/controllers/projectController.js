@@ -1616,7 +1616,7 @@ exports.deleteProject = async (req, res) => {
     }
     const projectData = projectDoc.data();
     // Check user role in project
-    const allowAction = isManagerProject(projectData, userId);
+    const allowAction = isManagerProject(projectDoc, userId);
     if (!allowAction) {
       return res.status(403).json({ error: "User does not have permission to delete project" });
     }

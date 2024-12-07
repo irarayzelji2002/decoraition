@@ -201,7 +201,7 @@ export const handleDeleteProject = async (user, userDoc, projectId) => {
     );
     console.log("Trash - Project delete response:", response);
     if (response.status === 200) {
-      return { success: false, message: "Trash - Project deleted successfully" };
+      return { success: true, message: "Trash - Project deleted successfully" };
     } else {
       return { success: false, message: "Trash - Failed to delete project" };
     }

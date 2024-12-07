@@ -344,7 +344,9 @@ function EnhancedTable({
     // Get the design
     const fetchedDeletedDesign =
       userDeletedDesigns.find((design) => design.id === designId) ||
-      deletedDesigns.find((design) => design.id === designId);
+      deletedDesigns.find((design) => design.id === designId) ||
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
     if (
       !fetchedDeletedDesign ||
       !fetchedDeletedDesign.history ||

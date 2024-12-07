@@ -6,7 +6,7 @@ import Select from "@mui/material/Select";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { selectStyles, menuItemStyles } from "../pages/DesignSpace/DesignSettings";
 
-export default function SelectSmall({
+export default function Dropdowns({
   sortBy = "",
   order = "",
   onSortByChange = () => {},
@@ -73,16 +73,17 @@ export default function SelectSmall({
               Owner
             </MenuItem>
           )}
-          {!isTrash ? (
-            <>
-              <MenuItem value="created" sx={menuItemStyles}>
-                Date Created
-              </MenuItem>
-              <MenuItem value="modified" sx={menuItemStyles}>
-                Date Modified
-              </MenuItem>
-            </>
-          ) : (
+          {!isTrash && (
+            <MenuItem value="created" sx={menuItemStyles}>
+              Date Created
+            </MenuItem>
+          )}
+          {!isTrash && (
+            <MenuItem value="modified" sx={menuItemStyles}>
+              Date Modified
+            </MenuItem>
+          )}
+          {isTrash && (
             <MenuItem value="deleted" sx={menuItemStyles}>
               Date Deleted
             </MenuItem>

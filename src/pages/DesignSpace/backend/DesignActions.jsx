@@ -103,8 +103,16 @@ export const getProjectImage = (
     return "";
   }
 
-  // Get the latest designId (the last one in the designIds array)
-  const latestDesignId = fetchedProject.designs[fetchedProject.designs.length - 1];
+  // Get all designs for this project
+  const projectDesigns = designs.filter((design) => fetchedProject.designs.includes(design.id));
+
+  // Sort designs by modifiedAt timestamp (most recent first)
+  const sortedDesigns = projectDesigns.sort(
+    (a, b) => (b.modifiedAt?.toMillis() || 0) - (a.modifiedAt?.toMillis() || 0)
+  );
+
+  // Get the latest designId (the first one after sorting)
+  const latestDesignId = sortedDesigns[0]?.id;
 
   // Return the design image by calling getDesignImage
   return getDesignImage(

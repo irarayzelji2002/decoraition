@@ -235,6 +235,30 @@ export const handleRestoreProject = async (user, userDoc, projectId) => {
   }
 };
 
+// Empty trash
+export const emptyTrash = async (user, userDoc, toDelete) => {
+  try {
+    const response = await axios.post(
+      `/api/trash/empty-trash`,
+      { userId: userDoc.id, toDelete },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      return { success: true, message: "Project restored successfully" };
+    } else {
+      return { success: false, message: "Failed to restore project" };
+    }
+  } catch (error) {
+    console.error("Error deleting project:", error.message);
+    return { success: false, message: "Failed to restore project" };
+  }
+};
+
 // Tiled and list view change
 export const handleViewChange = async (user, userId, layoutSettings, field, setView) => {
   const value = layoutSettings[field] === 0 ? 1 : 0;

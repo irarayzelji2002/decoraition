@@ -299,4 +299,7 @@ router.post(
   notificationController.deleteNotif
 );
 
+// Trash routes
+router.post("/trash/empty-trash", authenticateUser, designController.emptyTrash);
+
 module.exports = router;

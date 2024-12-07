@@ -1,6 +1,26 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSharedProps } from "../../contexts/SharedPropsContext.js";
+import {
+  Box,
+  Button,
+  IconButton,
+  Typography,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  styled,
+} from "@mui/material";
+import {
+  ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
+  ArrowBackIosRounded as ArrowBackIosRoundedIcon,
+  KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
+  CloseRounded,
+} from "@mui/icons-material";
 import SearchAppBar from "../Homepage/SearchAppBar.jsx";
 import "../../css/homepage.css";
 import "../../css/seeAll.css";
@@ -10,19 +30,23 @@ import DesignIcon from "../../components/DesignIcon.jsx";
 import ProjectOptionsHome from "../../components/ProjectOptionsHome.jsx";
 import HomepageTable from "../Homepage/HomepageTable.jsx";
 import {
-  ArrowForwardIosRounded as ArrowForwardIosRoundedIcon,
-  ArrowBackIosRounded as ArrowBackIosRoundedIcon,
-} from "@mui/icons-material";
-import {
   handleViewChange,
   formatDate,
   formatDateLong,
   getUsernames,
 } from "../Homepage/backend/HomepageActions";
 import { TiledIcon, ListIcon } from "../ProjectSpace/svg/ExportIcon.jsx";
-import { Box, Button, IconButton, Typography } from "@mui/material";
 import { iconButtonStyles } from "../Homepage/DrawerComponent.jsx";
-import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
+import { gradientButtonStyles, outlinedButtonStyles } from "../DesignSpace/PromptBar.jsx";
+import {
+  dialogStyles,
+  dialogTitleStyles,
+  dialogContentStyles,
+  dialogActionsStyles,
+} from "../../components/RenameModal";
+import { useSharedProps } from "../../contexts/SharedPropsContext.js";
+import { showToast } from "../../functions/utils.js";
+import { emptyTrash } from "../Homepage/backend/HomepageActions.jsx";
 
 export default function Trash() {
   const {
@@ -66,6 +90,11 @@ export default function Trash() {
     showOptions: false,
     selectedId: null,
   });
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isEmptyTrashModalOpen, setIsEmptyTrashModalOpen] = useState(false);
+  const [clickedEmptyTrashOption, setClickedEmptyTrashOption] = useState("");
+  const [isDeleteBtnDisabled, setIsDeleteBtnDisabled] = useState(false);
 
   useEffect(() => {
     if (location?.state) {
@@ -350,6 +379,49 @@ export default function Trash() {
 
   const handleTabChange = useCallback((tab) => setSelectedTab(tab), []);
 
+  const handleEmptyTrashMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleEmptyTrashMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOpenEmptyTrashModal = (option) => {
+    setClickedEmptyTrashOption(option);
+    setIsEmptyTrashModalOpen(true);
+    handleEmptyTrashMenuClose();
+  };
+
+  const handleCloseEmptyTrashModal = () => {
+    setClickedEmptyTrashOption("");
+    setIsEmptyTrashModalOpen(false);
+  };
+
+  const handleEmptyTrash = async (option) => {
+    setIsDeleteBtnDisabled(true);
+    try {
+      console.log("Trash - Starting trash deletion...");
+      const userDeletedDesignsIds = userDeletedDesigns.map((design) => design.id);
+      const userDeletedProjectsIds = userDeletedProjects.map((project) => project.id);
+      const result = await emptyTrash(user, userDoc, {
+        designs: option === "designs" || option === "all" ? userDeletedDesignsIds : [],
+        projects: option === "projects" || option === "all" ? userDeletedProjectsIds : [],
+      });
+      console.log("Trash - Empty trash result:", result);
+      if (!result.success) {
+        console.log("Trash - Empty trash failed, showing error toast");
+        showToast("error", "Failed to empty trash");
+        return;
+      }
+      console.log("Trash - Empty trash succeeded, showing success toast");
+      showToast("success", "Trash emptied succeesfully");
+      handleCloseEmptyTrashModal();
+    } finally {
+      setIsDeleteBtnDisabled(false);
+    }
+  };
+
   return (
     <>
       <SearchAppBar onSearchChange={(value) => setSearchQuery(value)} searchQuery={searchQuery} />
@@ -415,7 +487,7 @@ export default function Trash() {
       </Box>
 
       <div className="bg" style={{ background: "none", paddingBottom: "50px" }}>
-        <div className="dropdown-container">
+        <div className="dropdown-container fromTrash">
           {view === 0 && (
             <Dropdowns
               owners={owners}
@@ -434,9 +506,9 @@ export default function Trash() {
         <section className="recent-section">
           <div className="recent-designs">
             <div className="separator see-all">
-              <h2>{`${searchQuery ? "Searched in " : ""}Trash`}</h2>
+              <h2>{`${searchQuery ? "Searched in " : ""} ${selectedTab} Trash`}</h2>
               <div style={{ marginLeft: "auto", display: "inline-flex", marginBottom: "10px" }}>
-                {filteredDesigns.length > 0 && (
+                {(filteredDesigns.length > 0 || filteredProjects.length > 0) && (
                   <div>
                     <IconButton
                       onClick={() =>
@@ -490,9 +562,76 @@ export default function Trash() {
                   variant="text"
                   className="seeAll"
                   sx={{ ...iconButtonStyles, textTransform: "none", borderRadius: "20px" }}
+                  onClick={handleEmptyTrashMenuOpen}
                 >
-                  Empty Trash
+                  <span style={{ marginRight: "5px", marginLeft: "5px" }}>Empty Trash</span>
+                  <KeyboardArrowDownRoundedIcon
+                    sx={{
+                      color: "var(--brightFont) !important",
+                      transform: !anchorEl ? "rotate(0deg)" : "rotate(180deg)",
+                    }}
+                  />
                 </Button>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleEmptyTrashMenuClose}
+                  slotProps={{
+                    paper: {
+                      elevation: 0,
+                      sx: {
+                        overflow: "hidden",
+                        filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                        mt: 1.5,
+                        backgroundColor: "var(--nav-card-modal)",
+                        color: "var(--color-white)",
+                        minWidth: "190px",
+                        borderTopLeftRadius: "0px",
+                        borderTopRightRadius: "0px",
+                        borderBottomLeftRadius: "10px",
+                        borderBottomRightRadius: "10px",
+                        "& .MuiList-root": {
+                          overflow: "hidden",
+                        },
+                      },
+                    },
+                  }}
+                  MenuListProps={{
+                    sx: {
+                      color: "var(--color-white)",
+                      padding: "0px !important",
+                    },
+                  }}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                >
+                  {selectedTab === "Designs" && (
+                    <CustomMenuItem onClick={() => handleOpenEmptyTrashModal("designs")}>
+                      <ListItemText
+                        primary="Empty designs trash"
+                        sx={{ color: "var(--color-white)" }}
+                      />
+                    </CustomMenuItem>
+                  )}
+                  {selectedTab === "Projects" && (
+                    <CustomMenuItem onClick={() => handleOpenEmptyTrashModal("projects")}>
+                      <ListItemText
+                        primary="Empty projects trash"
+                        sx={{ color: "var(--color-white)" }}
+                      />
+                    </CustomMenuItem>
+                  )}
+                  <CustomMenuItem onClick={() => handleOpenEmptyTrashModal("all")}>
+                    <ListItemText primary="Empty all trash" sx={{ color: "var(--color-white)" }} />
+                  </CustomMenuItem>
+                </Menu>
+                <EmptyTrashModal
+                  isOpen={isEmptyTrashModalOpen}
+                  onClose={handleCloseEmptyTrashModal}
+                  option={clickedEmptyTrashOption}
+                  handleDelete={() => handleEmptyTrash(clickedEmptyTrashOption)}
+                  isDeleteBtnDisabled={isDeleteBtnDisabled}
+                />
               </div>
             </div>
 
@@ -654,3 +793,107 @@ export default function Trash() {
     </>
   );
 }
+
+const CustomMenuItem = styled(MenuItem)({
+  minHeight: "2.6rem !important",
+  "&:hover": {
+    backgroundColor: "var(--iconBg)",
+  },
+  "&:focus": {
+    backgroundColor: "var(--iconBg)",
+  },
+});
+
+// Empty trash confirmation modal
+const EmptyTrashModal = ({ isOpen, onClose, option, handleDelete, isDeleteBtnDisabled }) => {
+  const onSubmit = () => {
+    handleDelete();
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onClose={onClose} sx={dialogStyles}>
+      <DialogTitle sx={dialogTitleStyles}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: "bold",
+            fontSize: "1.15rem",
+            flexGrow: 1,
+            maxWidth: "80%",
+            whiteSpace: "normal",
+          }}
+        >
+          Empty {option} trash
+        </Typography>
+        <IconButton
+          onClick={onClose}
+          sx={{
+            ...iconButtonStyles,
+            flexShrink: 0,
+            marginLeft: "auto",
+          }}
+        >
+          <CloseRounded />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={dialogContentStyles}>
+        <Typography variant="body1" sx={{ marginBottom: "10px", textAlign: "center" }}>
+          Are you sure you want to empty all trashed{" "}
+          {option !== "all" ? option : "designs and projects"}?
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            marginBottom: "10px",
+            textAlign: "center",
+            fontSize: "0.875rem",
+            fontWeight: "400",
+            color: "var(--greyText)",
+          }}
+        >
+          This will permanently delete{" "}
+          {option === "designs"
+            ? "all trashed designs. You and each design's editors"
+            : option === "projects"
+            ? "all trashed projects. Each project's managers"
+            : option === "all" &&
+              "all trashed designs and projects. Each design and project's collaborators"}{" "}
+          will not be able to restore it anymore after deletion.
+        </Typography>
+      </DialogContent>
+      <DialogActions sx={dialogActionsStyles}>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={onSubmit}
+          sx={{
+            ...gradientButtonStyles,
+            opacity: isDeleteBtnDisabled ? "0.5" : "1",
+            cursor: isDeleteBtnDisabled ? "default" : "pointer",
+            "&:hover": {
+              backgroundImage: !isDeleteBtnDisabled && "var(--gradientButtonHover)",
+            },
+          }}
+          disabled={isDeleteBtnDisabled}
+        >
+          Yes
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={onClose}
+          sx={outlinedButtonStyles}
+          onMouseOver={(e) =>
+            (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButtonHover)")
+          }
+          onMouseOut={(e) =>
+            (e.target.style.backgroundImage = "var(--lightGradient), var(--gradientButton)")
+          }
+        >
+          No
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};

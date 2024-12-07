@@ -56,6 +56,8 @@ export default function SelectSmall({
               return "Date Created";
             } else if (selected === "modified") {
               return "Date Modified";
+            } else if (selected === "deleted") {
+              return "Date Deleted";
             }
             return selected;
           }}

@@ -1415,6 +1415,7 @@ exports.moveProjectToTrash = async (req, res) => {
     const deletedProjectRef = db.collection("deletedProjects").doc(projectId);
     const deletedProjectData = {
       ...projectData,
+      modifiedAt: new Date(),
       deletedAt: new Date(),
     };
     batch.set(deletedProjectRef, deletedProjectData);
@@ -1608,12 +1609,17 @@ exports.deleteProject = async (req, res) => {
     const { userId } = req.body;
 
     // Get project data first to check existence
-    const projectRef = db.collection("projects").doc(projectId);
+    const projectRef = db.collection("deletedProjects").doc(projectId);
     const projectDoc = await projectRef.get();
     if (!projectDoc.exists) {
-      return res.status(404).json({ error: "Project not found" });
+      return res.status(404).json({ error: "Deleted project not found" });
     }
     const projectData = projectDoc.data();
+    // Check user role in project
+    const allowAction = isManagerProject(projectData, userId);
+    if (!allowAction) {
+      return res.status(403).json({ error: "User does not have permission to delete project" });
+    }
 
     // 1. Update parent documents first (users, designs)
     // Update user's project array

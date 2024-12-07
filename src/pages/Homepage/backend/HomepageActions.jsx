@@ -120,7 +120,7 @@ export const handleDeleteDesign = async (user, userDoc, designId) => {
   try {
     const response = await axios.post(
       `/api/design/${designId}/delete`,
-      { userId: userDoc.id },
+      { userId: userDoc.id, fromTrash: true },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -192,7 +192,7 @@ export const handleDeleteProject = async (user, userDoc, projectId) => {
   try {
     const response = await axios.post(
       `/api/project/${projectId}/delete`,
-      { userId: userDoc.id },
+      { userId: userDoc.id, fromTrash: true },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,

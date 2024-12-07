@@ -1772,7 +1772,7 @@ exports.moveDesignToTrash = async (req, res) => {
     }
 
     // Check user role in design
-    const allowAction = isOwnerEditorDesign(designDoc, userId);
+    const allowAction = isOwnerDesign(designDoc, userId);
     if (!allowAction) {
       return res.status(403).json({ error: "User does not have permission to delete design" });
     }
@@ -1789,6 +1789,7 @@ exports.moveDesignToTrash = async (req, res) => {
     const deletedDesignRef = db.collection("deletedDesigns").doc(designId);
     const deletedDesignData = {
       ...designData,
+      modifiedAt: new Date(),
       deletedAt: new Date(),
     };
     batch.set(deletedDesignRef, deletedDesignData);
@@ -1982,17 +1983,15 @@ exports.deleteDesign = async (req, res) => {
     const { userId } = req.body;
 
     // Get design data first to check existence
-    const designRef = db.collection("designs").doc(designId);
+    const designRef = db.collection("deletedDesigns").doc(designId);
     const designDoc = await designRef.get();
     if (!designDoc.exists) {
-      return res.status(404).json({ error: "Design not found" });
+      return res.status(404).json({ error: "Deleted design not found" });
     }
     const designData = designDoc.data();
     const allowAction = isOwnerDesign(designDoc, userId);
     if (!allowAction) {
-      return res
-        .status(403)
-        .json({ error: "User does not have permission to create design version" });
+      return res.status(403).json({ error: "User does not have permission to delete design" });
     }
 
     // 1. Update parent documents first (users, projects, designs)

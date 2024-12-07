@@ -470,8 +470,8 @@ const DrawerComponent = ({
             </ListItemButton>
           ))
         ) : (
-          <ListItemButton>
-            <ListItemText primary="No recent designs" />
+          <ListItemButton disabled={true} sx={listItemTextOnlyStyles}>
+            <ListItemText primary="No recent designs" sx={{ color: "var(--greyText)" }} />
           </ListItemButton>
         )}
 
@@ -556,8 +556,8 @@ const DrawerComponent = ({
             </ListItemButton>
           ))
         ) : (
-          <ListItemButton>
-            <ListItemText primary="No recent projects" />
+          <ListItemButton disabled={true} sx={listItemTextOnlyStyles}>
+            <ListItemText primary="No recent projects" sx={{ color: "var(--greyText)" }} />
           </ListItemButton>
         )}
 
@@ -673,4 +673,21 @@ const listItemIconStyles = {
   minWidth: "0px",
   marginRight: "20px",
   marginLeft: "5px",
+};
+
+const listItemTextOnlyStyles = {
+  color: "var(--greyText)",
+  cursor: "default",
+  padding: "6.5px 20px",
+  justifyContent: "space-between",
+  "&:hover": {
+    backgroundColor: "transparent",
+  },
+  "& .MuiTouchRipple-root span": {
+    backgroundColor: "transparent",
+  },
+  "&.Mui-disabled": {
+    backgroundColor: "transparent !important",
+    color: "var(--greyText) !important",
+  },
 };

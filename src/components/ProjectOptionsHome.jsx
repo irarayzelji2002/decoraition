@@ -168,18 +168,30 @@ function ProjectOptionsHome({
         />
       )}
       {/* Project image */}
-      <div className="homepage-thumbnail" onClick={onOpen}>
+      <div
+        className="homepage-thumbnail"
+        style={{ cursor: !isTrash ? "pointer" : "default" }}
+        onClick={onOpen}
+      >
         <img
           src={!isTrash ? getLatestDesignImage(project.id) : getTrashLatestDesignImage(project.id)}
           className="pic"
           alt=""
-          style={{ objectFit: "cover", objectPosition: "center" }}
+          style={{
+            objectFit: "cover",
+            objectPosition: "center",
+            cursor: !isTrash ? "pointer" : "default",
+          }}
         />
       </div>
 
       {/* Project title */}
       <div style={{ textAlign: "start", padding: "0px 3px", width: "100%" }}>
-        <h3 className="titleDesign" onClick={onOpen}>
+        <h3
+          className="titleDesign"
+          style={{ cursor: !isTrash ? "pointer" : "default" }}
+          onClick={onOpen}
+        >
           {name}
         </h3>
         <span className="dateModified">

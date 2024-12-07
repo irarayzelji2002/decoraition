@@ -183,12 +183,12 @@ export default function Trash() {
 
   const handleOwnerChange = (owner) => {
     setSelectedOwner(owner);
-    // applyFilters(searchQuery, owner, dateRange);
+    applyFilters(searchQuery, owner, dateRange);
   };
 
   const handleDateRangeChange = (range) => {
     setDateRange(range);
-    // applyFilters(searchQuery, selectedOwner, range);
+    applyFilters(searchQuery, selectedOwner, range);
   };
 
   const applyFilters = (searchQuery, owner, dateRange) => {
@@ -278,7 +278,7 @@ export default function Trash() {
   ]);
 
   useEffect(() => {
-    // applyFilters(searchQuery, selectedOwner, dateRange);
+    applyFilters(searchQuery, selectedOwner, dateRange);
   }, [
     deletedDesigns,
     userDeletedDesigns,

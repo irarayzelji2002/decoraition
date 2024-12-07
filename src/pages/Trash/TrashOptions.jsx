@@ -89,6 +89,7 @@ function TrashOptions({
       const result = await handleRestoreDesign(user, userDoc, id);
       if (!result.success) {
         showToast("error", "Failed to restore design");
+        return;
       }
       showToast("success", "Design restored");
       navigate("/seeAllDesigns", {
@@ -98,6 +99,7 @@ function TrashOptions({
       const result = await handleRestoreProject(user, userDoc, id);
       if (!result.success) {
         showToast("error", "Failed to restore project");
+        return;
       }
       showToast("success", "Project restored");
       navigate("/seeAllProjects", {
@@ -111,6 +113,7 @@ function TrashOptions({
       const result = await handleDeleteDesign(user, userDoc, id);
       if (!result.success) {
         showToast("error", "Failed to delete design");
+        return;
       }
       showToast("success", "Design deleted");
       closeDeleteModal();
@@ -118,6 +121,7 @@ function TrashOptions({
       const result = await handleDeleteProject(user, userDoc, id);
       if (!result.success) {
         showToast("error", "Failed to delete project");
+        return;
       }
       showToast("success", "Project deleted");
       closeDeleteModal();
@@ -174,7 +178,7 @@ function TrashOptions({
               <div className="icon">
                 <DeleteForeverIcon style={{ fontSize: 20 }} className="icon" />
               </div>
-              Delete permanently
+              Delete forever
             </div>
           </div>
         )}
@@ -236,9 +240,9 @@ const ConfirmDeleteForeverModal = ({
       </DialogTitle>
       <DialogContent sx={dialogContentStyles}>
         <Typography variant="body1" sx={{ marginBottom: "10px", textAlign: "center" }}>
-          Are you sure you want to delete your{" "}
+          Are you sure you want to delete the{" "}
           {isDesign ? `design "${object?.designName}"` : `project "${object?.projectName}"`} trashed{" "}
-          {formatDateDetailComma(object?.deletedAt)?.includes(",") ? "at " : ""}$
+          {formatDateDetailComma(object?.deletedAt)?.includes(",") ? "at " : ""}
           {formatDateDetailComma(object?.deletedAt)} permanently?
         </Typography>
       </DialogContent>

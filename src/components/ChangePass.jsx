@@ -217,7 +217,7 @@ export default function ChangePass({ email, token }) {
             error={!!errors.newPassword || (!passwordValidation.valid && newPassword.length > 0)}
             helperText={
               errors.newPassword ||
-              (newPassword.length >= 50
+              (newPassword.length >= 128
                 ? "Character limit reached!"
                 : newPassword.length > 0
                 ? passwordValidation.message
@@ -243,7 +243,7 @@ export default function ChangePass({ email, token }) {
             }
             helperText={
               errors.confirmPassword ||
-              (confirmPassword.length >= 50
+              (confirmPassword.length >= 128
                 ? "Character limit reached!"
                 : confirmPassword.length > 0
                 ? passwordMatch === false

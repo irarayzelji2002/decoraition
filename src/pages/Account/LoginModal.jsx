@@ -53,14 +53,14 @@ export default function LoginModal() {
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
-    setEmailLimitReached(e.target.value.length >= 254);
+    setEmailLimitReached(e.target.value.length >= 255);
     clearFieldError("email");
     clearFieldError("general");
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    setPasswordLimitReached(e.target.value.length >= 50);
+    setPasswordLimitReached(e.target.value.length >= 128);
     clearFieldError("password");
     clearFieldError("general");
   };

@@ -678,6 +678,7 @@ export const menuItemStyles = {
   backgroundColor: "var(--dropdown)",
   transition: "all 0.3s ease",
   display: "block",
+  minHeight: "36px",
   "&:hover": {
     backgroundColor: "var(--dropdownHover) !important",
   },

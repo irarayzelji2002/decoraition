@@ -204,6 +204,15 @@
   margin-top: 12px;
 }
 
+.quantity-section.bgModal {
+  background-color: var(--nav-card-modal);
+  width: 128px;
+}
+
+.quantity-section.bgModal button {
+  background-color: var(--iconBg);
+}
+
 .quantity-section button {
   background-color: var(--nav-card-modal);
   color: var(--color-white);

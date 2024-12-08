@@ -23,11 +23,17 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 768px;
-  background-color: var(--nav-card-modal);
-  padding: 24px;
-  border-radius: 16px;
+  background-color: var(--table-rows);
+  border-radius: 10px;
   margin-bottom: 20px;
+  padding: 5px 15px;
+}
+.reminders-cont {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 24px;
 }
 
 .react-calendar__navigation button:hover {

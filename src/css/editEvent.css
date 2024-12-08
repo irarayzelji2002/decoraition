@@ -6,25 +6,28 @@
   font-weight: bold;
   padding: 20px;
   font-family: "Inter", sans-serif !important;
+  min-height: calc(100vh - 94px);
 }
 
 .form-container {
   max-width: 768px;
   margin: auto;
+  margin-top: 30px;
 }
 
 /* Form group styling */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  /* margin-bottom: 5px; */
   font-size: var(--font-size-h6);
+  font-weight: 500;
 }
 
-.form-group input,
+/* .form-group input,
 .form-group textarea {
   width: 95%;
   padding: 12px;
@@ -32,6 +35,11 @@
   border: 2px solid var(--borderInput);
   background-color: var(--bgcolor);
   color: var(--color-white);
+} */
+
+.form-group.repeat .customSwitchContainer .MuiTypography-root {
+  font-size: var(--font-size-h6) !important;
+  font-weight: 500 !important;
 }
 
 textarea {
@@ -58,7 +66,7 @@ textarea {
 .reminder-item {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  width: 100%;
 }
 
 .reminder-item input {
@@ -108,8 +116,16 @@ textarea {
 .reminder-actions {
   display: flex;
   align-items: center;
+  gap: 10px;
+  margin-left: 12px;
 }
 /* editEvent.css */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
+}
+
+.centerButtonHorizontally {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }

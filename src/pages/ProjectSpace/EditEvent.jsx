@@ -2,18 +2,35 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "../../css/editEvent.css";
 import TopBar from "../../components/TopBar";
-import { AddIcon, EditIcon, DeleteIcon } from "../../components/svg/DefaultMenuIcons.jsx";
+import {
+  AddIcon,
+  EditIcon,
+  DeleteIcon,
+  AddIconGradient,
+  EditIconSmallGradient,
+} from "../../components/svg/DefaultMenuIcons.jsx";
 import { updateTask, createEvent } from "./backend/ProjectDetails";
 import { auth } from "../../firebase";
 import { CustomSwitch } from "./ProjectSettings.jsx";
-import { Box, Button, Icon, Modal } from "@mui/material";
+import CustomDatePicker from "../../components/CustomDatePicker.jsx";
+import {
+  Box,
+  Button,
+  IconButton,
+  Modal,
+  TextField,
+  Typography,
+  InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import RepeatSelector from "./RepeatSelector.jsx";
 import { ThemeProvider } from "@mui/system";
 import { theme } from "./ProjectSettings.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import ReminderSpecific from "./ReminderSpecific";
-import { Typography, IconButton } from "@mui/material";
-import DialogTitle from "@mui/material/DialogTitle";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { fetchTaskDetails } from "./backend/ProjectDetails";
 import EditPen from "../DesignSpace/svg/EditPen.jsx";
@@ -28,6 +45,13 @@ import {
 } from "./Project";
 import { iconButtonStyles } from "../Homepage/DrawerComponent.jsx";
 import { gradientButtonStyles } from "../DesignSpace/PromptBar.jsx";
+import { textFieldInputProps, textFieldStyles } from "../DesignSpace/DesignSettings.jsx";
+import dayjs from "dayjs";
+import { LocalizationProvider, DatePicker, DateTimePicker, TimePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { dialogStyles } from "../DesignSpace/EditDescModal.jsx";
+import { dialogContentStyles, dialogTitleStyles } from "../../components/RenameModal.jsx";
+import { CloseRounded } from "@mui/icons-material";
 
 function EditEvent() {
   const { projectId } = useParams();
@@ -54,6 +78,7 @@ function EditEvent() {
   const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
     useState(false);
   const [isCollaborator, setIsCollaborator] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // Get project
   useEffect(() => {
@@ -110,20 +135,25 @@ function EditEvent() {
     }
   }, [project, userDoc, navigate, projectId]);
 
+  const today = dayjs();
+  const yesterday = dayjs().subtract(1, "day");
+  const todayStartOfTheDay = today.startOf("day");
+
   const initialFormData = {
     taskName: "",
-    startDate: selectedDate || "",
-    endDate: selectedDate || "",
+    startDate: today,
+    endDate: today,
     description: "",
     repeat: {
       frequency: 0,
-      unit: "none", // Ensure unit is set to a valid option
+      unit: "none",
     },
     reminders: [],
     repeatEnabled: true,
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [isEditingReminder, setIsEditingReminder] = useState(true);
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -131,17 +161,20 @@ function EditEvent() {
         const currentUser = auth.currentUser;
         if (currentUser) {
           const taskDetails = await fetchTaskDetails(currentUser.uid, taskId);
+          console.log("taskDetails", taskDetails);
           setFormData({
             taskName: taskDetails.eventName,
-            startDate: new Date(taskDetails.dateRange.start._seconds * 1000)
-              .toISOString()
-              .split("T")[0],
-            endDate: new Date(taskDetails.dateRange.end._seconds * 1000)
-              .toISOString()
-              .split("T")[0],
+            // startDate: new Date(taskDetails.dateRange.start._seconds * 1000)
+            //   .toISOString()
+            //   .split("T")[0],
+            // endDate: new Date(taskDetails.dateRange.end._seconds * 1000)
+            //   .toISOString()
+            //   .split("T")[0],
+            startDate: dayjs(taskDetails.dateRange.start._seconds * 1000), // Convert to dayjs
+            endDate: dayjs(taskDetails.dateRange.end._seconds * 1000), // Convert to dayjs
             description: taskDetails.description,
             repeat: {
-              frequency: taskDetails.repeatEvery.frequency,
+              frequency: taskDetails.repeatEvery.frequency || 0,
               unit: taskDetails.repeatEvery.unit || "none",
             },
             reminders: taskDetails.reminders.map((reminder, index) => {
@@ -167,7 +200,7 @@ function EditEvent() {
             }),
             repeatEnabled: taskDetails.repeating,
           });
-          setAllowRepeat(taskDetails.repeating);
+          setAllowRepeat(taskDetails.repeating ?? false);
         }
       }
     };
@@ -204,6 +237,7 @@ function EditEvent() {
   };
 
   const addReminder = () => {
+    setIsEditingReminder(false);
     setSelectedReminder({
       id: Date.now(),
       count: 1,
@@ -245,8 +279,8 @@ function EditEvent() {
   const handleSave = async () => {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const startDate = new Date(formData.startDate);
-      const endDate = new Date(formData.endDate);
+      const startDate = formData.startDate.toDate(); // dayjs to Date object
+      const endDate = formData.endDate.toDate(); // dayjs to Date object
 
       if (isNaN(startDate) || isNaN(endDate)) {
         console.error("Invalid date value");
@@ -292,10 +326,29 @@ function EditEvent() {
 
   const handleCancel = () => {
     setOpenModal(false);
+    setIsEditingReminder(false);
   };
 
   const handleRepeatToggle = () => {
     setAllowRepeat((prev) => !prev);
+    // previous value of allowRepeat
+    if (!allowRepeat) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        repeat: {
+          frequency: 1, // default
+          unit: "week", // default
+        },
+      }));
+    } else {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        repeat: {
+          frequency: 0,
+          unit: "none",
+        },
+      }));
+    }
   };
 
   const handleRepeatChange = (count, unit) => {
@@ -308,54 +361,130 @@ function EditEvent() {
     }));
   };
 
-  const today = new Date().toISOString().split("T")[0];
+  // const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    console.log("event - startDate", formData.startDate);
+    console.log("event - endDate", formData.endDate);
+  }, [formData.startDate, formData.endDate]);
 
   return (
     <ThemeProvider theme={theme}>
       <div style={{ overflowX: "hidden" }}>
-        <TopBar state={"Edit Event"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
+        <TopBar
+          state={`${!taskId ? "Add" : "Edit"} Event`}
+          navigateTo={navigateTo}
+          navigateFrom={navigateFrom}
+        />
         <div className="edit-event" style={{ paddingTop: "74px" }}>
           <div className="form-container">
             <div className="form-group">
               <label htmlFor="taskName">Task / Event name </label>
-              <input
+              <TextField
+                fullWidth
+                variant="outlined"
                 type="text"
                 id="taskName"
                 name="taskName"
+                placeholder="Task / Event name"
                 value={formData.taskName}
-                style={{ color: "var(--color-white) !important" }}
                 onChange={(e) => handleInputChange(e, "taskName")}
+                sx={{
+                  ...textFieldStyles,
+                  marginTop: "10px",
+                  "& .MuiOutlinedInput-root": {
+                    ...textFieldStyles["& .MuiOutlinedInput-root"],
+                    backgroundColor: "transparent",
+                  },
+                }}
+                helperText={errors?.taskName}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 100 }}
               />
             </div>
             <div className="form-group">
               <label htmlFor="startDate">Start date</label>
-              <input
-                type="date"
+              <CustomDatePicker
+                defaultValue={today}
+                minDate={today}
+                value={formData.startDate ? dayjs(formData.startDate) : null}
+                onChange={(newValue) => {
+                  setFormData((prev) => {
+                    const currentEndDate = dayjs(prev.endDate);
+                    const newStartDate = dayjs(newValue);
+                    // If end date is before the new start date or not set
+                    if (!prev.endDate || currentEndDate.isBefore(newStartDate)) {
+                      return {
+                        ...prev,
+                        startDate: newValue,
+                        endDate: newValue, // Set end date to match start date
+                      };
+                    }
+                    // Otherwise just update start date
+                    return {
+                      ...prev,
+                      startDate: newValue,
+                    };
+                  });
+                }}
+                error={errors?.startDate}
                 id="startDate"
                 name="startDate"
-                value={formData.startDate}
-                min={today}
-                onChange={(e) => handleInputChange(e, "startDate")}
               />
             </div>
             <div className="form-group">
               <label htmlFor="endDate">End date</label>
-              <input
-                type="date"
+              <CustomDatePicker
+                defaultValue={dayjs(formData.startDate)}
+                minDate={dayjs(formData.startDate)}
+                value={formData.endDate ? dayjs(formData.endDate) : null}
+                onChange={(newValue) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    endDate: newValue,
+                  }));
+                }}
+                error={errors?.endDate}
                 id="endDate"
                 name="endDate"
-                value={formData.endDate}
-                min={formData.startDate}
-                onChange={(e) => handleInputChange(e, "endDate")}
               />
             </div>
             <div className="form-group">
               <label htmlFor="description">Description</label>
-              <textarea
+              <TextField
+                fullWidth
+                variant="outlined"
+                type="text"
+                multiline
+                minRows={4}
                 id="description"
                 name="description"
+                placeholder="Description"
                 value={formData.description}
                 onChange={(e) => handleInputChange(e, "description")}
+                sx={{
+                  ...textFieldStyles,
+                  marginTop: "10px",
+                  "& .MuiOutlinedInput-root": {
+                    ...textFieldStyles["& .MuiOutlinedInput-root"],
+                    backgroundColor: "transparent",
+                    "& textarea": {
+                      scrollbarWidth: "thin",
+                      color: "var(--color-white)",
+                      minHeight: "0px",
+                      "& .mention": {
+                        color: "var(--brightFont)",
+                        fontWeight: "bold",
+                      },
+                      "&::-webkit-scrollbar": {
+                        width: "8px",
+                      },
+                    },
+                  },
+                }}
+                helperText={errors?.description}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 1000 }}
               />
             </div>
             <div className="form-group repeat">
@@ -368,104 +497,113 @@ function EditEvent() {
                 />
               )}
             </div>
-            <div className="reminders">
+            <div className="form-group reminders">
               <div className="reminders-header">
-                <span>Reminders</span>
+                <label>Reminders</label>
                 <IconButton
                   // className="icon-button add-button"
                   onClick={addReminder}
                   sx={iconButtonStyles}
                 >
-                  <AddIcon />
+                  <AddIconGradient />
                 </IconButton>
               </div>
-              {formData.reminders.map((reminder, index) => (
-                <div key={reminder.id} className="reminder-item">
-                  <div className="reminder-display">
-                    <span>
-                      {reminder.count} {reminder.unit} before {reminder.hours}:
-                      {reminder.minutes.toString().padStart(2, "0")} {reminder.period}
-                    </span>
-                    <div className="reminder-actions">
-                      <IconButton
-                        // className="icon-button"
-                        onClick={() => {
-                          setSelectedReminder(reminder);
-                          setOpenModal(true);
-                        }}
-                        sx={iconButtonStyles}
-                      >
-                        <EditPen />
-                      </IconButton>{" "}
-                      <IconButton
-                        // className="icon-button"
-                        onClick={() => deleteReminder(reminder.id)}
-                        sx={iconButtonStyles}
-                      >
-                        <Trash />
-                      </IconButton>
+              <div className="reminders-cont">
+                {formData.reminders.map((reminder, index) => (
+                  <div key={reminder.id} className="reminder-item">
+                    <div className="reminder-display">
+                      <span>
+                        {`Every ${reminder.count === 1 ? "" : reminder.count} ${
+                          reminder.count > 1 ? `${reminder.unit}s` : reminder.unit
+                        }`}{" "}
+                        before {reminder.hours}:{reminder.minutes.toString().padStart(2, "0")}{" "}
+                        {reminder.period}
+                      </span>
+                      <div className="reminder-actions">
+                        <IconButton
+                          // className="icon-button"
+                          onClick={() => {
+                            setSelectedReminder(reminder);
+                            setIsEditingReminder(true);
+                            setOpenModal(true);
+                          }}
+                          sx={iconButtonStyles}
+                        >
+                          <EditIconSmallGradient />
+                        </IconButton>{" "}
+                        <IconButton
+                          // className="icon-button"
+                          onClick={() => deleteReminder(reminder.id)}
+                          sx={iconButtonStyles}
+                        >
+                          <Trash />
+                        </IconButton>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-
-            <Button
-              // className="edit-event-button"
-              variant="contained"
-              onClick={handleSaveWithLoading}
-              sx={{
-                ...gradientButtonStyles,
-                maxWidth: "235px",
-                opacity: isSaveBtnDisabled ? "0.5" : "1",
-                cursor: isSaveBtnDisabled ? "default" : "pointer",
-                "&:hover": {
-                  backgroundImage: !isSaveBtnDisabled && "var(--gradientButtonHover)",
-                },
-              }}
-              disabled={isSaveBtnDisabled}
-            >
-              Save event
-            </Button>
+            <div className="centerButtonHorizontally">
+              <Button
+                // className="edit-event-button"
+                variant="contained"
+                onClick={handleSaveWithLoading}
+                sx={{
+                  ...gradientButtonStyles,
+                  maxWidth: "235px",
+                  paddingLeft: "50px",
+                  paddingRight: "50px",
+                  opacity: isSaveBtnDisabled ? "0.5" : "1",
+                  cursor: isSaveBtnDisabled ? "default" : "pointer",
+                  "&:hover": {
+                    backgroundImage: !isSaveBtnDisabled && "var(--gradientButtonHover)",
+                  },
+                }}
+                disabled={isSaveBtnDisabled}
+              >
+                {`${!taskId ? "Add" : "Edit"} event`}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-      <Modal open={openModal} onClose={handleCancel}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "30%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "auto",
-            bgcolor: "var(--nav-card-modal)",
-            boxShadow: 24,
-            borderRadius: "12px",
-            margin: "12px",
-          }}
-        >
-          <DialogTitle
-            className="dialog-title"
+      <Dialog open={openModal} onClose={handleCancel} sx={dialogStyles}>
+        <DialogTitle sx={dialogTitleStyles}>
+          <Typography
+            variant="body1"
             sx={{
-              borderRadius: "12px 12px 0 0",
+              fontWeight: "bold",
+              fontSize: "1.15rem",
+              flexGrow: 1,
+              maxWidth: "80%",
+              whiteSpace: "normal",
             }}
           >
-            <IconButton onClick={handleCancel} className="dialog-icon-button">
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h6" sx={{ color: "var(--color-white)" }}>
-              Set Reminder
-            </Typography>
-          </DialogTitle>
-          <div style={{ padding: "20px" }}>
-            <ReminderSpecific
-              reminder={selectedReminder}
-              onSave={saveReminder}
-              onCancel={handleCancel}
-            />
-          </div>
-        </Box>
-      </Modal>
+            {`${!isEditingReminder ? "Add" : "Edit"} reminder`}
+          </Typography>
+          <IconButton
+            onClick={handleCancel}
+            sx={{
+              ...iconButtonStyles,
+              flexShrink: 0,
+              marginLeft: "auto",
+            }}
+          >
+            <CloseRounded />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent
+          sx={{ ...dialogContentStyles, width: "calc(100% - 40px)", minWidth: "min(50vw, 50vh)" }}
+        >
+          <ReminderSpecific
+            reminder={selectedReminder}
+            onSave={saveReminder}
+            onCancel={handleCancel}
+            isEditingReminder={isEditingReminder}
+          />
+        </DialogContent>
+      </Dialog>
     </ThemeProvider>
   );
 }

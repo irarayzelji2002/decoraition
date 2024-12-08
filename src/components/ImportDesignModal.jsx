@@ -280,6 +280,7 @@ const ImportDesignModal = ({ open, onClose, project }) => {
             placeholder="Search a design"
             sx={{ ...textFieldStyles, width: "100%" }}
             InputProps={textFieldInputProps}
+            inputProps={{ maxLength: 100 }}
           />
           {error && <div className="error-text">{error}</div>}
           <div style={{ position: "relative", width: "100%" }}>

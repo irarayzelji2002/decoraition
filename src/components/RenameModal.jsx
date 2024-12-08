@@ -103,7 +103,8 @@ const RenameModal = ({ isOpen, onClose, handleRename, isDesign, object }) => {
             ...textFieldStyles,
             marginBottom: "16px",
           }}
-          inputProps={{ ...textFieldInputProps, maxLength: 100 }}
+          InputProps={textFieldInputProps}
+          inputProps={{ maxLength: 100 }}
         />
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>

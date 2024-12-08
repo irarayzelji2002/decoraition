@@ -33,6 +33,7 @@ import { useSharedProps } from "../contexts/SharedPropsContext.js";
 import { toggleComments } from "../pages/DesignSpace/backend/DesignActions.jsx";
 import { useNetworkStatus } from "../hooks/useNetworkStatus.js";
 import deepEqual from "deep-equal";
+import { textFieldInputProps } from "../pages/DesignSpace/DesignSettings.jsx";
 
 function DesignHead({
   design,
@@ -704,6 +705,7 @@ function DesignHead({
                 variant="outlined"
                 className="headTitleInput headTitle"
                 fullWidth
+                InputProps={textFieldInputProps}
                 inputProps={{ maxLength: 100 }}
                 sx={{
                   backgroundColor: "transparent",

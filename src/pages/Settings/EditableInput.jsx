@@ -132,6 +132,7 @@ export default function EditableInput({
             },
           }}
           InputProps={{
+            style: { color: "var(--color-white)" },
             endAdornment: (
               <InputAdornment position="end">
                 {isEditable && (
@@ -150,6 +151,7 @@ export default function EditableInput({
               </InputAdornment>
             ),
           }}
+          inputProps={{ maxLength: 255 }}
         />
       </div>
     </div>

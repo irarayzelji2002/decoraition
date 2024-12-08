@@ -57,6 +57,7 @@ export default function Password({
             </InputAdornment>
           ),
         }}
+        inputProps={{ maxLength: 128 }}
       />
     </FormControl>
   );

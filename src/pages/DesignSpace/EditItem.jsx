@@ -515,6 +515,7 @@ const EditItem = () => {
             onChange={handleSearchQueryChange}
             onKeyDown={handleKeyDown}
             InputProps={{
+              style: { color: "var(--color-white)" },
               startAdornment: (
                 <InputAdornment position="start" sx={{ color: "var(--color-white)" }}>
                   <SearchIcon />
@@ -555,7 +556,7 @@ const EditItem = () => {
               },
             }}
             fullWidth
-            inputProps={{ ...textFieldInputProps, maxLength: 100 }}
+            inputProps={{ maxLength: 100 }}
           />
           <div style={{ position: "relative", width: "100%" }}>
             {openSearchResultOptions && ebaySearchResults.length > 0 && (
@@ -658,7 +659,8 @@ const EditItem = () => {
                   clearFieldError("itemName");
                 }}
                 sx={priceTextFieldStyles}
-                inputProps={{ ...textFieldInputProps, maxLength: 100 }}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 100 }}
               />
             </div>
             {errors?.itemName && <div className="error-text">{errors.itemName}</div>}
@@ -679,7 +681,8 @@ const EditItem = () => {
                   clearFieldError("description");
                 }}
                 sx={priceTextFieldStyles}
-                inputProps={{ ...textFieldInputProps, maxLength: 255 }}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 255 }}
               />
             </div>
             {errors?.description && <div className="error-text">{errors.description}</div>}
@@ -716,7 +719,8 @@ const EditItem = () => {
                       clearFieldError("cost");
                     }}
                     sx={priceTextFieldStyles}
-                    inputProps={{ ...textFieldInputProps, maxLength: 12 }}
+                    InputProps={textFieldInputProps}
+                    inputProps={{ maxLength: 12 }}
                   />
                 </div>
               </div>

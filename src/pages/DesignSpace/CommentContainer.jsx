@@ -1329,6 +1329,7 @@ const CommentContainer = ({
                     },
                   }}
                   InputProps={{
+                    style: { color: "var(--color-white)" },
                     endAdornment: (
                       <InputAdornment
                         position="end"
@@ -1379,6 +1380,7 @@ const CommentContainer = ({
                       </InputAdornment>
                     ),
                   }}
+                  inputProps={{ maxLength: 1000 }}
                 />
                 {openMentionOptions && mentionOptions.length > 0 && isEditingComment && (
                   <Paper
@@ -1704,6 +1706,7 @@ const CommentContainer = ({
                     },
                   }}
                   InputProps={{
+                    style: { color: "var(--color-white)" },
                     endAdornment: (
                       <InputAdornment
                         position="end"
@@ -1737,6 +1740,7 @@ const CommentContainer = ({
                       </InputAdornment>
                     ),
                   }}
+                  inputProps={{ maxLength: 1000 }}
                 />
                 {openMentionOptions && mentionOptions.length > 0 && isAddingReply && (
                   <Paper

@@ -346,7 +346,8 @@ export default function LoginModal() {
             error={!!errors.email}
             helperText={errors.email}
             sx={{ ...commonInputStyles, marginBottom: "20px" }}
-            inputProps={{ maxLength: 254, ...textFieldInputProps }}
+            InputProps={textFieldInputProps}
+            inputProps={{ maxLength: 255 }}
           />
           {emailLimitReached && (
             <Typography color="var(--color-quaternary)" variant="body2">
@@ -387,7 +388,7 @@ export default function LoginModal() {
               ),
             }}
             sx={{ ...commonInputStyles, marginBottom: "15px" }}
-            inputProps={{ maxLength: 50 }}
+            inputProps={{ maxLength: 128 }}
           />
           {passwordLimitReached && (
             <Typography color="error" variant="body2">

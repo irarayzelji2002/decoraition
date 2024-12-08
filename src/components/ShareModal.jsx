@@ -28,6 +28,7 @@ import {
 } from "./RenameModal";
 import { CheckboxIcon, CheckboxCheckedIcon } from "./svg/SharedIcons";
 import { useSharedProps } from "../contexts/SharedPropsContext";
+import { textFieldInputProps } from "../pages/DesignSpace/DesignSettings";
 
 const ShareModal = ({
   isOpen,
@@ -351,6 +352,7 @@ const ShareModal = ({
             minRows={1}
             variant="standard"
             placeholder={notifyPeople ? "Add a message" : "Enable notify people to add a message"}
+            InputProps={textFieldInputProps}
             inputProps={{ maxLength: maxChars }}
             value={message}
             onChange={handleInputChange}

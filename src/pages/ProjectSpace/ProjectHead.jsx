@@ -36,6 +36,7 @@ import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 import deepEqual from "deep-equal";
 import _ from "lodash";
 import { highlightName } from "../../components/DesignHead.jsx";
+import { textFieldInputProps } from "../DesignSpace/DesignSettings.jsx";
 
 function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
   const { user, userDoc, handleLogout, notificationUpdate } = useSharedProps();
@@ -575,7 +576,8 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
                 variant="outlined"
                 className="headTitleInput headTitle"
                 fullWidth
-                inputProps={{ maxLength: 20 }}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 100 }}
                 sx={{
                   backgroundColor: "transparent",
                   input: { color: "var(--color-white)" },

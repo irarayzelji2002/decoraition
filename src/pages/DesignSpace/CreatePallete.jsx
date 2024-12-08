@@ -41,6 +41,7 @@ import { set } from "lodash";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { debounce } from "lodash";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { textFieldInputProps } from "./DesignSettings";
 
 const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) => {
   const { user, userDoc } = useSharedProps();
@@ -286,6 +287,8 @@ const CreatePallete = ({ open, onClose, isEditingPalette, colorPaletteToEdit }) 
                   marginTop: "5px",
                 },
               }}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 30 }}
             />
           </div>
 

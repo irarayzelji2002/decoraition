@@ -548,6 +548,7 @@ function AddCommentContainer({
                 },
               }}
               InputProps={{
+                style: { color: "var(--color-white)" },
                 endAdornment: (
                   <InputAdornment
                     position="end"
@@ -569,6 +570,7 @@ function AddCommentContainer({
                   </InputAdornment>
                 ),
               }}
+              inputProps={{ maxLength: 1000 }}
             />
             {openMentionOptions && mentionOptions.length > 0 && isAddingComment && (
               <Paper

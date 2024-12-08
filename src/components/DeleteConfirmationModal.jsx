@@ -95,7 +95,8 @@ const DeleteConfirmationModal = ({ isOpen, onClose, handleDelete, isDesign, obje
             ...textFieldStyles,
             marginBottom: "16px",
           }}
-          inputProps={textFieldInputProps}
+          InputProps={textFieldInputProps}
+          inputProps={{ maxLength: 100 }}
         /> */}
         <Typography variant="body1" sx={{ marginBottom: "10px", textAlign: "center" }}>
           Are you sure you want to delete the{" "}

@@ -540,6 +540,10 @@ export const trackImageGenerationProgress = async (
     let attempts = 0;
     const MAX_ATTEMPTS = 300;
 
+    let lastProgress = 0;
+    let stuckStartTime = null;
+    const STUCK_THRESHOLD = 30000; // 30 seconds in milliseconds
+
     setIsGenerating(true);
     let progress = 0;
     let eta_relative = 0;
@@ -575,6 +579,28 @@ export const trackImageGenerationProgress = async (
       current_image = data.current_image;
       status = data.status;
       curr_step = data.state.sampling_step;
+
+      // Check for stuck progress
+      if (progress > 0.02 && progress === lastProgress) {
+        // Only check if progress > 2%
+        if (!stuckStartTime) {
+          stuckStartTime = Date.now();
+        } else if (Date.now() - stuckStartTime >= STUCK_THRESHOLD) {
+          // Progress has been stuck for too long
+          setIsGenerating(false);
+          setProgress(0);
+          setEta("");
+          showToast(
+            "error",
+            "Image generation was interrupted due to being stuck. Please wait for a while before trying again."
+          );
+          throw new Error("Generation stuck at same percentage for too long");
+        }
+      } else {
+        // Progress changed, reset stuck timer
+        stuckStartTime = null;
+        lastProgress = progress;
+      }
 
       // Display progress for each image
       if (current_image_index < number_of_images) {

@@ -1175,7 +1175,8 @@ function SelectMaskCanvas({
                 size="small"
                 helperText={errors?.maskPrompt || generationErrors?.maskPrompt}
                 variant="outlined"
-                inputProps={textFieldInputProps}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 100 }}
                 sx={{
                   ...textFieldStyles,
                   flexGrow: 1,

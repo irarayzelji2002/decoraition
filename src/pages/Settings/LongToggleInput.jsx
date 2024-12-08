@@ -113,6 +113,7 @@ const LongToggleInput = ({ label, value, onToggle, isConnectedAccount, disabled 
             },
           }}
           InputProps={{
+            style: { color: "var(--color-white)" },
             endAdornment: <InputAdornment position="end">{icon}</InputAdornment>,
           }}
         />

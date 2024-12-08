@@ -144,6 +144,7 @@ const EditableInputThree = ({
                 },
               }}
               InputProps={{
+                style: { color: "var(--color-white)" },
                 endAdornment: (
                   <InputAdornment position="end">
                     {isEditing && (
@@ -154,6 +155,7 @@ const EditableInputThree = ({
                   </InputAdornment>
                 ),
               }}
+              inputProps={{ maxLength: label !== "Username" ? 50 : 20 }}
             />
           </div>
         ))}

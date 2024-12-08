@@ -631,7 +631,7 @@ export const InactivitySetting = ({ label, value, onChange, options, disabled })
       value={value}
       onChange={onChange}
       className="inactivityTextField"
-      inputProps={textFieldInputProps}
+      InputProps={textFieldInputProps}
       sx={!disabled ? textFieldStyles : disabledTextFieldStyles}
       disabled={disabled}
     /> */}

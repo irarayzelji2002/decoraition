@@ -1409,6 +1409,7 @@ function Settings() {
                   </InputAdornment>
                 ),
               }}
+              inputProps={{ maxLength: 128 }}
             />
             <Typography variant="body1" sx={{ marginBottom: "10px" }}>
               Confirm password
@@ -1475,6 +1476,7 @@ function Settings() {
                   </InputAdornment>
                 ),
               }}
+              inputProps={{ maxLength: 128 }}
             />
           </DialogContent>
           <DialogActions sx={dialogActionsStyles}>

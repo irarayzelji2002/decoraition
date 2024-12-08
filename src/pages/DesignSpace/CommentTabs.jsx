@@ -363,16 +363,15 @@ function CommentTabs({
         });
 
       // Set selectedId to first comment's id if available
+      setFilteredAndSortedComments(filteredAndSortedComments);
+      console.log(
+        `filteredAndSortedComments - all comments ${commentTypeTab ? "(open)" : "(resolved)"}`,
+        filteredAndSortedComments
+      );
       if (filteredAndSortedComments.length > 0) {
         setSelectedId(filteredAndSortedComments[0].id);
-        setFilteredAndSortedComments(filteredAndSortedComments);
-        console.log(
-          `filteredAndSortedComments - all comments ${commentTypeTab ? "(open)" : "(resolved)"}`,
-          filteredAndSortedComments
-        );
       } else {
         setSelectedId("");
-        setFilteredAndSortedComments([]);
       }
     } else {
       // For You tab (user's comments, replies, and mentions)
@@ -422,13 +421,12 @@ function CommentTabs({
         });
 
       // Set selectedId to first comment's id if available
+      setFilteredAndSortedComments(filteredAndSortedComments);
+      console.log("filteredAndSortedComments - for you", filteredAndSortedComments);
       if (filteredAndSortedComments.length > 0) {
         setSelectedId(filteredAndSortedComments[0].id);
-        setFilteredAndSortedComments(filteredAndSortedComments);
-        console.log("filteredAndSortedComments - for you", filteredAndSortedComments);
       } else {
         setSelectedId("");
-        setFilteredAndSortedComments([]);
       }
     }
   }, [
@@ -440,6 +438,10 @@ function CommentTabs({
     userOwnedComments,
     userOwnedReplies,
   ]);
+
+  useEffect(() => {
+    console.log("filteredAndSortedComments - designComments updated:", designComments);
+  }, [designComments]);
 
   // Notification highlight
   useEffect(() => {
@@ -655,25 +657,28 @@ function CommentTabs({
                 style={{ width: "100px" }}
                 alt=""
               />
-              {commentForTab && commentTypeTab && (
+              {design?.history?.length === 0 && (
+                <p className="grey-text center">Generate an image first to comment.</p>
+              )}
+              {commentForTab && commentTypeTab && design?.history?.length > 0 && (
                 <>
                   <p className="grey-text center">No opened comments yet.</p>
                   <p className="grey-text center">Start adding.</p>
                 </>
               )}
-              {commentForTab && !commentTypeTab && (
+              {commentForTab && !commentTypeTab && design?.history?.length > 0 && (
                 <>
                   <p className="grey-text center">No resolved comments yet.</p>
                   <p className="grey-text center">Start resolving.</p>
                 </>
               )}
-              {!commentForTab && commentTypeTab && (
+              {!commentForTab && commentTypeTab && design?.history?.length > 0 && (
                 <p className="grey-text center">
                   You don't have open comments yet or there are no open comments where you're
                   mentioned.
                 </p>
               )}
-              {!commentForTab && !commentTypeTab && (
+              {!commentForTab && !commentTypeTab && design?.history?.length > 0 && (
                 <p className="grey-text center">
                   You don't have resolved comments yet or there are no resolved comments where
                   you're mentioned.
@@ -685,7 +690,7 @@ function CommentTabs({
       )}
 
       {/* Add a comment button */}
-      {!isAddingComment && isOwnerEditorCommenter && (
+      {!isAddingComment && isOwnerEditorCommenter && design?.history?.length > 0 && (
         <Box sx={{ margin: "0px 20px 0px 20px" }}>
           <Button
             fullWidth

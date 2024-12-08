@@ -887,7 +887,8 @@ function Budget() {
                         }
                       }}
                       sx={priceTextFieldStyles}
-                      inputProps={{ ...textFieldInputProps, maxLength: 22 }}
+                      InputProps={textFieldInputProps}
+                      inputProps={{ maxLength: 22 }}
                     />
                   </div>
                 </div>

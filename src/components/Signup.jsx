@@ -281,7 +281,8 @@ const Signup = () => {
               helperText={
                 errors.firstName || (firstName.length >= 50 ? "Character limit reached!" : "")
               }
-              inputProps={{ ...textFieldInputProps, maxLength: 50 }}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 50 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <span className="formLabels">
@@ -302,7 +303,8 @@ const Signup = () => {
               helperText={
                 errors.lastName || (lastName.length >= 50 ? "Character limit reached!" : "")
               }
-              inputProps={{ ...textFieldInputProps, maxLength: 50 }}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 50 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <span className="formLabels">
@@ -323,7 +325,8 @@ const Signup = () => {
               helperText={
                 errors.username || (username.length >= 20 ? "Character limit reached!" : "")
               }
-              inputProps={{ ...textFieldInputProps, maxLength: 20 }}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 20 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <span className="formLabels">
@@ -341,8 +344,9 @@ const Signup = () => {
                 clearFieldError("email");
               }}
               error={!!errors.email}
-              helperText={errors.email || (email.length >= 254 ? "Character limit reached!" : "")}
-              inputProps={{ ...textFieldInputProps, maxLength: 254 }}
+              helperText={errors.email || (email.length >= 255 ? "Character limit reached!" : "")}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 255 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
 
@@ -365,7 +369,7 @@ const Signup = () => {
               error={!!errors.password || (!passwordValidation.valid && password.length > 0)}
               helperText={
                 errors.password ||
-                (password.length >= 50
+                (password.length >= 128
                   ? "Character limit reached!"
                   : password.length > 0
                   ? passwordValidation.message
@@ -394,8 +398,8 @@ const Signup = () => {
                     </IconButton>
                   </InputAdornment>
                 ),
-                maxLength: 50,
               }}
+              inputProps={{ maxLength: 128 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <span className="formLabels">
@@ -416,7 +420,7 @@ const Signup = () => {
               }
               helperText={
                 errors.confirmPassword ||
-                (confirmPassword.length >= 50
+                (confirmPassword.length >= 128
                   ? "Character limit reached!"
                   : confirmPassword.length > 0
                   ? passwordMatch === false
@@ -454,8 +458,8 @@ const Signup = () => {
                     </IconButton>
                   </InputAdornment>
                 ),
-                maxLength: 50,
               }}
+              inputProps={{ maxLength: 128 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <TermsCheckbox

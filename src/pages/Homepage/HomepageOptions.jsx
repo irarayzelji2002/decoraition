@@ -116,13 +116,13 @@ function HomepageOptions({
       // First check if restricted access
       if (design?.designSettings?.generalAccessSetting === 0) {
         // Only check explicit roles
-        if (userDoc.id === design.owner) newRole = 3;
+        if (userDoc.id === design.owner || userDoc.id === design?.ownerId) newRole = 3;
         else if (design.editors?.includes(userDoc.id)) newRole = 1;
         else if (design.commenters?.includes(userDoc.id)) newRole = 2;
         else if (design.viewers?.includes(userDoc.id)) newRole = 0;
       } else {
         // Anyone with link - check both explicit roles and general access
-        if (userDoc.id === design.owner) newRole = 3;
+        if (userDoc.id === design.owner || userDoc.id === design?.ownerId) newRole = 3;
         else if (
           design.editors?.includes(userDoc.id) ||
           design?.designSettings?.generalAccessRole === 1
@@ -155,13 +155,15 @@ function HomepageOptions({
       // First check if restricted access
       if (project?.projectSettings?.generalAccessSetting === 0) {
         // Only check explicit roles
-        if (project.managers?.includes(userDoc.id)) newRole = 3;
+        if (project.managers?.includes(userDoc.id) || project?.managersId?.includes(userDoc.id))
+          newRole = 3;
         else if (project.contentManager?.includes(userDoc.id)) newRole = 2;
         else if (project.contributors?.includes(userDoc.id)) newRole = 1;
         else if (project.viewers?.includes(userDoc.id)) newRole = 0;
       } else {
         // Anyone with link - check both explicit roles and general access
-        if (project.managers?.includes(userDoc.id)) newRole = 3;
+        if (project.managers?.includes(userDoc.id) || project?.managersId?.includes(userDoc.id))
+          newRole = 3;
         else if (
           project.contentManager?.includes(userDoc.id) ||
           project?.projectSettings?.generalAccessRole === 2

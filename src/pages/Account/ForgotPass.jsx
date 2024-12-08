@@ -87,7 +87,8 @@ export default function ForgotPass1() {
             error={!!emailError}
             helperText={emailError}
             sx={commonInputStyles}
-            inputProps={textFieldInputProps}
+            InputProps={textFieldInputProps}
+            inputProps={{ maxLength: 255 }}
           />
 
           <Button

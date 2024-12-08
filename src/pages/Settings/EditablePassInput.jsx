@@ -172,6 +172,7 @@ const EditablePassInput = ({
                     },
                   }}
                   InputProps={{
+                    style: { color: "var(--color-white)" },
                     endAdornment: (
                       <InputAdornment position="end">
                         {isEditing && (
@@ -194,6 +195,7 @@ const EditablePassInput = ({
                       </InputAdornment>
                     ),
                   }}
+                  inputProps={{ maxLength: 128 }}
                 />
               </div>
             ))}

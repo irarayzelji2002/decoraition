@@ -3,7 +3,10 @@ import { Box, Typography, IconButton, InputBase, Select, MenuItem } from "@mui/m
 import {
   KeyboardArrowRightRounded as KeyboardArrowRightRoundedIcon,
   KeyboardArrowLeftRounded as KeyboardArrowLeftRoundedIcon,
+  KeyboardArrowDownRounded as KeyboardArrowDownRoundedIcon,
 } from "@mui/icons-material";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
+import { selectStyles, menuItemStyles } from "../DesignSpace/DesignSettings";
 
 const RepeatSelector = ({ count: initialCount, unit: initialUnit, onRepeatChange }) => {
   const [count, setCount] = useState(initialCount);
@@ -58,6 +61,10 @@ const RepeatSelector = ({ count: initialCount, unit: initialUnit, onRepeatChange
     }
   };
 
+  useEffect(() => {
+    console.log(`count: ${count}; type: ${typeof count} unit: ${unit}`);
+  }, [count, unit]);
+
   return (
     <Box
       display="flex"
@@ -66,25 +73,23 @@ const RepeatSelector = ({ count: initialCount, unit: initialUnit, onRepeatChange
       sx={{
         flexDirection: "column",
         alignItems: "flex-start",
+        marginTop: "-5px",
       }}
     >
-      <Typography variant="body1">Repeat every</Typography>
+      {count !== null && unit !== "none" && (
+        <Typography variant="body1" sx={{ fontSize: "0.875rem" }}>
+          {`Repeat every ${count === 1 ? "" : count} ${count > 1 ? `${unit}s` : unit}`}
+        </Typography>
+      )}
       <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          sx={{
-            border: "1px solid gray",
-            borderRadius: 1,
-            backgroundColor: "var(--inputBg)",
-          }}
-        >
-          <IconButton onClick={handleDecrement} size="small">
-            <KeyboardArrowLeftRoundedIcon fontSize="small" />
+        <div className="quantity-section" style={{ margin: 0 }}>
+          <IconButton onClick={handleDecrement} sx={iconButtonStyles} className="left">
+            <KeyboardArrowLeftRoundedIcon sx={{ color: "var(color-white)" }} />
           </IconButton>
           <InputBase
-            value={unit === "none" ? "" : count}
+            value={unit === "none" ? "No. of" : count}
             readOnly
+            inputProps={{ style: { textAlign: "center" } }}
             sx={{
               width: "50px",
               textAlign: "center !important",
@@ -92,25 +97,59 @@ const RepeatSelector = ({ count: initialCount, unit: initialUnit, onRepeatChange
               color: "var(--color-white)",
             }}
           />
-          <IconButton onClick={handleIncrement} size="small">
-            <KeyboardArrowRightRoundedIcon fontSize="small" />
+          <IconButton onClick={handleIncrement} sx={iconButtonStyles} className="right">
+            <KeyboardArrowRightRoundedIcon sx={{ color: "var(color-white)" }} />
           </IconButton>
-        </Box>
+        </div>
         <Select
           value={unit}
           onChange={handleUnitChange}
+          IconComponent={(props) => (
+            <KeyboardArrowDownRoundedIcon sx={{ color: "var(--color-white) !important" }} />
+          )}
           sx={{
-            border: "1px solid gray",
-            borderRadius: 1,
-            width: "100px",
-            color: "var(--color-white)",
+            ...selectStyles,
+            height: "fit-content",
+            "& .MuiInputBase-input": {
+              WebkitTextFillColor: unit === "none" ? "var(--greyText)" : "var(--color-white)",
+              padding: "17px 40px 17px 20px !important",
+            },
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                borderRadius: "10px",
+                "& .MuiMenu-list": {
+                  padding: 0,
+                },
+                "& .MuiMenuItem-root[aria-disabled='true']": {
+                  display: "none",
+                },
+              },
+            },
+          }}
+          renderValue={(selected) => {
+            if (selected === "none") {
+              return "Time period";
+            }
+            return selected;
           }}
         >
-          <MenuItem value="none">none</MenuItem>
-          <MenuItem value="day">day</MenuItem>
-          <MenuItem value="week">week</MenuItem>
-          <MenuItem value="month">month</MenuItem>
-          <MenuItem value="year">year</MenuItem>
+          <MenuItem disabled value="none" sx={menuItemStyles}>
+            Time period
+          </MenuItem>
+          <MenuItem value="day" sx={menuItemStyles}>
+            day
+          </MenuItem>
+          <MenuItem value="week" sx={menuItemStyles}>
+            week
+          </MenuItem>
+          <MenuItem value="month" sx={menuItemStyles}>
+            month
+          </MenuItem>
+          <MenuItem value="year" sx={menuItemStyles}>
+            year
+          </MenuItem>
         </Select>
       </div>
     </Box>

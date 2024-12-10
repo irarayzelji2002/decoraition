@@ -154,14 +154,17 @@ export const fetchTasks = async (timelineId) => {
   }
 };
 
-export const deleteTask = async (userId, projectId, taskId) => {
+export const deleteTask = async (timelineId, taskId, user, userDoc) => {
   try {
-    const token = await auth.currentUser.getIdToken();
-    await axios.delete(`/api/timeline/event/${taskId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    await axios.post(
+      `/api/timeline/${timelineId}/delete-event`,
+      { userId: userDoc.id, taskId },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
   } catch (e) {
     console.error("Error deleting document: ", e);
     showToast("error", "Error deleting task! Please try again.");
@@ -185,7 +188,7 @@ export const createEvent = async (timelineId, eventData) => {
   try {
     const token = await auth.currentUser.getIdToken();
     const response = await axios.post(
-      `/api/timeline/${timelineId}/event`,
+      `/api/timeline/${timelineId}/add-event`,
       {
         timelineId: eventData.timelineId,
         eventName: eventData.eventName,
@@ -258,14 +261,27 @@ export const fetchPins = async (projectId, setPins) => {
   }
 };
 
-export const addPinToDatabase = async (projectId, pinData) => {
+export const addPinToDatabase = async (projectId, pinData, userDoc, user) => {
   try {
-    const pinRef = collection(db, "pins");
-    await addDoc(pinRef, {
-      projectId,
-      ...pinData,
-    });
-    showToast("success", "Pin added successfully");
+    console.log(`Adding pin to project ${projectId} with data:`, pinData);
+    const response = await axios.post(
+      `/api/project/${projectId}/add-pin`,
+      {
+        userId: userDoc.id,
+        ...pinData,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+    console.log("Add pin response:", response);
+    if (response.status === 200) {
+      showToast("success", "Pin added successfully");
+      return;
+    }
+    showToast("error", "Failed to add pin");
   } catch (error) {
     console.error("Error adding pin: ", error);
     showToast("error", "Failed to add pin");
@@ -292,15 +308,19 @@ export const savePinOrder = async (projectId, pins) => {
   }
 };
 
-export const deleteProjectPin = async (projectId, pinId) => {
+export const deleteProjectPin = async (projectId, pinId, user, userDoc) => {
   try {
-    console.log(`Deleting pin ${pinId} from project ${projectId}`); // Debug log
-    const token = await auth.currentUser.getIdToken();
-    const response = await axios.delete(`/api/project/${projectId}/pin/${pinId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    console.log(`Deleting pin ${pinId} from project ${projectId}`);
+    const token = await user.getIdToken();
+    const response = await axios.post(
+      `/api/project/${projectId}/deletePin`,
+      { userId: userDoc.id, pinId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     if (response.status === 200) {
       showToast("success", "Pin deleted successfully");
     } else {
@@ -446,16 +466,17 @@ export const handlePlanImageUpload = async (file, projectId, setPlanImage) => {
 
     if (response.status === 200) {
       setPlanImage(response.data.planImage);
+      return { success: true, message: "Plan image uploaded successfully" };
     } else {
-      showToast("error", "Failed to upload plan image");
+      return { success: false, message: "Failed to upload plan image" };
     }
   } catch (error) {
     console.error("Error uploading plan image:", error);
-    showToast("error", "Failed to upload plan image");
+    return { success: false, message: "Failed to upload plan image" };
   }
 };
 
-export const fetchPlanImage = async (projectId, setPlanImage) => {
+export const fetchPlanImage = async (projectId, setPlanImage, setPlanImagePreview) => {
   console.log(`Fetching plan image for project ${projectId}`); // Debug log
   try {
     const token = await auth.currentUser.getIdToken();
@@ -469,9 +490,11 @@ export const fetchPlanImage = async (projectId, setPlanImage) => {
 
     if (response.status === 200 && response.data.planImage) {
       setPlanImage(response.data.planImage);
+      setPlanImagePreview(response.data.planImage);
     } else if (response.status === 404) {
       console.warn("Plan image not found, please upload an image.");
       setPlanImage(null);
+      setPlanImagePreview(null);
     } else {
       showToast("error", "Failed to fetch plan image");
     }
@@ -599,28 +622,28 @@ export const removeDesignFromProject = async (projectId, designId, user, userDoc
   }
 };
 
-export const fetchProjectBudget = async (projectId) => {
-  try {
-    const token = await auth.currentUser.getIdToken();
-    const response = await axios.get(`/api/project/${projectId}/budget`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+// export const fetchProjectBudget = async (projectId) => {
+//   try {
+//     const token = await auth.currentUser.getIdToken();
+//     const response = await axios.get(`/api/project/${projectId}/budget`, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
 
-    if (response.status === 200) {
-      console.log("Project budget fetched successfully:", response.data); // Debug log
-      return response.data;
-    } else {
-      showToast("error", "Failed to fetch project budget.");
-      return null;
-    }
-  } catch (error) {
-    console.error("Error fetching project budget:", error);
-    showToast("error", "Failed to fetch project budget");
-    return null;
-  }
-};
+//     if (response.status === 200) {
+//       console.log("Project budget fetched successfully:", response.data); // Debug log
+//       return response.data;
+//     } else {
+//       showToast("error", "Failed to fetch project budget.");
+//       return null;
+//     }
+//   } catch (error) {
+//     console.error("Error fetching project budget:", error);
+//     showToast("error", "Failed to fetch project budget");
+//     return null;
+//   }
+// };
 
 export const updateProjectBudget = async (projectId, budgetData, user) => {
   try {

@@ -152,12 +152,13 @@ body {
 }
 
 .item-frame-project {
-  width: 80px;
-  height: 80px;
+  min-width: 75px;
+  height: 75px;
   position: relative;
   border-radius: 11px;
   background-color: var(--thumbnailFill);
   border: 1px solid var(--thumbnailBorder);
+  overflow: hidden;
 }
 
 .item-frame-project img {
@@ -173,12 +174,16 @@ body {
 
 .SubtitlePrice {
   font-size: var(--font-size-h6);
-  font-weight: bold;
   color: var(--color-white);
   width: fit-content;
   border-radius: 24px;
   background-color: var(--budget-capsule);
-  padding: 2px 12px;
+  padding: 3px 12px;
+}
+
+.SubtitlePrice.inItemList {
+  padding: 0;
+  opacity: 0.6;
 }
 
 .itemList {

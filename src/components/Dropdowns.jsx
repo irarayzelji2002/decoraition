@@ -6,12 +6,13 @@ import Select from "@mui/material/Select";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { selectStyles, menuItemStyles } from "../pages/DesignSpace/DesignSettings";
 
-export default function SelectSmall({
+export default function Dropdowns({
   sortBy = "",
   order = "",
   onSortByChange = () => {},
   onOrderChange = () => {},
   isDesign = true,
+  isTrash = false,
 }) {
   return (
     <div className="scrollable-div">
@@ -55,6 +56,8 @@ export default function SelectSmall({
               return "Date Created";
             } else if (selected === "modified") {
               return "Date Modified";
+            } else if (selected === "deleted") {
+              return "Date Deleted";
             }
             return selected;
           }}
@@ -70,12 +73,21 @@ export default function SelectSmall({
               Owner
             </MenuItem>
           )}
-          <MenuItem value="created" sx={menuItemStyles}>
-            Date Created
-          </MenuItem>
-          <MenuItem value="modified" sx={menuItemStyles}>
-            Date Modified
-          </MenuItem>
+          {!isTrash && (
+            <MenuItem value="created" sx={menuItemStyles}>
+              Date Created
+            </MenuItem>
+          )}
+          {!isTrash && (
+            <MenuItem value="modified" sx={menuItemStyles}>
+              Date Modified
+            </MenuItem>
+          )}
+          {isTrash && (
+            <MenuItem value="deleted" sx={menuItemStyles}>
+              Date Deleted
+            </MenuItem>
+          )}
         </Select>
       </FormControl>
 

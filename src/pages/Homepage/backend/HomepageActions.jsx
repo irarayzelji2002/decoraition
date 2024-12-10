@@ -91,12 +91,12 @@ export const handleCreateProject = async (user, userId, navigate) => {
   }
 };
 
-// Delete design
-export const handleDeleteDesign = async (user, designId, navigate) => {
+// Move design to trash
+export const handleMoveDesignToTrash = async (user, userDoc, designId) => {
   try {
     const response = await axios.post(
-      `/api/design/delete/${designId}`,
-      {},
+      `/api/design/${designId}/trash`,
+      { userId: userDoc.id },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -105,26 +105,46 @@ export const handleDeleteDesign = async (user, designId, navigate) => {
     );
 
     if (response.status === 200) {
-      showToast("success", "Design deleted successfully");
-      navigate("/seeAllDesigns");
-      return { success: true, message: "Design deleted successfully" };
+      return { success: true, message: "Design moved to trash" };
     } else {
-      showToast("error", "Failed to delete design.");
-      return { success: false, message: "Failed to delete design" };
+      return { success: false, message: "Failed to move design to trash" };
     }
   } catch (error) {
-    console.error("Error deleting design:", error);
-    showToast("error", "Failed to delete design");
-    return { success: false, message: "Failed to delete design" };
+    console.error("Error moving design to trash:", error.message);
+    return { success: false, message: "Failed to move design to trash" };
   }
 };
 
-// Delete project
-export const handleDeleteProject = async (user, projectId, navigate) => {
+// Delete design permanently
+export const handleDeleteDesign = async (user, userDoc, designId) => {
   try {
     const response = await axios.post(
-      `/api/project/delete/${projectId}`,
-      {},
+      `/api/design/${designId}/delete`,
+      { userId: userDoc.id, fromTrash: true },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+    console.log("Trash - Design delete response:", response);
+    if (response.status === 200) {
+      return { success: true, message: "Trash - Design deleted successfully" };
+    } else {
+      return { success: false, message: "Trash - Failed to delete design" };
+    }
+  } catch (error) {
+    console.error("Error deleting design:", error.message);
+    return { success: false, message: "Trash - Failed to delete design" };
+  }
+};
+
+// Restore design from trash
+export const handleRestoreDesign = async (user, userDoc, designId) => {
+  try {
+    const response = await axios.post(
+      `/api/design/${designId}/restoreFromTrash`,
+      { userId: userDoc.id },
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
@@ -133,17 +153,109 @@ export const handleDeleteProject = async (user, projectId, navigate) => {
     );
 
     if (response.status === 200) {
-      showToast("success", "Project deleted successfully");
-      navigate("/seeAllProjects");
-      return { success: false, message: "Project deleted successfully" };
+      return { success: true, message: "Design restored successfully" };
     } else {
-      showToast("error", "Failed to delete project.");
-      return { success: false, message: "Failed to delete project" };
+      return { success: false, message: "Failed to restore design" };
     }
   } catch (error) {
-    console.error("Error deleting project:", error);
-    showToast("error", "Failed to delete project");
-    return { success: false, message: "Failed to delete project" };
+    console.error("Error deleting design:", error.message);
+    return { success: false, message: "Failed to restore design" };
+  }
+};
+
+// Move design to trash
+export const handleMoveProjectToTrash = async (user, userDoc, projectId) => {
+  try {
+    const response = await axios.post(
+      `/api/project/${projectId}/trash`,
+      { userId: userDoc.id },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      return { success: true, message: "Project moved to trash" };
+    } else {
+      return { success: false, message: "Failed to move project to trash" };
+    }
+  } catch (error) {
+    console.error("Error moving project to trash:", error.message);
+    return { success: false, message: "Failed to move project to trash" };
+  }
+};
+
+// Delete project permanently
+export const handleDeleteProject = async (user, userDoc, projectId) => {
+  try {
+    const response = await axios.post(
+      `/api/project/${projectId}/delete`,
+      { userId: userDoc.id, fromTrash: true },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+    console.log("Trash - Project delete response:", response);
+    if (response.status === 200) {
+      return { success: true, message: "Trash - Project deleted successfully" };
+    } else {
+      return { success: false, message: "Trash - Failed to delete project" };
+    }
+  } catch (error) {
+    console.error("Error deleting project:", error.message);
+    return { success: false, message: "Trash - Failed to delete project" };
+  }
+};
+
+// Restore project from trash
+export const handleRestoreProject = async (user, userDoc, projectId) => {
+  try {
+    const response = await axios.post(
+      `/api/project/${projectId}/restoreFromTrash`,
+      { userId: userDoc.id },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      return { success: true, message: "Project restored successfully" };
+    } else {
+      return { success: false, message: "Failed to restore project" };
+    }
+  } catch (error) {
+    console.error("Error deleting project:", error.message);
+    return { success: false, message: "Failed to restore project" };
+  }
+};
+
+// Empty trash
+export const emptyTrash = async (user, userDoc, toDelete) => {
+  try {
+    const response = await axios.post(
+      `/api/trash/empty-trash`,
+      { userId: userDoc.id, toDelete },
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      return { success: true, message: "Project restored successfully" };
+    } else {
+      return { success: false, message: "Failed to restore project" };
+    }
+  } catch (error) {
+    console.error("Error deleting project:", error.message);
+    return { success: false, message: "Failed to restore project" };
   }
 };
 
@@ -395,4 +507,47 @@ export const getUsernames = async (userIds) => {
     console.error("Error fetching usernames:", error.message);
   }
   return [];
+};
+
+export function formatDateNowDash() {
+  const now = new Date();
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const month = months[now.getMonth()];
+  const day = String(now.getDate()).padStart(2, "0");
+  const year = now.getFullYear();
+
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12; // Convert to 12-hour format
+
+  return `${month}-${day}-${year}-${String(hours).padStart(2, "0")}-${minutes}-${ampm}`;
+}
+
+// Sanitize filename - only allow alphanumeric, dots, dashes, and underscores
+export const sanitizeFileName = (str) => {
+  return str
+    .replace(/[^a-zA-Z0-9.-_\s]/g, "") // Remove special characters except dots, dashes, underscores
+    .replace(/\s+/g, "-") // Replace spaces with dashes
+    .trim();
+};
+
+// Truncate and sanitize design name
+export const truncateString = (str, maxLength) => {
+  if (str.length <= maxLength) return str;
+  return str.substring(0, maxLength) + "...";
 };

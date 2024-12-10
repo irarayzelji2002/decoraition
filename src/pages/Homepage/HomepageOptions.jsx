@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import "../../css/homepage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { showToast } from "../../functions/utils";
-import { handleDeleteDesign, handleDeleteProject } from "./backend/HomepageActions";
+import { handleMoveDesignToTrash, handleMoveProjectToTrash } from "./backend/HomepageActions";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import {
   handleNameChange as handleNameChangeDesign,
@@ -116,13 +116,13 @@ function HomepageOptions({
       // First check if restricted access
       if (design?.designSettings?.generalAccessSetting === 0) {
         // Only check explicit roles
-        if (userDoc.id === design.owner) newRole = 3;
+        if (userDoc.id === design.owner || userDoc.id === design?.ownerId) newRole = 3;
         else if (design.editors?.includes(userDoc.id)) newRole = 1;
         else if (design.commenters?.includes(userDoc.id)) newRole = 2;
         else if (design.viewers?.includes(userDoc.id)) newRole = 0;
       } else {
         // Anyone with link - check both explicit roles and general access
-        if (userDoc.id === design.owner) newRole = 3;
+        if (userDoc.id === design.owner || userDoc.id === design?.ownerId) newRole = 3;
         else if (
           design.editors?.includes(userDoc.id) ||
           design?.designSettings?.generalAccessRole === 1
@@ -155,13 +155,15 @@ function HomepageOptions({
       // First check if restricted access
       if (project?.projectSettings?.generalAccessSetting === 0) {
         // Only check explicit roles
-        if (project.managers?.includes(userDoc.id)) newRole = 3;
+        if (project.managers?.includes(userDoc.id) || project?.managersId?.includes(userDoc.id))
+          newRole = 3;
         else if (project.contentManager?.includes(userDoc.id)) newRole = 2;
         else if (project.contributors?.includes(userDoc.id)) newRole = 1;
         else if (project.viewers?.includes(userDoc.id)) newRole = 0;
       } else {
         // Anyone with link - check both explicit roles and general access
-        if (project.managers?.includes(userDoc.id)) newRole = 3;
+        if (project.managers?.includes(userDoc.id) || project?.managersId?.includes(userDoc.id))
+          newRole = 3;
         else if (
           project.contentManager?.includes(userDoc.id) ||
           project?.projectSettings?.generalAccessRole === 2
@@ -505,10 +507,28 @@ function HomepageOptions({
     toggleOptions(id);
   };
 
-  const handleDelete = (userId, id, navigate) => {
-    if (isDesign) handleDeleteDesign(userId, id, navigate);
-    else handleDeleteProject(userId, id, navigate);
-    closeDeleteModal();
+  const handleDelete = async () => {
+    if (isDesign) {
+      const result = await handleMoveDesignToTrash(user, userDoc, id);
+      if (!result.success) {
+        showToast("error", "Failed to move design to trash");
+      }
+      showToast("success", "Design moved to trash");
+      navigate("/trash", {
+        state: { navigateFrom: navigateFrom, tab: "Designs", designId: id },
+      });
+      closeDeleteModal();
+    } else {
+      const result = await handleMoveProjectToTrash(user, userDoc, id);
+      if (!result.success) {
+        showToast("error", "Failed to move project to trash");
+      }
+      showToast("success", "Project moved to trash");
+      navigate("/trash", {
+        state: { navigateFrom: navigateFrom, tab: "Projects", projectId: id },
+      });
+      closeDeleteModal();
+    }
   };
 
   // Info Functions
@@ -526,7 +546,6 @@ function HomepageOptions({
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      console.log("is it a table" + isTable);
     };
   }, []);
 
@@ -695,7 +714,7 @@ function HomepageOptions({
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={closeDeleteModal}
-        handleDelete={() => handleDelete(userDoc.id, id, navigate)}
+        handleDelete={handleDelete}
         isDesign={isDesign}
         object={object}
       />

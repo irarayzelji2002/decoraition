@@ -11,10 +11,10 @@ exports.createPlanMap = async (req, res) => {
       name,
       imageUrl,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      modifiedAt: new Date(),
     };
     await planMapRef.set(planMapData);
-    res.status(201).json({ id: planMapRef.id, ...planMapData });
+    res.status(200).json({ id: planMapRef.id, ...planMapData });
   } catch (error) {
     console.error("Error creating plan map:", error);
     res.status(500).json({ error: "Failed to create plan map" });
@@ -41,7 +41,7 @@ exports.updatePlanMap = async (req, res) => {
   try {
     const { planMapId } = req.params;
     const updateData = req.body;
-    updateData.updatedAt = new Date();
+    updateData.modifiedAt = new Date();
     await db.collection("planMaps").doc(planMapId).update(updateData);
     res.json({ message: "Plan map updated successfully" });
   } catch (error) {
@@ -64,22 +64,84 @@ exports.deletePlanMap = async (req, res) => {
 
 // Create Pin
 exports.createPin = async (req, res) => {
+  const createdDocuments = [];
+  const updatedDocuments = [];
   try {
-    const { planMapId } = req.params;
-    const { x, y, label, description } = req.body;
-    const pinRef = db.collection("planMaps").doc(planMapId).collection("pins").doc();
+    const { projectId } = req.params;
+    const { designId, location, color, order } = req.body;
+
+    // Get planMap document first
+    const planMapSnapshot = await db
+      .collection("planMaps")
+      .where("projectId", "==", projectId)
+      .limit(1)
+      .get();
+
+    if (planMapSnapshot.empty) {
+      return res.status(404).json({ error: "PlanMap not found" });
+    }
+
+    const planMapRef = planMapSnapshot.docs[0].ref;
+    const planMapDoc = await planMapRef.get();
+    const previousPins = planMapDoc.data().pins || [];
+
+    // Store previous state for rollback
+    updatedDocuments.push({
+      ref: planMapRef,
+      field: "pins",
+      previousValue: previousPins,
+    });
+
+    // Create pin document
     const pinData = {
-      x,
-      y,
-      label,
-      description,
+      projectId,
+      designId,
+      location,
+      color,
+      order,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      modifiedAt: new Date(),
     };
+
+    const pinRef = db.collection("pins").doc();
     await pinRef.set(pinData);
-    res.status(201).json({ id: pinRef.id, ...pinData });
+    createdDocuments.push({
+      ref: pinRef,
+      data: pinData,
+    });
+
+    // Update planMap's pins array
+    await planMapRef.update({
+      pins: [...previousPins, pinRef.id],
+      modifiedAt: new Date(),
+    });
+
+    console.log(`Pin added to database with ID: ${pinRef.id}`);
+
+    res.status(200).json({ id: pinRef.id, ...pinData });
   } catch (error) {
     console.error("Error creating pin:", error);
+
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update({ [doc.field]: doc.previousValue });
+        console.log(`Rolled back ${doc.field} in document ${doc.ref.path}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back document ${doc.ref.path}:`, rollbackError);
+      }
+    }
+
+    // Delete created documents
+    for (const doc of createdDocuments) {
+      try {
+        await doc.ref.delete();
+        console.log(`Deleted document ${doc.ref.path}`);
+      } catch (deleteError) {
+        console.error(`Error deleting document ${doc.ref.path}:`, deleteError);
+      }
+    }
+
     res.status(500).json({ error: "Failed to create pin" });
   }
 };
@@ -115,7 +177,7 @@ exports.updatePin = async (req, res) => {
   try {
     const { pinId } = req.params;
     const updateData = req.body;
-    updateData.updatedAt = new Date();
+    updateData.modifiedAt = new Date();
     await db.collection("pins").doc(pinId).update(updateData);
     res.json({ message: "Pin updated successfully" });
   } catch (error) {
@@ -126,13 +188,77 @@ exports.updatePin = async (req, res) => {
 
 // Delete Pin
 exports.deletePin = async (req, res) => {
+  const deletedDocuments = [];
+  const updatedDocuments = [];
   try {
-    const { pinId } = req.params;
+    const { projectId } = req.params;
+    const { userId, pinId } = req.body;
     console.log("Delete pin", pinId);
-    await db.collection("pins").doc(pinId).delete();
+
+    // Get planMap document first
+    const planMapSnapshot = await db
+      .collection("planMaps")
+      .where("projectId", "==", projectId)
+      .limit(1)
+      .get();
+
+    if (planMapSnapshot.empty) {
+      return res.status(404).json({ error: "PlanMap not found" });
+    }
+
+    const planMapRef = planMapSnapshot.docs[0].ref;
+    const planMapDoc = await planMapRef.get();
+    const previousPins = planMapDoc.data().pins || [];
+
+    // Store previous state for rollback
+    updatedDocuments.push({
+      ref: planMapRef,
+      field: "pins",
+      previousValue: previousPins,
+    });
+
+    // Remove pinId from planMap's pins array
+    const updatedPins = previousPins.filter((id) => id !== pinId);
+    await planMapRef.update({
+      pins: updatedPins,
+      modifiedAt: new Date(),
+    });
+
+    // Delete the pin document
+    const pinRef = db.collection("pins").doc(pinId);
+    const pinDoc = await pinRef.get();
+    if (pinDoc.exists) {
+      deletedDocuments.push({
+        ref: pinRef,
+        data: pinDoc.data(),
+      });
+      await pinRef.delete();
+    }
+
     res.json({ message: "Pin deleted successfully" });
   } catch (error) {
     console.error("Error deleting pin:", error);
+
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update({ [doc.field]: doc.previousValue });
+        console.log(`Rolled back ${doc.field} in document ${doc.ref.path}`);
+      } catch (rollbackError) {
+        console.error(`Error rolling back document ${doc.ref.path}:`, rollbackError);
+      }
+    }
+
+    // Restore deleted documents
+    for (const doc of deletedDocuments) {
+      try {
+        await doc.ref.set(doc.data);
+        console.log(`Restored document ${doc.ref.path}`);
+      } catch (restoreError) {
+        console.error(`Error restoring document ${doc.ref.path}:`, restoreError);
+      }
+    }
+
     res.status(500).json({ error: "Failed to delete pin" });
   }
 };

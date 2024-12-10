@@ -26,17 +26,7 @@ function BottomBar({ isDesign = true, designId, changeMode, showBudget = false }
   return (
     <CssVarsProvider>
       <div className="bottomBar">
-        <Button
-          size="md"
-          color="#302f37"
-          sx={{
-            mr: 2,
-            ":hover": {
-              backgroundColor: "var(--iconBg)",
-            },
-          }}
-          onClick={handleDesignClick}
-        >
+        <Button size="md" color="#302f37" sx={bottomBarButtonStyles} onClick={handleDesignClick}>
           <div
             style={{
               display: "flex",
@@ -114,16 +104,7 @@ function BottomBar({ isDesign = true, designId, changeMode, showBudget = false }
         </Button>
 
         {showBudget && (
-          <Button
-            size="md"
-            color="#302f37"
-            sx={{
-              ":hover": {
-                backgroundColor: "var(--iconBg)",
-              },
-            }}
-            onClick={handleBudgetClick}
-          >
+          <Button size="md" color="#302f37" sx={bottomBarButtonStyles} onClick={handleBudgetClick}>
             <div
               style={{
                 display: "flex",
@@ -160,3 +141,12 @@ function BottomBar({ isDesign = true, designId, changeMode, showBudget = false }
 }
 
 export default BottomBar;
+
+const bottomBarButtonStyles = {
+  color: "var(--color-white)",
+  borderRadius: "10px",
+  // width: "78px",
+  ":hover": {
+    backgroundColor: "var(--iconBg)",
+  },
+};

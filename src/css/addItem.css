@@ -43,6 +43,7 @@
 /* Upload Section */
 .upload-section {
   text-align: center;
+  margin-top: 20px;
 }
 
 .uploaded-image {
@@ -201,6 +202,15 @@
   border-radius: 8px;
   height: 53px;
   margin-top: 12px;
+}
+
+.quantity-section.bgModal {
+  background-color: var(--nav-card-modal);
+  width: 128px;
+}
+
+.quantity-section.bgModal button {
+  background-color: var(--iconBg);
 }
 
 .quantity-section button {

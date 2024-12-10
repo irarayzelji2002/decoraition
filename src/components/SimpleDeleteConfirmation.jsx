@@ -18,7 +18,14 @@ import {
 } from "./RenameModal";
 import { gradientButtonStyles, outlinedButtonStyles } from "../pages/DesignSpace/PromptBar";
 
-const SimpleDeleteConfirmation = ({ open, handleClose, handleDelete, item, type }) => {
+const SimpleDeleteConfirmation = ({
+  open,
+  handleClose,
+  handleDelete,
+  item,
+  type,
+  disabled = false,
+}) => {
   return (
     <Dialog open={open} onClose={handleClose} sx={dialogStyles}>
       <DialogTitle sx={dialogTitleStyles}>
@@ -51,11 +58,23 @@ const SimpleDeleteConfirmation = ({ open, handleClose, handleDelete, item, type 
         </Typography>
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
-        <Button fullWidth onClick={handleDelete} sx={gradientButtonStyles}>
-          Delete
+        <Button
+          fullWidth
+          onClick={handleDelete}
+          sx={{
+            ...gradientButtonStyles,
+            opacity: disabled ? "0.5" : "1",
+            cursor: disabled ? "default" : "pointer",
+            "&:hover": {
+              backgroundImage: !disabled && "var(--gradientButtonHover)",
+            },
+          }}
+          disabled={disabled}
+        >
+          Yes
         </Button>
         <Button fullWidth onClick={handleClose} sx={outlinedButtonStyles}>
-          Cancel
+          No
         </Button>
       </DialogActions>
     </Dialog>

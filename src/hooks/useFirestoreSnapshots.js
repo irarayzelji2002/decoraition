@@ -37,6 +37,8 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       "users",
       "projects",
       "designs",
+      "deletedProjects",
+      "deletedDesigns",
       "designVersions",
       "comments",
       "notifications",
@@ -96,6 +98,8 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       "userDoc",
       "userProjects",
       "userDesigns",
+      "userDeletedProjects",
+      "userDeletedDesigns",
       "userDesignVersions",
       "userDesignsComments",
       "userComments",
@@ -113,6 +117,8 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       userDoc: "users",
       userProjects: "projects",
       userDesigns: "designs",
+      userDeletedProjects: "deletedProjects",
+      userDeletedDesigns: "deletedDesigns",
       userDesignVersions: "designVersions",
       userDesignsComments: "comments",
       userComments: "comments",
@@ -141,6 +147,8 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
       userDoc: (user) => fetchUserDoc(user),
       userProjects: (user) => fetchUserProjects(user),
       userDesigns: (user) => fetchUserDesigns(user),
+      userDeletedProjects: (user) => fetchUserDeletedProjects(user),
+      userDeletedDesigns: (user) => fetchUserDeletedDesigns(user),
       userDesignVersions: (designsSnapshot) => fetchUserDesignVersions(designsSnapshot),
       userDesignsComments: (designVersionsSnapshot) =>
         fetchUserDesignsComments(designVersionsSnapshot),
@@ -265,6 +273,14 @@ const useFirestoreSnapshots = (collections, stateSetterFunctions, user) => {
         const { snapshot: designsSnapshot, data: designsData } = await fetchUserDesigns(user);
         stateSetterFunctions.userDesigns(designsData);
         setupListener("userDesigns", () => fetchUserDesigns(user));
+
+        const { data: deletedProjectsData } = await fetchUserDeletedProjects(user);
+        stateSetterFunctions.userDeletedProjects(deletedProjectsData);
+        setupListener("userDeletedProjects", () => fetchUserDeletedProjects(user));
+
+        const { data: deletedDesignsData } = await fetchUserDeletedDesigns(user);
+        stateSetterFunctions.userDeletedDesigns(deletedDesignsData);
+        setupListener("userDeletedDesigns", () => fetchUserDeletedDesigns(user));
 
         const { snapshot: designVersionsSnapshot, data: designVersionsData } =
           await fetchUserDesignVersions(designsSnapshot);
@@ -445,6 +461,58 @@ const fetchUserDesigns = async (user) => {
     snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
   );
   const snapshot = combineSnapshots(designsSnapshots);
+  return { snapshot, data };
+};
+
+//get all deleted projects with user's document in users collection deletedProjects field
+const fetchUserDeletedProjects = async (user) => {
+  if (!user) {
+    return { snapshot: null, data: [] };
+  }
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  if (!userDoc.exists()) return { snapshots: [], data: [] };
+  const userData = userDoc.data();
+  const deletedProjectIds =
+    userData?.deletedProjects?.map((deletedProjectId) => deletedProjectId) || [];
+  if (deletedProjectIds.length === 0) {
+    return { snapshot: null, data: [] };
+  }
+  const batches = batchIntoChunks(deletedProjectIds);
+  const deletedProjectsSnapshots = await Promise.all(
+    batches.map((batch) =>
+      getDocs(query(collection(db, "deletedProjects"), where(documentId(), "in", batch)))
+    )
+  );
+  const data = deletedProjectsSnapshots.flatMap((snapshot) =>
+    snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+  );
+  const snapshot = combineSnapshots(deletedProjectsSnapshots);
+  return { snapshot, data };
+};
+
+//get all deleted designs with user's document in users collection deletedDesigns field
+const fetchUserDeletedDesigns = async (user) => {
+  if (!user) {
+    return { snapshot: null, data: [] };
+  }
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  if (!userDoc.exists()) return { snapshots: [], data: [] };
+  const userData = userDoc.data();
+  const deletedDesignIds =
+    userData?.deletedDesigns?.map((deletedDesignId) => deletedDesignId) || [];
+  if (deletedDesignIds.length === 0) {
+    return { snapshot: null, data: [] };
+  }
+  const batches = batchIntoChunks(deletedDesignIds);
+  const deletedDesignsSnapshots = await Promise.all(
+    batches.map((batch) =>
+      getDocs(query(collection(db, "deletedDesigns"), where(documentId(), "in", batch)))
+    )
+  );
+  const data = deletedDesignsSnapshots.flatMap((snapshot) =>
+    snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+  );
+  const snapshot = combineSnapshots(deletedDesignsSnapshots);
   return { snapshot, data };
 };
 

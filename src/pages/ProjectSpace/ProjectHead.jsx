@@ -26,15 +26,17 @@ import {
   handleAccessChange as handleAccessChangeProject,
   useHandleNameChange,
   useProjectDetails,
+  handleDeleteDesign,
 } from "./backend/ProjectDetails";
 import { showToast } from "../../functions/utils.js";
-import { handleDeleteProject } from "../Homepage/backend/HomepageActions.jsx";
+import { handleMoveProjectToTrash } from "../Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../../contexts/SharedPropsContext.js";
 import { handleNameChange } from "./backend/ProjectDetails";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus.js";
 import deepEqual from "deep-equal";
 import _ from "lodash";
 import { highlightName } from "../../components/DesignHead.jsx";
+import { textFieldInputProps } from "../DesignSpace/DesignSettings.jsx";
 
 function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
   const { user, userDoc, handleLogout, notificationUpdate } = useSharedProps();
@@ -110,13 +112,13 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
     setRole(newRole);
     setIsViewCollab(newRole < 3);
     setIsChangeModeVisible(newRole > 0);
-    setIsRenameVisible(newRole === 2 || newRole === 3);
-    setIsDeleteVisible(newRole === 3);
+    setIsRenameVisible((newRole === 2 || newRole === 3) && changeMode === "Managing");
+    setIsDeleteVisible(newRole === 3 && changeMode === "Managing");
     // Set visibility based on project settings
     setIsDownloadVisible(!!project?.projectSettings?.allowDownload || newRole > 0);
 
     handleDefaultChangeMode(newRole);
-  }, [project, user, userDoc]);
+  }, [project, user, userDoc, changeMode]);
 
   useEffect(() => {
     console.log("ProjectHead - changeMode role:", role);
@@ -384,6 +386,19 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
     }
   };
 
+  // Delete Modal Action
+  const handleDelete = async () => {
+    const result = await handleMoveProjectToTrash(user, userDoc, project.id);
+    if (!result.success) {
+      showToast("error", "Failed to move project to trash");
+    }
+    showToast("success", "Project moved to trash");
+    navigate("/trash", {
+      state: { navigateFrom: navigateFrom, tab: "Projects", projectId: project.id },
+    });
+    handleCloseDeleteModal();
+  };
+
   // Copy Link Action
   const handleCopyLink = async () => {
     try {
@@ -523,7 +538,7 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
         isNotifOpen={isNotifOpen}
         setIsNotifOpen={setIsNotifOpen}
       />
-      <div className="left">
+      <div className="left" style={{ width: "calc(100% - 88px)" }}>
         <IconButton
           size="large"
           edge="start"
@@ -561,7 +576,8 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
                 variant="outlined"
                 className="headTitleInput headTitle"
                 fullWidth
-                inputProps={{ maxLength: 20 }}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 100 }}
                 sx={{
                   backgroundColor: "transparent",
                   input: { color: "var(--color-white)" },
@@ -819,7 +835,7 @@ function ProjectHead({ project, changeMode = "Viewing", setChangeMode }) {
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        handleDelete={() => handleDeleteProject(userDoc.id, project.id, navigate)}
+        handleDelete={handleDelete}
         isDesign={false}
         object={project}
       />

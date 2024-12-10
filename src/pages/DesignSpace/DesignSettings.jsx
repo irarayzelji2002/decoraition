@@ -631,7 +631,7 @@ export const InactivitySetting = ({ label, value, onChange, options, disabled })
       value={value}
       onChange={onChange}
       className="inactivityTextField"
-      inputProps={textFieldInputProps}
+      InputProps={textFieldInputProps}
       sx={!disabled ? textFieldStyles : disabledTextFieldStyles}
       disabled={disabled}
     /> */}
@@ -678,6 +678,7 @@ export const menuItemStyles = {
   backgroundColor: "var(--dropdown)",
   transition: "all 0.3s ease",
   display: "block",
+  minHeight: "36px",
   "&:hover": {
     backgroundColor: "var(--dropdownHover) !important",
   },

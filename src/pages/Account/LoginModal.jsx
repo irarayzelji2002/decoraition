@@ -43,6 +43,8 @@ export default function LoginModal() {
   const [emailLimitReached, setEmailLimitReached] = useState(false);
   const [passwordLimitReached, setPasswordLimitReached] = useState(false);
   const [isLoginDisabled, setIsLoginDisabled] = useState(false);
+  const [isGoogleBtnDisabled, setIsGoogleBtnDisabled] = useState(false);
+  const [isFacebookBtnDisabled, setIsFacebookBtnDisabled] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
@@ -51,14 +53,14 @@ export default function LoginModal() {
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
-    setEmailLimitReached(e.target.value.length >= 254);
+    setEmailLimitReached(e.target.value.length >= 255);
     clearFieldError("email");
     clearFieldError("general");
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    setPasswordLimitReached(e.target.value.length >= 50);
+    setPasswordLimitReached(e.target.value.length >= 128);
     clearFieldError("password");
     clearFieldError("general");
   };
@@ -95,6 +97,21 @@ export default function LoginModal() {
 
     try {
       setIsLoginDisabled(true);
+
+      // Check if email exists and is verified
+      try {
+        const checkEmailResponse = await axios.get(`/api/check-email-verification/${email}`);
+        if (checkEmailResponse.data.exists && !checkEmailResponse.data.isVerified) {
+          setErrors({
+            general:
+              "Please verify your email before logging in. Check your inbox for the verification link.",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking email verification:", error);
+      }
+
       // First check lockout status through backend API
       const lockoutResponse = await axios.get(`/api/user/check-lockout-status/${email}`);
       if (lockoutResponse.data.isLocked) {
@@ -163,9 +180,11 @@ export default function LoginModal() {
       let acctProvider;
       let connectedAccount;
       if (provider === "google") {
+        setIsGoogleBtnDisabled(true);
         acctProvider = new GoogleAuthProvider();
         connectedAccount = 0;
       } else if (provider === "facebook") {
+        setIsFacebookBtnDisabled(true);
         acctProvider = new FacebookAuthProvider();
         connectedAccount = 1;
       }
@@ -240,8 +259,11 @@ export default function LoginModal() {
         throw new Error("Failed to create user");
       }
     } catch (error) {
-      console.error("Google login/signup error:", error);
-      showToast("error", "Google login/signup failed. Please try again.");
+      console.error(`${capitalizeFieldName(provider)} login/signup error:`, error);
+      showToast("error", `${capitalizeFieldName(provider)} login/signup failed. Please try again.`);
+    } finally {
+      setIsGoogleBtnDisabled(false);
+      setIsFacebookBtnDisabled(false);
     }
   };
 
@@ -324,7 +346,8 @@ export default function LoginModal() {
             error={!!errors.email}
             helperText={errors.email}
             sx={{ ...commonInputStyles, marginBottom: "20px" }}
-            inputProps={{ maxLength: 254, ...textFieldInputProps }}
+            InputProps={textFieldInputProps}
+            inputProps={{ maxLength: 255 }}
           />
           {emailLimitReached && (
             <Typography color="var(--color-quaternary)" variant="body2">
@@ -365,7 +388,7 @@ export default function LoginModal() {
               ),
             }}
             sx={{ ...commonInputStyles, marginBottom: "15px" }}
-            inputProps={{ maxLength: 50 }}
+            inputProps={{ maxLength: 128 }}
           />
           {passwordLimitReached && (
             <Typography color="error" variant="body2">
@@ -492,10 +515,12 @@ export default function LoginModal() {
             "&:hover": {
               background: "transparent",
               color: "var(--color-white)",
-              backgroundColor: "var(--iconButtonHover)",
+              backgroundColor: !isGoogleBtnDisabled ? "var(--iconButtonHover)" : "transparent",
             },
             "&:active": {
-              backgroundColor: "var(--iconButtonHoverActive)",
+              backgroundColor: !isGoogleBtnDisabled
+                ? "var(--iconButtonHoverActive)"
+                : "transparent",
               boxShadow: "none",
             },
             "&:focus": {
@@ -503,7 +528,14 @@ export default function LoginModal() {
               boxShadow: "none",
             },
             maxWidth: "400px",
+            "&.Mui-disabled": {
+              opacity: 0.5,
+              color: "var(--color-white)",
+              background: "transparent",
+              cursor: "default",
+            },
           }}
+          disabled={isGoogleBtnDisabled}
         >
           Login with Google&nbsp;&nbsp;&nbsp;&nbsp;
         </Button>
@@ -523,10 +555,12 @@ export default function LoginModal() {
             "&:hover": {
               background: "transparent",
               color: "var(--color-white)",
-              backgroundColor: "var(--iconButtonHover)",
+              backgroundColor: !isFacebookBtnDisabled ? "var(--iconButtonHover)" : "transparent",
             },
             "&:active": {
-              backgroundColor: "var(--iconButtonHoverActive)",
+              backgroundColor: !isFacebookBtnDisabled
+                ? "var(--iconButtonHoverActive)"
+                : "transparent",
               boxShadow: "none",
             },
             "&:focus": {
@@ -535,7 +569,14 @@ export default function LoginModal() {
             },
             maxWidth: "400px",
             marginTop: "-12px",
+            "&.Mui-disabled": {
+              opacity: 0.5,
+              color: "var(--color-white)",
+              background: "transparent",
+              cursor: "default",
+            },
           }}
+          disabled={isFacebookBtnDisabled}
         >
           Login with Facebook
         </Button>

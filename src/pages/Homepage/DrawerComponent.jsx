@@ -36,7 +36,15 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import NotifTab from "./NotifTab";
 import { ArrowBackIosRounded as ArrowBackIosRoundedIcon } from "@mui/icons-material";
-import { DesignIcn, FAQ, Home, LogoutIcn, ProjectIcn, SettingsIcn } from "./svg/DesignSvg.jsx";
+import {
+  DesignIcn,
+  FAQ,
+  Home,
+  LogoutIcn,
+  ProjectIcn,
+  SettingsIcn,
+  DeleteIcn,
+} from "./svg/DesignSvg.jsx";
 
 const DrawerComponent = ({
   isDrawerOpen = false,
@@ -70,6 +78,7 @@ const DrawerComponent = ({
     showOptions: false,
     selectedId: null,
   });
+  const [isThemeToggleBtnDisabled, setIsThemeToggleBtnDisabled] = useState(false);
 
   // Sorting designs by latest modifiedAt
   useEffect(() => {
@@ -126,9 +135,16 @@ const DrawerComponent = ({
       return "";
     }
 
-    // Get the latest designId (the last one in the designIds array)
-    const latestDesignId = fetchedProject.designs[fetchedProject.designs.length - 1];
+    // Get all designs for this project
+    const projectDesigns = designs.filter((design) => fetchedProject.designs.includes(design.id));
 
+    // Sort designs by modifiedAt timestamp (most recent first)
+    const sortedDesigns = projectDesigns.sort(
+      (a, b) => (b.modifiedAt?.toMillis() || 0) - (a.modifiedAt?.toMillis() || 0)
+    );
+
+    // Get the latest designId (the first one after sorting)
+    const latestDesignId = sortedDesigns[0]?.id;
     // Return the design image by calling getDesignImage
     return getDesignImage(latestDesignId);
   };
@@ -163,6 +179,15 @@ const DrawerComponent = ({
     setClickedId(id);
     if (clickedId === id) {
       setClickedId(null);
+    }
+  };
+
+  const handleThemeToggle = async () => {
+    setIsThemeToggleBtnDisabled(true);
+    try {
+      await toggleDarkMode(user, userDoc?.id, isDarkMode, setIsDarkMode);
+    } finally {
+      setIsThemeToggleBtnDisabled(false);
     }
   };
 
@@ -218,8 +243,18 @@ const DrawerComponent = ({
           </IconButton>
           <h2 className="navName drawer">DecorAItion</h2>
           <IconButton
-            sx={{ ...iconButtonStyles, marginLeft: "auto" }}
-            onClick={() => toggleDarkMode(user, userDoc?.id, isDarkMode, setIsDarkMode)}
+            onClick={handleThemeToggle}
+            sx={{
+              ...iconButtonStyles,
+              marginLeft: "auto",
+              opacity: isThemeToggleBtnDisabled ? "0.5 !important" : "1 !important",
+              cursor: isThemeToggleBtnDisabled ? "default !important" : "pointer !important",
+              "&.Mui-disabled": {
+                opacity: 0.5,
+                color: "var(--color-white)",
+              },
+            }}
+            disabled={isThemeToggleBtnDisabled}
           >
             {isDarkMode ? <DarkModeIcon /> : <LightModeIcon />}
           </IconButton>
@@ -442,8 +477,8 @@ const DrawerComponent = ({
             </ListItemButton>
           ))
         ) : (
-          <ListItemButton>
-            <ListItemText primary="No recent designs" />
+          <ListItemButton disabled={true} sx={listItemTextOnlyStyles}>
+            <ListItemText primary="No recent designs" sx={{ color: "var(--greyText)" }} />
           </ListItemButton>
         )}
 
@@ -528,15 +563,28 @@ const DrawerComponent = ({
             </ListItemButton>
           ))
         ) : (
-          <ListItemButton>
-            <ListItemText primary="No recent projects" />
+          <ListItemButton disabled={true} sx={listItemTextOnlyStyles}>
+            <ListItemText primary="No recent projects" sx={{ color: "var(--greyText)" }} />
           </ListItemButton>
         )}
 
         <Divider sx={{ backgroundColor: "var(--inputBg)", my: 2 }} />
 
-        {/* Settings Menu Item */}
-        {/* path to change? */}
+        {/* Trash, FAQ, Settings, Sign Out Menu Items */}
+        <ListItemButton
+          onClick={() => {
+            onClose();
+            navigate("/trash", {
+              state: { navigateFrom: navigateFrom },
+            });
+          }}
+          sx={listItemStyles}
+        >
+          <ListItemIcon sx={listItemIconStyles}>
+            <DeleteIcn />
+          </ListItemIcon>
+          <ListItemText primary="Trash" />
+        </ListItemButton>
         <ListItemButton
           onClick={() => {
             onClose();
@@ -593,6 +641,11 @@ export const iconButtonStyles = {
   "& .MuiTouchRipple-root span": {
     backgroundColor: "var(--iconButtonActive) !important",
   },
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    color: "var(--color-white)",
+    cursor: "default !important",
+  },
 };
 
 export const iconButtonStylesBrighter = {
@@ -603,6 +656,11 @@ export const iconButtonStylesBrighter = {
   },
   "& .MuiTouchRipple-root span": {
     backgroundColor: "var(--iconButtonActive2) !important",
+  },
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    color: "var(--color-white)",
+    cursor: "default !important",
   },
 };
 
@@ -622,4 +680,21 @@ const listItemIconStyles = {
   minWidth: "0px",
   marginRight: "20px",
   marginLeft: "5px",
+};
+
+const listItemTextOnlyStyles = {
+  color: "var(--greyText)",
+  cursor: "default",
+  padding: "6.5px 20px",
+  justifyContent: "space-between",
+  "&:hover": {
+    backgroundColor: "transparent",
+  },
+  "& .MuiTouchRipple-root span": {
+    backgroundColor: "transparent",
+  },
+  "&.Mui-disabled": {
+    backgroundColor: "transparent !important",
+    color: "var(--greyText) !important",
+  },
 };

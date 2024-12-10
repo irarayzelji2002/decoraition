@@ -48,9 +48,6 @@ const style = {
 function Item({ item, onEdit, setDesignItems, budgetId, isOwnerEditor, changeMode }) {
   const { user } = useSharedProps();
   const [itemPrice, setItemPrice] = useState("");
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const [openDelete, setOpenDelete] = useState(false);
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
@@ -161,69 +158,6 @@ function Item({ item, onEdit, setDesignItems, budgetId, isOwnerEditor, changeMod
 
   return (
     <div className="itemSpace" style={{ display: "flex", flexDirection: "row" }}>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", marginBottom: "12px", margin: "18px" }}>
-              <span id="modal-modal-title" style={{ fontSize: "18px", fontWeight: "600" }}>
-                Edit Budget
-              </span>{" "}
-              <CloseRoundedIcon
-                sx={{ marginLeft: "auto" }}
-                onClick={handleClose}
-                cursor={"pointer"}
-              />
-            </div>
-            <Divider sx={{ borderColor: "var(--color-grey)" }} />
-            <div className="input-group" style={{ marginTop: "12px", margin: "18px" }}>
-              <div className="price-quantity-section">
-                <select
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    WebkitAppearance: "none",
-                    MozAppearance: "none",
-                    appearance: "none",
-                    outline: "none",
-                  }}
-                >
-                  <option value="PHP">PHP</option>
-                </select>
-                <KeyboardArrowDownRoundedIcon
-                  sx={{
-                    color: "var(--color-grey)",
-                    marginLeft: "-50px",
-                    marginTop: "18px",
-                  }}
-                />
-                <input
-                  id="item-price"
-                  type="number"
-                  placeholder="Enter item price"
-                  value={itemPrice}
-                  onChange={(e) => setItemPrice(e.target.value)}
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    WebkitAppearance: "none",
-                    MozAppearance: "none",
-                    appearance: "none",
-                    outline: "none",
-                  }}
-                />
-              </div>
-            </div>
-            <button className="add-item-btn" style={{ margin: "18px" }}>
-              Edit Price
-            </button>
-          </div>
-        </Box>
-      </Modal>
       <Dialog
         open={openDelete}
         onClose={handleCloseDelete}
@@ -293,87 +227,73 @@ function Item({ item, onEdit, setDesignItems, budgetId, isOwnerEditor, changeMod
           </Button>
         </DialogActions>
       </Dialog>
-      {/* <div
-        style={{
-          alignContent: "center",
-          marginLeft: "8px",
-          marginRight: "-6px",
-        }}
-      >
-        <span style={{ fontSize: "12px" }}> x {item.quantity}</span>
-      </div> */}
       <img src={item.image || "/img/transparent-image.png"} alt="" className="thumbnail" />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          margin: "12px",
-          width: "auto  ",
-          justifyContent: "center",
-        }}
-      >
-        <span className="itemName">{item.quantity + " " + item.itemName}</span>
-        <span className="itemPrice">
-          {item.cost.currency?.currencyCode + " " + formatNumber(item.cost.amount)}
-        </span>
-      </div>
-      {isOwnerEditor && changeMode === "Editing" && (
+      <div className="itemDetailsCont">
         <div
           style={{
             display: "flex",
-            flexDirection: "row",
-            marginLeft: "auto",
-            marginRight: "10px",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: "10px",
+            flexDirection: "column",
+            margin: "12px 12px 12px 0px",
+            width: "auto  ",
+            justifyContent: "center",
           }}
         >
-          {/* CheckBox */}
-          <div>
-            <Checkbox
-              checked={item.includedInTotal === true || item.includedInTotal === "true"}
-              onChange={() => {
-                toggleIncludedInTotal();
-                handleIncludedInTotalChange(item.id);
-              }}
-              value="included-in-total"
-              sx={{
-                color: "var(--color-white)",
-                "&.Mui-checked": {
-                  color: "var(--brightFont)",
-                },
-                borderRadius: "50%",
-                "& .MuiSvgIcon-root": {
-                  fontSize: 28,
-                },
-                "&:hover": {
-                  backgroundColor: "var(--iconButtonHover)",
-                },
-                "&:active": {
-                  backgroundColor: "var(--iconButtonActive)",
-                },
-                "& svg": {
-                  transform: "scale(0.88)",
-                },
-              }}
-              icon={<CheckboxIcon />}
-              checkedIcon={<CheckboxCheckedIcon />}
-            />
-          </div>
-          {/* Edit */}
-          <IconButton onClick={onEdit} sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}>
-            <EditIconSmallGradient />
-          </IconButton>
-          {/* Delete */}
-          <IconButton
-            onClick={handleOpenDelete}
-            sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
-          >
-            <DeleteIconGradient />
-          </IconButton>
+          <span className="itemName">{item.quantity + " " + item.itemName}</span>
+          <span className="itemPrice">
+            {item.cost.currency?.currencyCode + " " + formatNumber(item.cost.amount)}
+          </span>
         </div>
-      )}
+        {isOwnerEditor && changeMode === "Editing" && (
+          <div className="itemActions">
+            {/* CheckBox */}
+            <div>
+              <Checkbox
+                checked={item.includedInTotal === true || item.includedInTotal === "true"}
+                onChange={() => {
+                  toggleIncludedInTotal();
+                  handleIncludedInTotalChange(item.id);
+                }}
+                value="included-in-total"
+                sx={{
+                  color: "var(--color-white)",
+                  "&.Mui-checked": {
+                    color: "var(--brightFont)",
+                  },
+                  borderRadius: "50%",
+                  "& .MuiSvgIcon-root": {
+                    fontSize: 28,
+                  },
+                  "&:hover": {
+                    backgroundColor: "var(--iconButtonHover)",
+                  },
+                  "&:active": {
+                    backgroundColor: "var(--iconButtonActive)",
+                  },
+                  "& svg": {
+                    transform: "scale(0.88)",
+                  },
+                }}
+                icon={<CheckboxIcon />}
+                checkedIcon={<CheckboxCheckedIcon />}
+              />
+            </div>
+            {/* Edit */}
+            <IconButton
+              onClick={onEdit}
+              sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+            >
+              <EditIconSmallGradient />
+            </IconButton>
+            {/* Delete */}
+            <IconButton
+              onClick={handleOpenDelete}
+              sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+            >
+              <DeleteIconGradient />
+            </IconButton>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

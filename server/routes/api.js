@@ -9,6 +9,7 @@ const projectBudgetController = require("../controllers/projectBudgetController"
 const budgetController = require("../controllers/budgetController");
 const planMapController = require("../controllers/planMapController");
 const timelineController = require("../controllers/timelineController");
+
 const { auth } = require("../firebase");
 const { upload } = require("../uploadConfig");
 
@@ -29,6 +30,9 @@ const authenticateUser = async (req, res, next) => {
 
 // User routes
 router.post("/register", userController.createUser);
+router.get("/confirm-email-verification/:token", userController.confirmEmailVerification);
+router.get("/check-email-verification/:email", userController.checkEmailVerification);
+router.delete("/delete-unverified-user/:token", userController.deleteUnverifiedUser);
 router.post("/login-with-oauth", userController.loginUserOAuth);
 router.get("/check-existing-email/:email", userController.checkExistingEmailForReg);
 router.get("/check-existing-username/:username", userController.checkExistingUsernameForReg);
@@ -79,7 +83,6 @@ router.put("/user/update-failed-attempt/:email", userController.updateFailedAtte
 // Design routes
 router.get("/design/:userId", authenticateUser, designController.fetchUserDesigns);
 router.post("/design/create", authenticateUser, designController.createDesign);
-router.post("/design/delete/:designId", authenticateUser, designController.deleteDesign);
 router.put("/design/:designId/update-name", authenticateUser, designController.updateDesignName);
 router.put(
   "/design/:designId/update-settings",
@@ -95,6 +98,11 @@ router.post(
   "/design/budget/create-default-budget",
   authenticateUser,
   budgetController.createDefaultBudget
+);
+router.get(
+  "/design/budget/check/:designVersionId",
+  authenticateUser,
+  budgetController.checkBudgetExists
 );
 router.post(
   "/design/item/add-item",
@@ -156,6 +164,13 @@ router.put(
   authenticateUser,
   designController.updateDesignProjectId
 );
+router.post("/design/:designId/delete", authenticateUser, designController.deleteDesign);
+router.post("/design/:designId/trash", authenticateUser, designController.moveDesignToTrash);
+router.post(
+  "/design/:designId/restoreFromTrash",
+  authenticateUser,
+  designController.restoreDesignFromTrash
+);
 
 // Comment routes
 router.post(
@@ -197,7 +212,6 @@ router.post(
 // Project routes
 // router.get("/project/:userId", authenticateUser, projectController.fetchUserProjects);
 router.post("/project/create", authenticateUser, projectController.createProject);
-router.post("/project/delete/:projectId", authenticateUser, projectController.deleteProject);
 router.put(
   "/project/:projectId/update-name",
   authenticateUser,
@@ -216,7 +230,7 @@ router.post(
 router.get("/project/:projectId/designs", authenticateUser, projectController.fetchProjectDesigns);
 router.get("/project/:projectId/pins", authenticateUser, planMapController.getPins);
 router.post("/project/:projectId/pins/order", authenticateUser, planMapController.savePinOrder);
-router.delete("/project/:projectId/pin/:pinId", authenticateUser, planMapController.deletePin);
+router.post("/project/:projectId/deletePin", authenticateUser, planMapController.deletePin);
 router.put("/project/:projectId/pin/:pinId", authenticateUser, planMapController.updatePin);
 router.post("/project/:projectId/share", authenticateUser, projectController.shareProject);
 router.post(
@@ -231,6 +245,7 @@ router.post(
   upload.single("file"),
   planMapController.handlePlanImageUpload
 );
+router.post("/project/:projectId/add-pin", authenticateUser, planMapController.createPin);
 router.put(
   "/project/:projectId/import-design",
   authenticateUser,
@@ -241,15 +256,17 @@ router.put(
   authenticateUser,
   projectController.removeDesignFromProject
 );
-router.get(
-  "/project/:projectId/budget",
-  authenticateUser,
-  projectBudgetController.getProjectBudget
-);
 router.put(
-  "/project/:projectId/update-budget",
+  "/project/:projectBudgetId/update-budget",
   authenticateUser,
   projectBudgetController.updateProjectBudget
+);
+router.post("/project/:projectId/delete", authenticateUser, projectController.deleteProject);
+router.post("/project/:projectId/trash", authenticateUser, projectController.moveProjectToTrash);
+router.post(
+  "/project/:projectId/restoreFromTrash",
+  authenticateUser,
+  projectController.restoreProjectFromTrash
 );
 
 // Network check
@@ -258,12 +275,12 @@ router.get("/health-check", (req, res) => {
 });
 
 // Timeline routes
-router.post("/timeline/:timelineId/event", authenticateUser, timelineController.createEvent);
+router.post("/timeline/:timelineId/add-event", authenticateUser, timelineController.createEvent);
 router.get("/timeline/:timelineId/events", authenticateUser, timelineController.getEvents);
 router.get("/project/:projectId/timelineId", authenticateUser, timelineController.fetchTimelineId); // New route to fetch timeline
 router.get("/timeline/event/:taskId", authenticateUser, timelineController.getEventDetails);
 router.put("/timeline/event/:taskId", authenticateUser, timelineController.updateEvent);
-router.delete("/timeline/event/:taskId", authenticateUser, timelineController.deleteEvent);
+router.post("/timeline/:timelineId/delete-event", authenticateUser, timelineController.deleteEvent);
 
 // Notification routes
 router.put(
@@ -281,5 +298,8 @@ router.post(
   authenticateUser,
   notificationController.deleteNotif
 );
+
+// Trash routes
+router.post("/trash/empty-trash", authenticateUser, designController.emptyTrash);
 
 module.exports = router;

@@ -367,9 +367,9 @@ function PromptBar({
       message = "Please upload an image file of png, jpg, or jpeg type";
       showToast("error", message);
     } else {
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
       if (file.size > maxSize) {
-        message = "Image size must be less than 5MB";
+        message = "Image size must be less than 2MB";
         showToast("error", message);
       }
     }
@@ -1985,7 +1985,7 @@ function PromptBar({
                   }}
                 >
                   <NoImage />
-                  <div className="image-placeholder">Upload an style reference</div>
+                  <div className="image-placeholder">Upload a style reference</div>
                 </div>
               </div>
             )}
@@ -2130,7 +2130,7 @@ export const gradientButtonStyles = {
   },
   "&.Mui-disabled": {
     opacity: 0.5,
-    color: "var(--color-white)",
+    color: "var(--always-white)",
   },
 };
 
@@ -2145,6 +2145,10 @@ export const outlinedButtonStyles = {
   fontWeight: "bold",
   textTransform: "none",
   margin: "0 !important",
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    color: "var(--color-white)",
+  },
 };
 
 // const dummyUserColorPalettes = [

@@ -1,6 +1,7 @@
 const { db, auth, clientAuth, clientDb, storage } = require("../firebase");
 const { ref, uploadBytes, getDownloadURL, deleteObject } = require("firebase/storage");
 const { doc, getDoc, arrayUnion } = require("firebase/firestore");
+const projectController = require("./projectController");
 const { createNotification } = require("./notificationController");
 const { Resend } = require("resend");
 const axios = require("axios");
@@ -210,6 +211,13 @@ const isCollaboratorDesign = (designDoc, userId) => {
     const isViewer = designData.viewers.includes(userId);
     return isOwner || isEditor || isCommenter || isViewer;
   }
+};
+
+// Check if user is manage (manage), manager not in generalAccessRole
+const isManagerProject = (projectDoc, userId) => {
+  const projectData = projectDoc.data();
+  const isManager = projectData.managers.includes(userId);
+  return isManager;
 };
 
 // Update Name
@@ -1755,7 +1763,226 @@ exports.updateDesignVersionCombinedMask = async (req, res) => {
   }
 };
 
-// Delete Design (TO DO: UPDATE BUDGET REFERENCE)
+// Move design to trash
+exports.moveDesignToTrash = async (req, res) => {
+  const batch = db.batch();
+  const previousStates = [];
+
+  try {
+    const { designId } = req.params;
+    const { userId } = req.body;
+
+    // Get design document
+    const designRef = db.collection("designs").doc(designId);
+    const designDoc = await designRef.get();
+    if (!designDoc.exists) {
+      return res.status(404).json({ error: "Design not found" });
+    }
+
+    // Check user role in design
+    const allowAction = isOwnerDesign(designDoc, userId);
+    if (!allowAction) {
+      return res.status(403).json({ error: "User does not have permission to delete design" });
+    }
+
+    const designData = designDoc.data();
+    // Store original state
+    previousStates.push({
+      ref: designRef,
+      data: designData,
+      type: "design",
+    });
+
+    // Create document in deletedDesigns with same ID
+    const deletedDesignRef = db.collection("deletedDesigns").doc(designId);
+    const deletedDesignData = {
+      ...designData,
+      modifiedAt: new Date(),
+      deletedAt: new Date(),
+    };
+    batch.set(deletedDesignRef, deletedDesignData);
+
+    // Get all collaborators (owner, editors, commenters, viewers)
+    const collaborators = new Set([
+      designData.owner,
+      ...(designData.editors || []),
+      ...(designData.commenters || []),
+      ...(designData.viewers || []),
+    ]);
+
+    // Update each collaborator's document
+    for (const collaboratorId of collaborators) {
+      const userRef = db.collection("users").doc(collaboratorId);
+      const userDoc = await userRef.get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        previousStates.push({
+          ref: userRef,
+          data: userData,
+          type: "user",
+        });
+
+        // Update user's arrays
+        const updatedDesigns = (userData.designs || []).filter(
+          (design) => design.designId !== designId
+        );
+        const updatedDeletedDesigns = [...(userData.deletedDesigns || []), designId];
+
+        batch.update(userRef, {
+          designs: updatedDesigns,
+          deletedDesigns: updatedDeletedDesigns,
+        });
+      }
+    }
+
+    // Delete original design
+    batch.delete(designRef);
+
+    // Commit all changes
+    await batch.commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Design moved to trash successfully",
+    });
+  } catch (error) {
+    console.error("Error moving design to trash:", error);
+
+    // Rollback using previous states
+    try {
+      const rollbackBatch = db.batch();
+      for (const state of previousStates) {
+        if (state.type === "design") {
+          rollbackBatch.set(state.ref, state.data);
+        } else if (state.type === "user") {
+          rollbackBatch.update(state.ref, state.data);
+        }
+      }
+      await rollbackBatch.commit();
+      console.log("Rollback completed successfully");
+    } catch (rollbackError) {
+      console.error("Rollback failed:", rollbackError.meessage);
+    }
+
+    res.status(500).json({ error: "Failed to move design to trash" });
+  }
+};
+
+// Restore design from trash
+exports.restoreDesignFromTrash = async (req, res) => {
+  const batch = db.batch();
+  const previousStates = [];
+
+  try {
+    const { designId } = req.params;
+    const { userId } = req.body;
+
+    // Get deleted design document
+    const deletedDesignRef = db.collection("deletedDesigns").doc(designId);
+    const deletedDesignDoc = await deletedDesignRef.get();
+    if (!deletedDesignDoc.exists) {
+      return res.status(404).json({ error: "Deleted design not found" });
+    }
+
+    // Check user role in design
+    const allowAction = isOwnerEditorDesign(deletedDesignDoc, userId);
+    if (!allowAction) {
+      return res.status(403).json({ error: "User does not have permission to restore design" });
+    }
+
+    const designData = deletedDesignDoc.data();
+    // Store original state
+    previousStates.push({
+      ref: deletedDesignRef,
+      data: designData,
+      type: "deletedDesign",
+    });
+
+    // Create document in designs collection with same ID
+    const designRef = db.collection("designs").doc(designId);
+    const restoredDesignData = {
+      ...designData,
+      deletedAt: null,
+      modifiedAt: new Date(),
+    };
+    batch.set(designRef, restoredDesignData);
+
+    // Get all collaborators (owner, editors, commenters, viewers)
+    const collaborators = new Set([
+      designData.owner,
+      ...(designData.editors || []),
+      ...(designData.commenters || []),
+      ...(designData.viewers || []),
+    ]);
+
+    // Update each collaborator's document
+    for (const collaboratorId of collaborators) {
+      const userRef = db.collection("users").doc(collaboratorId);
+      const userDoc = await userRef.get();
+
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        previousStates.push({
+          ref: userRef,
+          data: userData,
+          type: "user",
+        });
+
+        // Update user's arrays
+        const updatedDeletedDesigns = (userData.deletedDesigns || []).filter(
+          (id) => id !== designId
+        );
+
+        // Determine user's role in the design
+        let role = 0; // default viewer
+        if (collaboratorId === designData.owner) role = 3; // owner
+        else if (designData.editors?.includes(collaboratorId)) role = 1; // editor
+        else if (designData.commenters?.includes(collaboratorId)) role = 2; // commenter
+
+        const updatedDesigns = [...(userData.designs || []), { designId, role }];
+
+        batch.update(userRef, {
+          designs: updatedDesigns,
+          deletedDesigns: updatedDeletedDesigns,
+        });
+      }
+    }
+
+    // Delete from deletedDesigns
+    batch.delete(deletedDesignRef);
+
+    // Commit all changes
+    await batch.commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Design restored from trash",
+    });
+  } catch (error) {
+    console.error("Error restoring design form trash:", error);
+
+    // Rollback using previous states
+    try {
+      const rollbackBatch = db.batch();
+      for (const state of previousStates) {
+        if (state.type === "deletedDesign") {
+          rollbackBatch.set(state.ref, state.data);
+        } else if (state.type === "user") {
+          rollbackBatch.update(state.ref, state.data);
+        }
+      }
+      await rollbackBatch.commit();
+      console.log("Rollback completed successfully");
+    } catch (rollbackError) {
+      console.error("Rollback failed:", rollbackError);
+    }
+
+    res.status(500).json({ error: "Failed to restore design from trash" });
+  }
+};
+
+// Delete Design
 exports.deleteDesign = async (req, res) => {
   const deletedDocuments = [];
   const updatedDocuments = [];
@@ -1764,17 +1991,15 @@ exports.deleteDesign = async (req, res) => {
     const { userId } = req.body;
 
     // Get design data first to check existence
-    const designRef = db.collection("designs").doc(designId);
+    const designRef = db.collection("deletedDesigns").doc(designId);
     const designDoc = await designRef.get();
     if (!designDoc.exists) {
-      return res.status(404).json({ error: "Design not found" });
+      return res.status(404).json({ error: "Deleted design not found" });
     }
     const designData = designDoc.data();
     const allowAction = isOwnerDesign(designDoc, userId);
     if (!allowAction) {
-      return res
-        .status(403)
-        .json({ error: "User does not have permission to create design version" });
+      return res.status(403).json({ error: "User does not have permission to delete design" });
     }
 
     // 1. Update parent documents first (users, projects, designs)
@@ -1792,25 +2017,29 @@ exports.deleteDesign = async (req, res) => {
         newValue: updatedDesigns,
       });
       await userRef.update({ designs: updatedDesigns });
+      console.log(`Successfully updated document: ${userRef.path}, field: designs`);
     }
 
     // Update projects containing this design
-    const projectsSnapshot = await db
-      .collection("projects")
-      .where("designs", "array-contains", { designId })
-      .get();
+    if (designId) {
+      const projectsSnapshot = await db
+        .collection("projects")
+        .where("designs", "in", [{ designId }])
+        .get();
 
-    for (const projectDoc of projectsSnapshot.docs) {
-      const projectData = projectDoc.data();
-      const previousDesigns = [...projectData.designs];
-      const updatedDesigns = previousDesigns.filter((design) => design.designId !== designId);
-      updatedDocuments.push({
-        ref: projectDoc.ref,
-        field: "designs",
-        previousValue: previousDesigns,
-        newValue: updatedDesigns,
-      });
-      await projectDoc.ref.update({ designs: updatedDesigns });
+      for (const projectDoc of projectsSnapshot.docs) {
+        const projectData = projectDoc.data();
+        const previousDesigns = [...projectData.designs];
+        const updatedDesigns = previousDesigns.filter((design) => design.designId !== designId);
+        updatedDocuments.push({
+          ref: projectDoc.ref,
+          field: "designs",
+          previousValue: previousDesigns,
+          newValue: updatedDesigns,
+        });
+        await projectDoc.ref.update({ designs: updatedDesigns });
+        console.log(`Successfully updated document: ${projectDoc.ref.path}, field: designs`);
+      }
     }
 
     // Delete the design document first as it's also a parent
@@ -1819,6 +2048,7 @@ exports.deleteDesign = async (req, res) => {
       data: designData,
     });
     await designRef.delete();
+    console.log(`Successfully deleted document: ${designRef.path}`);
 
     // 2. Handle pins and planMaps
     const pinsSnapshot = await db.collection("pins").where("designId", "==", designId).get();
@@ -1826,22 +2056,25 @@ exports.deleteDesign = async (req, res) => {
     const pinIdsToDelete = pinsSnapshot.docs.map((doc) => doc.id);
 
     // Update planMaps FIRST before deleting pins
-    const planMapsSnapshot = await db
-      .collection("planMaps")
-      .where("pins", "array-contains-any", pinIdsToDelete)
-      .get();
+    if (pinIdsToDelete && pinIdsToDelete.length > 0) {
+      const planMapsSnapshot = await db
+        .collection("planMaps")
+        .where("pins", "in", pinIdsToDelete)
+        .get();
 
-    for (const planMapDoc of planMapsSnapshot.docs) {
-      const planMapData = planMapDoc.data();
-      const previousPins = [...planMapData.pins];
-      const updatedPins = previousPins.filter((pinId) => !pinIdsToDelete.includes(pinId));
-      updatedDocuments.push({
-        ref: planMapDoc.ref,
-        field: "pins",
-        previousValue: previousPins,
-        newValue: updatedPins,
-      });
-      await planMapDoc.ref.update({ pins: updatedPins });
+      for (const planMapDoc of planMapsSnapshot.docs) {
+        const planMapData = planMapDoc.data();
+        const previousPins = [...planMapData.pins];
+        const updatedPins = previousPins.filter((pinId) => !pinIdsToDelete.includes(pinId));
+        updatedDocuments.push({
+          ref: planMapDoc.ref,
+          field: "pins",
+          previousValue: previousPins,
+          newValue: updatedPins,
+        });
+        await planMapDoc.ref.update({ pins: updatedPins });
+        console.log(`Successfully updated document: ${planMapDoc.ref.path}, field: pins`);
+      }
     }
 
     // Then delete pins
@@ -1851,6 +2084,7 @@ exports.deleteDesign = async (req, res) => {
         data: pinDoc.data(),
       });
       await pinDoc.ref.delete();
+      console.log(`Successfully deleted document: ${pinDoc.ref.path}`);
     }
 
     // 3-4. Delete designVersions, comments, handle budget, projectBudgets
@@ -1864,6 +2098,7 @@ exports.deleteDesign = async (req, res) => {
           data: versionData,
         });
         await versionRef.delete();
+        console.log(`Successfully deleted document: ${versionRef.path}`);
 
         // Delete comments after design version is deleted
         if (versionData.images) {
@@ -1879,6 +2114,7 @@ exports.deleteDesign = async (req, res) => {
                 data: commentDoc.data(),
               });
               await commentDoc.ref.delete();
+              console.log(`Successfully deleted document: ${commentDoc.ref.path}`);
             }
           }
         }
@@ -1892,24 +2128,29 @@ exports.deleteDesign = async (req, res) => {
             const budgetData = budgetDoc.data();
 
             // Update projectBudgets FIRST before deleting budget
-            const projectBudgetsSnapshot = await db
-              .collection("projectBudgets")
-              .where("budgets", "array-contains", versionData.budgetId)
-              .get();
+            if (versionData.budgetId) {
+              const projectBudgetsSnapshot = await db
+                .collection("projectBudgets")
+                .where("budgets", "in", [versionData.budgetId])
+                .get();
 
-            for (const projectBudgetDoc of projectBudgetsSnapshot.docs) {
-              const projectBudgetData = projectBudgetDoc.data();
-              const previousBudgets = [...projectBudgetData.budgets];
-              const updatedBudgets = previousBudgets.filter(
-                (budgetId) => budgetId !== versionData.budgetId
-              );
-              updatedDocuments.push({
-                ref: projectBudgetDoc.ref,
-                field: "budgets",
-                previousValue: previousBudgets,
-                newValue: updatedBudgets,
-              });
-              await projectBudgetDoc.ref.update({ budgets: updatedBudgets });
+              for (const projectBudgetDoc of projectBudgetsSnapshot.docs) {
+                const projectBudgetData = projectBudgetDoc.data();
+                const previousBudgets = [...projectBudgetData.budgets];
+                const updatedBudgets = previousBudgets.filter(
+                  (budgetId) => budgetId !== versionData.budgetId
+                );
+                updatedDocuments.push({
+                  ref: projectBudgetDoc.ref,
+                  field: "budgets",
+                  previousValue: previousBudgets,
+                  newValue: updatedBudgets,
+                });
+                await projectBudgetDoc.ref.update({ budgets: updatedBudgets });
+                console.log(
+                  `Successfully updated document: ${projectBudgetDoc.ref.path}, field: budgets`
+                );
+              }
             }
 
             // Delete items after updating projectBudgets
@@ -1922,6 +2163,7 @@ exports.deleteDesign = async (req, res) => {
                   data: itemDoc.data(),
                 });
                 await itemRef.delete();
+                console.log(`Successfully deleted document: ${itemRef.path}`);
               }
             }
 
@@ -1931,6 +2173,7 @@ exports.deleteDesign = async (req, res) => {
               data: budgetData,
             });
             await budgetRef.delete();
+            console.log(`Successfully deleted document: ${budgetRef.path}`);
           }
         }
       }
@@ -1947,9 +2190,12 @@ exports.deleteDesign = async (req, res) => {
     for (const doc of updatedDocuments) {
       try {
         await doc.ref.update({ [doc.field]: doc.previousValue });
-        console.log(`Rolled back update for ${doc.ref.path}`);
+        console.log(`Rolled back update for ${doc.ref.path}, field: ${doc.field}`);
       } catch (rollbackError) {
-        console.error(`Error rolling back update for ${doc.ref.path}:`, rollbackError);
+        console.error(
+          `Error rolling back update for ${doc.ref.path}, field: ${doc.field}:`,
+          rollbackError.message
+        );
       }
     }
 
@@ -1959,7 +2205,7 @@ exports.deleteDesign = async (req, res) => {
         await doc.ref.set(doc.data);
         console.log(`Restored deleted document ${doc.ref.path}`);
       } catch (rollbackError) {
-        console.error(`Error restoring document ${doc.ref.path}:`, rollbackError);
+        console.error(`Error restoring document ${doc.ref.path}:`, rollbackError.message);
       }
     }
 
@@ -1967,6 +2213,383 @@ exports.deleteDesign = async (req, res) => {
       success: false,
       error: "Failed to delete design and related documents",
       details: error.message,
+    });
+  }
+};
+
+exports.emptyTrash = async (req, res) => {
+  const deletedDocuments = [];
+  const updatedDocuments = [];
+  const skippedItems = { designs: [], projects: [] };
+
+  try {
+    const { userId, toDelete } = req.body;
+    console.log("emptyTrash - Starting deletion process for:", toDelete);
+
+    // Delete designs
+    if (toDelete.designs && toDelete.designs.length > 0) {
+      for (const designId of toDelete.designs) {
+        try {
+          // Get design data and check permissions
+          const designRef = db.collection("deletedDesigns").doc(designId);
+          const designDoc = await designRef.get();
+
+          if (!designDoc.exists) {
+            skippedItems.designs.push({ id: designId, reason: "not found" });
+            continue;
+          }
+
+          const designData = designDoc.data();
+          const allowAction = isOwnerDesign(designDoc, userId);
+          if (!allowAction) {
+            skippedItems.designs.push({ id: designId, reason: "no permission" });
+            continue;
+          }
+
+          // 1. Update parent documents (users, projects)
+          // Update user's designs array
+          const userRef = db.collection("users").doc(userId);
+          const userDoc = await userRef.get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            const previousDesigns = [...userData.designs];
+            const updatedDesigns = previousDesigns.filter((design) => design.designId !== designId);
+            updatedDocuments.push({
+              ref: userRef,
+              field: "designs",
+              previousValue: previousDesigns,
+              newValue: updatedDesigns,
+            });
+            await userRef.update({ designs: updatedDesigns });
+          }
+
+          // Update projects containing this design
+          if (designId) {
+            const projectsSnapshot = await db
+              .collection("projects")
+              .where("designs", "in", [{ designId }])
+              .get();
+
+            for (const projectDoc of projectsSnapshot.docs) {
+              const projectData = projectDoc.data();
+              const previousDesigns = [...projectData.designs];
+              const updatedDesigns = previousDesigns.filter(
+                (design) => design.designId !== designId
+              );
+              updatedDocuments.push({
+                ref: projectDoc.ref,
+                field: "designs",
+                previousValue: previousDesigns,
+                newValue: updatedDesigns,
+              });
+              await projectDoc.ref.update({ designs: updatedDesigns });
+            }
+          }
+
+          // Store design for deletion
+          deletedDocuments.push({
+            ref: designRef,
+            data: designData,
+          });
+
+          // 2. Handle pins and planMaps
+          const pinsSnapshot = await db.collection("pins").where("designId", "==", designId).get();
+
+          const pinIdsToDelete = pinsSnapshot.docs.map((doc) => doc.id);
+
+          // Update planMaps before deleting pins
+          if (pinIdsToDelete && pinIdsToDelete.length > 0) {
+            const planMapsSnapshot = await db
+              .collection("planMaps")
+              .where("pins", "in", pinIdsToDelete)
+              .get();
+
+            for (const planMapDoc of planMapsSnapshot.docs) {
+              const planMapData = planMapDoc.data();
+              const previousPins = [...planMapData.pins];
+              const updatedPins = previousPins.filter((pinId) => !pinIdsToDelete.includes(pinId));
+              updatedDocuments.push({
+                ref: planMapDoc.ref,
+                field: "pins",
+                previousValue: previousPins,
+                newValue: updatedPins,
+              });
+              await planMapDoc.ref.update({ pins: updatedPins });
+            }
+          }
+
+          // Store pins for deletion
+          for (const pinDoc of pinsSnapshot.docs) {
+            deletedDocuments.push({
+              ref: pinDoc.ref,
+              data: pinDoc.data(),
+            });
+          }
+
+          // 3-4. Handle designVersions, comments, budgets, projectBudgets
+          for (const versionId of designData.history || []) {
+            const versionRef = db.collection("designVersions").doc(versionId);
+            const versionDoc = await versionRef.get();
+
+            if (versionDoc.exists) {
+              const versionData = versionDoc.data();
+              deletedDocuments.push({
+                ref: versionRef,
+                data: versionData,
+              });
+
+              // Store comments for deletion
+              if (versionData.images) {
+                for (const image of versionData.images) {
+                  const commentsSnapshot = await db
+                    .collection("comments")
+                    .where("designVersionImageId", "==", image.imageId)
+                    .get();
+
+                  for (const commentDoc of commentsSnapshot.docs) {
+                    deletedDocuments.push({
+                      ref: commentDoc.ref,
+                      data: commentDoc.data(),
+                    });
+                  }
+                }
+              }
+
+              // Handle budgets and projectBudgets
+              if (versionData.budgetId) {
+                const budgetRef = db.collection("budgets").doc(versionData.budgetId);
+                const budgetDoc = await budgetRef.get();
+
+                if (budgetDoc.exists) {
+                  const budgetData = budgetDoc.data();
+
+                  // Update projectBudgets before deleting budget
+                  const projectBudgetsSnapshot = await db
+                    .collection("projectBudgets")
+                    .where("budgets", "in", [versionData.budgetId])
+                    .get();
+
+                  for (const projectBudgetDoc of projectBudgetsSnapshot.docs) {
+                    const projectBudgetData = projectBudgetDoc.data();
+                    const previousBudgets = [...projectBudgetData.budgets];
+                    const updatedBudgets = previousBudgets.filter(
+                      (budgetId) => budgetId !== versionData.budgetId
+                    );
+                    updatedDocuments.push({
+                      ref: projectBudgetDoc.ref,
+                      field: "budgets",
+                      previousValue: previousBudgets,
+                      newValue: updatedBudgets,
+                    });
+                    await projectBudgetDoc.ref.update({ budgets: updatedBudgets });
+                  }
+
+                  // Store items for deletion
+                  for (const itemId of budgetData.items || []) {
+                    const itemRef = db.collection("items").doc(itemId);
+                    const itemDoc = await itemRef.get();
+                    if (itemDoc.exists) {
+                      deletedDocuments.push({
+                        ref: itemRef,
+                        data: itemDoc.data(),
+                      });
+                    }
+                  }
+
+                  // Store budget for deletion
+                  deletedDocuments.push({
+                    ref: budgetRef,
+                    data: budgetData,
+                  });
+                }
+              }
+            }
+          }
+
+          // Execute all deletions
+          await Promise.all([
+            ...deletedDocuments.map((doc) => doc.ref.delete()),
+            designRef.delete(),
+          ]);
+        } catch (error) {
+          console.error(`Error processing design ${designId}:`, error);
+          skippedItems.designs.push({ id: designId, reason: "error", error: error.message });
+          continue;
+        }
+      }
+    }
+
+    // Delete projects
+    if (toDelete.projects && toDelete.projects.length > 0) {
+      for (const projectId of toDelete.projects) {
+        try {
+          // Get project data and check permissions
+          const projectRef = db.collection("deletedProjects").doc(projectId);
+          const projectDoc = await projectRef.get();
+
+          if (!projectDoc.exists) {
+            skippedItems.projects.push({ id: projectId, reason: "not found" });
+            continue;
+          }
+
+          const projectData = projectDoc.data();
+          const allowAction = isManagerProject(projectDoc, userId);
+          if (!allowAction) {
+            skippedItems.projects.push({ id: projectId, reason: "no permission" });
+            continue;
+          }
+
+          // 1. Update parent documents (users, designs)
+          // Update user's projects array
+          const userRef = db.collection("users").doc(userId);
+          const userDoc = await userRef.get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            const previousProjects = [...userData.projects];
+            const updatedProjects = previousProjects.filter(
+              (project) => project.projectId !== projectId
+            );
+            updatedDocuments.push({
+              ref: userRef,
+              field: "projects",
+              previousValue: previousProjects,
+              newValue: updatedProjects,
+            });
+            await userRef.update({ projects: updatedProjects });
+          }
+
+          // Update designs that reference this project
+          const designsWithProject = await db
+            .collection("designs")
+            .where("projectId", "==", projectId)
+            .get();
+
+          for (const designDoc of designsWithProject.docs) {
+            const previousData = designDoc.data();
+            updatedDocuments.push({
+              ref: designDoc.ref,
+              field: "projectId",
+              previousValue: previousData.projectId,
+              newValue: null,
+            });
+            await designDoc.ref.update({ projectId: null });
+          }
+
+          // Store project for deletion
+          deletedDocuments.push({
+            ref: projectRef,
+            data: projectData,
+          });
+
+          // 2. Handle associated documents
+          // Store projectBudget for deletion
+          if (projectData.projectBudgetId) {
+            const projectBudgetRef = db
+              .collection("projectBudgets")
+              .doc(projectData.projectBudgetId);
+            const projectBudgetDoc = await projectBudgetRef.get();
+            if (projectBudgetDoc.exists) {
+              deletedDocuments.push({
+                ref: projectBudgetRef,
+                data: projectBudgetDoc.data(),
+              });
+            }
+          }
+
+          // Handle planMap and pins
+          if (projectData.planMapId) {
+            const planMapRef = db.collection("planMaps").doc(projectData.planMapId);
+            const planMapDoc = await planMapRef.get();
+            if (planMapDoc.exists) {
+              const planMapData = planMapDoc.data();
+              deletedDocuments.push({
+                ref: planMapRef,
+                data: planMapData,
+              });
+
+              // Store pins for deletion
+              for (const pinId of planMapData.pins || []) {
+                const pinRef = db.collection("pins").doc(pinId);
+                const pinDoc = await pinRef.get();
+                if (pinDoc.exists) {
+                  deletedDocuments.push({
+                    ref: pinRef,
+                    data: pinDoc.data(),
+                  });
+                }
+              }
+            }
+          }
+
+          // Handle timeline and events
+          if (projectData.timelineId) {
+            const timelineRef = db.collection("timelines").doc(projectData.timelineId);
+            const timelineDoc = await timelineRef.get();
+            if (timelineDoc.exists) {
+              const timelineData = timelineDoc.data();
+              deletedDocuments.push({
+                ref: timelineRef,
+                data: timelineData,
+              });
+
+              // Store events for deletion
+              for (const eventId of timelineData.events || []) {
+                const eventRef = db.collection("events").doc(eventId);
+                const eventDoc = await eventRef.get();
+                if (eventDoc.exists) {
+                  deletedDocuments.push({
+                    ref: eventRef,
+                    data: eventDoc.data(),
+                  });
+                }
+              }
+            }
+          }
+
+          // Execute all deletions
+          await Promise.all([
+            ...deletedDocuments.map((doc) => doc.ref.delete()),
+            projectRef.delete(),
+          ]);
+        } catch (error) {
+          console.error(`Error processing project ${projectId}:`, error);
+          skippedItems.projects.push({ id: projectId, reason: "error", error: error.message });
+          continue;
+        }
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Trash emptied successfully",
+      skippedItems,
+    });
+  } catch (error) {
+    console.error("Error emptying trash:", error);
+
+    // Rollback updates
+    for (const doc of updatedDocuments) {
+      try {
+        await doc.ref.update({ [doc.field]: doc.previousValue });
+      } catch (rollbackError) {
+        console.error(`Error rolling back update for ${doc.ref.path}:`, rollbackError);
+      }
+    }
+
+    // Restore deleted documents
+    for (const doc of deletedDocuments) {
+      try {
+        await doc.ref.set(doc.data);
+      } catch (restoreError) {
+        console.error(`Error restoring document ${doc.ref.path}:`, restoreError);
+      }
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to empty trash",
+      details: error.message,
+      skippedItems,
     });
   }
 };

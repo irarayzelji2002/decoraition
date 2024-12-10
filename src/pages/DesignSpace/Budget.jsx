@@ -6,6 +6,8 @@ import { debounce } from "lodash";
 import { getAllISOCodes, getAllInfoByISO } from "iso-country-currency";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { showToast } from "../../functions/utils";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 import Item from "./Item";
 import {
@@ -175,7 +177,23 @@ function Budget() {
       };
     });
 
-    return currencyDetails;
+    // Filter to only include USD and PHP
+    const filteredCurrencies = currencyDetails.filter(
+      (currency) => currency.currencyCode === "PHP" || currency.currencyCode === "USD"
+    );
+    return filteredCurrencies;
+  };
+
+  const getValidCurrency = (budgetCurrency) => {
+    // First check if currencyDetails is populated
+    if (!currencyDetails || currencyDetails.length === 0) {
+      return budgetCurrency ?? getPHCurrency();
+    }
+    // Then check if the budget currency is valid
+    const isValidCurrency = currencyDetails.some(
+      (currency) => currency.currencyCode === budgetCurrency?.currencyCode
+    );
+    return isValidCurrency ? budgetCurrency : getPHCurrency();
   };
 
   useEffect(() => {
@@ -243,7 +261,7 @@ function Budget() {
           return;
         }
         setDesign(fetchedDesign);
-        console.log("current design:", fetchedDesign);
+        console.log("Init Budget page - current design:", fetchedDesign);
       }
     }
   }, [designId, design, designs, userDesigns, isCollaborator]);
@@ -289,14 +307,46 @@ function Budget() {
           budgets.find((budget) => budget?.designVersionId === designVersion.id);
         setBudget(fetchedBudget || {});
 
+        // If we found a budget but it doesn't match the designVersion's budgetId, update the designVersion document
+        if (
+          fetchedBudget &&
+          designVersion.budgetId &&
+          fetchedBudget.id !== designVersion.budgetId
+        ) {
+          console.log("Init Budget page - Correcting mismatched budgetId in designVersion");
+          try {
+            await updateDoc(doc(db, "designVersions", designVersion.id), {
+              budgetId: fetchedBudget.id,
+            });
+          } catch (err) {
+            console.error("Error updating designVersion budgetId:", err);
+          }
+        }
+
         if (!fetchedBudget) {
-          console.error(
-            `Init Budget page - No budget found for design version ${designVersion.id}`
-          );
-          // Create new budget if none exists
-          const newBudget = await createDefaultBudget(designVersion.id, user, userDoc);
-          setBudget(newBudget);
+          // Double check with backend to ensure no budget exists
+          try {
+            const checkResponse = await axios.get(`/api/design/budget/check/${designVersion.id}`, {
+              headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+            });
+
+            if (!checkResponse.data.exists) {
+              console.log(
+                `No budget found for design version ${designVersion.id}, creating new one`
+              );
+              const newBudget = await createDefaultBudget(designVersion.id, user, userDoc);
+              setBudget(newBudget);
+            } else {
+              // Budget exists in backend but not in local state yet
+              console.log("Budget exists in backend but not loaded yet");
+              return;
+            }
+          } catch (err) {
+            console.error("Error checking budget existence:", err);
+            return;
+          }
         } else {
+          console.log("Init Budget page - fetchedBudget", fetchedBudget);
           setBudget(fetchedBudget);
         }
 
@@ -339,6 +389,12 @@ function Budget() {
   }, [designVersion, budgets, userBudgets, items, userItems]);
 
   const updateItems = useCallback(() => {
+    // Only proceed if we have both budget and budget.items
+    if (!budget || !budget.items) {
+      console.log("No budget or budget items available");
+      return;
+    }
+
     if (budget && budget.items) {
       // Keep existing items that are in the budget
       const updatedItems = designItems.filter((item) => budget.items?.includes(item.id));
@@ -357,15 +413,11 @@ function Budget() {
           }
         }
       });
-      console.log("updatedItems - modified", updatedItems);
 
-      if (!deepEqual(designItems, updatedItems)) {
+      if (updatedItems.length > 0 && !deepEqual(designItems, updatedItems)) {
         setDesignItems(updatedItems);
-        console.log("updatedItems - setDesignItems", updatedItems);
-      }
-
-      if (updatedItems.length > 0) {
         computeTotalCostAndExceededBudget(updatedItems, budget.budget?.amount);
+        console.log("updatedItems - setDesignItems", updatedItems);
       }
     } else {
       setDesignItems([]);
@@ -398,19 +450,39 @@ function Budget() {
       setBudget(fetchedBudget);
       setBudgetCurrency(fetchedBudget.budget?.currency ?? getPHCurrency());
       setBudgetAmount(fetchedBudget.budget?.amount ?? 0);
-      updateItems();
     }
   }, [budgets, userBudgets]);
 
   useEffect(() => {
-    console.log("User Items changed:", userItems);
-    const timer = setTimeout(() => {
-      updateItems();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [items, userItems, budget, updateItems]);
+    if (budget && budget?.budget?.currency)
+      setBudgetCurrencyForInput(getValidCurrency(budget.budget?.currency));
+  }, [budget, currencyDetails]);
+
+  // Update items when relevant data changes
+  useEffect(() => {
+    let mounted = true;
+
+    const handleItemsUpdate = async () => {
+      if (!mounted) return;
+
+      // Only update if we have necessary data
+      if (budget?.id && (userItems.length > 0 || items.length > 0)) {
+        console.log("Triggering items update with budget:", budget);
+        const timer = setTimeout(() => {
+          updateItems();
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    handleItemsUpdate();
+    return () => {
+      mounted = false;
+    };
+  }, [budget, items, userItems, updateItems]);
 
   useEffect(() => {
+    if (!designVersion?.images) return;
     console.log("Design version changed:", designVersion);
     const timer = setTimeout(() => {
       updateImagesLink();
@@ -420,7 +492,7 @@ function Budget() {
 
   useEffect(() => {
     setBudgetAmount(budget?.budget?.amount ?? 0);
-    setBudgetCurrency(budget?.budget?.currency ?? getPHCurrency());
+    setBudgetCurrency(getValidCurrency(budget?.budget?.currency));
   }, [budget]);
 
   useEffect(() => {
@@ -447,13 +519,15 @@ function Budget() {
   // Budget Functions
   const toggleBudgetModal = (opening, editing) => {
     setMenuOpen(false);
-    if (opening && editing) setIsEditingBudget(true);
-    else setIsEditingBudget(false);
-    if (!opening) {
-      setBudgetAmountForInput(budgetAmount);
-      setBudgetCurrencyForInput(budgetCurrency);
+    if (opening) {
+      setIsEditingBudget(editing);
+      // Set input values when opening the modal
+      setBudgetAmountForInput(budgetAmountForInput || budgetAmount);
+      setBudgetCurrencyForInput(budgetCurrencyForInput || getValidCurrency(budgetCurrency));
+    } else {
+      setIsEditingBudget(false);
     }
-    setIsBudgetModalOpen(!isBudgetModalOpen);
+    setIsBudgetModalOpen(opening);
   };
 
   const getBudgetColor = (budgetAmount, totalCost, isDarkMode) => {
@@ -515,9 +589,10 @@ function Budget() {
     } catch (error) {
       console.error("Error adding budget:", error);
       showToast("error", "Failed to add budget");
+    } finally {
+      setIsBudgetButtonDisabled(false);
+      setIsConfirmRemoveBudgetBtnDisabled(false);
     }
-    setIsBudgetButtonDisabled(false);
-    setIsConfirmRemoveBudgetBtnDisabled(false);
   };
 
   const handleRemoveBudget = async (budgetCurrency) => {
@@ -701,6 +776,8 @@ function Budget() {
             )}
           </div>
         </div>
+
+        {/* Action Button Menu */}
         {isOwnerEditor && changeMode === "Editing" && (
           <div className="circle-button-container">
             {menuOpen && (
@@ -751,45 +828,7 @@ function Budget() {
           </div>
         )}
 
-        {/* {isBudgetModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2 style={{ color: "var(--color-white)" }}>
-                {setIsEditingBudget ? "Edit the budget" : "Add a Budget"}
-              </h2>
-              <CloseRoundedIcon
-                className="close-icon"
-                onClick={() => toggleBudgetModal(false, isEditingBudget)}
-              />
-            </div>
-            <div className="modal-body">
-              <input
-                type="text"
-                className="rounded-input"
-                placeholder="Currency"
-                value={budgetCurrency}
-                onChange={(e) => setBudgetCurrency(e.target.value)}
-              />
-              <input
-                type="text"
-                className="rounded-input"
-                placeholder="Enter budget"
-                value={budgetAmount}
-                onChange={(e) => setBudgetAmount(e.target.value)}
-              />
-            </div>
-
-            <button
-              className="add-item-btn"
-              style={{ height: "40px" }}
-              onClick={() => handleUpdateBudget(budgetAmount, budgetCurrency)}
-            >
-              {setIsEditingBudget ? "Edit budget" : "Add Budget"}
-            </button>
-          </div>
-        </div>
-      )} */}
+        {/* Add/Edit Budget Modal */}
         {isBudgetModalOpen && (
           <Dialog
             open={isBudgetModalOpen}
@@ -848,7 +887,8 @@ function Budget() {
                         }
                       }}
                       sx={priceTextFieldStyles}
-                      inputProps={{ ...textFieldInputProps, maxLength: 22 }}
+                      InputProps={textFieldInputProps}
+                      inputProps={{ maxLength: 22 }}
                     />
                   </div>
                 </div>
@@ -894,6 +934,8 @@ function Budget() {
             </DialogActions>
           </Dialog>
         )}
+
+        {/* Remove Budget Modal */}
         {isRemoveBudgetModalOpen && (
           <Dialog
             open={isRemoveBudgetModalOpen}

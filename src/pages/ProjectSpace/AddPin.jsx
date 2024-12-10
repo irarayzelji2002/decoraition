@@ -29,6 +29,7 @@ import {
   isCollaboratorProject,
 } from "./Project";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { gradientButtonStyles } from "../DesignSpace/PromptBar";
 
 function AddPin({ EditMode }) {
   const location = useLocation();
@@ -37,13 +38,13 @@ function AddPin({ EditMode }) {
   const projectId = location.state?.projectId;
   const CurrentPin = (location.state?.totalPins || 0) + 1;
   const navigate = useNavigate();
+  const { user, userDoc, projects, userProjects } = useSharedProps();
 
   const [owner, setOwner] = React.useState("");
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [pins, setPins] = useState([]);
   const [designs, setDesigns] = useState([]);
   const pinToEdit = location.state?.pinToEdit || null;
-  const { userDoc, projects, userProjects } = useSharedProps();
   const [loadingProject, setLoadingProject] = useState(true);
   const [project, setProject] = useState({});
   const [isManager, setIsManager] = useState(false);
@@ -51,6 +52,8 @@ function AddPin({ EditMode }) {
   const [isManagerContentManagerContributor, setIsManagerContentManagerContributor] =
     useState(false);
   const [isCollaborator, setIsCollaborator] = useState(false);
+  const [isAddPinBtnDisabled, setIsAddPinBtnDisabled] = useState(false);
+
   // Get project
   useEffect(() => {
     if (projectId && userProjects.length > 0) {
@@ -145,33 +148,38 @@ function AddPin({ EditMode }) {
   };
 
   const handleSavePin = async () => {
-    const currentPin = pins[pins.length - 1];
-    if (currentPin) {
-      const pinData = {
-        designId: owner,
-        designName: currentPin.designName,
-        location: { x: currentPin.location.x, y: currentPin.location.y },
-        color: currentPin.color,
-        // Remove order property when updating
-        ...(pinToEdit ? {} : { order: currentPin.id }),
-      };
-      if (pinToEdit) {
-        await updatePinInDatabase(projectId, pinToEdit.id, pinData);
-      } else {
-        await addPinToDatabase(projectId, pinData);
+    setIsAddPinBtnDisabled(true);
+    try {
+      const currentPin = pins[pins.length - 1];
+      if (currentPin) {
+        const pinData = {
+          designId: owner,
+          // designName: currentPin.designName,
+          location: { x: currentPin.location.x, y: currentPin.location.y },
+          color: currentPin.color,
+          // Remove order property when updating
+          ...(pinToEdit ? {} : { order: currentPin.id }),
+        };
+        if (pinToEdit) {
+          await updatePinInDatabase(projectId, pinToEdit.id, pinData);
+        } else {
+          await addPinToDatabase(projectId, pinData, userDoc, user);
+        }
+        navigate(`/planMap/${projectId}`);
       }
-      navigate(`/planMap/${projectId}`);
+    } finally {
+      setIsAddPinBtnDisabled(false);
     }
   };
 
   return (
     <>
       <TopBar state={"Add Pin"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
-      <div className="sectionBudget" style={{ background: "none", paddingTop: "104px" }}>
+      <div className="sectionPins" style={{ background: "none", paddingTop: "104px" }}>
         <div className="budgetSpaceImg">
           <ImageFrame
-            src="../../img/floorplan.png"
-            alt="design preview"
+            src="/img/transparent-image.png"
+            alt=""
             projectId={projectId}
             pins={pins}
             setPins={setPins}
@@ -294,13 +302,24 @@ function AddPin({ EditMode }) {
                 </div>
               </div>
             </Modal>
-            <button
-              className="add-item-btn"
-              style={{ width: "100%", margin: "8px", maxWidth: "600px" }}
+            <Button
+              // className="add-item-btn"
+              // style={{ width: "100%", margin: "8px", maxWidth: "600px" }}
+              variant="contained"
               onClick={handleSavePin}
+              sx={{
+                ...gradientButtonStyles,
+                maxWidth: "235px",
+                opacity: isAddPinBtnDisabled ? "0.5" : "1",
+                cursor: isAddPinBtnDisabled ? "default" : "pointer",
+                "&:hover": {
+                  backgroundImage: !isAddPinBtnDisabled && "var(--gradientButtonHover)",
+                },
+              }}
+              disabled={isAddPinBtnDisabled}
             >
               Add Pin
-            </button>
+            </Button>
           </div>
         </div>
       </div>

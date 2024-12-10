@@ -28,11 +28,12 @@ import {
   handleAddCollaborators,
   handleAccessChange as handleAccessChangeDesign,
 } from "../pages/DesignSpace/backend/DesignActions.jsx";
-import { handleDeleteDesign } from "../pages/Homepage/backend/HomepageActions.jsx";
+import { handleMoveDesignToTrash } from "../pages/Homepage/backend/HomepageActions.jsx";
 import { useSharedProps } from "../contexts/SharedPropsContext.js";
 import { toggleComments } from "../pages/DesignSpace/backend/DesignActions.jsx";
 import { useNetworkStatus } from "../hooks/useNetworkStatus.js";
 import deepEqual from "deep-equal";
+import { textFieldInputProps } from "../pages/DesignSpace/DesignSettings.jsx";
 
 function DesignHead({
   design,
@@ -125,8 +126,8 @@ function DesignHead({
     setIsChangeModeVisible(newRole > 0);
     if (design.history && design.history.length > 0)
       setIsRestoreVisible(newRole === 1 || newRole === 3);
-    setIsRenameVisible(newRole === 1 || newRole === 3);
-    setIsDeleteVisible(newRole === 3);
+    setIsRenameVisible((newRole === 1 || newRole === 3) && changeMode === "Editing");
+    setIsDeleteVisible(newRole === 3 && changeMode === "Editing");
     // Set visibility based on design settings
     setIsDownloadVisible(!!design?.designSettings?.allowDownload || newRole === 1 || newRole === 3);
     setIsHistoryVisible(
@@ -135,7 +136,7 @@ function DesignHead({
     setIsMakeCopyVisible(!!design?.designSettings?.allowCopy || newRole === 1 || newRole === 3);
 
     handleDefaultChangeMode(newRole);
-  }, [design, user, userDoc]);
+  }, [design, user, userDoc, changeMode]);
 
   useEffect(() => {
     console.log("DesignHead - changeMode role:", role);
@@ -491,6 +492,19 @@ function DesignHead({
     }
   };
 
+  // Delete Modal Action
+  const handleDelete = async () => {
+    const result = await handleMoveDesignToTrash(user, userDoc, design.id);
+    if (!result.success) {
+      showToast("error", "Failed to move design to trash");
+    }
+    showToast("success", "Design moved to trash");
+    navigate("/trash", {
+      state: { navigateFrom: navigateFrom, tab: "Designs", designId: design.id },
+    });
+    handleCloseDeleteModal();
+  };
+
   // Copy Link Action
   const handleCopyLink = async () => {
     try {
@@ -691,6 +705,7 @@ function DesignHead({
                 variant="outlined"
                 className="headTitleInput headTitle"
                 fullWidth
+                InputProps={textFieldInputProps}
                 inputProps={{ maxLength: 100 }}
                 sx={{
                   backgroundColor: "transparent",
@@ -991,7 +1006,7 @@ function DesignHead({
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        handleDelete={() => handleDeleteDesign(userDoc.id, design.id, navigate)}
+        handleDelete={handleDelete}
         isDesign={true}
         object={design}
       />

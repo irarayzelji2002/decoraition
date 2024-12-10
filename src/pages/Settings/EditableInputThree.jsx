@@ -19,10 +19,11 @@ const EditableInputThree = ({
   initErrors,
   setErrors,
   origValues,
+  disabled = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValues, setInputValues] = useState(values);
-  const maxLengths = [50, 50, 20]; // Define maxLengths array
+  const maxLengths = [50, 50, 20];
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -38,7 +39,13 @@ const EditableInputThree = ({
   const icon = isEditing ? (
     <IconButton
       onClick={isEditing ? handleSave : handleEdit}
-      sx={{ ...iconButtonStyles, padding: "9.5px" }}
+      sx={{
+        ...iconButtonStyles,
+        padding: "9.5px",
+        opacity: disabled ? "0.5 !important" : "1 !important",
+        cursor: disabled ? "default !important" : "pointer !important",
+      }}
+      disabled={disabled}
     >
       <SaveIconSmallGradient sx={{ color: "#FF894D" }} />
     </IconButton>
@@ -137,6 +144,7 @@ const EditableInputThree = ({
                 },
               }}
               InputProps={{
+                style: { color: "var(--color-white)" },
                 endAdornment: (
                   <InputAdornment position="end">
                     {isEditing && (
@@ -147,6 +155,7 @@ const EditableInputThree = ({
                   </InputAdornment>
                 ),
               }}
+              inputProps={{ maxLength: label !== "Username" ? 50 : 20 }}
             />
           </div>
         ))}

@@ -400,7 +400,11 @@ h6 {
   flex-direction: column;
   overflow: hidden; /* Hide overflow */
   white-space: nowrap; /* Prevent text from wrapping */
-  text-overflow: ellipsis; /*
+  text-overflow: ellipsis;
+}
+
+.image-info-buttons {
+  flex-shrink: 1;
 }
 
 .fit-view {
@@ -433,9 +437,16 @@ h6 {
   width: calc(37vh - 142px);
   padding-bottom: calc(37vh - 142px);
 }
+.fit-view .width-37 .image-info-buttons .downloadIconBtn {
+  display: none;
+}
 .fit-view .width-32 {
   width: calc(32vh - 142px);
   padding-bottom: calc(32vh - 142px);
+}
+.fit-view .width-32 .image-info-buttons .downloadIconBtn,
+.fit-view .width-32 .image-info-buttons .editIconBtn {
+  display: none;
 }
 
 .fit-view .image-frame-cont {
@@ -1390,6 +1401,11 @@ s .dialog .MuiDialog-paper {
   margin: 5px 15px 5px 0px;
   background-color: var(--selectImagePreview);
   overflow: hidden;
+}
+
+.select-image-preview.item-preview {
+  width: 80px;
+  height: 80px;
 }
 
 .select-image-preview.version,

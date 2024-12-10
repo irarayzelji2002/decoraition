@@ -55,6 +55,7 @@ import {
   dialogTitleStyles,
 } from "../../components/RenameModal.jsx";
 import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar.jsx";
+import { set } from "lodash";
 
 export const CustomMenuItem = styled(MenuItem)({
   minHeight: "2.6rem !important",
@@ -113,18 +114,22 @@ const CommentContainer = ({
   const [isEditingComment, setIsEditingComment] = useState(false);
   const [updatedCommentContent, setUpdatedCommentContent] = useState("");
   const [updatedMentions, setUpdatedMentions] = useState([]);
+  const [isSaveBtnDisabled, setIsSaveBtnDisabled] = useState(false);
 
   // Add Reply states
   const [isAddingReply, setIsAddingReply] = useState(false);
   const [replyContent, setReplyContent] = useState("");
   const [replyMentions, setReplyMentions] = useState([]);
   const [rootCommentRoot, setRootCommentRoot] = useState(null);
+  const [isSendBtnDisabled, setIsSendBtnDisabled] = useState(false);
 
   // errors.addComment for adding comment
   // errors.editComment for editing comment
   // errors.addReply for replying comment
   // errors.editReply for editing reply to a comment
   const [errors, setErrors] = useState({});
+  const [isDeleteBtnDisabled, setIsDeleteBtnDisabled] = useState(false);
+  const [isCheckBtnDisabled, setIsCheckBtnDisabled] = useState(false);
 
   // Modal states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -552,13 +557,18 @@ const CommentContainer = ({
 
   // Comment database functions
   const handleChangeCommentStatus = async () => {
-    // Call changeCommentStatus
-    const result = await changeCommentStatus(designId, commentId, !status, user, userDoc);
-    if (!result.success) {
-      showToast("error", result.message);
-      return;
+    setIsCheckBtnDisabled(true);
+    try {
+      // Call changeCommentStatus
+      const result = await changeCommentStatus(designId, commentId, !status, user, userDoc);
+      if (!result.success) {
+        showToast("error", result.message);
+        return;
+      }
+      showToast("success", result.message);
+    } finally {
+      setIsCheckBtnDisabled(false);
     }
-    showToast("success", result.message);
   };
 
   const handleEditComment = async () => {
@@ -580,37 +590,47 @@ const CommentContainer = ({
       return;
     }
 
-    // Call editComment
-    const result = await editComment(
-      designId,
-      commentId,
-      updatedCommentContent,
-      updatedMentions,
-      user,
-      userDoc
-    );
-    if (!result.success) {
-      showToast("error", result.message);
-      return;
+    setIsSaveBtnDisabled(true);
+    try {
+      // Call editComment
+      const result = await editComment(
+        designId,
+        commentId,
+        updatedCommentContent,
+        updatedMentions,
+        user,
+        userDoc
+      );
+      if (!result.success) {
+        showToast("error", result.message);
+        return;
+      }
+      setIsEditingComment(false);
+      showToast("success", result.message);
+    } finally {
+      setIsSaveBtnDisabled(false);
     }
-    setIsEditingComment(false);
-    showToast("success", result.message);
   };
 
   const handleDeleteComment = async () => {
-    // Call deleteComment
-    const result = await deleteComment(
-      designId,
-      commentId, // parent commentId
-      user,
-      userDoc
-    );
-    if (!result.success) {
-      showToast("error", result.message);
-      return;
+    setIsDeleteBtnDisabled(true);
+    try {
+      // Call deleteComment
+      const result = await deleteComment(
+        designId,
+        commentId, // parent commentId
+        user,
+        userDoc
+      );
+      if (!result.success) {
+        showToast("error", result.message);
+        return;
+      }
+      setIsDeleteModalOpen(false);
+      showToast("success", result.message);
+    } finally {
+      setIsDeleteBtnDisabled(false);
     }
-    setIsDeleteModalOpen(false);
-    showToast("success", result.message);
   };
 
   // Reply database functions
@@ -630,25 +650,30 @@ const CommentContainer = ({
       return;
     }
 
-    // Call addReply
-    const result = await addReply(
-      designId,
-      commentId, // parent commentId
-      replyContent,
-      replyMentions,
-      replyTo,
-      user,
-      userDoc
-    );
-    if (!result.success) {
-      showToast("error", result.message);
-      return;
+    setIsSendBtnDisabled(true);
+    try {
+      // Call addReply
+      const result = await addReply(
+        designId,
+        commentId, // parent commentId
+        replyContent,
+        replyMentions,
+        replyTo,
+        user,
+        userDoc
+      );
+      if (!result.success) {
+        showToast("error", result.message);
+        return;
+      }
+      setIsAddingReply(false);
+      setReplyContent("");
+      setReplyMentions([]);
+      setReplyTo(null);
+      showToast("success", result.message);
+    } finally {
+      setIsSendBtnDisabled(false);
     }
-    setIsAddingReply(false);
-    setReplyContent("");
-    setReplyMentions([]);
-    setReplyTo(null);
-    showToast("success", result.message);
   };
 
   const handleEditReply = async () => {
@@ -670,39 +695,49 @@ const CommentContainer = ({
       return;
     }
 
-    // Call editReply
-    const result = await editReply(
-      designId,
-      commentId, // parent commentId
-      comment.replyId, // replyId
-      updatedCommentContent,
-      updatedMentions,
-      user,
-      userDoc
-    );
-    if (!result.success) {
-      showToast("error", result.message);
-      return;
+    setIsSaveBtnDisabled(true);
+    try {
+      // Call editReply
+      const result = await editReply(
+        designId,
+        commentId, // parent commentId
+        comment.replyId, // replyId
+        updatedCommentContent,
+        updatedMentions,
+        user,
+        userDoc
+      );
+      if (!result.success) {
+        showToast("error", result.message);
+        return;
+      }
+      setIsEditingComment(false);
+      showToast("success", result.message);
+    } finally {
+      setIsSaveBtnDisabled(false);
     }
-    setIsEditingComment(false);
-    showToast("success", result.message);
   };
 
   const handleDeleteReply = async () => {
-    // Call deleteReply
-    const result = await deleteReply(
-      designId,
-      commentId, // parent commentId
-      comment.replyId, // replyId
-      user,
-      userDoc
-    );
-    if (!result.success) {
-      showToast("error", result.message);
-      return;
+    setIsDeleteBtnDisabled(true);
+    try {
+      // Call deleteReply
+      const result = await deleteReply(
+        designId,
+        commentId, // parent commentId
+        comment.replyId, // replyId
+        user,
+        userDoc
+      );
+      if (!result.success) {
+        showToast("error", result.message);
+        return;
+      }
+      setIsDeleteModalOpen(false);
+      showToast("success", result.message);
+    } finally {
+      setIsDeleteBtnDisabled(false);
     }
-    setIsDeleteModalOpen(false);
-    showToast("success", result.message);
   };
 
   // Notification highlight
@@ -935,7 +970,10 @@ const CommentContainer = ({
                     padding: "8px",
                     marginRight: "-1px",
                     width: "38px",
+                    opacity: isCheckBtnDisabled ? "0.5 !important" : "1 !important",
+                    cursor: isCheckBtnDisabled ? "default !important" : "pointer !important",
                   }}
+                  disabled={isCheckBtnDisabled}
                   onClick={(e) => {
                     e.stopPropagation();
                     setStatus((prev) => !prev);
@@ -1291,6 +1329,7 @@ const CommentContainer = ({
                     },
                   }}
                   InputProps={{
+                    style: { color: "var(--color-white)" },
                     endAdornment: (
                       <InputAdornment
                         position="end"
@@ -1324,7 +1363,15 @@ const CommentContainer = ({
                             )}
                             <IconButton
                               onClick={!isReply ? handleEditComment : handleEditReply}
-                              sx={{ ...iconButtonStylesBrighter, padding: "9.5px" }}
+                              sx={{
+                                ...iconButtonStylesBrighter,
+                                padding: "9.5px",
+                                opacity: isSaveBtnDisabled ? "0.5 !important" : "1 !important",
+                                cursor: isSaveBtnDisabled
+                                  ? "default !important"
+                                  : "pointer !important",
+                              }}
+                              disabled={isSaveBtnDisabled}
                             >
                               <SaveIconSmallGradient sx={{ color: "#FF894D" }} />
                             </IconButton>
@@ -1333,6 +1380,7 @@ const CommentContainer = ({
                       </InputAdornment>
                     ),
                   }}
+                  inputProps={{ maxLength: 1000 }}
                 />
                 {openMentionOptions && mentionOptions.length > 0 && isEditingComment && (
                   <Paper
@@ -1658,6 +1706,7 @@ const CommentContainer = ({
                     },
                   }}
                   InputProps={{
+                    style: { color: "var(--color-white)" },
                     endAdornment: (
                       <InputAdornment
                         position="end"
@@ -1678,13 +1727,20 @@ const CommentContainer = ({
                         </IconButton>
                         <IconButton
                           onClick={handleAddReply}
-                          sx={{ ...iconButtonStylesBrighter, padding: "9.5px" }}
+                          sx={{
+                            ...iconButtonStylesBrighter,
+                            padding: "9.5px",
+                            opacity: isSendBtnDisabled ? "0.5 !important" : "1 !important",
+                            cursor: isSendBtnDisabled ? "default !important" : "pointer !important",
+                          }}
+                          disabled={isSendBtnDisabled}
                         >
                           <SendIconSmallGradient sx={{ color: "#FF894D" }} />
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
+                  inputProps={{ maxLength: 1000 }}
                 />
                 {openMentionOptions && mentionOptions.length > 0 && isAddingReply && (
                   <Paper
@@ -1747,6 +1803,7 @@ const CommentContainer = ({
           handleDelete={!isReply ? handleDeleteComment : handleDeleteReply}
           isReply={isReply}
           date={date}
+          isDeleteBtnDisabled={isDeleteBtnDisabled}
         />
       )}
     </>
@@ -1829,7 +1886,14 @@ export const UserInfoTooltip = ({ username, firstName, lastName, role, profilePi
 );
 
 // Delete confirmation modal
-const ConfirmDeleteModal = ({ isOpen, onClose, handleDelete, isReply, date }) => {
+const ConfirmDeleteModal = ({
+  isOpen,
+  onClose,
+  handleDelete,
+  isReply,
+  date,
+  isDeleteBtnDisabled,
+}) => {
   const onSubmit = () => {
     handleDelete();
     onClose();
@@ -1868,7 +1932,20 @@ const ConfirmDeleteModal = ({ isOpen, onClose, handleDelete, isReply, date }) =>
         </Typography>
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>
-        <Button fullWidth variant="contained" onClick={onSubmit} sx={gradientButtonStyles}>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={onSubmit}
+          sx={{
+            ...gradientButtonStyles,
+            opacity: isDeleteBtnDisabled ? "0.5" : "1",
+            cursor: isDeleteBtnDisabled ? "default" : "pointer",
+            "&:hover": {
+              backgroundImage: !isDeleteBtnDisabled && "var(--gradientButtonHover)",
+            },
+          }}
+          disabled={isDeleteBtnDisabled}
+        >
           Yes
         </Button>
         <Button

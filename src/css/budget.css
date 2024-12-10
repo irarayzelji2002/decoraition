@@ -74,6 +74,7 @@
 .budgetSpaceImg.items {
   gap: 24px;
   padding-top: 35px;
+  margin-bottom: 80px;
 }
 
 .budgetSpaceImg.version.items {
@@ -129,15 +130,22 @@
 }
 
 .thumbnail {
-  width: 70px;
-  height: 64px;
+  min-width: 75px;
+  height: 75px;
   border-radius: 14px;
   margin: 12px;
   background-color: var(--thumbnailFill);
   border: 1px solid var(--thumbnailBorder);
   background-origin: border-box;
   background-clip: padding-box, border-box;
+  align-self: center;
+  overflow: hidden;
 }
+
+.itemDetailsCont {
+  display: flex;
+}
+
 .itemName {
   font-size: var(--font-size-h7);
   color: var(--color-white);
@@ -149,11 +157,22 @@
   white-space: normal;
   font-weight: bold;
 }
+
 .itemPrice {
   margin-top: 12px;
   font-size: var(--font-size-h7);
   opacity: 0.6;
   color: var(--corlor-white);
+}
+
+.itemActions {
+  display: flex;
+  flex-direction: row;
+  margin-left: auto;
+  margin-right: 10px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
 }
 
 .versionDetailsCont {
@@ -249,13 +268,18 @@
 }
 
 .SubtitleBudget {
-  font-size: var(--font-size-h5);
+  font-size: var(--font-size-h7);
   width: 100%;
   max-width: 600px;
   margin-bottom: 12px;
-  white-space: nowrap;
+  color: var(--color-white);
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: normal;
   font-weight: bold;
 }
 
@@ -436,5 +460,17 @@ select {
   }
   .itemSpace {
     width: 90%;
+  }
+}
+
+@media (max-width: 600px) {
+  .itemDetailsCont {
+    flex-direction: column;
+    align-items: center;
+  }
+  .itemActions {
+    margin-left: -10px;
+    margin-right: auto;
+    margin-top: -5px;
   }
 }

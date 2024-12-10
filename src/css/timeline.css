@@ -23,11 +23,17 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 768px;
-  background-color: var(--nav-card-modal);
-  padding: 24px;
-  border-radius: 16px;
+  background-color: var(--table-rows);
+  border-radius: 10px;
   margin-bottom: 20px;
+  padding: 5px 15px;
+}
+.reminders-cont {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 24px;
 }
 
 .react-calendar__navigation button:hover {
@@ -109,9 +115,10 @@
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
-  overflow: hidden; /* Add this line */
-  text-overflow: ellipsis; /* Add this line */
-  white-space: nowrap; /* Add this line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 0px;
 }
 .task-text {
   width: 70%;
@@ -120,9 +127,9 @@
 .task-text h3 {
   margin: 0;
   color: var(--color-white);
-  overflow: hidden; /* Add this line */
-  text-overflow: ellipsis; /* Add this line */
-  white-space: nowrap; /* Add this line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-text p {

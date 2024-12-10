@@ -9,7 +9,14 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import FormHelperText from "@mui/material/FormHelperText";
 import { commonInputStyles } from "./Signup";
 
-export default function Password({ value, onChange, error, helperText, label }) {
+export default function Password({
+  value,
+  onChange,
+  error,
+  helperText,
+  label,
+  FormHelperTextProps,
+}) {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -19,7 +26,7 @@ export default function Password({ value, onChange, error, helperText, label }) 
   };
 
   return (
-    <FormControl sx={{ width: "100%" }} variant="outlined" error={error}>
+    <FormControl sx={{ width: "100%" }} variant="outlined">
       <TextField
         id="outlined-adornment-password"
         type={showPassword ? "text" : "password"}
@@ -28,6 +35,9 @@ export default function Password({ value, onChange, error, helperText, label }) 
         label=""
         sx={{ ...commonInputStyles, marginBottom: "20px" }}
         placeholder={label}
+        error={error}
+        helperText={helperText}
+        FormHelperTextProps={FormHelperTextProps}
         InputProps={{
           style: { color: "var(--color-white)" },
           endAdornment: (
@@ -47,8 +57,8 @@ export default function Password({ value, onChange, error, helperText, label }) 
             </InputAdornment>
           ),
         }}
+        inputProps={{ maxLength: 128 }}
       />
-      {helperText && <FormHelperText sx={{ color: "#ffffff" }}>{helperText}</FormHelperText>}
     </FormControl>
   );
 }

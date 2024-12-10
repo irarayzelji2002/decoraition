@@ -517,7 +517,7 @@ function Project() {
             <SearchIcon sx={{ color: "var(--color-white)" }} />
           </IconButton>
           <InputBase
-            sx={{ ml: 1, flex: 1, color: "var(--color-white)" }}
+            sx={{ marginLeft: "8px", marginRight: "15px", flex: 1, color: "var(--color-white)" }}
             placeholder="Search designs on this project"
             inputProps={{ "aria-label": "search designs" }}
             value={searchQuery}
@@ -650,11 +650,6 @@ function Project() {
                               name={design.designName}
                               designId={design.id}
                               design={design}
-                              onDelete={() =>
-                                isManagerContentManager
-                                  ? handleDeleteDesign(user, design.id, navigate)
-                                  : {}
-                              }
                               onOpen={() =>
                                 navigate(`/design/${design.id}`, {
                                   state: { designId: design.id },
@@ -675,7 +670,6 @@ function Project() {
                               name={design.designName}
                               designId={design.id}
                               design={design}
-                              onDelete={() => handleDeleteDesign(user, design.id, navigate)}
                               onOpen={() =>
                                 navigate(`/design/${design.id}`, {
                                   state: { designId: design.id },

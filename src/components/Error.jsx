@@ -4,7 +4,7 @@ function Error() {
   return (
     <div className="error-container">
       <h1 className="error-title">404</h1>
-      <p className="error-message">The page you're looking for is not available.</p>
+      <p className="error-message">Uh oh, seems like the page you're looking for is not found.</p>
       <a href="/" className="back-home">
         Back To Homepage
       </a>

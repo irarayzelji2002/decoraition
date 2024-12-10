@@ -2,13 +2,14 @@ import "../../css/planMap.css";
 import EditPen from "../DesignSpace/svg/EditPen";
 import ExportIcon, { Draggable } from "./svg/ExportIcon";
 import Trash from "../DesignSpace/svg/Trash";
-import { IconButton, Modal, Button } from "@mui/material";
-import { DeleteIcon } from "../../components/svg/DefaultMenuIcons";
+import { IconButton, Modal, Button, Icon } from "@mui/material";
+import { DeleteIcon, EditIconSmallGradient } from "../../components/svg/DefaultMenuIcons";
 import { useState, useEffect } from "react";
 import { ChromePicker } from "react-color";
 import SimpleDeleteConfirmation from "../../components/SimpleDeleteConfirmation";
 import { useNavigate } from "react-router-dom";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
+import { iconButtonStyles } from "../Homepage/DrawerComponent";
 
 const MapPin = ({
   title = "Untitled",
@@ -31,6 +32,7 @@ const MapPin = ({
   const [textColor, setTextColor] = useState("#000000");
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const history = useNavigate();
+  const [isDeleteBtnDisabled, setIsDeleteBtnDisabled] = useState(false);
   const { designs, userDesigns, designVersions, userDesignVersions } = useSharedProps();
 
   useEffect(() => {
@@ -47,9 +49,14 @@ const MapPin = ({
   }, [pinColor]);
 
   const handleDelete = () => {
-    console.log(`Deleting pin with ID: ${pinId}`); // Debug log
-    deletePin(pinId);
-    setDeleteConfirmOpen(false);
+    try {
+      setIsDeleteBtnDisabled(true);
+      console.log(`Deleting pin with ID: ${pinId}`); // Debug log
+      deletePin(pinId);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setIsDeleteBtnDisabled(false);
+    }
   };
 
   const handleChange = (color) => {
@@ -169,74 +176,76 @@ const MapPin = ({
           </div>
         </Modal>
       )}
-      <div className="mapPin" style={{ width: "100%" }}>
-        <div
-          className="ifMobile"
-          style={{
-            width: "50%",
-            maxWidth: "250px",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+      <div className="mapPin">
+        <div className="mapPinDetails">
           <img
-            src={getDesignImage(designId) || "/img/design-placeholder.png"}
+            src={getDesignImage(designId) || "/img/transparent-image.png"}
             className="image-pin"
-            alt={`design preview`}
+            alt=""
           />
           {/* {getDesignImage(designId) && (
             <img src={getDesignImage(designId)} className="image-pin" alt={`design preview`} />
           )} */}
-          <span className="pinName">{title}</span>
-        </div>
-        <div style={{ display: "flex", width: "100%", justifyContent: "flex-end" }}>
-          {!editMode ? (
-            <>
-              <div
-                aria-label="delete"
-                style={{ cursor: "pointer", marginRight: "6px" }}
-                onClick={handleExportClick}
-              >
-                <ExportIcon />
-              </div>
-              {isContributor && (
+          <div className="itemDetailsCont">
+            <div className="itemDetailsContText">
+              <span className="pinName">{title}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+                alignItems: "center",
+              }}
+              className="itemActions"
+            >
+              {!editMode ? (
                 <>
-                  <div
-                    aria-label="edit"
-                    onClick={editPin}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                  <IconButton
+                    aria-label="delete"
+                    // style={{ cursor: "pointer", marginRight: "6px" }}
+                    sx={{
+                      ...iconButtonStyles,
+                      width: "40px",
+                      height: "40px",
+                      padding: "6px",
+                      marginTop: "-5px",
                     }}
+                    onClick={handleExportClick}
                   >
-                    <EditPen />
+                    <ExportIcon />
+                  </IconButton>
+                  {isContributor && (
+                    <>
+                      <IconButton
+                        aria-label="edit"
+                        onClick={editPin}
+                        sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+                      >
+                        <EditIconSmallGradient />
+                      </IconButton>
+                    </>
+                  )}
+
+                  {isManager && (
+                    <IconButton
+                      sx={{ ...iconButtonStyles, width: "36px", height: "36px" }}
+                      aria-label="delete"
+                      onClick={() => setDeleteConfirmOpen(true)}
+                    >
+                      <Trash />
+                    </IconButton>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="draggable">
+                    <Draggable />
                   </div>
                 </>
               )}
-
-              {isManager && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  aria-label="delete"
-                  onClick={() => setDeleteConfirmOpen(true)}
-                >
-                  <Trash />
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="draggable">
-                <Draggable />
-              </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </div>
       <SimpleDeleteConfirmation

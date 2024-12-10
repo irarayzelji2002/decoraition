@@ -105,7 +105,8 @@ const EditDescModal = ({ isOpen, onClose, handleEdit, designVersion, imageId }) 
             ...textFieldStyles,
             marginBottom: "16px",
           }}
-          inputProps={textFieldInputProps}
+          InputProps={textFieldInputProps}
+          inputProps={{ maxLength: 255 }}
         />
       </DialogContent>
       <DialogActions sx={dialogActionsStyles}>

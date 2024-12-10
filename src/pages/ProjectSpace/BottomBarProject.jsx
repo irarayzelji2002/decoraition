@@ -49,16 +49,7 @@ function BottomBarProject({
 
   return (
     <div className="bottomBar">
-      <Button
-        size="md"
-        onClick={handleDesignClick}
-        sx={{
-          mr: 2,
-          ":hover": {
-            backgroundColor: "var(--iconBg)",
-          },
-        }}
-      >
+      <Button size="md" onClick={handleDesignClick} sx={bottomBarButtonStyles}>
         <div
           style={{
             display: "flex",
@@ -114,20 +105,15 @@ function BottomBarProject({
             </svg>
           )}
 
-          <span className="capitalize" style={{ color: Design ? "#ff8344" : "var(--color-white)" }}>
+          <span
+            className="capitalize"
+            style={{ color: Design ? "#ff8344" : "var(--color-white)", textWrap: "nowrap" }}
+          >
             Design
           </span>
         </div>
       </Button>
-      <Button
-        size="md"
-        onClick={handleTimelineClick}
-        sx={{
-          ":hover": {
-            backgroundColor: "var(--iconBg)",
-          },
-        }}
-      >
+      <Button size="md" onClick={handleTimelineClick} sx={bottomBarButtonStyles}>
         <div
           style={{
             display: "flex",
@@ -181,21 +167,13 @@ function BottomBarProject({
 
           <span
             className="capitalize"
-            style={{ color: Timeline ? "#ff8344" : "var(--color-white)" }}
+            style={{ color: Timeline ? "#ff8344" : "var(--color-white)", textWrap: "nowrap" }}
           >
             Timeline
           </span>
         </div>
       </Button>
-      <Button
-        size="md"
-        onClick={handlePlanMapClick}
-        sx={{
-          ":hover": {
-            backgroundColor: "var(--iconBg)",
-          },
-        }}
-      >
+      <Button size="md" onClick={handlePlanMapClick} sx={bottomBarButtonStyles}>
         <div
           style={{
             display: "flex",
@@ -293,21 +271,13 @@ function BottomBarProject({
 
           <span
             className="capitalize"
-            style={{ color: PlanMap ? "#ff8344" : "var(--color-white)" }}
+            style={{ color: PlanMap ? "#ff8344" : "var(--color-white)", textWrap: "nowrap" }}
           >
             Plan Map
           </span>
         </div>
       </Button>
-      <Button
-        size="md"
-        onClick={handleBudgetClick}
-        sx={{
-          ":hover": {
-            backgroundColor: "var(--iconBg)",
-          },
-        }}
-      >
+      <Button size="md" onClick={handleBudgetClick} sx={bottomBarButtonStyles}>
         <div
           style={{
             display: "flex",
@@ -383,7 +353,10 @@ function BottomBarProject({
             </svg>
           )}
 
-          <span className="capitalize" style={{ color: Budget ? "#ff8344" : "var(--color-white)" }}>
+          <span
+            className="capitalize"
+            style={{ color: Budget ? "#ff8344" : "var(--color-white)", textWrap: "nowrap" }}
+          >
             Budget
           </span>
         </div>
@@ -393,3 +366,12 @@ function BottomBarProject({
 }
 
 export default BottomBarProject;
+
+const bottomBarButtonStyles = {
+  color: "var(--color-white)",
+  borderRadius: "10px",
+  width: "78px",
+  ":hover": {
+    backgroundColor: "var(--iconBg)",
+  },
+};

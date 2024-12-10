@@ -24,6 +24,7 @@ const EditablePassInput = ({
   initErrors,
   setErrors,
   isEditable = true,
+  disabled = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -43,7 +44,13 @@ const EditablePassInput = ({
   const icon = isEditing ? (
     <IconButton
       onClick={isEditing ? handleSave : handleEdit}
-      sx={{ ...iconButtonStyles, padding: "9.5px" }}
+      sx={{
+        ...iconButtonStyles,
+        padding: "9.5px",
+        opacity: disabled ? "0.5 !important" : "1 !important",
+        cursor: disabled ? "default !important" : "pointer !important",
+      }}
+      disabled={disabled}
     >
       <SaveIconSmallGradient sx={{ color: "#FF894D" }} />
     </IconButton>
@@ -165,6 +172,7 @@ const EditablePassInput = ({
                     },
                   }}
                   InputProps={{
+                    style: { color: "var(--color-white)" },
                     endAdornment: (
                       <InputAdornment position="end">
                         {isEditing && (
@@ -187,6 +195,7 @@ const EditablePassInput = ({
                       </InputAdornment>
                     ),
                   }}
+                  inputProps={{ maxLength: 128 }}
                 />
               </div>
             ))}

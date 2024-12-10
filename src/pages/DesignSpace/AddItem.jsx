@@ -5,7 +5,15 @@ import TopBar from "../../components/TopBar";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../css/budget.css";
-import { TextField, IconButton, Button, Typography, InputAdornment } from "@mui/material";
+import {
+  TextField,
+  IconButton,
+  Button,
+  Typography,
+  InputAdornment,
+  Paper,
+  Box,
+} from "@mui/material";
 import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftRoundedIcon,
   KeyboardArrowRightRounded as KeyboardArrowRightRoundedIcon,
@@ -20,6 +28,8 @@ import { gradientButtonStyles, outlinedButtonStyles } from "./PromptBar";
 import { iconButtonStyles } from "../Homepage/DrawerComponent";
 import { isOwnerEditorDesign } from "./Design";
 import LoadingPage from "../../components/LoadingPage";
+import { CustomMenuItem } from "./CommentContainer";
+import { menuItemStyles } from "./DesignSettings";
 
 const AddItem = () => {
   const { designId, budgetId } = useParams();
@@ -34,7 +44,7 @@ const AddItem = () => {
   const [designVersion, setDesignVersion] = useState({});
 
   const [itemQuantity, setItemQuantity] = useState(1);
-  const [budgetItem, setBudgetItem] = useState("");
+  const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
   const [cost, setCost] = useState("");
   const [currency, setCurrency] = useState({});
@@ -42,13 +52,20 @@ const AddItem = () => {
   const [selectedImagePreview, setSelectedImagePreview] = useState(null);
   const [isUploadedImage, setIsUploadedImage] = useState(false);
   const [imageLink, setImageLink] = useState("");
-  const [isDesignButtonDisabled, setIsDesignButtonDisabled] = useState(false);
+  const [isAddItemBtnDisabled, setIsAddItemBtnDisabled] = useState(false);
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [currencyDetails, setCurrencyDetails] = useState([]);
   const [defaultBudgetCurrency, setDefaultBudgetCurrency] = useState({});
   const [dragging, setDragging] = useState(false);
+
+  const [ebaySearchQuery, setEbaySearchQuery] = useState("");
+  const [ebaySearchResults, setEbaySearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [searchItemClicked, setSearchItemClicked] = useState(null);
+  const [openSearchResultOptions, setOpenSearchResultOptions] = useState(false);
 
   const isoToFlagEmoji = (isoCode) => {
     return isoCode
@@ -76,7 +93,11 @@ const AddItem = () => {
       };
     });
 
-    return currencyDetails;
+    // Filter to only include USD and PHP
+    const filteredCurrencies = currencyDetails.filter(
+      (currency) => currency.currencyCode === "PHP" || currency.currencyCode === "USD"
+    );
+    return filteredCurrencies;
   };
 
   useEffect(() => {
@@ -173,6 +194,7 @@ const AddItem = () => {
 
     setInitImage(file);
     setIsUploadedImage(true);
+    setImageLink("");
     const reader = new FileReader();
     reader.onloadend = () => {
       console.log("FileReader result:", reader.result);
@@ -193,9 +215,9 @@ const AddItem = () => {
       message = "Please upload an image file of png, jpg, or jpeg type";
       showToast("error", message);
     } else {
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
       if (file.size > maxSize) {
-        message = "Image size must be less than 5MB";
+        message = "Image size must be less than 2MB";
         showToast("error", message);
       }
     }
@@ -204,6 +226,101 @@ const AddItem = () => {
 
   const triggerFileInput = () => {
     document.getElementById("upload-image").click();
+  };
+
+  const handleEbaySearch = async () => {
+    if (!ebaySearchQuery.trim()) return;
+    setIsSearching(true);
+    try {
+      const response = await axios.get(`/api/ebay/search`, {
+        params: {
+          query: ebaySearchQuery,
+        },
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      });
+      setEbaySearchResults(response.data.items);
+    } catch (error) {
+      console.error("Error searching eBay items:", error);
+      showToast("error", "Failed to search eBay items");
+    } finally {
+      setIsSearching(false);
+      setOpenSearchResultOptions(true);
+    }
+  };
+
+  useEffect(() => {
+    console.log("clicked item:", searchItemClicked);
+    if (searchItemClicked) {
+      const item = searchItemClicked;
+      console.log("Selected item:", item);
+      setItemName(item.title);
+      setCost(item.price.value);
+      setItemQuantity(1);
+
+      // Currency
+      const phCurrency = currencyDetails.find((currency) => currency.countryISO === "PH");
+      const usCurrency = currencyDetails.find((currency) => currency.countryISO === "US");
+      if (item.price.currency === "USD") setCurrency(usCurrency);
+      else if (item.price.currency === "PHP") setCurrency(phCurrency);
+      else {
+        const currencyToUse = currencyDetails.find(
+          (currency) => currency?.currencyCode === item.price.curreny
+        );
+        setCurrency(currencyToUse);
+      }
+
+      // Image
+      setImageLink(item?.thumbnailImages?.[0]?.imageUrl || item?.image?.imageUrl);
+      setSelectedImagePreview(item?.thumbnailImages?.[0]?.imageUrl || item?.image?.imageUrl);
+
+      setSelectedIndex(-1);
+      setOpenSearchResultOptions(false);
+      setEbaySearchQuery("");
+    }
+  }, [searchItemClicked]);
+
+  // Search item key down
+  const handleKeyDown = (event) => {
+    // Handle arrow keys for navigation when options are open
+    if (openSearchResultOptions && ebaySearchResults.length > 0) {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev < ebaySearchResults.length - 1 ? prev + 1 : prev));
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+      }
+    }
+
+    // Handle Enter key
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (openSearchResultOptions && ebaySearchResults.length > 0) {
+        // If options are open, select the highlighted item
+        const selectedItem =
+          selectedIndex >= 0 ? ebaySearchResults[selectedIndex] : ebaySearchResults[0];
+        setSearchItemClicked(selectedItem);
+        setSelectedIndex(-1);
+        setOpenSearchResultOptions(false);
+        setEbaySearchQuery("");
+      } else if (ebaySearchQuery) {
+        // If no options are open, and has search query, trigger search
+        handleEbaySearch();
+      }
+    }
+  };
+
+  // Search query change handler
+  const handleSearchQueryChange = (e) => {
+    const value = e.target.value;
+    setEbaySearchQuery(value);
+    // Hide options if search query is empty
+    if (!value.trim()) {
+      setOpenSearchResultOptions(false);
+      setSelectedIndex(-1);
+    }
   };
 
   // Remove only the specified field error
@@ -220,8 +337,8 @@ const AddItem = () => {
   const handleValidation = () => {
     let formErrors = {};
     // Item name validation
-    if (!budgetItem?.trim()) formErrors.itemName = "Item name is required";
-    else if (budgetItem.length > 100)
+    if (!itemName?.trim()) formErrors.itemName = "Item name is required";
+    else if (itemName.length > 100)
       formErrors.itemName = "Item name must be less than 100 characters";
 
     // Cost validation
@@ -253,9 +370,9 @@ const AddItem = () => {
         formErrors.image = "Please upload an image file of png, jpg, jpeg, gif, or webp type";
         showToast("error", formErrors.image);
       } else {
-        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
         if (selectedImage.size > maxSize) {
-          formErrors.image = "Image size must be less than 5MB";
+          formErrors.image = "Image size must be less than 2MB";
           showToast("error", formErrors.image);
         }
       }
@@ -265,12 +382,12 @@ const AddItem = () => {
 
   const handleAddItem = async (e) => {
     e.preventDefault();
-    setIsDesignButtonDisabled(true);
+    setIsAddItemBtnDisabled(true);
     const formErrors = handleValidation();
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
-      setIsDesignButtonDisabled(false);
+      setIsAddItemBtnDisabled(false);
       return;
     } else {
       setErrors({});
@@ -279,7 +396,7 @@ const AddItem = () => {
     try {
       const formData = new FormData();
       formData.append("budgetId", budgetId);
-      formData.append("itemName", budgetItem);
+      formData.append("itemName", itemName);
       formData.append("description", description);
       formData.append(
         "cost",
@@ -306,7 +423,6 @@ const AddItem = () => {
       });
 
       if (response.status === 200) {
-        const itemName = budgetItem;
         showToast("success", `${itemName} has been added!`);
         if (design) {
           setTimeout(() => navigate(`/budget/${design.id}`), 1000);
@@ -327,7 +443,7 @@ const AddItem = () => {
         showToast("error", "Failed to add item. Please try again.");
       }
     } finally {
-      setIsDesignButtonDisabled(false);
+      setIsAddItemBtnDisabled(false);
     }
   };
 
@@ -340,27 +456,83 @@ const AddItem = () => {
       <TopBar state={"Add Item"} navigateTo={navigateTo} navigateFrom={navigateFrom} />
       <div className="add-item-container">
         <div className="left-column">
-          {/* <TextField
+          <TextField
             placeholder="Search for an item"
+            value={ebaySearchQuery}
+            onChange={handleSearchQueryChange}
+            onKeyDown={handleKeyDown}
             InputProps={{
+              style: { color: "var(--color-white)" },
               startAdornment: (
                 <InputAdornment position="start" sx={{ color: "var(--color-white)" }}>
                   <SearchIcon />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Button
+                    onClick={handleEbaySearch}
+                    disabled={isSearching}
+                    sx={{
+                      ...gradientButtonStyles,
+                      height: "51px",
+                      borderRadius: "0 10px 10px 0",
+                      paddingLeft: "15px",
+                      paddingRight: "15px",
+                      opacity: isSearching ? "0.5" : "1",
+                      cursor: isSearching ? "default" : "pointer",
+                      "&:hover": {
+                        backgroundImage: !isSearching && "var(--gradientButtonHover)",
+                      },
+                    }}
+                  >
+                    Search
+                  </Button>
                 </InputAdornment>
               ),
             }}
             sx={{
               ...textFieldStyles,
               width: "100%",
-              marginBottom: "20px",
-              margiTop: "22px",
+              marginTop: "22px",
               "&.MuiTextField-root input": {
                 padding: "16px 15px 16px 5px !important",
               },
+              "& .MuiInputBase-root": {
+                paddingRight: 0,
+              },
             }}
             fullWidth
-            inputProps={{ ...textFieldInputProps, maxLength: 100 }}
-          /> */}
+            inputProps={{ maxLength: 100 }}
+          />
+          <div style={{ position: "relative", width: "100%" }}>
+            {openSearchResultOptions && ebaySearchResults.length > 0 && (
+              <Paper
+                sx={{
+                  position: "absolute",
+                  zIndex: 1000,
+                  maxHeight: "500px",
+                  overflow: "auto",
+                  width: "100%",
+                  backgroundColor: "var(--iconBg)",
+                  boxShadow: "-4px 4px 10px rgba(0, 0, 0, 0.2)",
+                  borderRadius: "10px",
+                }}
+              >
+                {/* {ebaySearchResults.slice(0, 10).map((item, index) => ( */}
+                {ebaySearchResults.map((item, index) => (
+                  <CustomMenuItem
+                    key={item.itemId}
+                    onClick={() => setSearchItemClicked(item)}
+                    selected={index === selectedIndex}
+                    sx={{ ...menuItemStyles }}
+                  >
+                    <ItemInfoTooltip item={item} />
+                  </CustomMenuItem>
+                ))}
+              </Paper>
+            )}
+          </div>
 
           <div
             className="upload-section"
@@ -427,15 +599,16 @@ const AddItem = () => {
               <TextField
                 fullWidth
                 id="item-name"
-                value={budgetItem}
+                value={itemName}
                 type="text"
                 placeholder="Enter item name"
                 onChange={(e) => {
-                  setBudgetItem(e.target.value);
+                  setItemName(e.target.value);
                   clearFieldError("itemName");
                 }}
                 sx={priceTextFieldStyles}
-                inputProps={{ ...textFieldInputProps, maxLength: 100 }}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 100 }}
               />
             </div>
             {errors?.itemName && <div className="error-text">{errors.itemName}</div>}
@@ -457,7 +630,8 @@ const AddItem = () => {
                   clearFieldError("description");
                 }}
                 sx={priceTextFieldStyles}
-                inputProps={{ ...textFieldInputProps, maxLength: 255 }}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 255 }}
               />
             </div>
             {errors?.description && <div className="error-text">{errors.description}</div>}
@@ -493,7 +667,8 @@ const AddItem = () => {
                       clearFieldError("cost");
                     }}
                     sx={priceTextFieldStyles}
-                    inputProps={{ ...textFieldInputProps, maxLength: 12 }}
+                    InputProps={textFieldInputProps}
+                    inputProps={{ maxLength: 12 }}
                   />
                 </div>
               </div>
@@ -530,14 +705,14 @@ const AddItem = () => {
               fullWidth
               variant="contained"
               onClick={handleAddItem}
-              disabled={isDesignButtonDisabled}
+              disabled={isAddItemBtnDisabled}
               sx={{
                 ...gradientButtonStyles,
                 padding: "8px 16px",
-                opacity: isDesignButtonDisabled ? "0.5" : "1",
-                cursor: isDesignButtonDisabled ? "default" : "pointer",
+                opacity: isAddItemBtnDisabled ? "0.5" : "1",
+                cursor: isAddItemBtnDisabled ? "default" : "pointer",
                 "&:hover": {
-                  backgroundImage: !isDesignButtonDisabled && "var(--gradientButton)",
+                  backgroundImage: !isAddItemBtnDisabled && "var(--gradientButton)",
                 },
               }}
             >
@@ -551,6 +726,48 @@ const AddItem = () => {
 };
 
 export default AddItem;
+
+export const ItemInfoTooltip = ({ item }) => (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      p: "5px",
+    }}
+  >
+    <Box sx={{ wdith: "45px", marginRight: "20px" }}>
+      <div className="select-image-preview item-preview" style={{ margin: "0" }}>
+        <img src={item?.image?.imageUrl || "/img/transparent-image.png"} alt="" />
+      </div>
+    </Box>
+    <Box sx={{ flexGrow: "1", minWidth: 0 }}>
+      <Typography
+        sx={{
+          color: "var(--color-white)",
+          fontSize: "0.875rem",
+          fontWeight: "bold",
+          wordBreak: "break-word",
+          overflow: "visible",
+          textWrap: "wrap",
+          textAlign: "justify",
+        }}
+      >
+        {item?.title || "Item"}
+      </Typography>
+      <Typography
+        sx={{
+          color: "var(--color-white)",
+          fontSize: "0.7rem",
+          wordBreak: "break-all",
+          overflow: "visible",
+        }}
+      >
+        {`${item?.price?.currency} ${item?.price?.value}`}
+      </Typography>
+    </Box>
+  </Box>
+);
 
 // Styles for TextField
 export const textFieldStyles = {

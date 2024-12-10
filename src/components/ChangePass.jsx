@@ -12,6 +12,8 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { jwtDecode } from "jwt-decode";
 import { showToast } from "../functions/utils";
+import { Link, Grid } from "@mui/material";
+import { gradientButtonStyles } from "../pages/DesignSpace/PromptBar";
 
 function isTokenExpired(token) {
   try {
@@ -28,6 +30,13 @@ export default function ChangePass({ email, token }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState("");
+  const [isChangePassBtnDisabled, setIsChangePassBtnDisabled] = useState(false);
+  const [passwordMatch, setPasswordMatch] = useState(null);
+  const [passwordValidation, setPasswordValidation] = useState({
+    valid: true,
+    message: "",
+    color: "",
+  });
 
   useEffect(() => {
     const checkTokenExpiration = () => {
@@ -41,16 +50,99 @@ export default function ChangePass({ email, token }) {
     return () => clearInterval(intervalId);
   }, [token, navigate]);
 
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setNewPassword(newPassword);
+    clearFieldError("newPassword");
+
+    // Only validate if password has length
+    if (newPassword.length > 0) {
+      const validation = isPasswordValid(newPassword);
+      setPasswordValidation(validation);
+    } else {
+      setPasswordValidation({ valid: true, message: "", color: "" });
+    }
+
+    // Update password match if confirm password exists
+    if (confirmPassword.length > 0) {
+      setPasswordMatch(newPassword === confirmPassword);
+    }
+  };
+
+  // Modified confirm password change handler
+  const handleConfirmPasswordChange = (e) => {
+    const newConfirmPassword = e.target.value;
+    setConfirmPassword(newConfirmPassword);
+    clearFieldError("confirmPassword");
+
+    // Only check match if confirm password has length
+    if (newConfirmPassword.length > 0) {
+      setPasswordMatch(newPassword === newConfirmPassword);
+    } else {
+      setPasswordMatch(null);
+    }
+  };
+
+  const isPasswordValid = (password) => {
+    // Don't check if password is empty
+    if (password.length === 0) return { valid: true, message: "" };
+    if (password.length < 6) {
+      return {
+        valid: false,
+        message: "Password must be at least 6 characters long",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (/^\s|\s$/.test(password)) {
+      return {
+        valid: false,
+        message: "Password cannot start or end with spaces",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (!/[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password must contain at least one special character",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (/[\t\n\r]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password cannot contain non-visible characters like tabs or newlines",
+        color: "var(--color-quaternary)",
+      };
+    }
+    return { valid: true, message: "Password is valid", color: "var(--brightGreen)" };
+  };
+
+  // Remove only the specified field error
+  const clearFieldError = (field) => {
+    setErrors((prevErrors) => {
+      if (prevErrors && prevErrors[field]) {
+        const { [field]: _, ...remainingErrors } = prevErrors;
+        return remainingErrors;
+      }
+      return prevErrors;
+    });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     let formErrors = {};
-    if (!newPassword) formErrors.newPassword = "Password is required";
-    else {
-      if (newPassword.length < 6)
-        formErrors.newPassword = "Password must be at least 6 characters long";
-      if (!/[!@#$%^&*]/.test(newPassword))
-        formErrors.newPassword = "Password must contain at least 1 special character";
+    if (!newPassword) {
+      formErrors.newPassword = "Password is required";
+    } else if (newPassword.length < 6) {
+      formErrors.newPassword = "Password must be at least 6 characters long";
+    } else if (/^\s|\s$/.test(newPassword)) {
+      formErrors.newPassword = "Password cannot start or end with spaces";
+    } else if (!/[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(newPassword)) {
+      formErrors.newPassword = "Password must contain at least one special character";
+    } else if (/[\t\n\r]/.test(newPassword)) {
+      formErrors.newPassword =
+        "Password cannot contain non-visible characters like tabs or newlines";
     }
     if (!confirmPassword) formErrors.confirmPassword = "Confirm password is required";
     else if (confirmPassword !== newPassword) formErrors.confirmPassword = "Passwords do not match";
@@ -62,15 +154,23 @@ export default function ChangePass({ email, token }) {
     }
 
     try {
+      setIsChangePassBtnDisabled(true);
       const response = await axios.put("/api/change-password", { email, newPassword, token });
       if (response.data.success) {
         showToast("success", "Password changed successfully");
         navigate("/login");
-      } else {
-        throw new Error("Failed to change password");
       }
     } catch (error) {
-      showToast("error", error.response?.data?.message || "Failed to change password");
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        // Handle the case where new password matches old password
+        setErrors({
+          newPassword: error.response.data.message,
+        });
+      } else {
+        showToast("error", error.response?.data?.message || "Failed to change password");
+      }
+    } finally {
+      setIsChangePassBtnDisabled(false);
     }
   };
 
@@ -111,38 +211,84 @@ export default function ChangePass({ email, token }) {
             At least 6 characters long, with 1 special character
           </p>
           <Password
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            error={!!errors.newPassword}
             label="Enter your new password"
-            helperText={errors.newPassword}
+            value={newPassword}
+            onChange={handlePasswordChange}
+            error={!!errors.newPassword || (!passwordValidation.valid && newPassword.length > 0)}
+            helperText={
+              errors.newPassword ||
+              (newPassword.length >= 128
+                ? "Character limit reached!"
+                : newPassword.length > 0
+                ? passwordValidation.message
+                : "")
+            }
+            FormHelperTextProps={{
+              style: {
+                color:
+                  newPassword.length > 0 ? passwordValidation.color : "var(--color-quaternary)",
+              },
+            }}
           />
           <span className="formLabels">
             Confirm new password
             <span style={{ color: "var(--color-quaternary)" }}> *</span>
           </span>
           <Password
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            error={!!errors.confirmPassword}
             label="Confirm your new password"
-            helperText={errors.confirmPassword}
+            value={confirmPassword}
+            onChange={handleConfirmPasswordChange}
+            error={
+              !!errors.confirmPassword || (passwordMatch === false && confirmPassword.length > 0)
+            }
+            helperText={
+              errors.confirmPassword ||
+              (confirmPassword.length >= 128
+                ? "Character limit reached!"
+                : confirmPassword.length > 0
+                ? passwordMatch === false
+                  ? "Passwords do not match"
+                  : passwordMatch === true
+                  ? "Passwords match"
+                  : ""
+                : "")
+            }
+            FormHelperTextProps={{
+              style: {
+                color:
+                  confirmPassword.length > 0
+                    ? passwordMatch === false
+                      ? "var(--color-quaternary)"
+                      : "var(--brightGreen)"
+                    : "var(--color-quaternary)",
+              },
+            }}
           />
           <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{
-              mt: 3,
-              mb: 2,
-              backgroundImage: "linear-gradient(90deg, #f89a47, #f15f3e, #ec2073);",
-              borderRadius: "20px",
-              textTransform: "none",
-              fontWeight: "bold",
+              ...gradientButtonStyles,
+              mt: "24px !important",
+              mb: "16px !important",
+              opacity: isChangePassBtnDisabled ? "0.5" : "1",
+              cursor: isChangePassBtnDisabled ? "default" : "pointer",
+              "&:hover": {
+                backgroundImage: !isChangePassBtnDisabled && "var(--gradientButtonHover)",
+              },
             }}
+            disabled={isChangePassBtnDisabled}
           >
             Change Password
           </Button>
+          <Grid container>
+            <Grid item xs>
+              <Link href="/login" variant="body2" className="cancel-link">
+                Cancel
+              </Link>
+            </Grid>
+          </Grid>
         </Box>
       </Box>
     </Container>

@@ -19,10 +19,10 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import { visuallyHidden } from "@mui/utils";
 import { getUsername } from "./backend/HomepageActions";
 import "../../css/homepage.css";
-import { projectId } from "../../../server/firebaseConfig";
 import { TablePagination } from "@mui/material";
 import { useSharedProps } from "../../contexts/SharedPropsContext";
 import { CloseRounded as CloseRoundedIcon } from "@mui/icons-material";
+import TrashOptions from "../Trash/TrashOptions";
 
 function EnhancedTableHead(props) {
   const {
@@ -36,6 +36,7 @@ function EnhancedTableHead(props) {
     sortOrders,
     isProjectSpace,
     isManagerContentManager,
+    isTrash,
   } = props;
   const createSortHandler = (property) => (event) => {
     event.stopPropagation();
@@ -131,6 +132,7 @@ function EnhancedTableHead(props) {
             </IconButton>
           </TableCell>
         )}
+
         <TableCell
           sx={{
             paddingTop: "5px",
@@ -181,10 +183,21 @@ function EnhancedTable({
   isProjectSpace,
   openConfirmRemove,
   isManagerContentManager,
+  isTrash,
 }) {
   const navigate = useNavigate();
-  const { designs, userDesigns, designVersions, userDesignVersions, projects, userProjects } =
-    useSharedProps();
+  const {
+    designs,
+    userDesigns,
+    deletedDesigns,
+    userDeletedDesigns,
+    designVersions,
+    userDesignVersions,
+    projects,
+    userProjects,
+    deletedProjects,
+    userDeletedProjects,
+  } = useSharedProps();
 
   const [selected, setSelected] = useState([]);
   //   const [page, setPage] = useState(0);
@@ -230,14 +243,16 @@ function EnhancedTable({
     }
     setSelected(newSelected);
 
-    if (isDesign) {
-      navigate(`/design/${id}`, {
-        state: { designId: id },
-      });
-    } else {
-      navigate(`/project/${id}`, {
-        state: { projectId: id },
-      });
+    if (!isTrash) {
+      if (isDesign) {
+        navigate(`/design/${id}`, {
+          state: { designId: id },
+        });
+      } else {
+        navigate(`/project/${id}`, {
+          state: { projectId: id },
+        });
+      }
     }
   };
 
@@ -320,6 +335,43 @@ function EnhancedTable({
     return fetchedLatestDesignVersion.images[0].link || "";
   };
 
+  const getTrashDesignImage = (designId) => {
+    if (!designId) {
+      console.log("No design ID provided");
+      return "";
+    }
+
+    // Get the design
+    const fetchedDeletedDesign =
+      userDeletedDesigns.find((design) => design.id === designId) ||
+      deletedDesigns.find((design) => design.id === designId) ||
+      userDesigns.find((design) => design.id === designId) ||
+      designs.find((design) => design.id === designId);
+    if (
+      !fetchedDeletedDesign ||
+      !fetchedDeletedDesign.history ||
+      fetchedDeletedDesign.history.length === 0
+    ) {
+      return "";
+    }
+
+    // Get the latest designVersionId
+    const latestDesignVersionId =
+      fetchedDeletedDesign.history[fetchedDeletedDesign.history.length - 1];
+    if (!latestDesignVersionId) {
+      return "";
+    }
+    const fetchedLatestDesignVersion = designVersions.find(
+      (designVer) => designVer.id === latestDesignVersionId
+    );
+    if (!fetchedLatestDesignVersion?.images?.length) {
+      return "";
+    }
+
+    // Return the first image's link from the fetched design version
+    return fetchedLatestDesignVersion.images[0].link || "";
+  };
+
   const getProjectImage = (projectId) => {
     // Get the project
     const fetchedProject =
@@ -329,11 +381,45 @@ function EnhancedTable({
       return "";
     }
 
-    // Get the latest designId (the last one in the designIds array)
-    const latestDesignId = fetchedProject.designs[fetchedProject.designs.length - 1];
+    // Get all designs for this project
+    const projectDesigns = designs.filter((design) => fetchedProject.designs.includes(design.id));
+
+    // Sort designs by modifiedAt timestamp (most recent first)
+    const sortedDesigns = projectDesigns.sort(
+      (a, b) => (b.modifiedAt?.toMillis() || 0) - (a.modifiedAt?.toMillis() || 0)
+    );
+
+    // Get the latest designId (the first one after sorting)
+    const latestDesignId = sortedDesigns[0]?.id;
 
     // Return the design image by calling getDesignImage
     return getDesignImage(latestDesignId);
+  };
+
+  const getTrashProjectImage = (projectId) => {
+    // Get the project
+    const fetchedDeletedProject =
+      userDeletedProjects.find((project) => project.id === projectId) ||
+      deletedProjects.find((project) => project.id === projectId);
+    if (!fetchedDeletedProject || fetchedDeletedProject.designs.length === 0) {
+      return "";
+    }
+
+    // Get all designs for this project from both designs and deletedDesigns arrays
+    const projectDesigns = [...designs, ...deletedDesigns].filter((design) =>
+      fetchedDeletedProject.designs.includes(design.id)
+    );
+
+    // Sort designs by modifiedAt timestamp (most recent first)
+    const sortedDesigns = projectDesigns.sort(
+      (a, b) => (b.modifiedAt?.toMillis() || 0) - (a.modifiedAt?.toMillis() || 0)
+    );
+
+    // Get the latest designId (the first one after sorting)
+    const latestDesignId = sortedDesigns[0]?.id;
+
+    // Return the design image by calling getDesignImage
+    return getTrashDesignImage(latestDesignId);
   };
 
   return (
@@ -385,6 +471,7 @@ function EnhancedTable({
               sortOrders={sortOrders}
               isProjectSpace={isProjectSpace}
               isManagerContentManager={isManagerContentManager}
+              isTrash={isTrash}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
@@ -399,7 +486,7 @@ function EnhancedTable({
                     key={row.id}
                     selected={isItemSelected}
                     sx={{
-                      cursor: "pointer",
+                      cursor: !isTrash ? "pointer" : "default",
                       "&MuiTableRow-hover": {
                         backgroundColor: "var(--table-rows-hover) !important",
                       },
@@ -424,7 +511,20 @@ function EnhancedTable({
                       onClick={(event) => handleClick(event, row.id, isDesign, navigate)}
                     >
                       <div className="miniThumbnail">
-                        <img src={getDesignImage(row.id)} alt="" />
+                        <img
+                          src={(() => {
+                            if (isDesign) {
+                              return !isTrash
+                                ? getDesignImage(row.id)
+                                : getTrashDesignImage(row.id);
+                            } else {
+                              return !isTrash
+                                ? getProjectImage(row.id)
+                                : getTrashProjectImage(row.id);
+                            }
+                          })()}
+                          alt=""
+                        />
                       </div>
                     </TableCell>
                     {headCells.map((column) => {
@@ -480,6 +580,7 @@ function EnhancedTable({
                         </IconButton>
                       </TableCell>
                     )}
+
                     <TableCell
                       sx={{
                         paddingTop: "5px",
@@ -508,18 +609,29 @@ function EnhancedTable({
 
                       {optionsState.showOptions && optionsState.selectedId === row.id && (
                         <div style={{ position: "relative" }}>
-                          <HomepageOptions
-                            isDesign={isDesign}
-                            isTable={true}
-                            id={row.id}
-                            onOpen={(event) => {
-                              event.stopPropagation();
-                              handleClickAction(row.id, isDesign, navigate);
-                            }}
-                            optionsState={optionsState}
-                            setOptionsState={setOptionsState}
-                            object={row}
-                          />
+                          {!isTrash ? (
+                            <HomepageOptions
+                              isDesign={isDesign}
+                              isTable={true}
+                              id={row.id}
+                              onOpen={(event) => {
+                                event.stopPropagation();
+                                handleClickAction(row.id, isDesign, navigate);
+                              }}
+                              optionsState={optionsState}
+                              setOptionsState={setOptionsState}
+                              object={row}
+                            />
+                          ) : (
+                            <TrashOptions
+                              isDesign={isDesign}
+                              id={row.id}
+                              object={row}
+                              isTable={true}
+                              optionsState={optionsState}
+                              setOptionsState={setOptionsState}
+                            />
+                          )}
                         </div>
                       )}
                     </TableCell>
@@ -584,6 +696,7 @@ export default function HomepageTable({
   isProjectSpace = false,
   openConfirmRemove = () => {},
   isManagerContentManager = false,
+  isTrash = false,
 }) {
   const columns = [
     {
@@ -612,11 +725,11 @@ export default function HomepageTable({
       align: "left",
       format: (value) => value,
       sortKey: "createdAtTimestamp", // Used for sorting
-      hidden: false,
+      hidden: !isTrash ? false : true,
     },
     {
       id: "formattedModifiedAt",
-      label: "Modified",
+      label: !isTrash ? "Modified" : "Deleted",
       minWidth: 170,
       align: "left",
       format: (value) => value,
@@ -736,6 +849,7 @@ export default function HomepageTable({
       isProjectSpace={isProjectSpace}
       openConfirmRemove={openConfirmRemove}
       isManagerContentManager={isManagerContentManager}
+      isTrash={isTrash}
     />
   );
 }

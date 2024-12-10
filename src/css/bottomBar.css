@@ -11,4 +11,11 @@
   justify-content: center;
   align-items: center;
   z-index: 50;
+  gap: 10px;
+}
+
+@media (max-width: 420px) {
+  .bottomBar {
+    gap: 0px;
+  }
 }

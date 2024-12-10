@@ -458,16 +458,20 @@ exports.addReply = async (req, res) => {
     });
     await commentRef.update({ replies: updatedReplies });
 
-    // Send notifications
-    await notifController.sendCommentNotifications(
-      designId,
-      designDoc,
-      userId,
-      mentions,
-      true, // isReply
-      commentId,
-      replyId
-    );
+    try {
+      // Send notifications
+      await notifController.sendCommentNotifications(
+        designId,
+        designDoc,
+        userId,
+        mentions,
+        true, // isReply
+        commentId,
+        replyId
+      );
+    } catch (notifError) {
+      console.log("Notification error (non-critical):", notifError.message);
+    }
 
     res.status(200).json({
       success: true,

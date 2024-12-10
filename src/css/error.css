@@ -26,6 +26,9 @@
   color: transparent;
   font-weight: 800;
   letter-spacing: -1px;
+  text-align: center;
+  width: 90%;
+  margin-top: 0;
 }
 .back-home {
   padding: 10px 20px;

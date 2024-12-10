@@ -19,6 +19,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { textFieldInputProps } from "../pages/DesignSpace/DesignSettings";
 import { CheckboxIcon, CheckboxCheckedIcon } from "./svg/SharedIcons";
+import { gradientButtonStyles } from "../pages/DesignSpace/PromptBar";
 
 const defaultTheme = createTheme();
 
@@ -61,14 +62,6 @@ export const commonInputStyles = {
   },
 };
 
-const buttonStyles = {
-  mt: 3,
-  mb: 2,
-  backgroundImage: "var(--gradientButton)",
-  "&:hover": {
-    backgroundImage: "var(--gradientButtonHover)",
-  },
-};
 const Signup = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -81,6 +74,12 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [passwordMatch, setPasswordMatch] = useState(null);
+  const [passwordValidation, setPasswordValidation] = useState({
+    valid: true,
+    message: "",
+    color: "",
+  });
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -88,6 +87,50 @@ const Signup = () => {
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
+  };
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    clearFieldError("password");
+
+    // Only validate if password has length
+    if (newPassword.length > 0) {
+      const validation = isPasswordValid(newPassword);
+      setPasswordValidation(validation);
+    } else {
+      setPasswordValidation({ valid: true, message: "", color: "" });
+    }
+
+    // Update password match if confirm password exists
+    if (confirmPassword.length > 0) {
+      setPasswordMatch(newPassword === confirmPassword);
+    }
+  };
+
+  // Modified confirm password change handler
+  const handleConfirmPasswordChange = (e) => {
+    const newConfirmPassword = e.target.value;
+    setConfirmPassword(newConfirmPassword);
+    clearFieldError("confirmPassword");
+
+    // Only check match if confirm password has length
+    if (newConfirmPassword.length > 0) {
+      setPasswordMatch(password === newConfirmPassword);
+    } else {
+      setPasswordMatch(null);
+    }
+  };
+
+  // Remove only the specified field error
+  const clearFieldError = (field) => {
+    setErrors((prevErrors) => {
+      if (prevErrors && prevErrors[field]) {
+        const { [field]: _, ...remainingErrors } = prevErrors;
+        return remainingErrors;
+      }
+      return prevErrors;
+    });
   };
 
   const handleValidation = () => {
@@ -106,14 +149,20 @@ const Signup = () => {
     if (!email.trim()) formErrors.email = "Email is required";
     else if (email.trim().length > 254) formErrors.email = "Email cannot exceed 254 characters";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) formErrors.email = "Invalid email format";
-    if (!password) formErrors.password = "Password is required";
-    else if (password.length < 6)
+    if (!password) {
+      formErrors.password = "Password is required";
+    } else if (password.length < 6) {
       formErrors.password = "Password must be at least 6 characters long";
-    else if (!/[!@#$%^&*]/.test(password))
-      formErrors.password = "Password must contain at least 1 special character";
+    } else if (/^\s|\s$/.test(password)) {
+      formErrors.password = "Password cannot start or end with spaces";
+    } else if (!/[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(password)) {
+      formErrors.password = "Password must contain at least one special character";
+    } else if (/[\t\n\r]/.test(password)) {
+      formErrors.password = "Password cannot contain non-visible characters like tabs or newlines";
+    }
     if (!confirmPassword) formErrors.confirmPassword = "Please confirm your password";
     else if (password !== confirmPassword) formErrors.confirmPassword = "Passwords do not match";
-    if (!isChecked) formErrors.terms = "Please agree to the terms and conditions";
+    if (!isChecked) formErrors.terms = "Please agree to the Privacy and Terms";
 
     return formErrors;
   };
@@ -138,7 +187,14 @@ const Signup = () => {
         password,
       });
       if (response.status === 200) {
-        showToast("success", "Registration successful!");
+        showToast(
+          "success",
+          "Registration successful! Please verify your email by clicking the link sent to your inbox.",
+          6000
+        );
+        console.log(
+          `register - userId and message: ${response.data?.userId}; ${response.data?.message}`
+        );
         navigate("/login");
       } else {
         showToast("error", "Registration failed. Please try again.");
@@ -158,6 +214,40 @@ const Signup = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const isPasswordValid = (password) => {
+    // Don't check if password is empty
+    if (password.length === 0) return { valid: true, message: "" };
+    if (password.length < 6) {
+      return {
+        valid: false,
+        message: "Password must be at least 6 characters long",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (/^\s|\s$/.test(password)) {
+      return {
+        valid: false,
+        message: "Password cannot start or end with spaces",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (!/[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password must contain at least one special character",
+        color: "var(--color-quaternary)",
+      };
+    }
+    if (/[\t\n\r]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password cannot contain non-visible characters like tabs or newlines",
+        color: "var(--color-quaternary)",
+      };
+    }
+    return { valid: true, message: "Password is valid", color: "var(--brightGreen)" };
   };
 
   return (
@@ -183,12 +273,16 @@ const Signup = () => {
               placeholder="Enter your first name"
               name="firstName"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+                clearFieldError("firstName");
+              }}
               error={!!errors.firstName}
               helperText={
                 errors.firstName || (firstName.length >= 50 ? "Character limit reached!" : "")
               }
-              inputProps={{ ...textFieldInputProps, maxLength: 50 }}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 50 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <span className="formLabels">
@@ -201,12 +295,16 @@ const Signup = () => {
               placeholder="Enter your last name"
               name="lastName"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => {
+                setLastName(e.target.value);
+                clearFieldError("lastName");
+              }}
               error={!!errors.lastName}
               helperText={
                 errors.lastName || (lastName.length >= 50 ? "Character limit reached!" : "")
               }
-              inputProps={{ ...textFieldInputProps, maxLength: 50 }}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 50 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <span className="formLabels">
@@ -219,12 +317,16 @@ const Signup = () => {
               placeholder="Enter your username"
               name="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                clearFieldError("username");
+              }}
               error={!!errors.username}
               helperText={
                 errors.username || (username.length >= 20 ? "Character limit reached!" : "")
               }
-              inputProps={{ ...textFieldInputProps, maxLength: 20 }}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 20 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <span className="formLabels">
@@ -237,10 +339,14 @@ const Signup = () => {
               placeholder="Enter your email address"
               name="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearFieldError("email");
+              }}
               error={!!errors.email}
-              helperText={errors.email || (email.length >= 254 ? "Character limit reached!" : "")}
-              inputProps={{ ...textFieldInputProps, maxLength: 254 }}
+              helperText={errors.email || (email.length >= 255 ? "Character limit reached!" : "")}
+              InputProps={textFieldInputProps}
+              inputProps={{ maxLength: 255 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
 
@@ -259,11 +365,21 @@ const Signup = () => {
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={!!errors.password}
+              onChange={handlePasswordChange}
+              error={!!errors.password || (!passwordValidation.valid && password.length > 0)}
               helperText={
-                errors.password || (password.length >= 50 ? "Character limit reached!" : "")
+                errors.password ||
+                (password.length >= 128
+                  ? "Character limit reached!"
+                  : password.length > 0
+                  ? passwordValidation.message
+                  : "")
               }
+              FormHelperTextProps={{
+                style: {
+                  color: password.length > 0 ? passwordValidation.color : "var(--color-quaternary)",
+                },
+              }}
               InputProps={{
                 style: { color: "var(--color-white)" },
                 endAdornment: (
@@ -282,8 +398,8 @@ const Signup = () => {
                     </IconButton>
                   </InputAdornment>
                 ),
-                maxLength: 50,
               }}
+              inputProps={{ maxLength: 128 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
             <span className="formLabels">
@@ -298,12 +414,32 @@ const Signup = () => {
               type={showPassword ? "text" : "password"}
               placeholder="Confirm your password"
               value={confirmPassword} // Changed from password to confirmPassword
-              onChange={(e) => setConfirmPassword(e.target.value)} // Update handler
-              error={!!errors.confirmPassword} // Updated error reference
+              onChange={handleConfirmPasswordChange} // Update handler
+              error={
+                !!errors.confirmPassword || (passwordMatch === false && confirmPassword.length > 0)
+              }
               helperText={
                 errors.confirmPassword ||
-                (confirmPassword.length >= 50 ? "Character limit reached!" : "")
-              } // Updated helper text reference
+                (confirmPassword.length >= 128
+                  ? "Character limit reached!"
+                  : confirmPassword.length > 0
+                  ? passwordMatch === false
+                    ? "Passwords do not match"
+                    : passwordMatch === true
+                    ? "Passwords match"
+                    : ""
+                  : "")
+              }
+              FormHelperTextProps={{
+                style: {
+                  color:
+                    confirmPassword.length > 0
+                      ? passwordMatch === false
+                        ? "var(--color-quaternary)"
+                        : "var(--brightGreen)"
+                      : "var(--color-quaternary)",
+                },
+              }}
               InputProps={{
                 style: { color: "var(--color-white)" },
                 endAdornment: (
@@ -322,20 +458,24 @@ const Signup = () => {
                     </IconButton>
                   </InputAdornment>
                 ),
-                maxLength: 50,
               }}
+              inputProps={{ maxLength: 128 }}
               sx={{ ...commonInputStyles, marginBottom: "20px" }}
             />
-            <TermsCheckbox isChecked={isChecked} setIsChecked={setIsChecked} errors={errors} />
+            <TermsCheckbox
+              isChecked={isChecked}
+              setIsChecked={setIsChecked}
+              errors={errors}
+              clearFieldError={clearFieldError}
+            />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{
-                ...buttonStyles,
-                borderRadius: "20px",
-                textTransform: "none",
-                fontWeight: "bold",
+                ...gradientButtonStyles,
+                marginTop: "24px !important",
+                marginBottom: "16px !important",
                 opacity: isSubmitting ? "0.5" : "1",
                 cursor: isSubmitting ? "default" : "pointer",
                 color: "var(--always-white)", // Ensure text color remains white
@@ -365,9 +505,10 @@ const Signup = () => {
 
 export default Signup;
 
-const TermsCheckbox = ({ isChecked, setIsChecked, errors }) => {
+const TermsCheckbox = ({ isChecked, setIsChecked, errors, clearFieldError }) => {
   const handleChange = (event) => {
     setIsChecked(event.target.checked);
+    clearFieldError("terms");
   };
 
   return (
@@ -405,7 +546,7 @@ const TermsCheckbox = ({ isChecked, setIsChecked, errors }) => {
             </a>{" "}
             and{" "}
             <a href="/privacy" target="_blank" rel="noopener noreferrer">
-              Privacy & Policy
+              Privacy Policy
             </a>
             .
           </label>
@@ -417,7 +558,11 @@ const TermsCheckbox = ({ isChecked, setIsChecked, errors }) => {
           },
         }}
       />
-      {errors?.terms && <p className="error-text">{errors.terms}</p>}
+      {errors?.terms && (
+        <div className="error-text" style={{ textAlign: "left", width: "100%", marginTop: "5px" }}>
+          {errors.terms}
+        </div>
+      )}
     </div>
   );
 };

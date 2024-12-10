@@ -18,6 +18,7 @@ import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import { useSharedProps } from "../contexts/SharedPropsContext";
 import { stringAvatarColor, stringAvatarInitials } from "../functions/utils";
 import { priceTextFieldStyles } from "../pages/DesignSpace/AddItem";
+import { textFieldInputProps } from "../pages/DesignSpace/DesignSettings";
 
 const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
   const { users } = useSharedProps();
@@ -238,6 +239,8 @@ const EmailInput = ({ emails, setEmails, error, setError, collaborators }) => {
             wordWrap: "break-word",
             width: "100%",
           }}
+          InputProps={textFieldInputProps}
+          inputProps={{ maxLength: 255 }}
         />
       </Box>
       {openUserOptions && userOptions.length > 0 && (

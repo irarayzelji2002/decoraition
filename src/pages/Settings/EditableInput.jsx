@@ -21,6 +21,7 @@ export default function EditableInput({
   initErrors,
   isEditable = true,
   setErrors,
+  disabled = false,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value);
@@ -43,7 +44,13 @@ export default function EditableInput({
   const icon = isEditing ? (
     <IconButton
       onClick={isEditing ? handleSave : handleEdit}
-      sx={{ ...iconButtonStyles, padding: "9.5px" }}
+      sx={{
+        ...iconButtonStyles,
+        padding: "9.5px",
+        opacity: disabled ? "0.5 !important" : "1 !important",
+        cursor: disabled ? "default !important" : "pointer !important",
+      }}
+      disabled={disabled}
     >
       <SaveIconSmallGradient sx={{ color: "#FF894D" }} />
     </IconButton>
@@ -125,6 +132,7 @@ export default function EditableInput({
             },
           }}
           InputProps={{
+            style: { color: "var(--color-white)" },
             endAdornment: (
               <InputAdornment position="end">
                 {isEditable && (
@@ -143,6 +151,7 @@ export default function EditableInput({
               </InputAdornment>
             ),
           }}
+          inputProps={{ maxLength: 255 }}
         />
       </div>
     </div>

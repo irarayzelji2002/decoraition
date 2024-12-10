@@ -421,7 +421,15 @@ function SelectMaskCanvas({
     if (!containerRef.current) return;
     adjustContainerWidth();
     adjustCss();
-  }, [showPromptBar, controlWidthPromptBar, showPreview]);
+  }, [
+    showPromptBar,
+    controlWidthPromptBar,
+    showPreview,
+    showAllOptions,
+    showGeneralOptions,
+    showAddRemoveOptions,
+    showSamOptions,
+  ]);
 
   useEffect(() => {
     if (samMaskModalOpen || pickColorModalOpen) {
@@ -1167,7 +1175,8 @@ function SelectMaskCanvas({
                 size="small"
                 helperText={errors?.maskPrompt || generationErrors?.maskPrompt}
                 variant="outlined"
-                inputProps={textFieldInputProps}
+                InputProps={textFieldInputProps}
+                inputProps={{ maxLength: 100 }}
                 sx={{
                   ...textFieldStyles,
                   flexGrow: 1,

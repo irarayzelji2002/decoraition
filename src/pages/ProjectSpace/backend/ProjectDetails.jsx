@@ -463,6 +463,7 @@ export const handlePlanImageUpload = async (file, projectId, setPlanImage) => {
         "Content-Type": "multipart/form-data",
       },
     });
+    console.log("plan map Response received:", response);
 
     if (response.status === 200) {
       setPlanImage(response.data.planImage);

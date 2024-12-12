@@ -142,7 +142,7 @@ const DefaultMenu = ({
           <KeyboardArrowRightRoundedIcon sx={{ color: "var(--color-white)", ml: "auto" }} />
         </CustomMenuItem>
       )}
-      {((isDesign && designSettingsVisibility.isDownloadVisible) ||
+      {/* {((isDesign && designSettingsVisibility.isDownloadVisible) ||
         (!isDesign && projectSettingsVisibility.isDownloadVisible)) && (
         <CustomMenuItem onClick={onOpenDownloadModal}>
           <ListItemIcon>
@@ -150,7 +150,7 @@ const DefaultMenu = ({
           </ListItemIcon>
           <ListItemText primary="Download" sx={{ color: "var(--color-white)" }} />
         </CustomMenuItem>
-      )}
+      )} */}
       {isDesign && designSettingsVisibility.isMakeCopyVisible && (
         <CustomMenuItem onClick={onOpenMakeCopyModal}>
           <ListItemIcon>

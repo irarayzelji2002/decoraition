@@ -496,7 +496,7 @@ export const fetchPlanImage = async (projectId, setPlanImage, setPlanImagePrevie
       setPlanImage(null);
       setPlanImagePreview(null);
     } else {
-      showToast("error", "Failed to fetch plan image");
+      // showToast("error", "Failed to fetch plan image");
     }
   } catch (error) {
     if (error.response && error.response.status === 404) {
@@ -504,7 +504,7 @@ export const fetchPlanImage = async (projectId, setPlanImage, setPlanImagePrevie
       setPlanImage(null);
     } else {
       console.error("Error fetching plan image:", error);
-      showToast("error", "Failed to fetch plan image");
+      // showToast("error", "Failed to fetch plan image");
     }
   }
 };

@@ -192,18 +192,50 @@ function PlanMap() {
     e.preventDefault();
   };
 
-  const handleDrop = (e, setInitStyleRef, setPlanImagePreview) => {
+  const handleFileChange = (file, setInitImage, setImagePreview) => {
+    const message = handleImageValidation(file);
+    if (message !== "") return;
+
+    setInitImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      console.log("FileReader result:", reader.result);
+      setImagePreview(reader.result);
+    };
+    reader.onerror = (error) => {
+      console.error("Error reading file:", error);
+    };
+    reader.readAsDataURL(file);
+    console.log("File uploaded:", file);
+  };
+
+  // Image validation
+  const handleImageValidation = (file) => {
+    let message = "";
+    const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+    if (!acceptedTypes?.includes(file.type)) {
+      message = "Please upload an image file of png, jpg, or jpeg type";
+      showToast("error", message);
+    } else {
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+      if (file.size > maxSize) {
+        message = "Image size must be less than 2MB";
+        showToast("error", message);
+      }
+    }
+    return message;
+  };
+
+  const handleDrop = (e, setInitPlanImage, setPlanImagePreview) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file) {
-      setInitStyleRef(file);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPlanImagePreview(event.target.result);
-      };
-      reader.readAsDataURL(file);
+      const message = handleImageValidation(file);
+      if (message !== "") return;
+      handleFileChange(file, setInitPlanImage, setPlanImagePreview);
     }
   };
+
   const deletePin = async (pinId) => {
     try {
       await deleteProjectPin(projectId, pinId, user, userDoc);
@@ -221,16 +253,9 @@ function PlanMap() {
     }
   };
 
-  const onFileUpload = (event, setInitStyleRef, setPlanImagePreview) => {
+  const onFileUpload = (event, setInitPlanImage, setPlanImagePreview) => {
     const file = event.target.files[0];
-    if (file) {
-      setInitStyleRef(file);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPlanImagePreview(event.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (file) handleFileChange(file, setInitPlanImage, setPlanImagePreview);
   };
 
   const handlePlanImageContinue = async () => {
@@ -238,6 +263,7 @@ function PlanMap() {
     try {
       if (initPlanImage) {
         const result = await handlePlanImageUpload(initPlanImage, projectId, setPlanImage);
+        console.log("plan map upload result:", result);
         if (!result.success) {
           showToast("error", result.message || "Failed to upload plan image");
           return;

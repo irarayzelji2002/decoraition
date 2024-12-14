@@ -93,18 +93,15 @@ const AddItem = () => {
       };
     });
 
-    // Filter to only include USD and PHP
-    const filteredCurrencies = currencyDetails.filter(
-      (currency) => currency.currencyCode === "PHP" || currency.currencyCode === "USD"
-    );
-    return filteredCurrencies;
+    return currencyDetails;
   };
 
   useEffect(() => {
     const currencyArray = getCurrencyData();
-    setCurrencyDetails(currencyArray);
     const phCurrency = currencyArray.find((currency) => currency.countryISO === "PH");
-    setDefaultBudgetCurrency(phCurrency);
+    const usCurrency = currencyArray.find((currency) => currency.countryISO === "US");
+    setCurrencyDetails([phCurrency, usCurrency]);
+    setDefaultBudgetCurrency(usCurrency);
     setCurrency(phCurrency);
   }, []);
 

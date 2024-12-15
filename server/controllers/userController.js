@@ -105,7 +105,7 @@ exports.createUser = async (req, res) => {
       const verificationToken = jwt.sign(
         { email: email.toLowerCase(), userId: firebaseUserId },
         process.env.REACT_APP_JWT_SECRET,
-        { expiresIn: "1m" } // change to 24h on prod
+        { expiresIn: "1m" } // 1m for testing, 24h for production
       );
 
       // Send verification email
@@ -114,7 +114,7 @@ exports.createUser = async (req, res) => {
         email,
         "DecorAItion Email Verification",
         `<p>Hi ${username}! Please verify your email by clicking this link: <a href="${verificationLink}">Verify Email</a></p>
-      <p>This link will expire in 1 minute.</p>` // change to 24 hours on prod
+      <p>This link will expire in 1 minute.</p>` // 1 minute for testing, 24 hours for production
       );
     }
 

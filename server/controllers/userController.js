@@ -386,7 +386,7 @@ exports.updateFailedAttempts = async (req, res) => {
         },
       });
       if (currentCount >= 6) {
-        return res.status(200).json({ isLocked: true, remainingMinutes: 1 }); // Change to 15 for production
+        return res.status(200).json({ isLocked: true, remainingMinutes: 1 }); // 1 for testing, 15 for production
       }
       return res.status(200).json({ isLocked: false, attemptsLeft: 6 - currentCount });
     } else {

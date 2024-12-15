@@ -57,12 +57,44 @@ export function useAuthProvider() {
       setUserDoc(userDoc);
     }
 
+    let tokenRefreshInterval;
+
     // Set up the auth state listener
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed. User:", user);
 
       if (user) {
         console.log("User authenticated, updating state");
+
+        // Token refresh function
+        const refreshToken = async () => {
+          try {
+            console.log("Attempting to refresh token...");
+            const newToken = await user.getIdToken(true);
+            console.log("Token refreshed successfully");
+            return newToken;
+          } catch (error) {
+            console.error("Error refreshing token:", error);
+
+            // If token refresh fails, trigger logout
+            setUser(null);
+            setUserDoc(null);
+            localStorage.removeItem("authState");
+            setLoading(false);
+            showToast("error", "Session expired. Please login again.");
+            if (window.location.pathname !== "/login") {
+              window.location.href = "/login";
+              window.location.reload();
+            }
+            return null;
+          }
+        };
+
+        // Set up periodic token refresh
+        tokenRefreshInterval = setInterval(refreshToken, 50 * 60 * 1000); // every 50 minutes
+        // tokenRefreshInterval = setInterval(refreshToken, 60 * 1000); // every 1 minute for testing
+
+        // Fetch user document
         const fetchUserDoc = async (retryCount = 0) => {
           try {
             const idToken = await user.getIdToken();
@@ -91,11 +123,16 @@ export function useAuthProvider() {
           }
           setLoading(false);
         };
+
         setUser(user);
         fetchUserDoc();
         setUserDocFetched(true);
       } else {
         console.log("User not authenticated, clearing state");
+        // Clear the token refresh interval if it exists
+        if (tokenRefreshInterval) {
+          clearInterval(tokenRefreshInterval);
+        }
         setUser(null);
         setUserDoc(null);
         localStorage.removeItem("authState");
@@ -104,7 +141,13 @@ export function useAuthProvider() {
       }
     });
 
-    return () => unsubscribe();
+    // Clean up function
+    return () => {
+      unsubscribe();
+      if (tokenRefreshInterval) {
+        clearInterval(tokenRefreshInterval);
+      }
+    };
   }, []);
 
   const handleLogout = async (navigate) => {

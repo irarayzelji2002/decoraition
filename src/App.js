@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from "react-router-dom";
 import { SharedPropsProvider, useSharedProps } from "./contexts/SharedPropsContext";
 import { useAuth } from "./contexts/AuthContext.js";
+import { showToast } from "./functions/utils.js";
 
 import "./App.css";
 import Layout from "./components/Layout.jsx";
@@ -42,6 +43,35 @@ import ProjectSettings from "./pages/ProjectSpace/ProjectSettings.jsx";
 import GenerateImgLoadingPage from "./components/GenerateImgLoadingPage.jsx";
 import PinLocation from "./pages/ProjectSpace/PinLocation.jsx";
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Error caught by boundary:", error);
+    if (
+      error.message?.includes("UNAUTHENTICATED") ||
+      error.message?.includes("ACCESS_TOKEN_EXPIRED")
+    ) {
+      showToast("error", "Session expired. Please login again.");
+      window.location.href = "/login";
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
+
 function ProtectedRoute({ children }) {
   const { user, userDoc, userDocFetched } = useAuth();
   if (!userDocFetched) return <Loading />;
@@ -69,295 +99,297 @@ function StartElement() {
 function App() {
   return (
     <Router>
-      <div className="App" id="App">
-        <SharedPropsProvider>
-          <Layout>
-            <Routes>
-              {/* PUBLIC ROUTES */}
-              <Route path="/" element={<StartElement />} />
-              <Route path="/landing" element={<Landing />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
+      <ErrorBoundary>
+        <div className="App" id="App">
+          <SharedPropsProvider>
+            <Layout>
+              <Routes>
+                {/* PUBLIC ROUTES */}
+                <Route path="/" element={<StartElement />} />
+                <Route path="/landing" element={<Landing />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
 
-              {/* AUTH PUBLIC ROUTES */}
-              <Route
-                path="/login"
-                element={
-                  <AuthPublicRoute>
-                    <Login />
-                  </AuthPublicRoute>
-                }
-              />
-              <Route
-                path="/register"
-                element={
-                  <AuthPublicRoute>
-                    <Register />
-                  </AuthPublicRoute>
-                }
-              />
-              <Route
-                path="/verify-email/:token"
-                element={
-                  <AuthPublicRoute>
-                    <VerifyEmail />
-                  </AuthPublicRoute>
-                }
-              />
-              <Route
-                path="/forgot"
-                element={
-                  <AuthPublicRoute>
-                    <ForgotPass />
-                  </AuthPublicRoute>
-                }
-              />
-              <Route
-                path="/change"
-                element={
-                  <AuthPublicRoute>
-                    <ChangePassw />
-                  </AuthPublicRoute>
-                }
-              />
-              <Route
-                path="/otp"
-                element={
-                  <AuthPublicRoute>
-                    <OneTP />
-                  </AuthPublicRoute>
-                }
-              />
-              {/* PROTECTED ROUTES */}
-              {/* Homepage */}
-              <Route
-                path="/homepage"
-                element={
-                  <ProtectedRoute>
-                    <Homepage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/seeAllDesigns"
-                element={
-                  <ProtectedRoute>
-                    <SeeAllDesigns />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/seeAllProjects"
-                element={
-                  <ProtectedRoute>
-                    <SeeAllProjects />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Account */}
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/trash"
-                element={
-                  <ProtectedRoute>
-                    <Trash />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Design & Project Space */}
-              <Route
-                path="/details/:type/:id"
-                element={
-                  <ProtectedRoute>
-                    <Details />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Design Space */}
-              <Route
-                path="/design/:designId"
-                element={
-                  <ProtectedRoute>
-                    <Design />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/version"
-                element={
-                  <ProtectedRoute>
-                    <Version />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/generateImgLoadingPage"
-                element={
-                  <ProtectedRoute>
-                    <GenerateImgLoadingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings/design/:designId"
-                element={
-                  <ProtectedRoute>
-                    <DesignSettings />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/budget/:designId"
-                element={
-                  <ProtectedRoute>
-                    <Budget />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/searchItem"
-                element={
-                  <ProtectedRoute>
-                    <SearchItem />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/addItem/:designId/:budgetId"
-                element={
-                  <ProtectedRoute>
-                    <AddItem />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/editItem/:designId/:budgetId/:itemId"
-                element={
-                  <ProtectedRoute>
-                    <EditItem />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Project Space */}
-              <Route
-                path="/project/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <Project />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings/project/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <ProjectSettings />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/design/:designId/:projectId/project"
-                element={
-                  <ProtectedRoute>
-                    <Design />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/planMap/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <PlanMap />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/adjustPin/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <PinLocation />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/addPin"
-                element={
-                  <ProtectedRoute>
-                    <AddPin />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/pinOrder/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <PinOrder />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/timeline/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <Timeline />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/editEvent/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <EditEvent />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/projectBudget/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <ProjBudget />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/budget/:designId/:projectId/project"
-                element={
-                  <ProtectedRoute>
-                    <Budget />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/addItem/:designId/:projectId/project"
-                element={
-                  <ProtectedRoute>
-                    <AddItem />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/editItem/:designId/:itemId/:projectId/project"
-                element={
-                  <ProtectedRoute>
-                    <EditItem />
-                  </ProtectedRoute>
-                }
-              />
+                {/* AUTH PUBLIC ROUTES */}
+                <Route
+                  path="/login"
+                  element={
+                    <AuthPublicRoute>
+                      <Login />
+                    </AuthPublicRoute>
+                  }
+                />
+                <Route
+                  path="/register"
+                  element={
+                    <AuthPublicRoute>
+                      <Register />
+                    </AuthPublicRoute>
+                  }
+                />
+                <Route
+                  path="/verify-email/:token"
+                  element={
+                    <AuthPublicRoute>
+                      <VerifyEmail />
+                    </AuthPublicRoute>
+                  }
+                />
+                <Route
+                  path="/forgot"
+                  element={
+                    <AuthPublicRoute>
+                      <ForgotPass />
+                    </AuthPublicRoute>
+                  }
+                />
+                <Route
+                  path="/change"
+                  element={
+                    <AuthPublicRoute>
+                      <ChangePassw />
+                    </AuthPublicRoute>
+                  }
+                />
+                <Route
+                  path="/otp"
+                  element={
+                    <AuthPublicRoute>
+                      <OneTP />
+                    </AuthPublicRoute>
+                  }
+                />
+                {/* PROTECTED ROUTES */}
+                {/* Homepage */}
+                <Route
+                  path="/homepage"
+                  element={
+                    <ProtectedRoute>
+                      <Homepage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seeAllDesigns"
+                  element={
+                    <ProtectedRoute>
+                      <SeeAllDesigns />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seeAllProjects"
+                  element={
+                    <ProtectedRoute>
+                      <SeeAllProjects />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Account */}
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/trash"
+                  element={
+                    <ProtectedRoute>
+                      <Trash />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Design & Project Space */}
+                <Route
+                  path="/details/:type/:id"
+                  element={
+                    <ProtectedRoute>
+                      <Details />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Design Space */}
+                <Route
+                  path="/design/:designId"
+                  element={
+                    <ProtectedRoute>
+                      <Design />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/version"
+                  element={
+                    <ProtectedRoute>
+                      <Version />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/generateImgLoadingPage"
+                  element={
+                    <ProtectedRoute>
+                      <GenerateImgLoadingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings/design/:designId"
+                  element={
+                    <ProtectedRoute>
+                      <DesignSettings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/budget/:designId"
+                  element={
+                    <ProtectedRoute>
+                      <Budget />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/searchItem"
+                  element={
+                    <ProtectedRoute>
+                      <SearchItem />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/addItem/:designId/:budgetId"
+                  element={
+                    <ProtectedRoute>
+                      <AddItem />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/editItem/:designId/:budgetId/:itemId"
+                  element={
+                    <ProtectedRoute>
+                      <EditItem />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Project Space */}
+                <Route
+                  path="/project/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <Project />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings/project/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <ProjectSettings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/design/:designId/:projectId/project"
+                  element={
+                    <ProtectedRoute>
+                      <Design />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/planMap/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <PlanMap />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/adjustPin/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <PinLocation />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/addPin"
+                  element={
+                    <ProtectedRoute>
+                      <AddPin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pinOrder/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <PinOrder />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/timeline/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <Timeline />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/editEvent/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <EditEvent />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/projectBudget/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <ProjBudget />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/budget/:designId/:projectId/project"
+                  element={
+                    <ProtectedRoute>
+                      <Budget />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/addItem/:designId/:projectId/project"
+                  element={
+                    <ProtectedRoute>
+                      <AddItem />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/editItem/:designId/:itemId/:projectId/project"
+                  element={
+                    <ProtectedRoute>
+                      <EditItem />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Error */}
-              <Route path="*" element={<Error />} />
-            </Routes>
-          </Layout>
-        </SharedPropsProvider>
-      </div>
+                {/* Error */}
+                <Route path="*" element={<Error />} />
+              </Routes>
+            </Layout>
+          </SharedPropsProvider>
+        </div>
+      </ErrorBoundary>
     </Router>
   );
 }

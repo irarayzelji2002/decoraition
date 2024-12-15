@@ -6,6 +6,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { menuItemStyles, selectStyles } from "../pages/DesignSpace/DesignSettings";
+import { FlagIcon } from "react-flag-kit";
 
 const CurrencySelect = ({ selectedCurrency, setSelectedCurrency, currencyDetails }) => {
   useEffect(() => {
@@ -54,15 +55,27 @@ const CurrencySelect = ({ selectedCurrency, setSelectedCurrency, currencyDetails
           value={currency}
           sx={{ ...menuItemStyles, display: "flex" }}
         >
-          <ListItemIcon sx={{ flexShrink: 1, marginRight: "5px", color: "rgba(0, 0, 0, 1)" }}>
-            <span role="img" aria-label={currency.currencyCode} style={{ fontSize: "1.5rem" }}>
-              {currency.flagEmoji}
-            </span>
+          <ListItemIcon
+            sx={{
+              flexShrink: 1,
+              marginRight: "15px !important",
+              color: "var(--color-white) !important",
+              backgroundColor: "transparent !important",
+              borderRadius: "4px !important",
+              overflow: "hidden !important",
+              minWidth: "fit-content !important",
+            }}
+          >
+            <FlagIcon
+              code={currency.countryISO}
+              onError={({ target }) => (target.src = "/img/transparent-image.png")}
+              style={{ width: "31.5px", height: "22.5px" }}
+            />
           </ListItemIcon>
           <ListItemText
             sx={{
               flexGrow: 1,
-              maxWidth: "200px",
+              maxWidth: "250px",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "wrap",

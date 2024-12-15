@@ -105,7 +105,7 @@ exports.createUser = async (req, res) => {
       const verificationToken = jwt.sign(
         { email: email.toLowerCase(), userId: firebaseUserId },
         process.env.REACT_APP_JWT_SECRET,
-        { expiresIn: "1m" } // 1m for testing, 24h for production
+        { expiresIn: "24h" } // 1m for testing, 24h for production
       );
 
       // Send verification email
@@ -114,7 +114,7 @@ exports.createUser = async (req, res) => {
         email,
         "DecorAItion Email Verification",
         `<p>Hi ${username}! Please verify your email by clicking this link: <a href="${verificationLink}">Verify Email</a></p>
-      <p>This link will expire in 1 minute.</p>` // 1 minute for testing, 24 hours for production
+      <p>This link will expire in 24 hours.</p>` // 1 minute for testing, 24 hours for production
       );
     }
 
@@ -350,7 +350,7 @@ exports.updateFailedAttempts = async (req, res) => {
     if (!reset) {
       // Check if there's an existing lockout with timestamp
       if (userData.lockout?.attemptAt) {
-        const lockoutTime = 1 * 60 * 1000; // 1 minute for testing (change to 15 * 60 * 1000 for production)
+        const lockoutTime = 15 * 60 * 1000; // 1 minute for testing (change to 15 * 60 * 1000 for production)
         const now = new Date();
         const timeSinceLastAttempt = now - userData.lockout.attemptAt.toDate();
 
@@ -386,7 +386,7 @@ exports.updateFailedAttempts = async (req, res) => {
         },
       });
       if (currentCount >= 6) {
-        return res.status(200).json({ isLocked: true, remainingMinutes: 1 }); // 1 for testing, 15 for production
+        return res.status(200).json({ isLocked: true, remainingMinutes: 15 }); // 1 for testing, 15 for production
       }
       return res.status(200).json({ isLocked: false, attemptsLeft: 6 - currentCount });
     } else {

@@ -254,7 +254,7 @@ export function SharedPropsProvider({ children }) {
   };
 
   // useEffect for debugging (!!! Remove before production !!!)
-  useEffect(() => {
+  /* useEffect(() => {
     console.log("User updated:", user);
   }, [user]);
   useEffect(() => {
@@ -352,7 +352,7 @@ export function SharedPropsProvider({ children }) {
   }, [state.userEvents]);
   useEffect(() => {
     console.log("Dark Mode updated:", state.isDarkMode);
-  }, [state.isDarkMode]);
+  }, [state.isDarkMode]); */
 
   if (!isCollectionLoaded || loading) {
     return (

@@ -784,7 +784,7 @@ export const generateMask = async (
     let errorMessage = "";
     if (
       error.message === "NetworkError when attempting to fetch resource." ||
-      error.message === "Failed to fetch"
+      error.message.includes("Failed to fetch")
     )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || "Failed to generate mask";
@@ -899,7 +899,7 @@ export const previewMask = async (
     let errorMessage = "";
     if (
       error.message === "NetworkError when attempting to fetch resource." ||
-      error.message === "Failed to fetch"
+      error.message.includes("Failed to fetch")
     )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || "Failed to combine masks";
@@ -1102,7 +1102,7 @@ export const generateNextImage = async (
     let errorMessage = "";
     if (
       error.message === "NetworkError when attempting to fetch resource." ||
-      error.message === "Failed to fetch"
+      error.message.includes("Failed to fetch")
     )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;
@@ -1194,7 +1194,7 @@ export const generateFirstImage = async (
     let errorMessage = "";
     if (
       error.message === "NetworkError when attempting to fetch resource." ||
-      error.message === "Failed to fetch"
+      error.message.includes("Failed to fetch")
     )
       errorMessage = "Server is offline. Please try again later.";
     else errorMessage = error.message || `Failed to generate image${numberOfImages > 1 ? "s" : ""}`;

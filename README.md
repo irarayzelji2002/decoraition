@@ -10,7 +10,7 @@
 
 1. [Introduction](#-introduction)
 2. [Features](#-features)
-3. [System Architecture](#-system-architecture)
+3. [System Architecture](#%EF%B8%8F-system-architecture)
 4. [Installation and Setup](#-installation-and-setup)
 5. [User Guide](#-user-guide)
 6. [Technologies Used](#-technologies-used)
@@ -73,18 +73,12 @@ DecorAItion Planner addresses these challenges by incorporating personalized des
     <h3>High-Level Class Diagram</h3>
 </div>
 
-<div>
-<style>
-td, th {
-   border: none!important;
-}
-</style>
 <table width="100%">
     <tr>
         <td colspan="2">To update description</td>
     </tr><tr></tr>
     <tr>
-        <td colspan="2" height="300px">
+        <td colspan="2">
             <picture>
                 <source srcset="https://i.ibb.co/Wpy0YPL/Class-Diagram-High-Level-dark.png" media="(prefers-color-scheme: dark)">
                 <img src="https://i.ibb.co/Pc1JbDY/Class-Diagram-High-Level.png" alt="User Use Case Diagram">
@@ -92,7 +86,6 @@ td, th {
         </td>
     </tr><tr></tr>
 </table>
-</div>
 
 <div align="center">
     <h3>Use Case Diagrams</h3>
@@ -106,10 +99,10 @@ td, th {
         <td colspan="2">To update description</td>
     </tr><tr></tr>
     <tr>
-        <td colspan="2" height="300px">
+        <td colspan="2">
             <picture>
                 <source srcset="https://i.ibb.co/Pxyx3Cc/Use-Case-A-User-dark.png" media="(prefers-color-scheme: dark)">
-                <img src="https://i.ibb.co/G9gSxkj/Use-Case-A-User.png" alt="User Use Case Diagram">
+                <img src="https://i.ibb.co/G9gSxkj/Use-Case-A-User.png" alt="User Use Case Diagram" height="300px">
             </picture>
         </td>
     </tr><tr></tr>

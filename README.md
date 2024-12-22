@@ -19,15 +19,15 @@
 
 ## 📖 Introduction
 
-### What's the problem?
+#### What's the problem?
 
 Finding inspiration for decoration, whether for social events, interior, or exterior design, demands creativity and extensive effort. Designers traditionally spend significant time interpreting client preferences and iterating on layouts, furnishings, colors, and materials that often leads to delays and higher costs.
 
-### How we solved this?
+#### How we solved this?
 
 DecorAItion Planner addresses these challenges by incorporating personalized design recommendations through AI image generation to accelerate the design process. This platform provides fast, AI-driven suggestions tailored to user preferences, reducing the time and effort required in the early stages of planning while offering innovative solutions for both personal and professional design needs.The objective of this project was to develop a web application powered by Artificial Intelligence (AI) that allows users to easily visualize concepts, receive a variety of design suggestions, and develop personalized layouts for residential, commercial, and outdoor spaces by using advanced tools and fostering collaboration, making it accessible to both novice and professional designers.
 
-### Who is it for?
+#### Who is it for?
 
 - Event Decorators
   - Stage and Set Designers
@@ -91,86 +91,72 @@ DecorAItion Planner addresses these challenges by incorporating personalized des
     <h3>Use Case Diagrams</h3>
 </div>
 
-<svg fill="none" viewBox="0 0 800 400" width="800" height="400" xmlns="http://www.w3.org/2000/svg">
-	<foreignObject width="100%" height="100%">
-		<div xmlns="http://www.w3.org/1999/xhtml">
-      <style>
-      	td, th {
-          border: none!important;
-          text-align: center;
-        }
-			</style>
-			<div class="container">
-				<table width="100%">
-          <tr>
-              <td colspan="2"><b>User</b></td>
-          </tr><tr></tr>
-          <tr>
-              <td colspan="2">To update description</td>
-          </tr><tr></tr>
-          <tr>
-              <td colspan="2">
-                  <picture>
-                      <source srcset="https://i.ibb.co/Pxyx3Cc/Use-Case-A-User-dark.png" media="(prefers-color-scheme: dark)">
-                      <img src="https://i.ibb.co/G9gSxkj/Use-Case-A-User.png" alt="User Use Case Diagram" height="300px">
-                  </picture>
-              </td>
-          </tr><tr></tr>
-          <tr>
-              <td colspan="2" height="5px"></td>
-          </tr><tr></tr>
-          <tr>
-              <td><b>Design Manager</b></td>
-              <td><b>Design Collaborator</b></td>
-          </tr><tr></tr>
-          <tr>
-              <td>To update description</td>
-              <td>To update description</td>
-          </tr><tr></tr>
-          <tr>
-              <td>
-                  <picture>
-                      <source srcset="https://i.ibb.co/BZq9tsn/Use-Case-D-Design-Manager-dark.png" media="(prefers-color-scheme: dark)">
-                      <img src="https://i.ibb.co/kHTJVFD/Use-Case-D-Design-Manager.png" alt="Project Manager Use Case Diagram">
-                  </picture>
-              </td>
-              <td>
-                  <picture>
-                      <source srcset="https://i.ibb.co/ZHBT6F7/Use-Case-E-Design-Collaborator-dark.png" media="(prefers-color-scheme: dark)">
-                      <img src="https://i.ibb.co/9TZjh59/Use-Case-E-Design-Collaborator.png" alt="Project Collaborators Use Case Diagram">
-                  </picture>
-              </td>
-          </tr><tr></tr>
-          <tr>
-              <td colspan="2" height="5px"></td>
-          </tr><tr></tr>
-          <tr>
-              <td><b>Project Manager</b></td>
-              <td><b>Project Collaborator</b></td>
-          </tr><tr></tr>
-          <tr>
-              <td>To update description</td>
-              <td>To update description</td>
-          </tr><tr></tr>
-          <tr>
-              <td>
-                  <picture>
-                      <source srcset="https://i.ibb.co/B6Gbrdw/Use-Case-B-Project-Manager-dark.png" media="(prefers-color-scheme: dark)">
-                      <img src="https://i.ibb.co/2WTdqpt/Use-Case-B-Project-Manager.png" alt="Design Manager Use Case Diagram">
-                  </picture>
-              </td>
-              <td>
-                  <picture>
-                      <source srcset="https://i.ibb.co/TMjfSjY/Use-Case-C-Project-Collaborator-dark.png" media="(prefers-color-scheme: dark)">
-                      <img src="https://i.ibb.co/qBtsfHm/Use-Case-C-Project-Collaborator.png" alt="Design Collaborator Use Case Diagram">
-                  </picture>
-              </td>
-          </tr><tr></tr>
-        </table>
-			</div>
-		</div>
-	</foreignObject>
-</svg>
+<table width="100%">
+    <tr>
+        <td colspan="2"><b>User</b></td>
+    </tr><tr></tr>
+    <tr>
+        <td colspan="2">To update description</td>
+    </tr><tr></tr>
+    <tr>
+        <td colspan="2">
+            <picture>
+                <source srcset="https://i.ibb.co/Pxyx3Cc/Use-Case-A-User-dark.png" media="(prefers-color-scheme: dark)">
+                <img src="https://i.ibb.co/G9gSxkj/Use-Case-A-User.png" alt="User Use Case Diagram" height="300px">
+            </picture>
+        </td>
+    </tr><tr></tr>
+    <tr>
+        <td colspan="2" height="5px"></td>
+    </tr><tr></tr>
+    <tr>
+        <td><b>Design Manager</b></td>
+        <td><b>Design Collaborator</b></td>
+    </tr><tr></tr>
+    <tr>
+        <td>To update description</td>
+        <td>To update description</td>
+    </tr><tr></tr>
+    <tr>
+        <td>
+            <picture>
+                <source srcset="https://i.ibb.co/BZq9tsn/Use-Case-D-Design-Manager-dark.png" media="(prefers-color-scheme: dark)">
+                <img src="https://i.ibb.co/kHTJVFD/Use-Case-D-Design-Manager.png" alt="Project Manager Use Case Diagram">
+            </picture>
+        </td>
+        <td>
+            <picture>
+                <source srcset="https://i.ibb.co/ZHBT6F7/Use-Case-E-Design-Collaborator-dark.png" media="(prefers-color-scheme: dark)">
+                <img src="https://i.ibb.co/9TZjh59/Use-Case-E-Design-Collaborator.png" alt="Project Collaborators Use Case Diagram">
+            </picture>
+        </td>
+    </tr><tr></tr>
+    <tr>
+        <td colspan="2" height="5px"></td>
+    </tr><tr></tr>
+    <tr>
+        <td><b>Project Manager</b></td>
+        <td><b>Project Collaborator</b></td>
+    </tr><tr></tr>
+    <tr>
+        <td>To update description</td>
+        <td>To update description</td>
+    </tr><tr></tr>
+    <tr>
+        <td>
+            <picture>
+                <source srcset="https://i.ibb.co/B6Gbrdw/Use-Case-B-Project-Manager-dark.png" media="(prefers-color-scheme: dark)">
+                <img src="https://i.ibb.co/2WTdqpt/Use-Case-B-Project-Manager.png" alt="Design Manager Use Case Diagram">
+            </picture>
+        </td>
+        <td>
+            <picture>
+                <source srcset="https://i.ibb.co/TMjfSjY/Use-Case-C-Project-Collaborator-dark.png" media="(prefers-color-scheme: dark)">
+                <img src="https://i.ibb.co/qBtsfHm/Use-Case-C-Project-Collaborator.png" alt="Design Collaborator Use Case Diagram">
+            </picture>
+        </td>
+    </tr><tr></tr>
+</table>
 
 ## 💻 Installation and Setup
 
@@ -304,39 +290,25 @@ Contact the developers to get access to the environment variables and database. 
 
 Decoraition's **User Manual** can be browsed [here](https://drive.google.com/file/d/1pYIDrWBa8NW7aIwkMJ7goxueACNSta81/view?usp=drive_link).
 
-<svg fill="none" viewBox="0 0 800 400" width="800" height="400" xmlns="http://www.w3.org/2000/svg">
-	<foreignObject width="100%" height="100%">
-		<div xmlns="http://www.w3.org/1999/xhtml">
-      <style>
-      	td, th {
-          border: none!important;
-          text-align: center;
-        }
-			</style>
-			<div class="container">
-        <table width="100%">
-            <tr>
-                <td>
-                    <picture>
-                        <img src="" alt="User Manual Cover">
-                    </picture>
-                </td>
-                <td>
-                    <picture>
-                        <img src="" alt="User Manual TOC">
-                    </picture>
-                </td>
-                <td>
-                    <picture>
-                        <img src="" alt="User Manual TOC">
-                    </picture>
-                </td>
-            </tr><tr></tr>
-        </table>
-      </div>
-		</div>
-	</foreignObject>
-</svg>
+<table width="100%">
+    <tr>
+        <td>
+            <picture>
+                <img src="" alt="User Manual Cover">
+            </picture>
+        </td>
+        <td>
+            <picture>
+                <img src="" alt="User Manual TOC">
+            </picture>
+        </td>
+        <td>
+            <picture>
+                <img src="" alt="User Manual TOC">
+            </picture>
+        </td>
+    </tr><tr></tr>
+</table>
 
 ## 🤖 Technologies Used
 

@@ -1,11 +1,5 @@
-<style>
-td, th {
-   border: none!important;
-}
-</style>
-
 <div align="center">
-  <img src="https://i.ibb.co/sgQn5mz/logo-with-text-colored.png" style="margin-left:0px; margin-right: 50px;">
+  <img src="https://i.ibb.co/sgQn5mz/logo-with-text-colored.png">
 </div>
 
 # DecorAItion Planner: An AI-Assisted Project Decorating Application
@@ -14,14 +8,14 @@ td, th {
 
 ## 📚 Table of Contents
 
-1. [Introduction](#📖-introduction)
-2. [Features](#✨-features)
-3. [System Architecture](#🛠️-system-architecture)
-4. [Installation and Setup](#💻-installation-and-setup)
-5. [User Guide](#📑-user-guide)
-6. [Technologies Used](#🤖-technologies-used)
-7. [Screenshots & Demo](#📸-screenshots--demo)
-8. [Acknowledgments](#🤗-acknowledgments)
+1. [Introduction](#-introduction)
+2. [Features](#-features)
+3. [System Architecture](#-system-architecture)
+4. [Installation and Setup](#-installation-and-setup)
+5. [User Guide](#-user-guide)
+6. [Technologies Used](#-technologies-used)
+7. [Screenshots & Demo](#-screenshots--demo)
+8. [Acknowledgments](#-acknowledgments)
 
 ## 📖 Introduction
 
@@ -79,38 +73,57 @@ DecorAItion Planner addresses these challenges by incorporating personalized des
     <h3>High-Level Class Diagram</h3>
 </div>
 
-![High-Level Class Diagram](https://i.ibb.co/Wpy0YPL/Class-Diagram-High-Level-dark.png#gh-dark-mode-only)
-![High-Level Class Diagram](https://i.ibb.co/Pc1JbDY/Class-Diagram-High-Level.png#gh-light-mode-only)
-
-To update description
+<div>
+<style>
+td, th {
+   border: none!important;
+}
+</style>
+<table width="100%">
+    <tr>
+        <td colspan="2">To update description</td>
+    </tr><tr></tr>
+    <tr>
+        <td colspan="2" height="300px">
+            <picture>
+                <source srcset="https://i.ibb.co/Wpy0YPL/Class-Diagram-High-Level-dark.png" media="(prefers-color-scheme: dark)">
+                <img src="https://i.ibb.co/Pc1JbDY/Class-Diagram-High-Level.png" alt="User Use Case Diagram">
+            </picture>
+        </td>
+    </tr><tr></tr>
+</table>
+</div>
 
 <div align="center">
     <h3>Use Case Diagrams</h3>
 </div>
 
-<table style="width:100%; text-align:center;">
+<table width="100%">
     <tr>
         <td colspan="2"><b>User</b></td>
-    </tr>
+    </tr><tr></tr>
     <tr>
         <td colspan="2">To update description</td>
-    </tr>
+    </tr><tr></tr>
     <tr>
-        <td colspan="2" style="height:300px;">
+        <td colspan="2" height="300px">
             <picture>
                 <source srcset="https://i.ibb.co/Pxyx3Cc/Use-Case-A-User-dark.png" media="(prefers-color-scheme: dark)">
                 <img src="https://i.ibb.co/G9gSxkj/Use-Case-A-User.png" alt="User Use Case Diagram">
             </picture>
         </td>
-    </tr>
+    </tr><tr></tr>
     <tr>
-        <td style="padding-top:20px;"><b>Design Manager</b></td>
-        <td style="padding-top:20px;"><b>Design Collaborator</b></td>
-    </tr>
+        <td colspan="2" height="5px"></td>
+    </tr><tr></tr>
+    <tr>
+        <td><b>Design Manager</b></td>
+        <td><b>Design Collaborator</b></td>
+    </tr><tr></tr>
     <tr>
         <td>To update description</td>
         <td>To update description</td>
-    </tr>
+    </tr><tr></tr>
     <tr>
         <td>
             <picture>
@@ -124,15 +137,18 @@ To update description
                 <img src="https://i.ibb.co/9TZjh59/Use-Case-E-Design-Collaborator.png" alt="Project Collaborators Use Case Diagram">
             </picture>
         </td>
-    </tr>
+    </tr><tr></tr>
     <tr>
-        <td style="padding-top:20px;"><b>Project Manager</b></td>
-        <td style="padding-top:20px;"><b>Project Collaborator</b></td>
-    </tr>
+        <td colspan="2" height="5px"></td>
+    </tr><tr></tr>
+    <tr>
+        <td><b>Project Manager</b></td>
+        <td><b>Project Collaborator</b></td>
+    </tr><tr></tr>
     <tr>
         <td>To update description</td>
         <td>To update description</td>
-    </tr>
+    </tr><tr></tr>
     <tr>
         <td>
             <picture>
@@ -146,20 +162,20 @@ To update description
                 <img src="https://i.ibb.co/qBtsfHm/Use-Case-C-Project-Collaborator.png" alt="Design Collaborator Use Case Diagram">
             </picture>
         </td>
-    </tr>
+    </tr><tr></tr>
 </table>
 
 ## 💻 Installation and Setup
 
 ### ✅ Prerequisites
 
-<span style="font-weight:bold; font-size:1.1rem;">1. Node.js Version</span>
+### 1. Node.js Version
 
 This web app was made with `Node.js v20.16.0`, but you may download the latest LTS version in the link below.
 
 **Download Link:** https://nodejs.org/en
 
-<span style="font-weight:bold; font-size:1.1rem;">2. Python Version</span>
+### 2. Python Version
 
 To run the ai api, your computer must have: \
 `Python 3.10.6`
@@ -172,14 +188,14 @@ If you're downgrading, uninstall "Python Launcher" from the "Control Panel" beca
 
 ### ⚙️ Installation
 
-<span style="font-weight:bold; font-size:1.1rem;">Step 1: Clone the repository and navigate to the project folder</span>
+### Step 1: Clone the repository and navigate to the project folder
 
 ```
 git clone https://github.com/yourusername/your-repo.git
 cd your-repo
 ```
 
-<span style="font-weight:bold; font-size:1.1rem;">Step 2: Install front end and back end depencencies</span>
+### Step 2: Install front end and back end depencencies
 
 Make sure you are in the project folder `decoraition`. The contents are `.vscode`, `ai-api`, `public`, `server`, `src` folders, and other configuration files, then run the following commands below.
 
@@ -213,7 +229,7 @@ npm run server
 
 ### 🚀 Deploying the app
 
-<span style="font-weight:bold; font-size:1.1rem;">Step 1: Updating the prod branch</span>
+### Step 1: Updating the prod branch
 
 Contact the developers to get access to Render and Cloudflare. \
 [Developer Contact](#🤗-acknowledgments)
@@ -225,20 +241,20 @@ git checkout prod
 git pull origin main
 ```
 
-<span style="font-weight:bold; font-size:1.1rem;">Step 2: Deploying to Render</span>
+### Step 2: Deploying to Render
 
 Go to **Decoraition's Render Dashboard**, update your environment variables in the `Environment` tab if needed, then click `Manual Deploy` > `Clear build cache & deploy`. You can track your logs in the `Logs` tab of the dahsboard. If you see `Server is running on port 10000`, the app is successfully deployed.
 
-<span style="font-weight:bold; font-size:1.1rem;">Step 3: Starting the AI API with Cloudflare Tunnel</span>
+### Step 3: Starting the AI API with Cloudflare Tunnel
 
-<span style="font-weight:bold; font-size:1rem;">Prerequisites</span>
+### Prerequisites
 
 - Setup **[irarayzelji2002/sd-webui-reForge-decoraition](https://github.com/irarayzelji2002/sd-webui-reForge-decoraition)** by following the instructions in the `README`.
 - Install **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)**
   - Login to Cloudflare in Cloudflare Tunnel by typing this in the terminal after installation.
     `cloudflared login`
 
-<span style="font-weight:bold; font-size:1rem;">Setup and Configuration</span>
+### Setup and Configuration
 
 - Create the tunnel by typing this in the terminal `cloudflared tunnel create ai-api`.
 - Go to `C:\Users\PCUser\.cloudflared`
@@ -268,7 +284,7 @@ parent-folder
 
 If you have different folder names, you can rename or change the `cwd` in `tasks.json` to your folder paths
 
-<span style="font-weight:bold; font-size:1rem;">Starting the API</span>
+### Starting the API</span>
 
 Open the parent-folder (any name) in VSCode, then open the terminal, click the `+` icon, click `Run Task...` and select `Start AI API`.
 
@@ -281,7 +297,7 @@ Contact the developers to get access to the environment variables and database. 
 
 Decoraition's **User Manual** can be browsed [here](https://drive.google.com/file/d/1pYIDrWBa8NW7aIwkMJ7goxueACNSta81/view?usp=drive_link).
 
-<table style="width:100%; text-align:center;">
+<table width="100%">
     <tr>
         <td>
             <picture>
@@ -298,7 +314,7 @@ Decoraition's **User Manual** can be browsed [here](https://drive.google.com/fil
                 <img src="" alt="User Manual TOC">
             </picture>
         </td>
-    </tr>
+    </tr><tr></tr>
 </table>
 
 ## 🤖 Technologies Used

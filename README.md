@@ -75,7 +75,8 @@ DecorAItion Planner addresses these challenges by incorporating personalized des
 
 <table width="100%">
     <tr>
-        <td colspan="2">To update description</td>
+        <td colspan="2">The figure below shows a high-level class diagram about the system's design, divided into user-related, design-related, and project-related components. The User class was central, with one-to-many relationships to Project, Design, Notification, and Color Palette classes. Users could manage, contribute to, and view multiple projects and designs, receive notifications, and create reusable color palettes. The Design class connected to Design Version, Budget, and Project, with one-to-many relationships to versions, comments, and items, and a one-to-one relationship with Budget. Projects had one-to-one relationships with Plan Map, Timeline, and Project Budget, and one-to-many relationships with Pins, Events, and associated Budgets. Overall, the diagram highlighted structured relationships among system entities to support collaborative and design functionalities.
+</td>
     </tr><tr></tr>
     <tr>
         <td colspan="2">
@@ -96,7 +97,7 @@ DecorAItion Planner addresses these challenges by incorporating personalized des
         <td colspan="2"><b>User</b></td>
     </tr><tr></tr>
     <tr>
-        <td colspan="2">To update description</td>
+        <td colspan="2">This figure illustrates how the user interacts with the application through key actions, including logging in, registering for an account, and logging out. They can edit account settings and notification preferences, create new designs and projects, and search for and view existing projects and designs.</td>
     </tr><tr></tr>
     <tr>
         <td colspan="2">
@@ -114,8 +115,8 @@ DecorAItion Planner addresses these challenges by incorporating personalized des
         <td><b>Design Collaborator</b></td>
     </tr><tr></tr>
     <tr>
-        <td>To update description</td>
-        <td>To update description</td>
+        <td>This figure illustrates the Design Manager's functionalities, including adding and managing collaborators, design settings, and comments, as well as deleting, renaming, sharing, and downloading designs. The Design Manager could log in, register, and log out, with options to edit account and notification settings. They could also create and manage designs and projects, find users' designs and projects, and generate images, showcasing comprehensive control over design and collaboration workflows.</td>
+        <td>This figure illustrates the the Design Collaborator's functionalities, including viewing collaborators, design settings, details, history, and budget. They could download and share designs, manage comments, generate images, rename designs, make copies, restore versions, and manage budget items. Collaborators could log in, register, log out, and edit account and notification settings. They could also create designs and projects, find users' designs and projects, and perform actions associated with Commenter and Editor roles, highlighting their collaborative and editing capabilities.</td>
     </tr><tr></tr>
     <tr>
         <td>
@@ -139,8 +140,8 @@ DecorAItion Planner addresses these challenges by incorporating personalized des
         <td><b>Project Collaborator</b></td>
     </tr><tr></tr>
     <tr>
-        <td>To update description</td>
-        <td>To update description</td>
+        <td>This figure illustrates the Project Manager's capabilities, including adding and managing collaborators, project settings, plan maps, timelines, and budgets. They could rename and delete projects, manage plan map pins, oversee venues, view project details, download PDFs, and share links. Additionally, they could log in, register, log out, edit account and notification settings, create designs and projects, and find existing ones. The Project Manager could also view and manage timelines, add or edit calendar events, and interact with various project elements, emphasizing their comprehensive project oversight.</td>
+        <td>This figure illustrates the interactions of project collaborators, contributors, and content managers with the application. The primary actor, the project collaborator, could manage and view collaborators, project settings, details, plan maps, and timelines. They could download PDFs, share links, add or edit venues, plan map pins, and calendar events, as well as delete pins and events. Contributors and content managers supported these tasks. All users could log in, register, log out, edit account and notification settings, and create or find designs and projects, emphasizing collaborative project management.</td>
     </tr><tr></tr>
     <tr>
         <td>

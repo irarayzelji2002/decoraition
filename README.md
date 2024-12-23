@@ -295,17 +295,17 @@ Decoraition's **User Manual** can be browsed [here](https://drive.google.com/fil
     <tr>
         <td>
             <picture>
-                <img src="https://ibb.co/zSxVHH4" alt="User Manual Cover">
+                <img src="https://i.ibb.co/GVpQ335/USER-MANUAL.jpg" alt="User Manual Cover">
             </picture>
         </td>
         <td>
             <picture>
-                <img src="https://ibb.co/72qHGPB" alt="User Manual TOC">
+                <img src="https://i.ibb.co/xJNyMWw/USER-MANUAL-PG-1.jpg" alt="User Manual TOC">
             </picture>
         </td>
         <td>
             <picture>
-                <img src="https://ibb.co/qnFySc8" alt="User Manual TOC">
+                <img src="https://i.ibb.co/N3nVvJq/USER-MANUAL-PG-2.jpg" alt="User Manual TOC">
             </picture>
         </td>
     </tr><tr></tr>

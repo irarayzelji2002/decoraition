@@ -289,23 +289,23 @@ Contact the developers to get access to the environment variables and database. 
 
 ## 📑 User Guide
 
-Decoraition's **User Manual** can be browsed [here](https://drive.google.com/file/d/1pYIDrWBa8NW7aIwkMJ7goxueACNSta81/view?usp=drive_link).
+Decoraition's **User Manual** can be browsed [here](https://drive.google.com/file/d/1JGuZ6VDW0KutBSmWvTHWUcBKuIuTTAtN/view?usp=sharing).
 
 <table width="100%">
     <tr>
         <td>
             <picture>
-                <img src="" alt="User Manual Cover">
+                <img src="https://ibb.co/zSxVHH4" alt="User Manual Cover">
             </picture>
         </td>
         <td>
             <picture>
-                <img src="" alt="User Manual TOC">
+                <img src="https://ibb.co/72qHGPB" alt="User Manual TOC">
             </picture>
         </td>
         <td>
             <picture>
-                <img src="" alt="User Manual TOC">
+                <img src="https://ibb.co/qnFySc8" alt="User Manual TOC">
             </picture>
         </td>
     </tr><tr></tr>

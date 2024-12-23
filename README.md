@@ -241,14 +241,14 @@ Go to **Decoraition's Render Dashboard**, update your environment variables in t
 
 ### Step 3: Starting the AI API with Cloudflare Tunnel
 
-### Prerequisites
+#### Prerequisites
 
 - Setup **[irarayzelji2002/sd-webui-reForge-decoraition](https://github.com/irarayzelji2002/sd-webui-reForge-decoraition)** by following the instructions in the `README`.
 - Install **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)**
   - Login to Cloudflare in Cloudflare Tunnel by typing this in the terminal after installation.
     `cloudflared login`
 
-### Setup and Configuration
+#### Setup and Configuration
 
 - Create the tunnel by typing this in the terminal `cloudflared tunnel create ai-api`.
 - Go to `C:\Users\PCUser\.cloudflared`
@@ -278,7 +278,7 @@ parent-folder
 
 If you have different folder names, you can rename or change the `cwd` in `tasks.json` to your folder paths
 
-### Starting the API</span>
+#### Starting the API</span>
 
 Open the parent-folder (any name) in VSCode, then open the terminal, click the `+` icon, click `Run Task...` and select `Start AI API`.
 
@@ -333,6 +333,108 @@ Decoraition's **User Manual** can be browsed [here](https://drive.google.com/fil
   Render, Cloudflare
 
 ## 📸 Screenshots & Demo
+
+This section provides an in-depth walkthrough of the system's core features. Each section highlights key functionalities with accompanying visuals to demonstrate their usage and user experience.
+
+### 1. Access, Authentication, and User Dashboard
+
+This section covers how users access and manage their accounts, set notification preferences, and personalize their experience. From registration and login to settings and logout, every step is streamlined for ease of use.
+
+- #### User Authentication Flow
+
+  [GIF/MP4: Landing → Register → Login → Logout → Forgot Password → Login] \
+  <img src="" alt="User Authentication Flow"> \
+  Overview of how users create accounts, log in, recover passwords, and securely log out.
+
+- #### User Dashboard & Settings
+
+  [GIF/MP4: Navbar → Account Settings - edit info/profile pic → Notification Preferences - edit] \
+  <img src="" alt="User Dashboard & Settings"> \
+  Overview of profile customization, notification preferences, and account management.
+
+### 2. Homepage, Designs, and Projects Overview
+
+The Homepage, Designs, and Projects pages serve as central hubs for navigating and managing designs and projects. These interfaces offer streamlined workflows, advanced filtering, sorting options, and quick access to key features.
+
+- #### Homepage
+
+  [GIF/MP4: Homepage - Table & List View, Show More, Scroll to Top, Search, Sorting, Design & Project's Options → Navbar - Design & Project's Options] \
+  <img src="" alt="Homepage Overview"> \
+  Explore recent designs, ongoing projects, and quick action shortcuts.
+
+- #### Designs Page
+
+  [GIF/MP4: Designs Page - Table & List View, Pages, Search, Sorting, Design & Project's Options] \
+  <img src="" alt="Designs Page Overview"> \
+  Browse and manage your designs with filtering, sorting, and search functionalities.
+
+- #### Projects Page
+
+  [GIF/MP4: Designs Page - Table & List View, Pages, Search, Sorting, Design & Project's Options] \
+  <img src="" alt="Projects Page Overview"> \
+  Access and organize your projects efficiently with easy-to-use tools.
+
+- #### Trash Page
+
+  [GIF/MP4: Trash Page - Table & List View, Pages, Search, Sorting, Design & Project's Trash Options] \
+  <img src="" alt="Trash Page Overview"> \
+  See your recently deleted design and projects, and restore or delete forever.
+
+### 3. Design Space
+
+The Design Space empowers users to create, refine, and manage designs seamlessly. It offers advanced tools for generating images, budget management, design collaboration, and iterative refinement to ensure the best results.
+
+- #### Design Tab
+
+  [GIF/MP4: Create Design, Generate Image, Mask & Generate, Add & Edit & Delete Comment, Add & Edit & Delete Reply, Resolve & Reopen Comment] \
+  <img src="" alt="Design Tab & Actions"> \
+  Generate, refine, and explore designs with prompts, image uploads, and style references.
+
+- #### Budget Tab
+
+  [GIF/MP4: Add & Edit & Remove Budget, Add & Edit & Remove Item] \
+  <img src="" alt="Budget Tab & Actions"> \
+  Manage and track design budgets with itemized details and total cost estimations.
+
+- #### Design Space Options & Collaboration
+
+  [GIF/MP4: Share - Add Collab, Manage Access, Copy link, History, Settings, Change Mode, Make a copy, Restore, Rename, Delete Details, Nav Notif] \
+  <img src="" alt="Design Space Options & Collaboration"> \
+  Share designs, collaborate with team members, manage permissions, and add comments.
+
+### 4. Project Space
+
+The Project Space integrates all project-related functionalities, including managing project's designs, planning timelines, mapping venues, and tracking budgets. It ensures seamless collaboration and resource management.
+
+- #### Designs Tab
+
+  [GIF/MP4: Create Project + Import Design + Create Design in Project] \
+  <img src="" alt="Designs Tab & Actions"> \
+  Import or create designs directly within a project and manage them effectively.
+
+- #### Timeline Tab
+
+  [GIF/MP4: 3 Views, Add & Edit & Remove Event] \
+  <img src="" alt="Timeline Tab & Actions"> \
+  Plan, track, and adjust project schedules with timeline management tools.
+
+- #### Plan Map Tab
+
+  [GIF/MP4: Add & Change Plan, Add Pin, Adjust pins, Change pins' order] \
+  <img src="" alt="Plan Map Tab & Actions"> \
+  Pin designs on venue maps, organize layouts, and export maps for sharing.
+
+- #### Budget Tab
+
+  [GIF/MP4: Add & Edit & Remove Budget] \
+  <img src="" alt="Budget Tab & Actions"> \
+  Manage project budgets with customizable entries and detailed cost analysis.
+
+- #### Project Space Options & Collaboration
+
+  [GIF/MP4: Share - Add Collab, Manage Access, Copy link, Settings, Change Mode, Rename, Delete Details, Nav Notif] \
+  <img src="" alt="Project Space Options & Collaboration"> \
+  Share projects, manage collaborators, set permissions, and monitor updates.
 
 ## 🤗 Acknowledgments
 

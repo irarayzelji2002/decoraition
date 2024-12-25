@@ -185,8 +185,8 @@ If you're downgrading, uninstall "Python Launcher" from the "Control Panel" beca
 ### Step 1: Clone the repository and navigate to the project folder
 
 ```
-git clone https://github.com/yourusername/your-repo.git
-cd your-repo
+git clone https://github.com/irarayzelji2002/decoraition.git
+cd decoraition
 ```
 
 ### Step 2: Install front end and back end depencencies

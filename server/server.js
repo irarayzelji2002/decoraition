@@ -14,7 +14,7 @@ const { auth, db, clientAuth, clientDb } = require("./firebase");
 // Middleware
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
 // API routes
 app.use("/api", apiRoutes);

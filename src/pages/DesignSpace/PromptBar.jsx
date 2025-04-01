@@ -671,8 +671,8 @@ function PromptBar({
       formErrors.prompt = "Prompt contains inappropriate content";
       console.log("Prompt contains inappropriate content");
     } else {
-      const tokenError = await validateTokenCount(prompt);
-      if (tokenError) formErrors.prompt = tokenError;
+      // const tokenError = await validateTokenCount(prompt);
+      // if (tokenError) formErrors.prompt = tokenError;
     }
     if (!numberOfImages || numberOfImages < 1 || numberOfImages > 4) {
       formErrors.numberOfImages = "Only 1 - 4 number of images allowed";
@@ -771,8 +771,8 @@ function PromptBar({
     } else if (!isCleanPrompt(prompt)) {
       formErrors.prompt = "Prompt contains inappropriate content";
     } else {
-      const tokenError = await validateTokenCount(prompt);
-      if (tokenError) formErrors.prompt = tokenError;
+      // const tokenError = await validateTokenCount(prompt);
+      // if (tokenError) formErrors.prompt = tokenError;
     }
     if (!numberOfImages || numberOfImages < 1 || numberOfImages > 4) {
       formErrors.numberOfImages = "Only 1 - 4 number of images allowed";
@@ -993,7 +993,8 @@ function PromptBar({
         }
       }
     } catch (error) {
-      console.error("Error generating image", error.message);
+      console.error("Error generating image:", error);
+      console.error("Error generating image message: ", error.message);
       setGenerationErrors((prev) => ({ ...prev, general: "Failed to generate image" }));
     } finally {
       resetStateVariables();
@@ -1719,7 +1720,7 @@ function PromptBar({
               disabled={
                 disabled ||
                 !isOnline ||
-                showComments ||
+                // showComments ||
                 (isNextGeneration && !isSelectingMask) ||
                 isGenerateImgBtbDisabled
               }
@@ -1734,7 +1735,7 @@ function PromptBar({
                 opacity:
                   disabled ||
                   !isOnline ||
-                  showComments ||
+                  // showComments ||
                   (isNextGeneration && !isSelectingMask) ||
                   isGenerateImgBtbDisabled
                     ? "0.5"
@@ -1742,7 +1743,7 @@ function PromptBar({
                 cursor:
                   disabled ||
                   !isOnline ||
-                  showComments ||
+                  // showComments ||
                   (isNextGeneration && !isSelectingMask) ||
                   isGenerateImgBtbDisabled
                     ? "default"
@@ -1751,7 +1752,7 @@ function PromptBar({
                   backgroundImage:
                     !disabled &&
                     isOnline &&
-                    !showComments &&
+                    // !showComments &&
                     !(isNextGeneration && !isSelectingMask) &&
                     !isGenerateImgBtbDisabled &&
                     "var(--gradientButtonHover)",

@@ -7,7 +7,7 @@ const features = [
     img: "/img/landing1.svg",
     title: "AI helps you come up with design ideas",
     description:
-      "Great for people who plan events, decorate homes, own businesses, and live in houses. DecorAItion Planner helps with all your decorating tasks. You can plan your designs if you're a pro or just like to do it yourself.",
+      "Make your brainstorming faster by creating designs that fit what you need. If you're planning a wedding, changing an office, or fixing up your house, our AI tech gives you a place to start your creative process.",
   },
   {
     img: "/img/landing2.svg",
